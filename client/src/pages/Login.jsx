@@ -1,273 +1,409 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Eye, EyeOff, Lock, User, GraduationCap, Users, Shield } from 'lucide-react';
+import { User, Users, Eye, EyeOff, ArrowRight, LogOut, CheckCircle, AlertCircle, Mail, Lock } from 'lucide-react';
 
-const Login = () => {
+const LoginSystem = () => {
+  const [userType, setUserType] = useState('');
+  const [credentials, setCredentials] = useState({
+    email: '',
+    password: ''
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [userType, setUserType] = useState('student');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState(null);
   const [error, setError] = useState('');
-  const { register, handleSubmit, formState: { errors } } = useForm();
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const [jwtToken, setJwtToken] = useState('');
 
+  const handleUserTypeSelect = (type) => {
+    setUserType(type);
+    setCredentials({ email: '', password: '' });
+    setError('');
+  };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setCredentials(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    setError(''); // Clear error when user starts typing
+  };
 
-  const onSubmit = async (data) => {
+  const handleLogin = async () => {
+    if (!userType || !credentials.email || !credentials.password) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    if (!credentials.email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
-    console.log(`Attempting login as ${userType} with email:`, data.email);
+    const loginUrl = userType === 'student'
+      ? 'http://localhost:8000/api/v1/student/login'
+      : 'http://localhost:8000/api/v1/staff/login';
 
     try {
-      await login(data.email, data.password, userType);
+      const response = await fetch(loginUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          email: credentials.email,
+          password: credentials.password
+        })
+      });
 
-      console.log(`${userType} login successful, redirecting...`);
+      // Check if response is actually JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.error('Response is not JSON:', {
+          status: response.status,
+          statusText: response.statusText,
+          contentType: contentType,
+          url: loginUrl
+        });
 
-      // Role-based redirection
-      if (userType === 'student') {
-        navigate('/student/dashboard');
-      } else if (userType === 'staff') {
-        navigate('/staff/dashboard');
+        // Try to get response text for debugging
+        const responseText = await response.text();
+        console.error('Response body:', responseText.substring(0, 200) + '...');
+
+        setError(`API Error: Expected JSON response but got ${contentType || 'unknown content type'}. The API endpoint might be incorrect.`);
+        return;
       }
-    } catch (error) {
-      console.error('Login failed:', error);
 
-      // More specific error messages
-      let errorMessage = 'Login failed. Please try again.';
+      const data = await response.json();
+      console.log('API Response:', { status: response.status, data });
 
-      if (error.response?.status === 400) {
-        errorMessage = error.response.data?.message || 'Invalid email or password.';
-      } else if (error.response?.status === 403) {
-        errorMessage = 'Account is not active. Please contact administrator.';
-      } else if (error.response?.status === 500) {
-        errorMessage = 'Server error. Please try again later.';
-      } else if (error.message === 'Network Error') {
-        errorMessage = 'Unable to connect to server. Please check your internet connection.';
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
+      if (response.ok) {
+        // Successful login
+        if (data.user || data.data || (data.email || data.name || data.id)) {
+          setIsLoggedIn(true);
+          setUserData(data.user || data.data || data); // Handle different response structures
+          setJwtToken(data.token || data.accessToken || data.jwt || data.authToken || 'demo-jwt-token-' + Date.now());
+          setCredentials({ email: '', password: '' });
+        } else {
+          setError('Login successful but no user data received from server.');
+        }
+      } else {
+        // Login failed
+        setError(data.message || data.error || data.msg || `Login failed with status ${response.status}. Please check your credentials.`);
       }
+    } catch (err) {
+      console.error('Login error:', err);
 
-      setError(errorMessage);
+      if (err.name === 'SyntaxError' && err.message.includes('Unexpected token')) {
+        setError('API Error: Server returned invalid JSON. The API endpoint might be returning HTML instead of JSON data. Please check the API URLs.');
+      } else if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        setError('Network Error: Unable to connect to the server. Please check your internet connection and try again.');
+      } else {
+        setError(`Error: ${err.message}. Please try again or contact support.`);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Government Header */}
-      <div className="bg-white shadow-sm border-b-4 border-orange-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="h-16 w-16 bg-orange-500 rounded-full flex items-center justify-center">
-                <GraduationCap className="h-10 w-10 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  Department of Technical Education
-                </h1>
-                <p className="text-sm text-gray-600">Government of Rajasthan</p>
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUserData(null);
+    setJwtToken('');
+    setUserType('');
+    setCredentials({ email: '', password: '' });
+    setError('');
+  };
+
+  const handleBack = () => {
+    setUserType('');
+    setCredentials({ email: '', password: '' });
+    setError('');
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
+  };
+
+  // If user is logged in, show user data and logout
+  if (isLoggedIn && userData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl">
+          {/* Success Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-full mb-4">
+              <CheckCircle className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">Login Successful!</h1>
+            <p className="text-gray-600 text-sm">Welcome to ERP Portal</p>
+          </div>
+
+          {/* User Data Card */}
+          <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden mb-6">
+            {/* Header */}
+            <div className={`p-4 ${userType === 'student' ? 'bg-green-600' : 'bg-blue-600'} text-white`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  {userType === 'student' ? (
+                    <User className="w-5 h-5 mr-2" />
+                  ) : (
+                    <Users className="w-5 h-5 mr-2" />
+                  )}
+                  <span className="font-semibold capitalize">{userType} Dashboard</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center px-3 py-1 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-all text-sm"
+                >
+                  <LogOut className="w-4 h-4 mr-1" />
+                  Logout
+                </button>
               </div>
             </div>
-            <div className="hidden md:flex items-center space-x-2">
-              <div className="h-12 w-12 bg-green-600 rounded"></div>
-              <div className="h-12 w-12 bg-white border-2 border-gray-300 rounded"></div>
-              <div className="h-12 w-12 bg-orange-500 rounded"></div>
+
+            {/* User Information */}
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">User Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(userData).map(([key, value]) => {
+                  if (key === 'password' || key === 'token') return null; // Skip sensitive data
+                  return (
+                    <div key={key} className="bg-gray-50 p-3 rounded-lg">
+                      <div className="text-sm font-medium text-gray-600 capitalize">
+                        {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                      </div>
+                      <div className="text-gray-800 mt-1">
+                        {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
+          </div>
+
+          {/* JWT Token Display */}
+          <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+            <div className="p-4 bg-gray-100 border-b">
+              <h3 className="text-lg font-semibold text-gray-800">JWT Token</h3>
+              <p className="text-sm text-gray-600">Authentication token for API requests</p>
+            </div>
+            <div className="p-4">
+              <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm break-all">
+                {jwtToken}
+              </div>
+              <div className="mt-3 text-xs text-gray-600">
+                <strong>Note:</strong> This token can be used for authenticated API requests. Store it securely and include it in the Authorization header as "Bearer {jwtToken}".
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="text-center mt-8 text-sm text-gray-600">
+            <p>Government of India | Educational Management System</p>
+            <p className="mt-1">Secure Portal v2.0</p>
           </div>
         </div>
       </div>
+    );
+  }
 
-      <div className="flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="text-center">
-            <div className="mx-auto h-20 w-20 bg-blue-600 rounded-full flex items-center justify-center mb-6">
-              <Shield className="h-12 w-12 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Student Management ERP
-            </h2>
-            <p className="text-sm text-gray-600">
-              Secure Login Portal
-            </p>
-            <p className="text-xs text-gray-500 mt-2">
-              Connected to: sih-one-nu.vercel.app
-            </p>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
+            <Users className="w-8 h-8 text-white" />
           </div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">ERP Login Portal</h1>
+          <p className="text-gray-600 text-sm">Government Educational Management System</p>
         </div>
 
-        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10 border-t-4 border-blue-600">
-
-            {/* User Type Selection */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+        {/* Main Card */}
+        <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+          {!userType ? (
+            /* User Type Selection */
+            <div className="p-8">
+              <h2 className="text-xl font-semibold text-gray-800 mb-6 text-center">
                 Select User Type
-              </label>
-              <div className="grid grid-cols-2 gap-3">
+              </h2>
+
+              <div className="space-y-4">
                 <button
-                  type="button"
-                  onClick={() => setUserType('student')}
-                  className={`flex items-center justify-center p-4 border-2 rounded-lg transition-all ${
-                    userType === 'student'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-300 hover:border-gray-400 text-gray-700'
-                  }`}
+                  onClick={() => handleUserTypeSelect('student')}
+                  className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 group"
                 >
-                  <GraduationCap className="h-6 w-6 mr-2" />
-                  <span className="font-medium">Student</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setUserType('staff')}
-                  className={`flex items-center justify-center p-4 border-2 rounded-lg transition-all ${
-                    userType === 'staff'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-300 hover:border-gray-400 text-gray-700'
-                  }`}
-                >
-                  <Users className="h-6 w-6 mr-2" />
-                  <span className="font-medium">Staff</span>
-                </button>
-              </div>
-            </div>
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-sm text-red-600">{error}</p>
-              </div>
-            )}
-
-            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email Address
-                </label>
-                <div className="mt-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    {...register('email', {
-                      required: 'Email is required',
-                      pattern: {
-                        value: /^\S+@\S+$/i,
-                        message: 'Invalid email address'
-                      }
-                    })}
-                    type="email"
-                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter your email address"
-                  />
-                </div>
-                {errors.email && (
-                  <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <div className="mt-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    {...register('password', {
-                      required: 'Password is required',
-                      minLength: {
-                        value: 6,
-                        message: 'Password must be at least 6 characters'
-                      }
-                    })}
-                    type={showPassword ? 'text' : 'password'}
-                    className="appearance-none block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter your password"
-                  />
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="text-gray-400 hover:text-gray-600 focus:outline-none"
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                </div>
-                {errors.password && (
-                  <p className="mt-2 text-sm text-red-600">{errors.password.message}</p>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                    Remember me
-                  </label>
-                </div>
-
-                <div className="text-sm">
-                  <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
-                    Forgot password?
-                  </Link>
-                </div>
-              </div>
-
-              <div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Signing in...
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4 group-hover:bg-green-200 transition-colors">
+                      <User className="w-6 h-6 text-green-600" />
                     </div>
-                  ) : (
-                    `Sign in as ${userType === 'student' ? 'Student' : 'Staff'}`
-                  )}
+                    <div className="text-left">
+                      <div className="font-semibold text-gray-800">Student Login</div>
+                      <div className="text-sm text-gray-600">Access student portal and services</div>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-blue-500" />
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleUserTypeSelect('staff')}
+                  className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 group"
+                >
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4 group-hover:bg-blue-200 transition-colors">
+                      <Users className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div className="text-left">
+                      <div className="font-semibold text-gray-800">Staff Login</div>
+                      <div className="text-sm text-gray-600">Access staff portal and administration</div>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-gray-400 ml-auto group-hover:text-blue-500" />
+                  </div>
                 </button>
               </div>
-
-              <div className="text-center">
-                <p className="text-sm text-gray-600">
-                  Need help?{' '}
-                  <Link to="/contact" className="font-medium text-blue-600 hover:text-blue-500">
-                    Contact Administrator
-                  </Link>
-                </p>
+            </div>
+          ) : (
+            /* Login Form */
+            <div>
+              {/* Header with user type */}
+              <div className={`p-4 ${userType === 'student' ? 'bg-green-600' : 'bg-blue-600'} text-white`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    {userType === 'student' ? (
+                      <User className="w-5 h-5 mr-2" />
+                    ) : (
+                      <Users className="w-5 h-5 mr-2" />
+                    )}
+                    <span className="font-semibold capitalize">{userType} Login</span>
+                  </div>
+                  <button
+                    onClick={handleBack}
+                    className="text-white hover:text-gray-200 text-sm underline"
+                  >
+                    Change User Type
+                  </button>
+                </div>
               </div>
-            </form>
 
-            {/* Government Footer */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <div className="text-center">
-                <p className="text-xs text-gray-500">
-                  © 2024 Department of Technical Education, Government of Rajasthan
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  All rights reserved | Designed for educational institutions
-                </p>
+              {/* Error Message */}
+              {error && (
+                <div className="p-4 bg-red-50 border-l-4 border-red-400">
+                  <div className="flex items-center">
+                    <AlertCircle className="w-5 h-5 text-red-400 mr-2" />
+                    <p className="text-red-700 text-sm">{error}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Login Form */}
+              <div className="p-8">
+                {/* API Status Info */}
+                <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>API Endpoint:</strong> {userType === 'student' ? 'https://sih-one-nu.vercel.app/v1/student/login' : 'https://sih-one-nu.vercel.app/v1/staff/login'}
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    If you get JSON errors, the API endpoint might not be configured properly or is returning HTML instead of JSON.
+                  </p>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={credentials.email}
+                        onChange={handleInputChange}
+                        onKeyPress={handleKeyPress}
+                        className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder={`Enter your ${userType} email`}
+                      />
+                      <Mail className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        id="password"
+                        name="password"
+                        value={credentials.password}
+                        onChange={handleInputChange}
+                        onKeyPress={handleKeyPress}
+                        className="w-full px-4 py-3 pl-10 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="Enter your password"
+                      />
+                      <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleLogin}
+                    disabled={isLoading}
+                    className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all duration-200 ${userType === 'student'
+                        ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+                        : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+                      } focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Signing In...
+                      </div>
+                    ) : (
+                      'Sign In'
+                    )}
+                  </button>
+                </div>
+
+                {/* Additional Links */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="text-center space-y-2">
+                    <a href="#" className="block text-sm text-blue-600 hover:text-blue-800">
+                      Forgot Password?
+                    </a>
+                    <a href="#" className="block text-sm text-blue-600 hover:text-blue-800">
+                      Need Help?
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-8 text-sm text-gray-600">
+          <p>Government of India | Educational Management System</p>
+          <p className="mt-1">Secure Login Portal v2.0</p>
         </div>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default LoginSystem;
