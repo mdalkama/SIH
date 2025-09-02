@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import indexRoute from "./routes/indexRoute.js";
 
@@ -18,9 +17,8 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(morgan("dev"));
 
 
-app.get("/", indexRoute);
+app.use("/api/v1", indexRoute);
 
 export default app;
