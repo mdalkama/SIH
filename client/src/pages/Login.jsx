@@ -305,16 +305,6 @@ const LoginSystem = () => {
 
               {/* Login Form */}
               <div className="p-8">
-                {/* API Status Info */}
-                <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>API Endpoint:</strong> {userType === 'student' ? 'https://sih-one-nu.vercel.app/v1/student/login' : 'https://sih-one-nu.vercel.app/v1/staff/login'}
-                  </p>
-                  <p className="text-xs text-blue-600 mt-1">
-                    If you get JSON errors, the API endpoint might not be configured properly or is returning HTML instead of JSON.
-                  </p>
-                </div>
-
                 <div className="space-y-6">
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
