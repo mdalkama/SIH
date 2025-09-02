@@ -1,4 +1,4 @@
-import staff from "../../models/staffModel.js";
+import Staff from "../../models/staffModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -11,12 +11,14 @@ export const registerStaff = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        const existing = await staff.findOne({ $or: [{ email }, { phone }, { staffId }] });
-        if (existing) return res.status(400).json({ message: "Email, Phone or Staff ID already exists" });
+        const existing = await Staff.findOne({ $or: [{ email }, { phone }, { staffId }] });
+        if (existing) {
+            return res.status(400).json({ message: "Email, Phone, or Staff ID already exists" });
+        }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const staff = await staff.create({
+        const staff = await Staff.create({
             ...req.body,
             password: hashedPassword
         });
@@ -24,7 +26,8 @@ export const registerStaff = async (req, res) => {
         res.status(201).json({ message: "Staff registered successfully", staff });
 
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("Register Error:", err);
+        res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -34,7 +37,7 @@ export const loginStaff = async (req, res) => {
         const { email, password } = req.body;
         if (!email || !password) return res.status(400).json({ message: "Email & password required" });
 
-        const staff = await staff.findOne({ email });
+        const staff = await Staff.findOne({ email });
         if (!staff) return res.status(400).json({ message: "Invalid credentials" });
 
         const isMatch = await bcrypt.compare(password, staff.password);
@@ -46,7 +49,7 @@ export const loginStaff = async (req, res) => {
         const token = jwt.sign(
             { id: staff._id, role: staff.role, staffId: staff.staffId },
             process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRES_IN }
+            { expiresIn: process.env.JWT_EXPIRES_IN || "8h" }
         );
 
         // Set HttpOnly cookie
@@ -60,13 +63,14 @@ export const loginStaff = async (req, res) => {
         staff.lastLogin = new Date();
         await staff.save();
 
-        res.json({
+        res.status(200).json({
             message: "Login successful",
             staff: { id: staff._id, name: staff.name, role: staff.role, staffId: staff.staffId }
         });
 
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("Login Error:", err);
+        res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -77,5 +81,5 @@ export const logoutStaff = (req, res) => {
         secure: process.env.NODE_ENV === "production",
         sameSite: "Strict"
     });
-    res.json({ message: "Logged out successfully" });
+    res.status(200).json({ message: "Logged out successfully" });
 };
