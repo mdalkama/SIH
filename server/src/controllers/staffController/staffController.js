@@ -65,7 +65,7 @@ export const loginStaff = async (req, res) => {
 
         res.status(200).json({
             message: "Login successful",
-            staff: { id: staff._id, name: staff.name, role: staff.role, staffId: staff.staffId }
+            user: { id: staff._id, name: staff.name, role: staff.role, staffId: staff.staffId }
         });
 
     } catch (err) {
