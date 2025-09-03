@@ -55,7 +55,7 @@ export const loginStaff = async (req, res) => {
         // Set HttpOnly cookie
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: true,
             sameSite: "none",
             maxAge: 8 * 60 * 60 * 1000 // 8 hours
         });
