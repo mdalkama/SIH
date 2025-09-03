@@ -87,12 +87,9 @@ export const logoutStaff = (req, res) => {
 
 export const getMyProfile = async (req, res) => {
     try {
-        console.log("getMyProfile", req.user);
         const staff = await Staff.findById(req.user.id);
         if (!staff) return res.status(404).json({ message: "Staff not found" });
-
         res.status(200).json({ message: "Profile retrieved successfully", staff });
-
     } catch (err) {
         console.error("Profile Error:", err);
         res.status(500).json({ message: "Server error" });
