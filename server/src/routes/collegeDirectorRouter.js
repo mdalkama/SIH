@@ -1,16 +1,39 @@
-import { Router } from "express";
-import { role } from "../middlewares/authMiddleware.js";
-import { addDean, addExamController, addLibrarian, addWarden, addFinanceBody, addAdmissionDepartment } from "../controllers/CollegeDirectorController/CollegeDirectorController.js";
+// routes/adminRoutes.js
+import express from "express";
+import { role } from "../middlewares/roleMiddleware.js";
+import { addStaffByRole } from "../controllers/staffController.js";
 
+const router = express.Router();
 
-const router = Router();
+// CollegeDirector can add these roles
+router.post("/add-dean", role(["CollegeDirector"]), (req, res, next) => {
+    req.role = "CollegeDean"; // set role dynamically
+    next();
+}, addStaffByRole);
 
-router.post("/add-dean", role(['CollegeDirector']), addDean);
-router.post("/add-exam-controller", role(['CollegeDirector']), addExamController);
-router.post("/add-librarian", role(['CollegeDirector']), addLibrarian);
-router.post("/add-warden", role(['CollegeDirector']), addWarden);
-router.post("/add-finance-body", role(['CollegeDirector']), addFinanceBody);
-router.post("/add-admission-department", role(['CollegeDirector']), addAdmissionDepartment);
+router.post("/add-exam-controller", role(["CollegeDirector"]), (req, res, next) => {
+    req.role = "CollegeExaminationBody";
+    next();
+}, addStaffByRole);
 
+router.post("/add-librarian", role(["CollegeDirector"]), (req, res, next) => {
+    req.role = "CollegeLibrarian";
+    next();
+}, addStaffByRole);
+
+router.post("/add-warden", role(["CollegeDirector"]), (req, res, next) => {
+    req.role = "CollegeHostelWarden";
+    next();
+}, addStaffByRole);
+
+router.post("/add-finance-body", role(["CollegeDirector"]), (req, res, next) => {
+    req.role = "CollegeFinanceBody";
+    next();
+}, addStaffByRole);
+
+router.post("/add-admission-department", role(["CollegeDirector"]), (req, res, next) => {
+    req.role = "CollegeAdmissionDepartment";
+    next();
+}, addStaffByRole);
 
 export default router;
