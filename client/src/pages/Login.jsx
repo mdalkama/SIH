@@ -1,53 +1,53 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+
+const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [userType, setUserType] = useState('student');
   const [error, setError] = useState('');
-  const [scaleLevel, setScaleLevel] = useState(1.0); // Default scale level
+  const [lastStatus, setLastStatus] = useState(null);
+  const [lastBackendMessage, setLastBackendMessage] = useState('');
   const { register, handleSubmit, formState: { errors } } = useForm();
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Apply scale to the body element for global scaling
-    document.body.style.transform = `scale(${scaleLevel})`;
-    document.body.style.transformOrigin = 'top center';
-    document.body.style.transition = 'transform 0.2s ease-in-out'; // Smooth transition
-  }, [scaleLevel]);
-
-  const increaseZoom = () => {
-    setScaleLevel(prev => Math.min(prev + 0.1, 1.5)); // Max scale 1.5 (150%)
-  };
-
-  const resetZoom = () => {
-    setScaleLevel(1.0); // Reset to 1.0 (100%)
-  };
-
-  const decreaseZoom = () => {
-    setScaleLevel(prev => Math.max(prev - 0.1, 0.7)); // Min scale 0.7 (70%)
+  const checkSession = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/${userType}/me`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+      const ct = res.headers.get('content-type') || '';
+      const data = ct.includes('application/json') ? await res.json() : null;
+      setLastStatus(res.status);
+      setLastBackendMessage(data?.message || (res.ok ? 'OK' : 'Not authorized'));
+      if (res.ok && userType === 'student') navigate('/student');
+      // for staff we don't auto-redirect here because we need role
+    } catch (e) {
+      setLastStatus(null);
+      setLastBackendMessage('Network error');
+    }
   };
 
   const onSubmit = async (data) => {
     setIsLoading(true);
     setError('');
+    setLastStatus(null);
+    setLastBackendMessage('');
 
     try {
       const result = await login(data.email, data.password, userType);
-      console.log('Login successful:', result);
 
-      // Role-based redirection
       if (userType === 'student') {
         navigate('/student');
       } else if (userType === 'staff') {
         const role = result.staff?.role;
-        console.log('Staff role detected:', role);
-
-        // Redirect based on staff role
         switch (role) {
           case 'UniversityAdmin':
             navigate('/staff/universityAdmin');
@@ -89,23 +89,25 @@ const Login = () => {
             navigate('/staff/collegeFinanceBody');
             break;
           default:
-            console.warn('Unknown role:', role);
-            navigate('/staff/collegeFaculty'); // Default fallback
+            navigate('/staff/collegeFaculty');
         }
       }
     } catch (error) {
+      console.error('Login failed:', error);
       let errorMessage = 'Login failed. Please try again.';
-
-      if (error.response?.status === 400) {
-        errorMessage = error.response.data?.message || 'Invalid email or password.';
-      } else if (error.response?.status === 403) {
+      if (error.status === 400) {
+        errorMessage = error.data?.message || error.message || 'Invalid email or password.';
+      } else if (error.status === 403) {
         errorMessage = 'Account is not active. Please contact administrator.';
-      } else if (error.response?.status === 500) {
+      } else if (error.status === 500) {
         errorMessage = 'Server error. Please try again later.';
-      } else if (error.message === 'Network Error') {
+      } else if (error.message && /network/i.test(error.message)) {
         errorMessage = 'Unable to connect to server. Please check your internet connection.';
+      } else if (typeof error.message === 'string') {
+        errorMessage = error.message;
       }
-
+      setLastStatus(error.status ?? null);
+      setLastBackendMessage(error.data?.message || error.message || '');
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -113,496 +115,145 @@ const Login = () => {
   };
 
   return (
-    <div style={{ 
-      height: '100vh', 
-      background: '#f0f2f5',
-      overflow: 'hidden',
-      position: 'relative',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
-      {/* Government Header */}
-      <header style={{
-        width: '100%',
-        background: '#1e3a8a',
-        color: 'white',
-        padding: '8px 0', /* Increased padding */
-        borderBottom: '2px solid #ff6b35' /* Thicker border */
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '0 25px' /* Increased horizontal padding */
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{
-              width: '70px', /* Further increased icon container size */
-              height: '70px',
-              marginRight: '20px', /* Increased margin */
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <img 
-                src="https://numberonejobsite.in/wp-content/uploads/2022/02/320px-Emblem_Rajasthan.png" 
-                alt="Rajasthan Government Logo" 
-                style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'invert(100%)' }}
-              />
+    <div style={{ height: '100vh', background: '#f5f7fb', display: 'flex', flexDirection: 'column' }}>
+      {/* Top dark header bar */}
+      <div style={{ background: '#0b2a44', padding: '14px 0' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '40px', height: '40px', background: 'white', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img src="https://numberonejobsite.in/wp-content/uploads/2022/02/320px-Emblem_Rajasthan.png" alt="Logo" style={{ width: '26px', filter: 'grayscale(100%)' }} />
             </div>
             <div>
-              <h1 style={{ fontSize: '22px', fontWeight: 'bold', margin: 0, color: 'white', fontFamily: 'Arial, sans-serif' }}>University ERP Management System</h1> {/* Increased font size */}
-              <p style={{ fontSize: '13px', margin: '2px 0 0 0' }}>Department of Technical Education, Rajasthan</p> {/* Increased font size */}
+              <div style={{ color: 'white', fontWeight: 700, fontSize: '16px' }}>Department of Technical Education, Rajasthan</div>
+              <div style={{ color: '#b9c6d3', fontSize: '12px' }}>ERP Management System</div>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', marginRight: '15px' }}> {/* Increased margin */}
-              <div style={{ fontSize: '13px', fontWeight: '500' }}>Secure Login Portal</div> {/* Larger font */}
-              <div style={{ fontSize: '11px' }}>Access your account securely</div> {/* Larger font */}
-            </div>
-            <button onClick={increaseZoom} style={{
-              background: '#0f2557',
-              color: 'white',
-              border: 'none',
-              borderRadius: '3px', /* Slightly more rounded */
-              padding: '3px 6px', /* Increased padding */
-              fontSize: '12px', /* Larger font */
-              marginLeft: '8px', /* Increased margin */
-              cursor: 'pointer'
-            }}>A+</button>
-            <button onClick={resetZoom} style={{
-              background: '#0f2557',
-              color: 'white',
-              border: 'none',
-              borderRadius: '3px',
-              padding: '3px 6px',
-              fontSize: '12px',
-              marginLeft: '8px',
-              cursor: 'pointer'
-            }}>A</button>
-            <button onClick={decreaseZoom} style={{
-              background: '#0f2557',
-              color: 'white',
-              border: 'none',
-              borderRadius: '3px',
-              padding: '3px 6px',
-              fontSize: '12px',
-              marginLeft: '8px',
-              cursor: 'pointer'
-            }}>A-</button>
-          </div>
+          <button style={{ background: '#0b2540', color: 'white', border: '1px solid #2b4360', borderRadius: '8px', padding: '8px 12px', fontSize: '12px', cursor: 'pointer' }}>Official Portal</button>
         </div>
-      </header>
+      </div>
 
-      {/* Login Form */}
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        justifyContent: 'center', 
-        alignItems: 'center',
-        flex: '1',
-        padding: '10px',
-        position: 'relative'
-      }}>
-        <div style={{ maxWidth: '340px', margin: '0 auto', width: '100%' }}>
-
-          <div style={{ 
-            background: 'white', 
-            padding: '0', 
-            borderRadius: '4px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            border: '1px solid #d1d5db',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              background: '#1e3a8a',
-              padding: '8px 15px',
-              marginBottom: '12px',
-              color: 'white',
-              fontWeight: 'bold',
-              fontSize: '13px',
-              textAlign: 'center'
-            }}>
-              Sign in to your account
-            </div>
-            
-            <div style={{ padding: '0 15px 15px' }}>
-            
-            {/* User Type Selection */}
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '12px', 
-                fontWeight: '600', 
-                color: '#374151',
-                marginBottom: '6px'
-              }}>
-                Select User Type
-              </label>
-              <div style={{ 
-                display: 'flex', 
-                borderBottom: '1px solid #d1d5db',
-                marginBottom: '5px',
-                position: 'relative',
-                overflow: 'hidden'
-              }}>
-                <button
-                  type="button"
-                  onClick={() => setUserType('student')}
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '6px 0',
-                    background: 'transparent',
-                    border: 'none',
-                    color: userType === 'student' ? '#1e3a8a' : '#374151',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    fontWeight: userType === 'student' ? '600' : '400',
-                    position: 'relative',
-                    zIndex: 1,
-                    fontSize: '12px'
-                  }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '5px' }}>
-                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
-                    <path fillRule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
-                  </svg>
-                  <span>Student</span>
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => setUserType('staff')}
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '6px 0',
-                    background: 'transparent',
-                    border: 'none',
-                    color: userType === 'staff' ? '#1e3a8a' : '#374151',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    fontWeight: userType === 'staff' ? '600' : '400',
-                    position: 'relative',
-                    zIndex: 1,
-                    fontSize: '12px'
-                  }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '5px' }}>
-                    <path d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v1.384c0 .853.61 1.574 1.457 1.75l.73.184c.116.029.23.048.346.06V14.5a1.5 1.5 0 0 0 1.5 1.5h10.5a1.5 1.5 0 0 0 1.5-1.5V7.828c.31-.053.6-.17.86-.342.2-.132.4-.364.4-.66V4.5A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1h-3ZM4.5 3V2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5V3zM14 4.5V6a.5.5 0 0 1-.5.5H.5A.5.5 0 0 1 0 6V4.5A.5.5 0 0 1 .5 4H14a.5.5 0 0 1 .5.5"/>
-                  </svg>
-                  <span>Staff</span>
-                </button>
-                
-                {/* Animated underline */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: userType === 'student' ? '0%' : '50%',
-                  width: '50%',
-                  height: '2px',
-                  background: '#1e3a8a',
-                  transition: 'left 0.2s ease-in-out'
-                }}></div>
+      {/* Center card */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+        <div style={{ width: '780px', background: 'white', borderRadius: '14px', boxShadow: '0 10px 30px rgba(16,24,40,0.08)', border: '1px solid #e5e7eb' }}>
+          {/* Card header */}
+          <div style={{ background: '#e9f1fb', borderTopLeftRadius: '14px', borderTopRightRadius: '14px', padding: '18px 24px', borderBottom: '1px solid #d7e3f8' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontWeight: 700, color: '#0b2540', fontSize: '20px' }}>Department of Technical Education,</div>
+                <div style={{ fontWeight: 700, color: '#0b2540', fontSize: '20px' }}>Rajasthan</div>
+                <div style={{ color: '#3b4a5a', fontSize: '12px', marginTop: '2px' }}>ERP Management System • Secure Login</div>
               </div>
+              <span style={{ background: '#1557a5', color: 'white', fontSize: '12px', padding: '6px 10px', borderRadius: '6px' }}>Government Portal</span>
+            </div>
+          </div>
+
+          <div style={{ padding: '18px 24px 24px' }}>
+            <div style={{ background: '#eef2f6', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '10px 12px', color: '#334155', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ width: '18px', height: '18px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#1f3b63' }}>i</span>
+              <span>Use institutional credentials to sign in. Do not share your password.</span>
+            </div>
+
+            {/* Role tabs */}
+            <div style={{ marginTop: '16px', display: 'flex', gap: '10px' }}>
+              <button type="button" onClick={() => setUserType('student')} style={{ flex: 1, border: '1px solid ' + (userType === 'student' ? '#1f4ea8' : '#e5e7eb'), background: userType === 'student' ? '#123b74' : 'white', color: userType === 'student' ? 'white' : '#344054', borderRadius: '8px', padding: '10px 0', fontWeight: 600, cursor: 'pointer' }}>Student</button>
+              <button type="button" onClick={() => setUserType('staff')} style={{ flex: 1, border: '1px solid ' + (userType === 'staff' ? '#1f4ea8' : '#e5e7eb'), background: userType === 'staff' ? '#123b74' : 'white', color: userType === 'staff' ? 'white' : '#344054', borderRadius: '8px', padding: '10px 0', fontWeight: 600, cursor: 'pointer' }}>Staff</button>
             </div>
 
             {error && (
-              <div style={{ 
-                marginBottom: '16px', 
-                padding: '12px', 
-                background: '#fef2f2',
-                border: '1px solid #fecaca',
-                borderRadius: '6px'
-              }}>
-                <p style={{ fontSize: '14px', color: '#dc2626', margin: 0 }}>{error}</p>
-              </div>
+              <div style={{ marginTop: '14px', padding: '12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', color: '#b91c1c', fontSize: '12px' }}>{error}</div>
             )}
 
-            <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <form onSubmit={handleSubmit(onSubmit)} style={{ marginTop: '14px' }}>
+              {/* Email */}
               <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '12px', 
-                  fontWeight: '600', 
-                  color: '#374151',
-                  marginBottom: '6px'
-                }}>
-                  Email Address
-                </label>
+                <label style={{ display: 'block', fontSize: '12px', color: '#475467', marginBottom: '6px', fontWeight: 600 }}>Email or Username</label>
                 <div style={{ position: 'relative' }}>
-                  <div style={{
-                    position: 'absolute',
-                    left: '10px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: '#4b5563',
-                    fontSize: '16px'
-                  }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm12 8.755-3.724-2.235L15 7.583V12a1 1 0 0 0 1-1V4.217l-7 4.2-7-4.2V12a1 1 0 0 0 1 1h12z"/>
-                    </svg>
-                  </div>
+                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#667085' }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16v16H4z" opacity="0"/><path d="m4 8 8 5 8-5"/><rect width="16" height="12" x="4" y="6" rx="2"/></svg>
+                  </span>
                   <input
-                    {...register('email', { 
-                      required: 'Email is required',
-                      pattern: {
-                        value: /^\S+@\S+$/i,
-                        message: 'Invalid email address'
-                      }
-                    })}
+                    {...register('email', { required: 'Email is required', pattern: { value: /\S+@\S+\.\S+/, message: 'Invalid email' } })}
                     type="email"
-                    placeholder="name@university.edu"
-                    style={{
-                      width: '100%',
-                      paddingLeft: '30px',
-                      paddingRight: '10px',
-                      paddingTop: '7px',
-                      paddingBottom: '7px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '3px',
-                      fontSize: '11px',
-                      outline: 'none',
-                      transition: 'all 0.2s ease',
-                      backgroundColor: '#f9fafb'
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = '#1e3a8a';
-                      e.target.style.boxShadow = '0 0 0 3px rgba(30, 58, 138, 0.1)';
-                      e.target.style.backgroundColor = 'white';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#d1d5db';
-                      e.target.style.boxShadow = 'none';
-                      e.target.style.backgroundColor = '#f9fafb';
-                    }}
+                    placeholder="name@example.com"
+                    style={{ width: '100%', padding: '12px 12px 12px 40px', border: '1px solid #d0d5dd', borderRadius: '10px', fontSize: '14px', outline: 'none' }}
+                    onFocus={(e) => { e.target.style.borderColor = '#1f4ea8'; e.target.style.boxShadow = '0 0 0 3px rgba(31,78,168,0.15)'; }}
+                    onBlur={(e) => { e.target.style.borderColor = '#d0d5dd'; e.target.style.boxShadow = 'none'; }}
                   />
                 </div>
-                {errors.email && (
-                  <p style={{ marginTop: '6px', fontSize: '13px', color: '#dc2626' }}>
-                    {errors.email.message}
-                  </p>
-                )}
+                {errors.email && (<div style={{ color: '#b91c1c', fontSize: '12px', marginTop: '6px' }}>{errors.email.message}</div>)}
               </div>
 
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '12px', 
-                  fontWeight: '600', 
-                  color: '#374151',
-                  marginBottom: '6px'
-                }}>
-                  Password
-                </label>
+              {/* Password */}
+              <div style={{ marginTop: '12px' }}>
+                <label style={{ display: 'block', fontSize: '12px', color: '#475467', marginBottom: '6px', fontWeight: 600 }}>Password</label>
                 <div style={{ position: 'relative' }}>
-                  <div style={{
-                    position: 'absolute',
-                    left: '10px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: '#4b5563',
-                    fontSize: '16px'
-                  }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 1 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2M5 9a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z"/>
-                    </svg>
-                  </div>
+                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#667085' }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  </span>
                   <input
-                    {...register('password', { 
-                      required: 'Password is required',
-                      minLength: {
-                        value: 6,
-                        message: 'Password must be at least 6 characters'
-                      }
-                    })}
+                    {...register('password', { required: 'Password is required', minLength: { value: 6, message: 'Minimum 6 characters' } })}
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
-                    style={{
-                      width: '100%',
-                      paddingLeft: '30px',
-                      paddingRight: '30px',
-                      paddingTop: '8px',
-                      paddingBottom: '8px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '3px',
-                      fontSize: '12px',
-                      outline: 'none',
-                      transition: 'all 0.2s ease',
-                      backgroundColor: '#f0f4f8'
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = '#1e3a8a';
-                      e.target.style.boxShadow = '0 0 0 3px rgba(30, 58, 138, 0.1)';
-                      e.target.style.backgroundColor = 'white';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#d1d5db';
-                      e.target.style.boxShadow = 'none';
-                      e.target.style.backgroundColor = '#f9fafb';
-                    }}
+                    style={{ width: '100%', padding: '12px 40px 12px 40px', border: '1px solid #d0d5dd', borderRadius: '10px', fontSize: '14px', outline: 'none' }}
+                    onFocus={(e) => { e.target.style.borderColor = '#1f4ea8'; e.target.style.boxShadow = '0 0 0 3px rgba(31,78,168,0.15)'; }}
+                    onBlur={(e) => { e.target.style.borderColor = '#d0d5dd'; e.target.style.boxShadow = 'none'; }}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      color: '#6b7280',
-                      cursor: 'pointer',
-                      fontSize: '16px',
-                      transition: 'all 0.3s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: '20px',
-                      height: '20px',
-                      borderRadius: '4px',
-                      padding: '2px'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = '#f3f4f6';
-                      e.target.style.color = '#1e3a8a';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = 'transparent';
-                      e.target.style.color = '#6b7280';
-                    }}
-                  >
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: '#667085', cursor: 'pointer' }}>
                     {showPassword ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
-                        <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
-                      </svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 2l20 20"/><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A9.94 9.94 0 0 1 12 5c7 0 10 7 10 7a13.07 13.07 0 0 1-5.06 5.95"/><path d="M6.61 6.61A13.07 13.07 0 0 0 2 12s3 7 10 7a9.94 9.94 0 0 0 3.27-.55"/></svg>
                     ) : (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.027 7.027 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A5.944 5.944 0 0 1 14.77 8c0 .346-.034.684-.101 1.016l.77.771A7.027 7.027 0 0 0 16 8c0-.346-.034-.684-.101-1.016l-.77-.771zm-2.127-2.126a5.944 5.944 0 0 0-1.016-.101l.77-.771A7.027 7.027 0 0 1 12 8c0 .346.034.684.101 1.016l-.77.771zM8 12.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7zm0-5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
-                        <path d="M3.654 4.346l-.77-.771A7.027 7.027 0 0 0 0 8c0 .346.034.684.101 1.016l.77-.771A5.944 5.944 0 0 1 0 8c0-.346.034-.684.101-1.016l.77.771zm2.127 2.127l-.77-.771A5.944 5.944 0 0 0 4 8c0 .346.034.684.101 1.016l.77-.771zm8.218 8.218l-1.735-1.735a.5.5 0 0 0-.708.708l1.735 1.735a.5.5 0 0 0 .708-.708zm-9.9-9.9l-1.735-1.735a.5.5 0 0 0-.708.708l1.735 1.735a.5.5 0 0 0 .708-.708z"/>
-                      </svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
                     )}
                   </button>
                 </div>
-                {errors.password && (
-                  <p style={{ marginTop: '6px', fontSize: '13px', color: '#dc2626' }}>
-                    {errors.password.message}
-                  </p>
-                )}
+                {errors.password && (<div style={{ color: '#b91c1c', fontSize: '12px', marginTop: '6px' }}>{errors.password.message}</div>)}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '5px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', fontSize: '10px', color: '#4b5563' }}>
-                  <input
-                    type="checkbox"
-                    style={{ marginRight: '5px', accentColor: '#1e3a8a', width: '12px', height: '12px' }}
-                  />
-                  Remember me
-                </label>
-                <a href="#" style={{ fontSize: '10px', color: '#1e3a8a', textDecoration: 'none', fontWeight: '500', transition: 'all 0.2s ease' }}>
-                  Forgot password?
-                </a>
+              {/* Helpers row */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+                <a href="#" style={{ color: '#1557a5', fontSize: '12px', textDecoration: 'underline' }}>Forgot password?</a>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {/* <span style={{ fontSize: '12px', background: '#eef2f6', border: '1px solid #d0d5dd', padding: '6px 10px', borderRadius: '8px', color: '#344054' }}>UGC</span>
+                  <span style={{ fontSize: '12px', background: '#eef2f6', border: '1px solid #d0d5dd', padding: '6px 10px', borderRadius: '8px', color: '#344054' }}>AICTE</span> */}
+                </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                style={{
-                  width: '100%',
-                  padding: '7px',
-                  background: isLoading ? '#9ca3af' : '#1e3a8a',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '3px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.2s ease',
-                  marginTop: '12px',
-                  boxShadow: '0 1px 1px rgba(0,0,0,0.1)'
-                }}
-                onMouseOver={(e) => {
-                  if (!isLoading) {
-                    e.target.style.background = '#1e40af';
-                    e.target.style.boxShadow = '0 4px 6px rgba(0,0,0,0.15)';
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (!isLoading) {
-                    e.target.style.background = '#1e3a8a';
-                    e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-                  }
-                }}
-              >
-                {isLoading ? (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{
-                      width: '16px',
-                      height: '16px',
-                      border: '2px solid transparent',
-                      borderTop: '2px solid white',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite',
-                      marginRight: '8px'
-                    }}></div>
-                    Signing in...
-                  </div>
-                ) : (
-                  `Sign in as ${userType === 'student' ? 'Student' : 'Staff'}`
-                )}
+              <button type="submit" disabled={isLoading} style={{ marginTop: '16px', width: '100%', background: '#0f3f79', color: 'white', border: 'none', borderRadius: '10px', padding: '12px', fontWeight: 700, cursor: isLoading ? 'not-allowed' : 'pointer' }}>
+                {isLoading ? 'Signing in…' : 'Login'}
               </button>
 
+              {/* <div style={{ marginTop: '10px', textAlign: 'right' }}>
+                <button type="button" onClick={checkSession} style={{ background: '#eef2f6', border: '1px solid #d0d5dd', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', cursor: 'pointer', color: '#0b2540' }}>Check session</button>
+              </div> */}
             </form>
 
-            </div>
+            {/* Dev Debug Panel (visible only when there is an error or status) */}
+            {(lastStatus || lastBackendMessage) && (
+              <div style={{ marginTop: '12px', fontSize: '12px', color: '#334155' }}>
+                <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '8px', padding: '8px 10px' }}>
+                  {lastStatus ? <div><strong>Status:</strong> {lastStatus}</div> : null}
+                  {lastBackendMessage ? (<div><strong>Backend:</strong> {lastBackendMessage}</div>) : null}
+                  <div><strong>User Type:</strong> {userType}</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer style={{
-        width: '100%',
-        background: '#1e3a8a',
-        color: 'white',
-        padding: '8px 0', /* Increased padding */
-        fontSize: '11px', /* Larger font */
-        textAlign: 'center',
-        borderTop: '2px solid #ff6b35', /* Thicker border */
-        marginTop: 'auto'
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 25px' }}> {/* Increased horizontal padding */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div>
-              <p style={{ margin: 0 }}>Contact: support@university.edu • +91 98765 43210</p>
-            </div>
-            <div>
-              <p style={{ margin: 0 }}>&copy; {new Date().getFullYear()} All Rights Reserved.</p> {/* Updated footer text */}
-            </div>
+      {/* Bottom dark footer bar */}
+      <div style={{ background: '#0b2a44', padding: '10px 0' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#b9c6d3', fontSize: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ width: '16px', height: '16px' }}>🌐</span>
+            <span>Department of Technical Education, Rajasthan</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ width: '16px', height: '16px' }}>✉️</span>
+            <span>support@dte.rajasthan.gov.in</span>
           </div>
         </div>
-      </footer>
-
-      {/* CSS Animation */}
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(5px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
+      </div>
     </div>
   );
 };

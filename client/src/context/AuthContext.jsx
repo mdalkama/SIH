@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -11,77 +10,87 @@ export const useAuth = () => {
   return context;
 };
 
-// API Configuration
-const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1';
+const AuthProvider = ({ children }) => {
+  const API_BASE_URL = '/api/v1';
 
-// Create axios instance
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+  const http = async (method, path, body) => {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const contentType = res.headers.get('content-type') || '';
+    const data = contentType.includes('application/json') ? await res.json() : null;
+    if (!res.ok) {
+      const message = data?.message || `Request failed: ${res.status}`;
+      const err = new Error(message);
+      err.status = res.status;
+      err.data = data;
+      throw err;
+    }
+    return data;
+  };
 
-export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
   const checkAuthStatus = async () => {
+    setLoading(true);
     try {
-      // Try student protected route first
-      const studentResponse = await api.get('/student/protected');
-      setUser({ userType: 'student' });
+      const student = await http('GET', '/student/me');
+      setUser({ ...student, userType: 'student', role: 'student' });
       setIsAuthenticated(true);
-    } catch (studentError) {
-      try {
-        // Try staff protected route
-        const staffResponse = await api.get('/staff/protected');
-        setUser({ userType: 'staff' });
-        setIsAuthenticated(true);
-      } catch (staffError) {
-        setUser(null);
-        setIsAuthenticated(false);
-      }
+      return;
+    } catch {}
+    try {
+      const staffResp = await http('GET', '/staff/me');
+      const staff = staffResp?.staff || staffResp;
+      setUser({ ...staff, userType: 'staff', role: staff?.role });
+      setIsAuthenticated(true);
+    } catch {
+      setUser(null);
+      setIsAuthenticated(false);
     } finally {
       setLoading(false);
     }
   };
 
-  const login = async (email, password, userType) => {
-    try {
-      setLoading(true);
-      console.log(`Attempting ${userType} login for:`, email);
+  useEffect(() => {
+    (async () => { await checkAuthStatus(); })();
+  }, []);
 
-      let response;
+  const login = async (email, password, userType) => {
+    setLoading(true);
+    try {
+      const normalizedEmail = String(email || '').trim().toLowerCase();
+      const payload = { email: normalizedEmail, password: String(password || '') };
+
       if (userType === 'student') {
-        response = await api.post('/student/login', { email, password });
-        setUser({
-          ...response.data.student,
-          userType: 'student'
-        });
-      } else if (userType === 'staff') {
-        response = await api.post('/staff/login', { email, password });
-        setUser({
-          ...response.data.staff,
-          userType: 'staff',
-          role: response.data.staff.role // Important: Get role from backend
-        });
+        await http('POST', '/student/login', payload);
+        const me = await http('GET', '/student/me');
+        setUser({ ...me, userType: 'student', role: 'student' });
+        setIsAuthenticated(true);
+        return { student: { ...me, role: 'student' } };
       }
 
-      setIsAuthenticated(true);
-      console.log('Login successful, user data:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('Login error:', error);
+      if (userType === 'staff') {
+        const loginRes = await http('POST', '/staff/login', payload);
+        const meRes = await http('GET', '/staff/me');
+        const staff = meRes?.staff || meRes;
+        const role = staff?.role || loginRes?.staff?.role;
+        const merged = { ...staff, role };
+        setUser({ ...merged, userType: 'staff' });
+        setIsAuthenticated(true);
+        return { staff: merged };
+      }
+
+      throw new Error('Unknown user type');
+    } catch (e) {
       setUser(null);
       setIsAuthenticated(false);
-      throw error;
+      throw e;
     } finally {
       setLoading(false);
     }
@@ -90,12 +99,10 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       if (user?.userType === 'student') {
-        await api.post('/student/logout');
+        await http('POST', '/student/logout');
       } else if (user?.userType === 'staff') {
-        await api.post('/staff/logout');
+        await http('POST', '/staff/logout');
       }
-    } catch (error) {
-      console.error('Logout error:', error);
     } finally {
       setUser(null);
       setIsAuthenticated(false);
@@ -117,3 +124,6 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+export { AuthProvider };
+export default AuthProvider;
