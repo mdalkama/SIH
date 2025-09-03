@@ -1,8 +1,10 @@
 import React from 'react'
 import {useUser} from '../context/UserContext';
+import { useNavigate } from 'react-router-dom';
 
 const Mylogin = () => {
     const {setUser} = useUser();
+    const navigate = useNavigate();
 
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
@@ -24,6 +26,7 @@ const Mylogin = () => {
         if(data){
             setUser(data.user);
             console.log(data);
+            navigate('/student');
         }
     }
     return (
