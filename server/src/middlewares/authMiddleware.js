@@ -8,6 +8,8 @@ export const role = (allowedRoles) => {
 
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             req.user = decoded;
+            console.log(req.user);
+
 
             if (!allowedRoles.includes(req.user.role))
                 return res.status(403).json({ message: "Access denied: You don't have permission" });

@@ -71,3 +71,12 @@ export const logoutStudent = (req, res) => {
     });
     res.json({ message: "Logged out successfully" });
 };
+
+export const getMyProfile = async (req, res) => {
+    try {
+        const student = await Student.findById(req.user.id);
+        res.status(200).json(student);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
