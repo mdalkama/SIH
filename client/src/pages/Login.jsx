@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1';
+const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/student/login';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
