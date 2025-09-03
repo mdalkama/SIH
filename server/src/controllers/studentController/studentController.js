@@ -53,9 +53,9 @@ export const loginStudent = async (req, res) => {
             maxAge: 8 * 60 * 60 * 1000 // 8 hours
         });
 
-        res.json({
+        res.status(200).json({
             message: "Login successful",
-            student: { id: student._id, name: student.name, role: student.role }
+            student: { id: student._id, role: student.role , registrationNumber: student.registrationNumber}
         });
     } catch (err) {
         res.status(500).json({ message: err.message });

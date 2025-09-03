@@ -1,6 +1,9 @@
 import React from 'react'
+import {useUser} from '../context/UserContext';
 
 const Mylogin = () => {
+    const {setUser} = useUser();
+
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
 
@@ -12,10 +15,16 @@ const Mylogin = () => {
             body: JSON.stringify({ email, password }),
         });
 
+        if(!res.ok){
+            console.log("error");
+            return;
+        }
+
         const data = await res.json();
-        console.log(data);
-
-
+        if(data){
+            setUser(data.user);
+            console.log(data);
+        }
     }
     return (
         <div>

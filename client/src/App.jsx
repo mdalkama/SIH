@@ -35,7 +35,7 @@ function App() {
   return (
     <Router>
       <UserProvider>
-        <StudentDashboard />
+        <Login />
       </UserProvider>
     </Router>
   );

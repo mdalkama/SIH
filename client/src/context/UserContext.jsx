@@ -18,7 +18,7 @@ export const UserProvider = ({ children }) => {
                 });
                 const data = await res.json();
                 if (data) {
-                    setUser(data);
+                    setUser(data.user);
                 }
             } catch (err) {
                 console.error("Error fetching logged-in user:", err);
