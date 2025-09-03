@@ -1,7 +1,7 @@
 // routes/adminRoutes.js
 import express from "express";
-import { role } from "../middlewares/roleMiddleware.js";
-import { addStaffByRole } from "../controllers/staffController.js";
+import { role } from "../middlewares/authMiddleware.js";
+import { addStaffByRole } from "../controllers/CollegeDirectorController/CollegeDirectorController.js";
 
 const router = express.Router();
 
