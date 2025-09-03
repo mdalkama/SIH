@@ -49,7 +49,8 @@ const staffSchema = new Schema({
             "CollegeDirector", 
             "CollegeDean", 
             "CollegeHOD", 
-            "CollegeFaculty", 
+            "CollegeFaculty",
+            "CollegeExaminationBody",
             "CollegeHostelWarden", 
             "CollegeLibrarian", 
             "CollegeFinanceBody"

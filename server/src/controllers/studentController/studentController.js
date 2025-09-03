@@ -46,12 +46,7 @@ export const loginStudent = async (req, res) => {
         );
 
         // Set HttpOnly cookie
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "Strict",
-            maxAge: 8 * 60 * 60 * 1000 // 8 hours
-        });
+        res.cookie("token", token);
 
         res.json({
             message: "Login successful",
