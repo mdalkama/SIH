@@ -46,7 +46,12 @@ export const loginStudent = async (req, res) => {
         );
 
         // Set HttpOnly cookie
-        res.cookie("token", token);
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+            maxAge: 8 * 60 * 60 * 1000 // 8 hours
+        });
 
         res.json({
             message: "Login successful",
