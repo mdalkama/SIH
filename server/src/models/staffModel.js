@@ -23,7 +23,9 @@ const staffSchema = new Schema(
         },
 
         // 🔹 Employment Info
-        collegeId: { type: String }, // link to college
+        collegeCode: { type: String }, // link to college
+        collegeId: { type: Schema.Types.ObjectId, ref: "College" },
+
         department: { type: String }, // optional for non-faculty roles
         designation: { type: String }, // Professor, Dean, Warden, etc.
         joiningDate: { type: Date },
@@ -45,6 +47,7 @@ const staffSchema = new Schema(
                 "UniversityRegistrar",
                 "UniversityExaminationBody",
                 "UniversityFinanceBody",
+                "UniversityExamCellStaff",
                 "CollegeAdmin",
                 "CollegeDirector",
                 "CollegeDean",

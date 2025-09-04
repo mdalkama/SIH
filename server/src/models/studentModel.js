@@ -32,7 +32,8 @@ const studentSchema = new Schema({
     // academic details
     registrationNumber: { type: String,  unique: true },
     rollNumber: { type: String,  unique: true },
-    college: { type: String, },
+    collegeCode: { type: String, },
+    collegeId: { type: Schema.Types.ObjectId, ref: "College" },
     degree: { type: String,  },
     branch: { type: String, default: "" },
     specialization: { type: String, default: "" },

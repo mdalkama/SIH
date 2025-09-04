@@ -5,13 +5,16 @@ import mongoose from "mongoose";
 
 export const addStaffByRole = async (req, res) => {
     try {
-        const directorId = req.user.id;
-        const director = await Staff.findById(directorId).select("collegeId");
-        if (!director) return res.status(404).json({ message: "Director not found" });
+        const Id = req.user.id;
+        const admin = await Staff.findById(Id).select("collegeCode");
+        if (!admin) return res.status(404).json({ message: "User not found" });
 
-        const { name, email, password, staffId, gender, salary, phone } = req.body;
+        const { name, email, password, staffId, gender, salary, phone, department = "", subjects = [] } = req.body;
         if (!name || !email || !password || !staffId || !gender || !salary || !phone) {
             return res.status(400).json({ message: "Please provide all required fields" });
+        }
+        if(!admin.collegeCode){
+            res.status(400).json({ message: "collegeCode is required" });
         }
 
         // Check duplicates
@@ -24,20 +27,33 @@ export const addStaffByRole = async (req, res) => {
 
         const role = req.role; // <-- dynamically set in route
 
-        const newStaff = new Staff({
+        const staffData = {
             name,
             email,
             staffId,
             phone,
             password: hashedPassword,
             role,
-            collegeId: director.collegeId,
+            collegeCode: admin.collegeCode,
             salary,
             gender,
-            createdBy: new mongoose.Types.ObjectId(directorId),
-            updatedBy: new mongoose.Types.ObjectId(directorId)
-        });
+            createdBy: new mongoose.Types.ObjectId(admin),
+            updatedBy: new mongoose.Types.ObjectId(admin),
+        };
 
+        if (role === "CollegeHOD"){
+            if(department){
+            staffData.department = department;
+        }else{
+            res.status(400).json({ message: "Department is required for HOD" });
+        }
+        }
+        // Only faculty / HOD get subjects
+        if (role === "CollegeFaculty" || role === "CollegeHOD") {
+            staffData.subjects = subjects;
+        }
+
+        const newStaff = new Staff(staffData);
         await newStaff.save();
 
         const result = newStaff.toObject();

@@ -16,8 +16,9 @@ const collegeSchema = new Schema({
     establishedYear: { type: Number },
     accreditation: { type: String, default: "" },
     coursesOffered: [{
+        courseId: { type: Schema.Types.ObjectId, ref: "Course" },
         code: { type: String, required: true },
-        name: { type: String, required: true }
+        courseFees: { type: Number, sparse:true, default: 0 }
     }], // array of course codes and names
     staff: [{ type: Schema.Types.ObjectId, ref: "CollegeStaff" }],
     students: [{ type: Schema.Types.ObjectId, ref: "Student" }],

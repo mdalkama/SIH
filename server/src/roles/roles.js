@@ -3,6 +3,7 @@ export const staffRoles = [
     'UniversityGoverningBody',
     'UniversityRegistrar',
     'UniversityExaminationBody',
+    'UniversityExamCellStaff',
     'CollegeAdmin',
     'CollegeDirector',
     'CollegeDean',
