@@ -5,6 +5,9 @@ import staffRoute from "./staffRoute.js";
 import { getRole } from "../controllers/common/commonController.js";
 import { staffRoles } from "../roles/roles.js";
 import collegeDirectorRouter from "../routes/collegeDirectorRouter.js";
+import courseRoute from "../routes/courseRoute.js";
+import subjectRoute from "../routes/subjectRoute.js";
+
 
 
 
@@ -16,6 +19,9 @@ router.get("/me", role(['student', ...staffRoles]), getRole);
 router.use('/staff', staffRoute)
 router.use("/student", studentRoutes);
 router.use("/director", collegeDirectorRouter);
+router.use("/course",role(['CollegeDirector']), courseRoute)
+router.use("/subject", role(['CollegeDirector']), subjectRoute)
+
 
 
 
