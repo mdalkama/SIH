@@ -12,7 +12,6 @@ export const createCourse = async (req, res) => {
         if (!courseId || !degree || !totalSemester) {
             return res.status(400).json({ message: "courseId, degree and totalSemester are required" });
         }
-
         const existing = await Course.findOne({ courseId });
         if (existing) {
             return res.status(400).json({ message: "Course ID already exists" });
