@@ -18,6 +18,8 @@ const Mylogin = () => {
     const [forgotLoading, setForgotLoading] = useState(false);
     const [forgotSuccess, setForgotSuccess] = useState(false);
 
+
+    // Handle login
     const handleLogin = async () => {
         setIsLoading(true);
         setError("");
@@ -34,7 +36,7 @@ const Mylogin = () => {
                 setIsLoading(false);
                 return;
             }
-
+            // redirect according to role 
             if (data) {
                 setUser(data.user);
                 console.log(data);
@@ -135,7 +137,7 @@ const Mylogin = () => {
             handleForgotPassword();
         }
     };
-
+    // forget password
     if (showForgotPassword) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -218,6 +220,7 @@ const Mylogin = () => {
         );
     }
 
+    // login form
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="flex items-center justify-center py-12 px-4">

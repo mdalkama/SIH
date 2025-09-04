@@ -8,6 +8,9 @@ import collegeManageStaffRoute from "../routes/collegeManageStaffRoute.js";
 import courseRoute from "../routes/courseRoute.js";
 import subjectRoute from "../routes/subjectRoute.js";
 import universityManageStaffRoute from "../routes/universityManageStaffRoute.js";
+import {getMyProfile} from "../controllers/studentController/studentController.js";
+import {getStaffProfile} from "../controllers/staffController/staffController.js";
+
 
 
 
@@ -25,6 +28,20 @@ router.use("/add-college-staff", collegeManageStaffRoute);
 router.use("/course",role(['UniversityGoverningBody']), courseRoute)
 router.use("/subject", role(['UniversityGoverningBody']), subjectRoute)
 router.use("/add-university-Staff", universityManageStaffRoute)
+router.get("/my-profile", role(['student', ...staffRoles]), (req, res) => {
+    try {
+        if(req.user.role === 'student'){
+            // student profile controller
+            return getMyProfile(req, res);
+        } else {
+            // staff profile controller
+            return getStaffProfile(req, res);
+        }
+    } catch (error) {
+        console.error("Error fetching profile:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
 
 
 
