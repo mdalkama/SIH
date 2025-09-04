@@ -340,7 +340,7 @@ const Mylogin = () => {
                                             Authenticating...
                                         </>
                                     ) : (
-                                        "LOGIN TO PORTAL"
+                                        `LOGIN AS ${role.toUpperCase()}`
                                     )}
                                 </button>
 
