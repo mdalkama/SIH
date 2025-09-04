@@ -1,5 +1,5 @@
 // controllers/courseController.js
-import Course from "../../models/CourseModel.js";
+import Course from "../../models/courseModel.js";
 
 
 // @desc    Create new course
