@@ -28,9 +28,7 @@ const Mylogin = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
             });
-
             const data = await res.json();
-
             if (!res.ok) {
                 setError(data.message || "Invalid credentials. Please try again.");
                 setIsLoading(false);
@@ -321,7 +319,11 @@ const Mylogin = () => {
                                     </div>
                                     <button
                                         type="button"
-                                        onClick={() => setShowForgotPassword(true)}
+                                        onClick={() => {
+                                            setShowForgotPassword(true)
+                                            setError("")
+                                        }
+                                        }
                                         className="text-sm text-blue-800 hover:text-blue-900 font-medium transition-colors"
                                     >
                                         Forgot Password?
