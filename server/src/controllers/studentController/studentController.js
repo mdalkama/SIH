@@ -47,7 +47,10 @@ export const loginStudent = async (req, res) => {
 
         // JWT
         const token = jwt.sign(
-            { id: student._id, role: student.role, registrationNumber: student.registrationNumber },
+            {
+                message: "Login successful",
+                user: { id: student._id, role: student.role, registrationNumber: student.registrationNumber }
+            },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN }
         );
