@@ -19,8 +19,8 @@ router.get("/me", role(['student', ...staffRoles]), getRole);
 router.use('/staff', staffRoute)
 router.use("/student", studentRoutes);
 router.use("/director", collegeDirectorRouter);
-router.use("/course",role(['CollegeDirector']), courseRoute)
-router.use("/subject", role(['CollegeDirector']), subjectRoute)
+router.use("/course",role(['UniversityGoverningBody']), courseRoute)
+router.use("/subject", role(['UniversityGoverningBody']), subjectRoute)
 
 
 
