@@ -25,8 +25,8 @@ router.get("/me", role(['student', ...staffRoles]), getRole);
 router.use('/staff', staffRoute)
 router.use("/student", studentRoutes);
 router.use("/add-college-staff", collegeManageStaffRoute);
-router.use("/course",role(['UniversityGoverningBody']), courseRoute)
-router.use("/subject", role(['UniversityGoverningBody']), subjectRoute)
+router.use("/course",role(['UniversityAdmin']), courseRoute)
+router.use("/subject", role(['UniversityAdmin']), subjectRoute)
 router.use("/add-university-Staff", universityManageStaffRoute)
 router.get("/my-profile", role(['student', ...staffRoles]), (req, res) => {
     try {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Outlet } from "react-router-dom";
 import getRoleDisplayName from "../../utils/roleUtils.js"
 import menuConfig from "../../utils/menuConfigUtils.js";
 import StudentDashboard from "./components/StudentDashboard.jsx";
@@ -32,7 +32,6 @@ const Navbar = () => {
     const [activeMenu, setActiveMenu] = useState("dashboard");
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const role = "CollegeAdmissionDepartment";
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -81,7 +80,7 @@ const Navbar = () => {
         }
     };
 
-    const navigationItems = menuConfig[role] || [];
+    const navigationItems = menuConfig[user?.role || "student"] || [];
 
     if (loading) {
         return <div>Loading...</div>;
@@ -110,12 +109,16 @@ const Navbar = () => {
                             </div>
                         </div>
                     </div>
+
                     {navigationItems.map((item) => {
                         const Icon = item.icon;
                         return (
                             <button
                                 key={item.id}
-                                onClick={() => setActiveMenu(item.id)}
+                                onClick={() => {
+                                    setActiveMenu(item.id)
+                                    navigate(item.path);
+                                }}
                                 className={`w-full cursor-pointer flex items-center px-3 py-2 text-sm font-medium rounded-full transition-colors
                                     ${activeMenu === item.id
                                         ? "bg-[#2B386A] text-[#DEE1E5]"
@@ -128,6 +131,7 @@ const Navbar = () => {
                         );
                     })}
                 </div>
+
                 <div className="flex flex-col justify-between gap-4 bg-[#1D2646] h-[120px] p-4">
                     <button
                         onClick={handleLogout}
@@ -170,10 +174,9 @@ const Navbar = () => {
                     </div>
                 </nav>
 
-
                 {/* component will render */}
                 <div className="h-[calc(100vh-80px)] w-full overflow-y-scroll bg-white p-6">
-                    <StudentDashboard user = { user }/>
+                    <Outlet />
                 </div>
             </div>
         </div>

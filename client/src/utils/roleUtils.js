@@ -1,19 +1,24 @@
-    const getRoleDisplayName = (roleKey) => {
-        const roleNames = {
-            student: "Student",
-            UniversityAdmin: "University Admin",
-            UniversityGoverningBody: "University Governing",
-            CollegeAdmin: "College Admin",
-            CollegeFaculty: "Faculty",
-            CollegeHOD: "HOD",
-            CollegeDean: "Dean",
-            CollegeDirector: "Director",
-            CollegeLibrarian: "Librarian",
-            CollegeHostelWarden: "Hostel Warden",
-            CollegeFinanceBody: "Finance Officer",
-            CollegeExaminationBody: "Exam Officer"
-        };
-        return roleNames[roleKey] || roleKey;
+const getRoleDisplayName = (roleKey) => {
+    const roleNames = {
+        Student: "Student",
+        UniversityAdmin: "University Admin",
+        UniversityGoverningBody: "University Governing",
+        UniversityRegistrar: "University Registrar",
+        UniversityExamBody: "University Exam Body",
+        UniversityExamCell: "University Exam Cell",
+        CollegeAdmin: "College Admin",
+        CollegeDirector: "College Director",
+        CollegeDean: "College Dean",
+        CollegeHOD: "College HOD",
+        CollegeFaculty: "College Faculty",
+        CollegeWarden: "College Warden",
+        CollegeLibrarian: "College Librarian",
+        CollegeAdmission: "College Admission",
+        CollegeFinance: "College Finance",
+        CollegeExamBody: "College Exam Body"
     };
 
-    export default getRoleDisplayName;
+    return roleNames[roleKey] || roleKey;
+};
+
+export default getRoleDisplayName;

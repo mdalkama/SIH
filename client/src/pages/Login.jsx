@@ -42,46 +42,46 @@ const Mylogin = () => {
                 console.log(data);
                 switch (data.user.role) {
                     case 'student':
-                        navigate('/student');
+                        navigate('/student/dashboard');
                         break;
                     case 'UniversityAdmin':
-                        navigate('/university-admin');
+                        navigate('/university-admin/dashboard');
                         break;
                     case 'UniversityGoverningBody':
-                        navigate('/university-governing-body');
+                        navigate('/university-governing-body/dashboard');
                         break;
                     case 'UniversityRegistrar':
-                        navigate('/university-registrar');
+                        navigate('/university-registrar/dashboard');
                         break;
                     case 'UniversityExaminationBody':
-                        navigate('/university-examination-body');
+                        navigate('/university-examination-body/dashboard');
                         break;
                     case 'UniversityFinanceBody':
-                        navigate('/university-finance-body');
+                        navigate('/university-finance-body/dashboard');
                         break;
                     case 'CollegeAdmin':
-                        navigate('/college-admin');
+                        navigate('/college-admin/dashboard');
                         break;
                     case 'CollegeDirector':
-                        navigate('/college-director');
+                        navigate('/college-director/dashboard');
                         break;
                     case 'CollegeDean':
-                        navigate('/college-dean');
+                        navigate('/college-dean/dashboard');
                         break;
                     case 'CollegeHOD':
-                        navigate('/college-hod');
+                        navigate('/college-hod/dashboard');
                         break;
                     case 'CollegeFaculty':
-                        navigate('/college-faculty');
+                        navigate('/college-faculty/dashboard');
                         break;
                     case 'CollegeHostelWarden':
-                        navigate('/college-hostel-warden');
+                        navigate('/college-hostel-warden/dashboard');
                         break;
                     case 'CollegeLibrarian':
-                        navigate('/college-librarian');
+                        navigate('/college-librarian/dashboard');
                         break;
                     case 'CollegeFinanceBody':
-                        navigate('/college-finance-body');
+                        navigate('/college-finance-body/dashboard');
                         break;
                     default:
                         navigate('/login')

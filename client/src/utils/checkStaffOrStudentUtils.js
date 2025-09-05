@@ -2,9 +2,8 @@ import {staffRoles} from './roles';
 
 
 
-export const checkStaffOrStudent = (user) => {
+export const checkStaffOrStudent = (role) => {
     // console.log(user);
-    let role = user?.role;
     if(role === 'student'){
         return 'student';
     }
@@ -14,5 +13,4 @@ export const checkStaffOrStudent = (user) => {
     else{
         return false;
     }
-
 }
