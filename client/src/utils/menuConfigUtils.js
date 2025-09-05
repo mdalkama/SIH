@@ -64,7 +64,7 @@ const menuConfig = {
         ],
 
         // 🔹 University Admin
-        UniversityAdmin: [
+        CollegeAdmissionDepartment: [
             {
                 id: "dashboard",
                 label: "Dashboard",

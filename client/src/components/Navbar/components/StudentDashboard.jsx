@@ -17,9 +17,12 @@ import {
     Building
 } from 'lucide-react';
 
-const StudentDashboard = () => {
-    const [activeTab, setActiveTab] = useState('overview');
+import roleUtils from '../../../utils/roleUtils'
+import { checkStaffOrStudent } from '../../../utils/checkStaffOrStudentUtils';
 
+const StudentDashboard = ({ user }) => {
+    const [activeTab, setActiveTab] = useState('overview');
+    console.log(user)
     // Dummy student data based on schema
     const studentData = {
         // Personal Details
@@ -114,19 +117,27 @@ const StudentDashboard = () => {
                                 {studentData.name.split(' ').map(n => n[0]).join('')}
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">{studentData.name}</h1>
-                                <p className="text-gray-600">{studentData.branch}</p>
-                                <p className="text-sm text-blue-600 font-medium">{studentData.registrationNumber}</p>
+                                <h1 className="text-2xl font-bold text-gray-900">{user?.name}</h1>
+                                { user?.branch && <p className="text-gray-600">{user?.branch}</p> }
+                                { checkStaffOrStudent(user?.role) === 'staff' && ( user?.role && <p className="text-gray-600">{roleUtils(user?.role)}</p> ) }
+                                {checkStaffOrStudent(user?.role) === 'student' && (user?.branch && <p className="text-gray-600">{roleUtils(user?.branch)}</p>)}
+
+                                { user?.staffId && <p className="text-sm text-blue-600 font-medium">{user?.staffId}</p> }
+                                { user?.registrationNumber && <p className="text-sm text-blue-600 font-medium">{user?.registrationNumber}</p> }
                             </div>
                         </div>
-                        <div className="text-right">
-                            <div className="flex items-center space-x-2 text-green-600 bg-green-50 px-3 py-1 rounded-full text-sm font-medium mb-2">
-                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <span>Active Student</span>
+                        {
+                            checkStaffOrStudent(user?.role) === 'student' && 
+                            <div className="text-right">
+                                <div className="flex items-center space-x-2 text-green-600 bg-green-50 px-3 py-1 rounded-full text-sm font-medium mb-2">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span>Active Student</span>
+                                </div>
+                                <p className="text-sm text-gray-600">Semester {studentData.semester}</p>
+                                <p className="text-sm text-gray-600">CGPA: {academicData.overallCGPA}</p>
                             </div>
-                            <p className="text-sm text-gray-600">Semester {studentData.semester}</p>
-                            <p className="text-sm text-gray-600">CGPA: {academicData.overallCGPA}</p>
-                        </div>
+                        }
+                        
                     </div>
                 </div>
 

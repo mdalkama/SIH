@@ -2,6 +2,7 @@
         const roleNames = {
             student: "Student",
             UniversityAdmin: "University Admin",
+            UniversityGoverningBody: "University Governing",
             CollegeAdmin: "College Admin",
             CollegeFaculty: "Faculty",
             CollegeHOD: "HOD",

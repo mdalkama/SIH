@@ -1,15 +1,16 @@
 import Student from "../../models/studentModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import Staff  from '../../models/staffModel.js'
 
 // 🟢 Register
 export const registerStudent = async (req, res) => {
     try {
-        const Id = req.user.id;
+        const Id = req.user?.id;
         const admin = await Staff.findById(Id).select("collegeCode");
         if (!admin) return res.status(404).json({ message: "User not found" });
-        const { name, email, phone, password, role, registrationNumber } = req.body;
-        if (!name || !email || !phone || !password || !role || !registrationNumber)
+        const { name, email, phone, password, role, registrationNumber, course } = req.body;
+        if (!name || !email || !phone || !password || !role || !registrationNumber || !course)
             return res.status(400).json({ message: "All fields are required" });
 
         if (!admin.collegeCode) {
@@ -22,7 +23,7 @@ export const registerStudent = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const student = await Student.create({
-            name, email, phone, password: hashedPassword, role, registrationNumber, collegeCode: req.user.collegeCode
+            name, email, phone, password: hashedPassword, role, course, registrationNumber, collegeCode: req.user.collegeCode
         });
 
         res.status(201).json({ message: "Student registered", student });
@@ -81,9 +82,27 @@ export const logoutStudent = (req, res) => {
 
 export const getMyProfile = async (req, res) => {
     try {
-        const student = await Student.findById(req.user.id);
-        res.status(200).json({message: "Profile retrieved successfully", user: student});
+        const student = await Student.findById(req.user.id)
+            .populate({
+                path: "course",
+                select: "courseId degree branch specialization totalSemester semesters",
+                populate: {
+                    path: "semesters.subjects",
+                    model: "Subject",
+                    select: "name code credits type maxMarks"
+                }
+            });
+
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        res.status(200).json({
+            message: "Profile retrieved successfully",
+            user: student
+        });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 };
+

@@ -31,7 +31,8 @@ const Navbar = () => {
     const navigate = useNavigate();
     const [activeMenu, setActiveMenu] = useState("dashboard");
     const [user, setUser] = useState(null);
-    const role = "student";
+    const [loading, setLoading] = useState(true);
+    const role = "CollegeAdmissionDepartment";
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -47,15 +48,20 @@ const Navbar = () => {
                 if (data) {
                     setUser(data.user);
                     console.log(data.user);
+                    setLoading(false);
                 }
             } catch (err) {
                 console.error("Error fetching logged-in user:", err);
+                setLoading(false);
             } finally {
-                console.log("final");
+                setLoading(false);
             }
         };
         fetchUser();
     }, []);
+
+
+
 
     const handleLogout = async () => {
         try {
@@ -77,6 +83,11 @@ const Navbar = () => {
 
     const navigationItems = menuConfig[role] || [];
 
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+
     return (
         <div className="h-screen w-screen bg-[#F0F1F3] overflow-hidden flex gap-2 p-0 md:p-2">
             <div className="h-full shrink-0 w-[250px] hidden rounded-lg overflow-hidden md:flex md:w-[250px] flex-col gap-4 justify-between shadow-md bg-[#0C1526] border-r-[1px] border-gray-300">
@@ -86,7 +97,6 @@ const Navbar = () => {
                             <div className="h-10 w-10 bg-[#D1D5DA] text-[#6A7280] rounded-full flex items-center justify-center">
                                 <User />
                             </div>
-
                             <div className="md:flex hidden flex-col h-10 items-start justify-center">
                                 <div className="text-[#ffffff] font-medium text-nowrap text-[14px]">
                                     {user?.name || "Md Alkama"}
@@ -95,7 +105,6 @@ const Navbar = () => {
                                     {getRoleDisplayName(user?.role) || "Student"}
                                 </div>
                             </div>
-
                             <div className="h-10 w-10 rounded-full md:hidden flex items-center justify-center">
                                 <Menu />
                             </div>
@@ -164,7 +173,7 @@ const Navbar = () => {
 
                 {/* component will render */}
                 <div className="h-[calc(100vh-80px)] w-full overflow-y-scroll bg-white p-6">
-                    <StudentDashboard />
+                    <StudentDashboard user = { user }/>
                 </div>
             </div>
         </div>
