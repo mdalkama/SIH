@@ -49,23 +49,6 @@ const AddCourse = ({ setShowAddModal, activeTab }) => {
             }
             setSemesters(updated);
         };
-    
-        const handleSubmit = (e) => {
-            e.preventDefault();
-            const courseData = {
-                degree,
-                branch,
-                specialization,
-                totalSemester,
-                semesters,
-            };
-            console.log("📌 Final Course Data:", courseData);
-            alert("Course data logged in console!");
-        };
-
-
-
-
 
 
     const handleAddCourse = async () => {
@@ -89,6 +72,9 @@ const AddCourse = ({ setShowAddModal, activeTab }) => {
             console.log(data)
             if (data.success) {
                 console.log(data)
+                resetForms();
+                setShowAddModal(false);
+                alert('Course added successfully');
             } else {
                 alert('Error adding course');
             }
@@ -102,24 +88,28 @@ const AddCourse = ({ setShowAddModal, activeTab }) => {
     const handleAddSubject = async () => {
         setLoading(true);
         try {
-            // API call would go here
-            // const response = await fetch('/api/v1/subjects', {
-            //   method: 'POST',
-            //   headers: { 'Content-Type': 'application/json' },
-            //   body: JSON.stringify(subjectForm)
-            // });
-
-            setTimeout(() => {
-                setShowAddModal(false);
+            const res = await fetch('https://sih-4ptm.onrender.com/api/v1/subject', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(subjectForm)
+            });
+            const data = await res.json();
+            console.log(data)
+            if (data.success) {
+                console.log(data)
                 resetForms();
-                setLoading(false);
-                alert('Subject added successfully!');
-            }, 1500);
+                setShowAddModal(false);
+                alert('Subject added successfully');
+            } else {
+                alert('Error adding course');
+            }
         } catch (error) {
+            alert('Error adding course catch');
+        } finally {
             setLoading(false);
-            alert('Error adding subject');
         }
-    };
+    }
 
     const resetForms = () => {
         setCourseId('');
@@ -147,7 +137,7 @@ const AddCourse = ({ setShowAddModal, activeTab }) => {
     return (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] h-full w-full flex md:items-center items-start justify-center z-[100]">
             <div style={{ backgroundColor: '#FFFFFF' }}
-                className="rounded-lg shadow-xl w-full  max-w-2xl h-screen sm:max-h-[90vh] overflow-y-auto">
+                className="rounded-lg shadow-xl w-full  max-w-2xl h-screen md:max-h-[90vh] overflow-y-auto">
 
                 <div className="p-6 border-b h-[80px]" style={{ borderColor: '#E5E7EB' }}>
                     <div className="flex items-center justify-between">

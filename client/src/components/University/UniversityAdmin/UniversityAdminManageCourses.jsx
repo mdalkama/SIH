@@ -9,6 +9,8 @@ const UniversityAdminManageCourses = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [subjects, setSubjects] = useState([]);
+    const [courses, setCourses] = useState([]);
 
         const [courseForm, setCourseForm] = useState({
             courseId: '',
@@ -18,6 +20,51 @@ const UniversityAdminManageCourses = () => {
             totalSemester: '',
             semesters: []
         });
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const res = await fetch("https://sih-4ptm.onrender.com/api/v1/course", {
+                    method: "GET",
+                    credentials: "include",
+                });
+                const data = await res.json();
+                if (data) {
+                    setCourses(data);
+                    console.log(data);
+                }
+            } catch (err) {
+                console.error("Error fetching logged-in user:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUser();
+    }, []);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const res = await fetch("https://sih-4ptm.onrender.com/api/v1/subject", {
+                    method: "GET",
+                    credentials: "include",
+                });
+                const data = await res.json();
+                if (data) {
+                    setSubjects(data);
+                    console.log(data);
+                }
+            } catch (err) {
+                console.error("Error fetching logged-in user:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUser();
+    }, []);
+
 
     // Subject Form State
     const [subjectForm, setSubjectForm] = useState({
@@ -31,87 +78,6 @@ const UniversityAdminManageCourses = () => {
             practical: 0
         }
     });
-
-    // Mock data - replace with actual API calls
-    const [courses] = useState([
-        {
-            _id: '1',
-            courseId: 'CSE2024',
-            degree: 'B.Tech',
-            branch: 'Computer Science Engineering',
-            specialization: 'Artificial Intelligence',
-            totalSemester: 8,
-            semesters: [
-                { semester: 1, subjects: ['SUB001', 'SUB002'] },
-                { semester: 2, subjects: ['SUB003', 'SUB004'] }
-            ],
-            createdAt: '2024-01-15'
-        },
-        {
-            _id: '2',
-            courseId: 'ECE2024',
-            degree: 'B.Tech',
-            branch: 'Electronics & Communication',
-            specialization: 'VLSI Design',
-            totalSemester: 8,
-            semesters: [
-                { semester: 1, subjects: ['SUB005', 'SUB006'] },
-                { semester: 2, subjects: ['SUB007', 'SUB008'] }
-            ],
-            createdAt: '2024-02-10'
-        },
-        {
-            _id: '3',
-            courseId: 'MBA2024',
-            degree: 'MBA',
-            branch: 'Management',
-            specialization: 'Finance',
-            totalSemester: 4,
-            semesters: [
-                { semester: 1, subjects: ['SUB007', 'SUB008'] }
-            ],
-            createdAt: '2024-03-05'
-        }
-    ]);
-
-    const [subjects] = useState([
-        {
-            _id: 'SUB001',
-            name: 'Data Structures and Algorithms',
-            code: 'CS101',
-            credits: 4,
-            type: 'CORE',
-            maxMarks: { internal: 30, external: 70, practical: 0 },
-            createdAt: '2024-01-10'
-        },
-        {
-            _id: 'SUB002',
-            name: 'Database Management Systems',
-            code: 'CS201',
-            credits: 3,
-            type: 'CORE',
-            maxMarks: { internal: 30, external: 70, practical: 0 },
-            createdAt: '2024-01-12'
-        },
-        {
-            _id: 'SUB003',
-            name: 'Machine Learning',
-            code: 'CS301',
-            credits: 4,
-            type: 'ELECTIVE',
-            maxMarks: { internal: 40, external: 60, practical: 0 },
-            createdAt: '2024-01-15'
-        },
-        {
-            _id: 'SUB004',
-            name: 'Web Development Lab',
-            code: 'CS401L',
-            credits: 2,
-            type: 'LAB',
-            maxMarks: { internal: 50, external: 0, practical: 50 },
-            createdAt: '2024-01-18'
-        }
-    ]);
 
     const resetForms = () => {
         setCourseForm({
@@ -133,50 +99,6 @@ const UniversityAdminManageCourses = () => {
                 practical: 0
             }
         });
-    };
-
-    const handleAddCourse = async () => {
-        setLoading(true);
-        try {
-            // API call would go here
-            // const response = await fetch('/api/v1/courses', {
-            //   method: 'POST',
-            //   headers: { 'Content-Type': 'application/json' },
-            //   body: JSON.stringify(courseForm)
-            // });
-
-            setTimeout(() => {
-                setShowAddModal(false);
-                resetForms();
-                setLoading(false);
-                alert('Course added successfully!');
-            }, 1500);
-        } catch (error) {
-            setLoading(false);
-            alert('Error adding course');
-        }
-    };
-
-    const handleAddSubject = async () => {
-        setLoading(true);
-        try {
-            // API call would go here
-            // const response = await fetch('/api/v1/subjects', {
-            //   method: 'POST',
-            //   headers: { 'Content-Type': 'application/json' },
-            //   body: JSON.stringify(subjectForm)
-            // });
-
-            setTimeout(() => {
-                setShowAddModal(false);
-                resetForms();
-                setLoading(false);
-                alert('Subject added successfully!');
-            }, 1500);
-        } catch (error) {
-            setLoading(false);
-            alert('Error adding subject');
-        }
     };
 
     const handleEdit = (item) => {

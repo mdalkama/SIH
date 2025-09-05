@@ -3,6 +3,7 @@ import { useNavigate, Outlet } from "react-router-dom";
 import getRoleDisplayName from "../../utils/roleUtils.js"
 import menuConfig from "../../utils/menuConfigUtils.js";
 import StudentDashboard from "./components/StudentDashboard.jsx";
+import Loading from "../Loading.jsx"
 import {
     Menu,
     X,
@@ -83,7 +84,7 @@ const Navbar = () => {
     const navigationItems = menuConfig[user?.role || "student"] || [];
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <Loading/>
     }
 
 

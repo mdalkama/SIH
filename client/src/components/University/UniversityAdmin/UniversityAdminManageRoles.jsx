@@ -7,6 +7,7 @@ const UniversityAdminManageRoles = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -26,7 +27,6 @@ const UniversityAdminManageRoles = () => {
         { value: 'UniversityExaminationBody', label: 'Examination Body Member', endpoint: '/add-exam-body' }
     ];
 
-    // Mock data - replace with actual API calls
     const [employees] = useState([
         {
             id: 1,
@@ -69,43 +69,6 @@ const UniversityAdminManageRoles = () => {
         }
     ]);
 
-    const resetForm = () => {
-        setFormData({
-            name: '',
-            email: '',
-            password: '',
-            staffId: '',
-            gender: '',
-            salary: '',
-            phone: '',
-            department: '',
-            subjects: []
-        });
-    };
-
-    // const handleAddEmployee = async (roleEndpoint) => {
-    //     setLoading(true);
-    //     try {
-    //         // Here you would make the API call
-    //         // const response = await fetch(`/api/university-staff${roleEndpoint}`, {
-    //         //   method: 'POST',
-    //         //   headers: { 'Content-Type': 'application/json' },
-    //         //   body: JSON.stringify(formData)
-    //         // });
-
-    //         // Mock success
-    //         setTimeout(() => {
-    //             setShowAddModal(false);
-    //             resetForm();
-    //             setLoading(false);
-    //             alert('Employee added successfully!');
-    //         }, 1500);
-    //     } catch (error) {
-    //         setLoading(false);
-    //         alert('Error adding employee');
-    //     }
-    // };
-
     const filteredEmployees = employees.filter(emp => {
         const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -142,10 +105,8 @@ const UniversityAdminManageRoles = () => {
         const governingBody = employees.filter(emp => emp.role === 'UniversityGoverningBody').length;
         const registrar = employees.filter(emp => emp.role === 'UniversityRegistrar').length;
         const examBody = employees.filter(emp => emp.role === 'UniversityExaminationBody').length;
-
         return { total, active, inactive, governingBody, registrar, examBody };
     };
-
     const stats = getStats();
 
     return (
