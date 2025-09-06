@@ -7,7 +7,7 @@ const Loading = () => {
             {/* Single professional spinner */}
             <div className="relative">
                 <div className="w-12 h-12 rounded-full border-4 border-slate-200"></div>
-                <div className="absolute top-0 left-0 w-12 h-12 rounded-full border-4 border-transparent border-t-blue-600 animate-spin"></div>
+                <div className="absolute top-0 left-0 w-12 h-12 rounded-full border-4 border-transparent border-t-[#1D2646] animate-spin"></div>
             </div>
 
             {/* Single text */}

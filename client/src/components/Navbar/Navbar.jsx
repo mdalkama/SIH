@@ -84,7 +84,7 @@ const Navbar = () => {
     };
 
 
-    const navigationItems = menuConfig[user?.role || "student"] || [];
+    const navigationItems = menuConfig[user?.role] || [];
 
     if (loading) {
         return <Loading/>

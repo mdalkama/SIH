@@ -3,11 +3,12 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import getDashboardPath from "../utils/getDashboardPath";
+import Loading from "./Loading";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useUser();
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loading/>;
 
   if (!user) {
     return <Navigate to="/login" replace />;

@@ -1,5 +1,5 @@
 export const staffRoles = [
-    'UniversityAdmin',
+    'UniversityAdmin', //done
     'UniversityGoverningBody',
     'UniversityRegistrar',
     'UniversityExaminationBody',
@@ -9,13 +9,13 @@ export const staffRoles = [
     'CollegeDean',
     'ColleegHOD',
     'CollegeFaculty',
-    'CollegeHostelWarden',
-    'CollegeLibrarian',
-    'CollegeAdmissionDepartment',
-    'CollegeFinanceBody',
+    'CollegeHostelWarden', //done
+    'CollegeLibrarian', //done
+    'CollegeAdmissionDepartment', //done
+    'CollegeFinanceBody', //
     'CollegeExaminationBody'
 ];
 
 export const studentRoles = [
-    'student'
+    'student' //done
 ];
