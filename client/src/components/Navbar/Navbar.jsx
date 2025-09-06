@@ -123,13 +123,13 @@ const Navbar = () => {
                                     setActiveMenu(item.id)
                                     navigate(item.path);
                                 }}
-                                className={`w-full cursor-pointer flex items-center px-3 py-2 text-sm font-medium rounded-full transition-colors
+                                className={`w-full cursor-pointer text-nowrap flex items-center px-3 py-2 text-sm font-medium rounded-full transition-colors
                                     ${activeMenu === item.id
                                         ? "bg-[#2B386A] text-[#DEE1E5]"
                                         : "text-[#DEE1E5] hover:bg-[#2B386A] hover:text-[#DEE1E5]"
                                     }`}
                             >
-                                <Icon className="mr-3 h-5 w-5" />
+                                <Icon className="mr-3 h-5 shrink-0 w-5" />
                                 {item.label}
                             </button>
                         );
