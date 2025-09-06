@@ -34,6 +34,20 @@ import CollegeAdminManageRoles from "../components/College/CollegeAdmin/CollegeA
 import CollegeAdminManageCollege from "../components/College/CollegeAdmin/CollegeAdminManageCollege";
 import CollegeAdminManageCourses from "../components/College/CollegeAdmin/CollegeAdminManageCourses";
 
+
+// College Librarian
+import CollegeLibrarianDashboard from "../components/College/CollegeLibrarian/CollegeLibrarianDashboard";
+import CollegeLibrarianIssueBook from "../components/College/CollegeLibrarian/CollegeLibrarianIssueBook";
+import CollegeLibrarianAddBook from "../components/College/CollegeLibrarian/CollegeLibrarianAddBook";
+import CollegeLibrarianTrackReturn from "../components/College/CollegeLibrarian/CollegeLibrarianTrackReturn";
+
+// College Warden
+import CollegeWardenDashboard from "../components/College/CollegeWarden/CollegeWardenDashboard";
+import CollegeWardenManageRooms from "../components/College/CollegeWarden/CollegeWardenManageRooms";
+import CollegeWardenHandleComplaint from "../components/College/CollegeWarden/CollegeWardenHandleComplaint";
+
+
+
 // 🎯 Roles mapping with studentRoles & staffRoles
 const menuConfig = {
     // 🔹 Student
@@ -167,6 +181,66 @@ const menuConfig = {
             role: "CollegeAdmin",
         },
     ],
+    CollegeLibrarian: [
+    {
+        id: "dashboard",
+        label: "Dashboard",
+        icon: Home,
+        path: "/college-librarian/dashboard",
+        component: CollegeLibrarianDashboard,
+        role: "CollegeLibrarian",
+    },
+    {
+        id: "issue-book",
+        label: "Issue Book",
+        icon: ClipboardList,
+        path: "/college-librarian/issue-book",
+        component: CollegeLibrarianIssueBook,
+        role: "CollegeLibrarian",
+    },
+    {
+        id: "add-book",
+        label: "Add Book",
+        icon: Plus,
+        path: "/college-librarian/add-book",
+        component: CollegeLibrarianAddBook,
+        role: "CollegeLibrarian",
+    },
+    {
+        id: "track-return",
+        label: "Track & Return",
+        icon: BookOpen,
+        path: "/college-librarian/track-return",
+        component: CollegeLibrarianTrackReturn,
+        role: "CollegeLibrarian",
+    },
+],
+CollegeHostelWarden: [
+    {
+        id: "dashboard",
+        label: "Dashboard",
+        icon: Home,
+        path: "/college-warden/dashboard",
+        component: CollegeWardenDashboard,
+        role: "CollegeHostelWarden",
+    },
+    {
+        id: "manage-rooms",
+        label: "Manage Hostel Rooms",
+        icon: Building2,
+        path: "/college-warden/manage-rooms",
+        component: CollegeWardenManageRooms,
+        role: "CollegeHostelWarden",
+    },
+    {
+        id: "handle-complaint",
+        label: "Handle Complaints",
+        icon: ClipboardList,
+        path: "/college-warden/handle-complaint",
+        component: CollegeWardenHandleComplaint,
+        role: "CollegeHostelWarden",
+    },
+],
 
     // 🔹 College Faculty
     CollegeFaculty: [

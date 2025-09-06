@@ -4,6 +4,7 @@ import getRoleDisplayName from "../../utils/roleUtils.js"
 import menuConfig from "../../utils/menuConfigUtils.js";
 import StudentDashboard from "./components/StudentDashboard.jsx";
 import Loading from "../Loading.jsx"
+import { useUser } from "../../context/UserContext.jsx";
 import {
     Menu,
     X,
@@ -31,7 +32,8 @@ import {
 const Navbar = () => {
     const navigate = useNavigate();
     const [activeMenu, setActiveMenu] = useState("dashboard");
-    const [user, setUser] = useState(null);
+    const { user, setUser } = useUser();
+    const [loggedInUser, setLoggedInUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -46,7 +48,7 @@ const Navbar = () => {
                 );
                 const data = await res.json();
                 if (data) {
-                    setUser(data.user);
+                    setLoggedInUser(data.user);
                     console.log(data);
                     setLoading(false);
                 }
@@ -100,10 +102,10 @@ const Navbar = () => {
                             </div>
                             <div className="md:flex hidden flex-col h-10 items-start justify-center">
                                 <div className="text-[#ffffff] font-medium text-nowrap text-[14px]">
-                                    {user?.name || "Md Alkama"}
+                                    {loggedInUser?.name || "Md Alkama"}
                                 </div>
                                 <div className="text-[Grey] font-medium text-[14px]">
-                                    {getRoleDisplayName(user?.role) || "Student"}
+                                    {getRoleDisplayName(loggedInUser?.role) || "Student"}
                                 </div>
                             </div>
                             <div className="h-10 w-10 rounded-full md:hidden flex items-center justify-center">

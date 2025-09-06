@@ -9,7 +9,7 @@ export const staffRoles = [
     'CollegeDean',
     'ColleegHOD',
     'CollegeFaculty',
-    'CollegeWarden',
+    'CollegeHostelWarden',
     'CollegeLibrarian',
     'CollegeAdmissionDepartment',
     'CollegeFinanceBody',

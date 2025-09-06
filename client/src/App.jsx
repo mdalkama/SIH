@@ -6,6 +6,8 @@ import Login from "./pages/Login.jsx";
 import menuConfig from "./utils/menuConfigUtils.js";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import ProtectedLoginRoute from "./components/ProtectedLoginRoute.jsx";
+import Unauthorized from "./components/Unauthorized.jsx";
+
 
 function App() {
   return (
@@ -41,7 +43,7 @@ function App() {
             {/* Unauthorized page */}
             <Route
               path="/not-authorized"
-              element={<h1>You don’t have permission to access this page</h1>}
+              element={<Unauthorized/>}
             />
 
             {/* Default redirect */}

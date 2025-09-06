@@ -16,7 +16,7 @@ const roleDashboardMap = {
     CollegeDean: "/college-dean/dashboard",
     CollegeHOD: "/college-hod/dashboard",
     CollegeFaculty: "/college-faculty/dashboard",
-    CollegeWarden: "/college-warden/dashboard",
+    CollegeHostelWarden: "/college-warden/dashboard",
     CollegeLibrarian: "/college-librarian/dashboard",
     CollegeAdmissionDepartment: "/college-admission/dashboard",
     CollegeFinanceBody: "/college-finance/dashboard",
