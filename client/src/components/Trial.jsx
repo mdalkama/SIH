@@ -43,6 +43,9 @@ const CourseForm = () => {
         console.log("📌 Final Course Data:", courseData);
         alert("Course data logged in console!");
     };
+let name = ""
+    console.log(name  && "hello")
+
 
     return (
         <form onSubmit={handleSubmit} className="p-6 space-y-6">

@@ -47,7 +47,7 @@ const Navbar = () => {
                 const data = await res.json();
                 if (data) {
                     setUser(data.user);
-                    console.log(data.user);
+                    console.log(data);
                     setLoading(false);
                 }
             } catch (err) {
@@ -72,7 +72,7 @@ const Navbar = () => {
 
             if (res.ok) {
                 setUser(null);
-                navigate("/login"); // Redirect back to login
+                window.location.href = "/login"; // Force reload + redirect
             } else {
                 console.error("Failed to logout");
             }
@@ -80,6 +80,7 @@ const Navbar = () => {
             console.error(err);
         }
     };
+
 
     const navigationItems = menuConfig[user?.role || "student"] || [];
 

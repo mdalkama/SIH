@@ -1,15 +1,21 @@
-import React from 'react'
+import React from 'react';
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Plus, Trash2 } from 'lucide-react';
 
-
-const AddCourse = ({ setShowAddModal, activeTab }) => {
+const AddEditModal = ({
+    setShowModal,
+    activeTab,
+    mode = 'add', // 'add' or 'edit'
+    initialData = null
+}) => {
     const [loading, setLoading] = useState(false);
+
+    // Course Form State
     const [courseId, setCourseId] = useState("");
     const [degree, setDegree] = useState("");
     const [branch, setBranch] = useState("");
     const [specialization, setSpecialization] = useState("");
-    const [totalSemester, setTotalSemester] = useState(0);
+    const [totalSemester, setTotalSemester] = useState(2);
     const [semesters, setSemesters] = useState([]);
 
     // Subject Form State
@@ -25,33 +31,73 @@ const AddCourse = ({ setShowAddModal, activeTab }) => {
         }
     });
 
+    // Mock subjects data - replace with API call
     const [allSubjects] = useState([
         { _id: "64f1a1b2c3d4e5f678901234", name: "Data Structures", code: "CS101" },
         { _id: "64f1a1b2c3d4e5f678901235", name: "Algorithms", code: "CS102" },
         { _id: "64f1a1b2c3d4e5f678901236", name: "Database Systems", code: "CS103" },
         { _id: "64f1a1b2c3d4e5f678901237", name: "Operating Systems", code: "CS104" },
         { _id: "64f1a1b2c3d4e5f678901238", name: "Computer Networks", code: "CS105" },
+        { _id: "64f1a1b2c3d4e5f678901239", name: "Software Engineering", code: "CS106" },
+        { _id: "64f1a1b2c3d4e5f678901240", name: "Web Development", code: "CS107" },
+        { _id: "64f1a1b2c3d4e5f678901241", name: "Machine Learning", code: "CS108" },
+        { _id: "64f1a1b2c3d4e5f678901242", name: "Artificial Intelligence", code: "CS109" },
+        { _id: "64f1a1b2c3d4e5f678901243", name: "Computer Graphics", code: "CS110" }
     ]);
 
+    // Initialize form data based on mode
+    useEffect(() => {
+        if (mode === 'edit' && initialData) {
+            if (activeTab === 'courses') {
+                setCourseId(initialData.courseId || '');
+                setDegree(initialData.degree || '');
+                setBranch(initialData.branch || '');
+                setSpecialization(initialData.specialization || '');
+                setTotalSemester(initialData.totalSemester || 8);
+                setSemesters(initialData.semesters || []);
+            } else {
+                setSubjectForm(initialData);
+            }
+        }
+    }, [mode, initialData, activeTab]);
 
-        useEffect(() => {
+    // Generate semesters when totalSemester changes
+    useEffect(() => {
+        if (mode === 'add' || !initialData?.semesters) {
             const newSemesters = Array.from({ length: totalSemester }, (_, index) => ({
                 semesterNumber: index + 1,
                 subjects: [],
             }));
+            
             setSemesters(newSemesters);
-        }, [totalSemester]);
-    
-        const handleSubjectChange = (semIndex, subjectId) => {
-            const updated = [...semesters];
-            if (!updated[semIndex].subjects.includes(subjectId)) {
-                updated[semIndex].subjects.push(subjectId);
-            }
-            setSemesters(updated);
-        };
+        }
+    }, [totalSemester, mode, initialData]);
 
+    // Add subject to semester
+    const handleAddSubjectToSemester = (semIndex, subjectId) => {
+        if (!subjectId) return;
 
-    const handleAddCourse = async () => {
+        const updated = [...semesters];
+        if (!updated[semIndex].subjects.includes(subjectId)) {
+            updated[semIndex].subjects.push(subjectId);
+        }
+        setSemesters(updated);
+    };
+
+    // Remove subject from semester
+    const handleRemoveSubjectFromSemester = (semIndex, subjectId) => {
+        const updated = [...semesters];
+        updated[semIndex].subjects = updated[semIndex].subjects.filter(id => id !== subjectId);
+        setSemesters(updated);
+    };
+
+    // Get subject name by ID
+    const getSubjectById = (id) => {
+        return allSubjects.find(subject => subject._id === id);
+    };
+
+    // Handle Course Add/Edit
+    const handleCourseSubmit = async () => {
         setLoading(true);
         try {
             const courseData = {
@@ -59,57 +105,71 @@ const AddCourse = ({ setShowAddModal, activeTab }) => {
                 degree,
                 branch,
                 specialization,
-                totalSemester,
+                totalSemester: parseInt(totalSemester),
                 semesters,
             };
-            const res = await fetch('https://sih-4ptm.onrender.com/api/v1/course', {
-                method: 'POST',
+
+            const url = mode === 'edit'
+                ? `https://sih-4ptm.onrender.com/api/v1/course/${initialData._id}`
+                : 'https://sih-4ptm.onrender.com/api/v1/course';
+
+            const method = mode === 'edit' ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify(courseData)
             });
+
             const data = await res.json();
-            console.log(data)
+
             if (data.success) {
-                console.log(data)
                 resetForms();
-                setShowAddModal(false);
-                alert('Course added successfully');
+                setShowModal(false);
+                alert(`Course ${mode === 'edit' ? 'updated' : 'added'} successfully`);
             } else {
-                alert('Error adding course');
+                alert(`Error ${mode === 'edit' ? 'updating' : 'adding'} course`);
             }
         } catch (error) {
-            alert('Error adding course catch');
+            alert(`Error ${mode === 'edit' ? 'updating' : 'adding'} course`);
         } finally {
             setLoading(false);
         }
-    }
+    };
 
-    const handleAddSubject = async () => {
+    // Handle Subject Add/Edit
+    const handleSubjectSubmit = async () => {
         setLoading(true);
         try {
-            const res = await fetch('https://sih-4ptm.onrender.com/api/v1/subject', {
-                method: 'POST',
+            const url = mode === 'edit'
+                ? `https://sih-4ptm.onrender.com/api/v1/subject/${initialData._id}`
+                : 'https://sih-4ptm.onrender.com/api/v1/subject';
+
+            const method = mode === 'edit' ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify(subjectForm)
             });
+
             const data = await res.json();
-            console.log(data)
+
             if (data.success) {
-                console.log(data)
                 resetForms();
-                setShowAddModal(false);
-                alert('Subject added successfully');
+                setShowModal(false);
+                alert(`Subject ${mode === 'edit' ? 'updated' : 'added'} successfully`);
             } else {
-                alert('Error adding course');
+                alert(`Error ${mode === 'edit' ? 'updating' : 'adding'} subject`);
             }
         } catch (error) {
-            alert('Error adding course catch');
+            alert(`Error ${mode === 'edit' ? 'updating' : 'adding'} subject`);
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     const resetForms = () => {
         setCourseId('');
@@ -119,7 +179,6 @@ const AddCourse = ({ setShowAddModal, activeTab }) => {
         setTotalSemester(8);
         setSemesters([]);
 
-        
         setSubjectForm({
             name: '',
             code: '',
@@ -133,54 +192,52 @@ const AddCourse = ({ setShowAddModal, activeTab }) => {
         });
     };
 
-
     return (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] h-full w-full flex md:items-center items-start justify-center z-[100]">
-            <div style={{ backgroundColor: '#FFFFFF' }}
-                className="rounded-lg shadow-xl w-full  max-w-2xl h-screen md:max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col">
 
-                <div className="p-6 border-b h-[80px]" style={{ borderColor: '#E5E7EB' }}>
-                    <div className="flex items-center justify-between">
-                        <h2 style={{ color: '#111827' }} className="text-xl font-bold">
-                            Add New {activeTab === 'courses' ? 'Course' : 'Subject'}
-                        </h2>
-                        <button
-                            onClick={() => setShowAddModal(false)}
-                            className="text-gray-400 hover:text-gray-600"
-                        >
-                            <X size={20} />
-                        </button>
-                    </div>
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                        {mode === 'edit' ? 'Edit' : 'Add New'} {activeTab === 'courses' ? 'Course' : 'Subject'}
+                    </h2>
+                    <button
+                        onClick={() => setShowModal(false)}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                        <X size={20} className="text-gray-500" />
+                    </button>
                 </div>
 
-                <div className="p-6 space-y-6 h-[calc(100%-180px)] overflow-y-auto">
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6">
                     {activeTab === 'courses' ? (
                         // Course Form
-                        <>
+                        <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label style={{ color: '#111827' }} className="block text-sm font-medium mb-1">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                                         Course ID *
                                     </label>
                                     <input
                                         type="text"
                                         value={courseId}
                                         onChange={(e) => setCourseId(e.target.value)}
-                                        style={{ borderColor: '#E5E7EB' }}
-                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="e.g., CSE2024"
+                                        required
                                     />
                                 </div>
 
                                 <div>
-                                    <label style={{ color: '#111827' }} className="block text-sm font-medium mb-1">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                                         Degree *
                                     </label>
                                     <select
                                         value={degree}
                                         onChange={(e) => setDegree(e.target.value)}
-                                        style={{ borderColor: '#E5E7EB' }}
-                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        required
                                     >
                                         <option value="">Select degree</option>
                                         <option value="B.Tech">B.Tech</option>
@@ -192,131 +249,169 @@ const AddCourse = ({ setShowAddModal, activeTab }) => {
                                 </div>
 
                                 <div>
-                                    <label style={{ color: '#111827' }} className="block text-sm font-medium mb-1">
-                                        Branch
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Branch *
                                     </label>
                                     <input
                                         type="text"
                                         value={branch}
-                                        onChange={(e) => setBranch(e.target.value )}
-                                        style={{ borderColor: '#E5E7EB' }}
-                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        onChange={(e) => setBranch(e.target.value)}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="e.g., Computer Science Engineering"
+                                        required
                                     />
                                 </div>
 
                                 <div>
-                                    <label style={{ color: '#111827' }} className="block text-sm font-medium mb-1">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                                         Total Semesters *
                                     </label>
                                     <select
                                         value={totalSemester}
-                                        onChange={(e) => setTotalSemester(e.target.value )}
-                                        style={{ borderColor: '#E5E7EB' }}
-                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        onChange={(e) => setTotalSemester(parseInt(e.target.value))}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        required
                                     >
                                         <option value="">Select semesters</option>
-                                        <option value="2">2</option>
-                                        <option value="4">4</option>
-                                        <option value="6">6</option>
-                                        <option value="8">8</option>
-                                        <option value="10">10</option>
-                                        <option value="12">12</option>
+                                        <option value={2}>2</option>
+                                        <option value={4}>4</option>
+                                        <option value={6}>6</option>
+                                        <option value={8}>8</option>
+                                        <option value={10}>10</option>
+                                        <option value={12}>12</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div>
-                                <label style={{ color: '#111827' }} className="block text-sm font-medium mb-1">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
                                     Specialization
                                 </label>
                                 <input
                                     type="text"
                                     value={specialization}
-                                    onChange={(e) => setSpecialization(e.target.value )}
-                                    style={{ borderColor: '#E5E7EB' }}
-                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    onChange={(e) => setSpecialization(e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     placeholder="e.g., Artificial Intelligence (optional)"
                                 />
                             </div>
 
-                            <div className="space-y-4">
-                                {semesters.map((sem, semIndex) => (
-                                    <div key={sem.semesterNumber} className="p-4 border rounded-lg bg-gray-50">
-                                        <h4 className="font-medium mb-2">Semester {sem.semesterNumber}</h4>
-                                        <select
-                                            onChange={(e) => handleSubjectChange(semIndex, e.target.value)}
-                                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300"
-                                        >
-                                            <option value="">-- Select Subject --</option>
-                                            {allSubjects.map((sub) => (
-                                                <option key={sub._id} value={sub._id}>
-                                                    {sub.name} ({sub.code})
-                                                </option>
-                                            ))}
-                                        </select>
-
-                                        <div className="mt-2 text-sm text-gray-700">
-                                            <strong>Selected Subjects:</strong>{" "}
-                                            {sem.subjects.map((subId) => {
-                                                const subject = allSubjects.find((s) => s._id === subId);
-                                                return (
-                                                    <span
-                                                        key={subId}
-                                                        className="inline-block bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded"
-                                                    >
-                                                        {subject ? subject.name : subId}
+                            {/* Semesters */}
+                            {totalSemester > 0 && (
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold text-gray-800">Semester Subjects</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {semesters.map((sem, semIndex) => (
+                                            <div key={sem.semesterNumber} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <h4 className="font-semibold text-gray-700">
+                                                        Semester {sem.semesterNumber}
+                                                    </h4>
+                                                    <span className="text-sm text-gray-500">
+                                                        {sem.subjects.length} subjects
                                                     </span>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                                                </div>
 
-                        </>
+                                                {/* Add Subject Dropdown */}
+                                                <div className="mb-3">
+                                                    <select
+                                                        onChange={(e) => {
+                                                            handleAddSubjectToSemester(semIndex, e.target.value);
+                                                            e.target.value = '';
+                                                        }}
+                                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    >
+                                                        <option value="">+ Add Subject</option>
+                                                        {allSubjects
+                                                            .filter(subject => !sem.subjects.includes(subject._id))
+                                                            .map((subject) => (
+                                                                <option key={subject._id} value={subject._id}>
+                                                                    {subject.name} ({subject.code})
+                                                                </option>
+                                                            ))}
+                                                    </select>
+                                                </div>
+
+                                                {/* Selected Subjects */}
+                                                <div className="space-y-2 max-h-32 overflow-y-auto">
+                                                    {sem.subjects.map((subjectId) => {
+                                                        const subject = getSubjectById(subjectId);
+                                                        return (
+                                                            <div
+                                                                key={subjectId}
+                                                                className="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200"
+                                                            >
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-sm font-medium text-gray-900 truncate">
+                                                                        {subject?.name || 'Unknown Subject'}
+                                                                    </p>
+                                                                    <p className="text-xs text-gray-500">
+                                                                        {subject?.code}
+                                                                    </p>
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => handleRemoveSubjectFromSemester(semIndex, subjectId)}
+                                                                    className="ml-2 p-1 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                                                >
+                                                                    <Trash2 size={14} />
+                                                                </button>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+
+                                                {sem.subjects.length === 0 && (
+                                                    <p className="text-sm text-gray-400 text-center py-4">
+                                                        No subjects added yet
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     ) : (
                         // Subject Form
-                        <>
+                        <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label style={{ color: '#111827' }} className="block text-sm font-medium mb-1">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                                         Subject Name *
                                     </label>
                                     <input
                                         type="text"
                                         value={subjectForm.name}
                                         onChange={(e) => setSubjectForm({ ...subjectForm, name: e.target.value })}
-                                        style={{ borderColor: '#E5E7EB' }}
-                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="e.g., Data Structures and Algorithms"
+                                        required
                                     />
                                 </div>
 
                                 <div>
-                                    <label style={{ color: '#111827' }} className="block text-sm font-medium mb-1">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                                         Subject Code *
                                     </label>
                                     <input
                                         type="text"
                                         value={subjectForm.code}
                                         onChange={(e) => setSubjectForm({ ...subjectForm, code: e.target.value })}
-                                        style={{ borderColor: '#E5E7EB' }}
-                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="e.g., CS101"
+                                        required
                                     />
                                 </div>
 
                                 <div>
-                                    <label style={{ color: '#111827' }} className="block text-sm font-medium mb-1">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                                         Credits
                                     </label>
                                     <input
                                         type="number"
                                         value={subjectForm.credits}
                                         onChange={(e) => setSubjectForm({ ...subjectForm, credits: e.target.value })}
-                                        style={{ borderColor: '#E5E7EB' }}
-                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="e.g., 4"
                                         min="0"
                                         max="10"
@@ -324,14 +419,13 @@ const AddCourse = ({ setShowAddModal, activeTab }) => {
                                 </div>
 
                                 <div>
-                                    <label style={{ color: '#111827' }} className="block text-sm font-medium mb-1">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                                         Subject Type
                                     </label>
                                     <select
                                         value={subjectForm.type}
                                         onChange={(e) => setSubjectForm({ ...subjectForm, type: e.target.value })}
-                                        style={{ borderColor: '#E5E7EB' }}
-                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     >
                                         <option value="CORE">Core</option>
                                         <option value="ELECTIVE">Elective</option>
@@ -341,13 +435,13 @@ const AddCourse = ({ setShowAddModal, activeTab }) => {
                             </div>
 
                             {/* Max Marks Section */}
-                            <div>
-                                <label style={{ color: '#111827' }} className="block text-sm font-medium mb-3">
+                            <div className="bg-gray-50 p-4 rounded-lg">
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
                                     Maximum Marks Distribution
                                 </label>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
-                                        <label style={{ color: '#6B7280' }} className="block text-xs font-medium mb-1">
+                                        <label className="block text-xs font-medium text-gray-600 mb-1">
                                             Internal Marks
                                         </label>
                                         <input
@@ -357,14 +451,13 @@ const AddCourse = ({ setShowAddModal, activeTab }) => {
                                                 ...subjectForm,
                                                 maxMarks: { ...subjectForm.maxMarks, internal: parseInt(e.target.value) || 0 }
                                             })}
-                                            style={{ borderColor: '#E5E7EB' }}
-                                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             min="0"
                                             max="100"
                                         />
                                     </div>
                                     <div>
-                                        <label style={{ color: '#6B7280' }} className="block text-xs font-medium mb-1">
+                                        <label className="block text-xs font-medium text-gray-600 mb-1">
                                             External Marks
                                         </label>
                                         <input
@@ -374,14 +467,13 @@ const AddCourse = ({ setShowAddModal, activeTab }) => {
                                                 ...subjectForm,
                                                 maxMarks: { ...subjectForm.maxMarks, external: parseInt(e.target.value) || 0 }
                                             })}
-                                            style={{ borderColor: '#E5E7EB' }}
-                                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             min="0"
                                             max="100"
                                         />
                                     </div>
                                     <div>
-                                        <label style={{ color: '#6B7280' }} className="block text-xs font-medium mb-1">
+                                        <label className="block text-xs font-medium text-gray-600 mb-1">
                                             Practical Marks
                                         </label>
                                         <input
@@ -391,41 +483,46 @@ const AddCourse = ({ setShowAddModal, activeTab }) => {
                                                 ...subjectForm,
                                                 maxMarks: { ...subjectForm.maxMarks, practical: parseInt(e.target.value) || 0 }
                                             })}
-                                            style={{ borderColor: '#E5E7EB' }}
-                                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             min="0"
                                             max="100"
                                         />
                                     </div>
                                 </div>
-                                <div className="mt-2 text-sm" style={{ color: '#6B7280' }}>
+                                <div className="mt-3 text-sm text-gray-600 font-medium">
                                     Total: {subjectForm.maxMarks.internal + subjectForm.maxMarks.external + subjectForm.maxMarks.practical} marks
                                 </div>
                             </div>
-                        </>
+                        </div>
                     )}
                 </div>
 
-                <div className="p-6 border-t h-[100px] flex justify-end space-x-3" style={{ borderColor: '#E5E7EB' }}>
+                {/* Footer */}
+                <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
                     <button
-                        onClick={() => setShowAddModal(false)}
-                        style={{ borderColor: '#E5E7EB', color: '#6B7280' }}
-                        className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition-colors"
+                        onClick={() => setShowModal(false)}
+                        className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium"
                     >
                         Cancel
                     </button>
                     <button
-                        onClick={activeTab === 'courses' ? handleAddCourse : handleAddSubject}
+                        onClick={activeTab === 'courses' ? handleCourseSubmit : handleSubjectSubmit}
                         disabled={loading}
-                        style={{ backgroundColor: '#2563EB' }}
-                        className="px-4 py-2 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                     >
-                        {loading ? 'Adding...' : `Add ${activeTab === 'courses' ? 'Course' : 'Subject'}`}
+                        {loading ? (
+                            <div className="flex items-center space-x-2">
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                <span>{mode === 'edit' ? 'Updating...' : 'Adding...'}</span>
+                            </div>
+                        ) : (
+                            `${mode === 'edit' ? 'Update' : 'Add'} ${activeTab === 'courses' ? 'Course' : 'Subject'}`
+                        )}
                     </button>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default AddCourse
+export default AddEditModal;

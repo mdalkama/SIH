@@ -24,7 +24,6 @@ import { ordinalIndicators } from '../../../utils/ordinalIndicators';
 const StudentDashboard = ({ user }) => {
     const [activeTab, setActiveTab] = useState('overview');
     console.log(user?.course)
-    // Dummy student data based on schema
 
     // Academic Performance Data
     const academicData = {
@@ -75,7 +74,7 @@ const StudentDashboard = ({ user }) => {
                                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                                     <span>Active Student</span>
                                 </div>
-                                    <p className="text-sm text-gray-600">Semester: {user?.semester + ordinalIndicators (user?.semester)}</p>
+                                    <p className="text-sm text-gray-600">Semester: {user?.semester + ordinalIndicators(user?.semester)}</p>
                                 <p className="text-sm text-gray-600">CGPA: {academicData.overallCGPA}</p>
                             </div>
                         }
