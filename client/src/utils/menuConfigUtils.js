@@ -5,12 +5,15 @@ import {
     Settings,
     Shield,
     Plus,
-    BookOpen,
+    BookOpen, 
+    RefreshCw,
+    CheckCircle,
     ClipboardList,
     GraduationCap,
     Wallet,
     Building2,
     Library,
+    User, // 👈 Added User icon for My Profile
 } from "lucide-react";
 
 // Student
@@ -34,7 +37,6 @@ import CollegeAdminManageRoles from "../components/College/CollegeAdmin/CollegeA
 import CollegeAdminManageCollege from "../components/College/CollegeAdmin/CollegeAdminManageCollege";
 import CollegeAdminManageCourses from "../components/College/CollegeAdmin/CollegeAdminManageCourses";
 
-
 // College Librarian
 import CollegeLibrarianDashboard from "../components/College/CollegeLibrarian/CollegeLibrarianDashboard";
 import CollegeLibrarianIssueBook from "../components/College/CollegeLibrarian/CollegeLibrarianIssueBook";
@@ -46,19 +48,22 @@ import CollegeWardenDashboard from "../components/College/CollegeWarden/CollegeW
 import CollegeWardenManageRooms from "../components/College/CollegeWarden/CollegeWardenManageRooms";
 import CollegeWardenHandleComplaint from "../components/College/CollegeWarden/CollegeWardenHandleComplaint";
 
-// college admission
+// College Admission
 import CollegeAdmissionDashboard from "../components/College/CollegeAdmission/CollegeAdmissionDashboard";
 import CollegeAdmissionManageApplications from "../components/College/CollegeAdmission/CollegeAdmissionManageApplications";
 import CollegeAdmissionStudentEnrollment from "../components/College/CollegeAdmission/CollegeAdmissionStudentEnrollment";
 import CollegeAdmissionDocumentVerification from "../components/College/CollegeAdmission/CollegeAdmissionDocumentVerification";
 
+// College Finance Department
+import CollegeFinanceDashboard from "../components/College/CollegeFinance/CollegeFinanceDashboard";
+import CollegeFinanceVerifyPayment from "../components/College/CollegeFinance/CollegeFinanceVerifyPayment";
+import CollegeFinanceFeeManagement from "../components/College/CollegeFinance/CollegeFinanceFeeManagement";
+import CollegeFinanceRefund from "../components/College/CollegeFinance/CollegeFinanceRefund";
 
+// Common MyProfile Component (for all roles)
+import MyProfile from "../components/Common/MyProfile";
 
-
-
-
-
-// 🎯 Roles mapping with studentRoles & staffRoles
+// 🎯 Roles mapping
 const menuConfig = {
     // 🔹 Student
     student: [
@@ -68,7 +73,7 @@ const menuConfig = {
             icon: Home,
             path: "/student/dashboard",
             component: StudentDashboard,
-            role: "student", // ✅ from studentRoles
+            role: "student",
         },
         {
             id: "course",
@@ -110,6 +115,14 @@ const menuConfig = {
             component: StudentFees,
             role: "student",
         },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/student/my-profile",
+            component: MyProfile,
+            role: "student",
+        },
     ],
 
     // 🔹 University Admin
@@ -120,7 +133,7 @@ const menuConfig = {
             icon: Home,
             path: "/university-admin/dashboard",
             component: UniversityAdminDashboard,
-            role: "UniversityAdmin", // ✅ from staffRoles
+            role: "UniversityAdmin",
         },
         {
             id: "manage-employee",
@@ -154,6 +167,14 @@ const menuConfig = {
             component: UniversityAdminManageCourses,
             role: "UniversityAdmin",
         },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/university-admin/my-profile",
+            component: MyProfile,
+            role: "UniversityAdmin",
+        },
     ],
 
     // 🔹 College Admin
@@ -164,7 +185,7 @@ const menuConfig = {
             icon: Home,
             path: "/college-admin/dashboard",
             component: CollegeAdminDashboard,
-            role: "CollegeAdmin", // ✅ from staffRoles
+            role: "CollegeAdmin",
         },
         {
             id: "manage-employee",
@@ -190,7 +211,17 @@ const menuConfig = {
             component: CollegeAdminManageCourses,
             role: "CollegeAdmin",
         },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/college-admin/my-profile",
+            component: MyProfile,
+            role: "CollegeAdmin",
+        },
     ],
+
+    // 🔹 College Librarian
     CollegeLibrarian: [
         {
             id: "dashboard",
@@ -224,7 +255,17 @@ const menuConfig = {
             component: CollegeLibrarianTrackReturn,
             role: "CollegeLibrarian",
         },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/college-librarian/my-profile",
+            component: MyProfile,
+            role: "CollegeLibrarian",
+        },
     ],
+
+    // 🔹 College Hostel Warden
     CollegeHostelWarden: [
         {
             id: "dashboard",
@@ -250,7 +291,17 @@ const menuConfig = {
             component: CollegeWardenHandleComplaint,
             role: "CollegeHostelWarden",
         },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/college-warden/my-profile",
+            component: MyProfile,
+            role: "CollegeHostelWarden",
+        },
     ],
+
+    // 🔹 College Admission Department
     CollegeAdmissionDepartment: [
         {
             id: "dashboard",
@@ -258,7 +309,7 @@ const menuConfig = {
             icon: Home,
             path: "/college-admission/dashboard",
             component: CollegeAdmissionDashboard,
-            role: "CollegeAdmissionDepartment", // ✅ from staffRoles
+            role: "CollegeAdmissionDepartment",
         },
         {
             id: "manage-applications",
@@ -284,14 +335,67 @@ const menuConfig = {
             component: CollegeAdmissionDocumentVerification,
             role: "CollegeAdmissionDepartment",
         },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/college-admission/my-profile",
+            component: MyProfile,
+            role: "CollegeAdmissionDepartment",
+        },
     ],
+
+    CollegeFinanceBody: [
+        {
+            id: "dashboard",
+            label: "Dashboard",
+            icon: Home,
+            path: "/college-finance/dashboard",
+            component: CollegeFinanceDashboard,
+            role: "CollegeFinanceBody",
+        },
+        {
+            id: "verify-payment",
+            label: "Verify Payment",
+            icon: CheckCircle,
+            path: "/college-finance/verify-payment",
+            component: CollegeFinanceVerifyPayment,
+            role: "CollegeFinanceBody",
+        },
+        {
+            id: "fee-management",
+            label: "Fee Management",
+            icon: Wallet,
+            path: "/college-finance/fee-management",
+            component: CollegeFinanceFeeManagement,
+            role: "CollegeFinanceBody",
+        },
+        {
+            id: "refund",
+            label: "Refund",
+            icon: RefreshCw,
+            path: "/college-finance/refund",
+            component: CollegeFinanceRefund,
+            role: "CollegeFinanceBody",
+        },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/college-finance/my-profile",
+            component: MyProfile,
+            role: "CollegeFinanceBody",
+        },
+    ],
+
+    // 🔹 College Faculty
     CollegeFaculty: [
         {
             id: "dashboard",
             label: "Dashboard",
             icon: Home,
             path: "/college-faculty/dashboard",
-            role: "CollegeFaculty", // ✅ from staffRoles
+            role: "CollegeFaculty",
         },
         {
             id: "courses",
@@ -312,6 +416,14 @@ const menuConfig = {
             label: "Settings",
             icon: Settings,
             path: "/college-faculty/settings",
+            role: "CollegeFaculty",
+        },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/college-faculty/my-profile",
+            component: MyProfile,
             role: "CollegeFaculty",
         },
     ],
