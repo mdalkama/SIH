@@ -12,8 +12,8 @@ export const staffRoles = [
     'CollegeHostelWarden', //done
     'CollegeLibrarian', //done
     'CollegeAdmissionDepartment', //done
-    'CollegeFinanceBody', //
-    'CollegeExaminationBody'
+    'CollegeFinanceBody', //done
+    'CollegeExaminationBody' //
 ];
 
 export const studentRoles = [
