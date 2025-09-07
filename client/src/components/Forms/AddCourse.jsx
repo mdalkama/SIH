@@ -6,7 +6,11 @@ const AddEditModal = ({
     setShowModal,
     activeTab,
     mode = 'add', // 'add' or 'edit'
-    initialData = null
+    initialData = null,
+    onAddSuccess,
+    onAddError,
+    onUpdateSuccess,
+    onUpdateError,
 }) => {
     const [loading, setLoading] = useState(false);
 
@@ -61,17 +65,33 @@ const AddEditModal = ({
         }
     }, [mode, initialData, activeTab]);
 
-    // Generate semesters when totalSemester changes
+    // Generate/resize semesters when totalSemester changes (works for add and edit)
     useEffect(() => {
-        if (mode === 'add' || !initialData?.semesters) {
-            const newSemesters = Array.from({ length: totalSemester }, (_, index) => ({
-                semesterNumber: index + 1,
-                subjects: [],
+        setSemesters((prev) => {
+            const desired = parseInt(totalSemester) || 0;
+            const existing = Array.isArray(prev) ? prev : [];
+
+            // Keep existing semesters up to the desired count and normalize
+            const trimmed = existing.slice(0, desired).map((s, i) => ({
+                semesterNumber: i + 1,
+                subjects: Array.isArray(s?.subjects) ? s.subjects : [],
             }));
-            
-            setSemesters(newSemesters);
-        }
-    }, [totalSemester, mode, initialData]);
+
+            // If we need more, append fresh semesters
+            if (trimmed.length < desired) {
+                const toAdd = Array.from(
+                    { length: desired - trimmed.length },
+                    (_, idx) => ({
+                        semesterNumber: trimmed.length + idx + 1,
+                        subjects: [],
+                    })
+                );
+                return [...trimmed, ...toAdd];
+            }
+
+            return trimmed;
+        });
+    }, [totalSemester]);
 
     // Add subject to semester
     const handleAddSubjectToSemester = (semIndex, subjectId) => {
@@ -125,14 +145,22 @@ const AddEditModal = ({
             const data = await res.json();
 
             if (data.success) {
+                // Inform parent for state update
+                if (mode === 'edit') {
+                    onUpdateSuccess && onUpdateSuccess(data);
+                } else {
+                    onAddSuccess && onAddSuccess(data);
+                }
                 resetForms();
                 setShowModal(false);
-                alert(`Course ${mode === 'edit' ? 'updated' : 'added'} successfully`);
             } else {
-                alert(`Error ${mode === 'edit' ? 'updating' : 'adding'} course`);
+                const err = new Error(`Error ${mode === 'edit' ? 'updating' : 'adding'} course`);
+                if (mode === 'edit') onUpdateError && onUpdateError(err);
+                else onAddError && onAddError(err);
             }
         } catch (error) {
-            alert(`Error ${mode === 'edit' ? 'updating' : 'adding'} course`);
+            if (mode === 'edit') onUpdateError && onUpdateError(error);
+            else onAddError && onAddError(error);
         } finally {
             setLoading(false);
         }
@@ -158,14 +186,21 @@ const AddEditModal = ({
             const data = await res.json();
 
             if (data.success) {
+                if (mode === 'edit') {
+                    onUpdateSuccess && onUpdateSuccess(data);
+                } else {
+                    onAddSuccess && onAddSuccess(data);
+                }
                 resetForms();
                 setShowModal(false);
-                alert(`Subject ${mode === 'edit' ? 'updated' : 'added'} successfully`);
             } else {
-                alert(`Error ${mode === 'edit' ? 'updating' : 'adding'} subject`);
+                const err = new Error(`Error ${mode === 'edit' ? 'updating' : 'adding'} subject`);
+                if (mode === 'edit') onUpdateError && onUpdateError(err);
+                else onAddError && onAddError(err);
             }
         } catch (error) {
-            alert(`Error ${mode === 'edit' ? 'updating' : 'adding'} subject`);
+            if (mode === 'edit') onUpdateError && onUpdateError(error);
+            else onAddError && onAddError(error);
         } finally {
             setLoading(false);
         }
