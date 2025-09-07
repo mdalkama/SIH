@@ -85,6 +85,13 @@ import CollegeHODStudentPerformance from "../components/College/CollegeHOD/Colle
 import CollegeHODMeetings from "../components/College/CollegeHOD/CollegeHODMeetings";
 import CollegeHODSchedule from "../components/College/CollegeHOD/CollegeHODSchedule.jsx";
 
+// College Dean
+import CollegeDeanDashboard from "../components/College/CollegeDean/CollegeDeanDashboard";
+import CollegeDeanApproveCourses from "../components/College/CollegeDean/CollegeDeanApproveCourses";
+import CollegeDeanEvaluateFaculty from "../components/College/CollegeDean/CollegeDeanEvaluateFaculty";
+import CollegeDeanBudgetResources from "../components/College/CollegeDean/CollegeDeanBudgetResources";
+
+
 // Common MyProfile Component (for all roles)
 import MyProfile from "../components/Common/MyProfile";
 
@@ -243,6 +250,49 @@ const menuConfig = {
             path: "/college-admin/my-profile",
             component: MyProfile,
             role: "CollegeAdmin",
+        },
+    ],
+
+    CollegeDean: [
+        {
+            id: "dashboard",
+            label: "Dashboard",
+            icon: Home,
+            path: "/college-dean/dashboard",
+            component: CollegeDeanDashboard,
+            role: "CollegeDean",
+        },
+        {
+            id: "approve-courses",
+            label: "Approve Courses",
+            icon: BookOpen,
+            path: "/college-dean/approve-courses",
+            component: CollegeDeanApproveCourses,
+            role: "CollegeDean",
+        },
+        {
+            id: "evaluate-faculty",
+            label: "Evaluate Faculty",
+            icon: Users,
+            path: "/college-dean/evaluate-faculty",
+            component: CollegeDeanEvaluateFaculty,
+            role: "CollegeDean",
+        },
+        {
+            id: "budget-resources",
+            label: "Budget & Resources",
+            icon: Wallet,
+            path: "/college-dean/budget-resources",
+            component: CollegeDeanBudgetResources,
+            role: "CollegeDean",
+        },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/college-dean/my-profile",
+            component: MyProfile,
+            role: "CollegeDean",
         },
     ],
 
