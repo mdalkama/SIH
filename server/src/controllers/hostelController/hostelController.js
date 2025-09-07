@@ -595,8 +595,8 @@ export const getBeds = async (req, res) => {
         // Beds with student details if occupied
         const bedsWithStudents = await Promise.all(
             room.beds.map(async (bed) => {
-                if (bed.isOccupied && bed.studentId) {
-                    const student = await Student.findById(bed.studentId).select("name branch registrationNumber");
+                if (bed.isOccupied && bed._id) {
+                    const student = await Student.findById(bed._id).select("name degree");
                     return {
                         ...bed.toObject(),
                         student: student ? student.toObject() : null,
