@@ -27,47 +27,42 @@ const UniversityAdminManageRoles = () => {
         { value: 'UniversityExaminationBody', label: 'Examination Body Member', endpoint: '/add-exam-body' }
     ];
 
-    const [employees] = useState([
-        {
-            id: 1,
-            name: 'Dr. John Smith',
-            email: 'john.smith@university.edu',
-            staffId: 'UGB001',
-            role: 'UniversityGoverningBody',
-            department: 'Administration',
-            phone: '+91-9876543210',
-            salary: 85000,
-            gender: 'Male',
-            status: 'Active',
-            joinDate: '2023-01-15'
-        },
-        {
-            id: 2,
-            name: 'Dr. Sarah Johnson',
-            email: 'sarah.johnson@university.edu',
-            staffId: 'REG001',
-            role: 'UniversityRegistrar',
-            department: 'Registry',
-            phone: '+91-9876543211',
-            salary: 95000,
-            gender: 'Female',
-            status: 'Active',
-            joinDate: '2023-02-20'
-        },
-        {
-            id: 3,
-            name: 'Prof. Michael Brown',
-            email: 'michael.brown@university.edu',
-            staffId: 'EXM001',
-            role: 'UniversityExaminationBody',
-            department: 'Examinations',
-            phone: '+91-9876543212',
-            salary: 88000,
-            gender: 'Male',
-            status: 'Inactive',
-            joinDate: '2023-03-10'
-        }
-    ]);
+    const [employees, setEmployees] = useState([]);
+    useEffect(() => {
+        const fetchStaff = async () => {
+            setLoading(true);
+            try {
+                const res = await fetch('https://sih-4ptm.onrender.com/api/v1/add-university-Staff', {
+                    method: 'GET',
+                    credentials: 'include',
+                });
+                const data = await res.json();
+                console.log('University staff API response:', data);
+
+                const mapped = (data?.staff || []).map((s) => ({
+                    id: s._id,
+                    name: s.name,
+                    email: s.email,
+                    staffId: s.staffId,
+                    role: s.role,
+                    department: s.department,
+                    phone: s.phone,
+                    salary: s.salary,
+                    gender: s.gender ? s.gender.charAt(0).toUpperCase() + s.gender.slice(1) : '',
+                    status: s.status ? s.status.charAt(0).toUpperCase() + s.status.slice(1) : 'Active',
+                    joinDate: s.createdAt ? s.createdAt.slice(0, 10) : '',
+                }));
+
+                setEmployees(mapped);
+            } catch (e) {
+                console.error('Failed to fetch university staff:', e);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStaff();
+    }, []);
 
     const filteredEmployees = employees.filter(emp => {
         const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
