@@ -570,11 +570,6 @@ export const addBed = async (req, res) => {
     }
 };
 
-// ✅ Get All Beds in a Room
-import mongoose from "mongoose";
-import Hostel from "../../models/hostelModel.js";
-import Student from "../../models/studentModel.js";
-
 export const getBeds = async (req, res) => {
     try {
         const { hostelId, floorId, roomId } = req.params;
