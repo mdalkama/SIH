@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Building, MapPin, Users, Bed, ArrowRight, ArrowLeft, UserCheck, UserX, ArrowUpDown } from 'lucide-react';
+import { Plus, Building, MapPin, Users, Bed, ArrowRight, ArrowLeft, UserCheck, UserX, ArrowUpDown, Home, AlertCircle, CheckCircle } from 'lucide-react';
 import ShiftStudentForm from './components/ShiftStudentForm';
 import AddHostelForm from './components/AddHostelForm';
 import AddFloorForm from './components/AddFloorForm';
@@ -19,31 +19,31 @@ const HostelManagementSystem = () => {
     const BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/hostel';
 
     // Fetch hostels
-const fetchHostels = async () => {
-    try {
-        setLoading(true);
-        const res = await fetch("https://sih-4ptm.onrender.com/api/v1/hostel", {
-            method: "GET",
-            credentials: "include", // send cookies/session
-        });
+    const fetchHostels = async () => {
+        try {
+            setLoading(true);
+            const res = await fetch("https://sih-4ptm.onrender.com/api/v1/hostel", {
+                method: "GET",
+                credentials: "include", // send cookies/session
+            });
 
-        const data = await res.json();
-        if (data.success) {
-            setHostels(data.data);
-            console.log(data);
-        } else {
-            console.error("Failed to fetch hostels:", data.error);
+            const data = await res.json();
+            if (data.success) {
+                setHostels(data.data);
+                console.log(data);
+            } else {
+                console.error("Failed to fetch hostels:", data.error);
+            }
+        } catch (err) {
+            console.error("Error fetching hostels:", err);
+        } finally {
+            setLoading(false);
         }
-    } catch (err) {
-        console.error("Error fetching hostels:", err);
-    } finally {
-        setLoading(false);
-    }
-};
+    };
 
-useEffect(() => {
-    fetchHostels();
-}, []);
+    useEffect(() => {
+        fetchHostels();
+    }, []);
 
 
     const tabs = [
@@ -111,8 +111,8 @@ useEffect(() => {
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`flex items-center px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.id
-                                            ? 'border-blue-600 text-blue-600'
-                                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                                        ? 'border-blue-600 text-blue-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700'
                                         }`}
                                 >
                                     <Icon className="w-4 h-4 mr-2" />
@@ -200,6 +200,8 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
             const data = await res.json();
             if (data.success) {
                 setBeds(data.data);
+                console.log(data.data);
+                
             } else {
                 console.error("Failed to fetch beds:", data.error);
             }
@@ -247,8 +249,8 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
                                 <div className="flex items-center justify-between mb-2">
                                     <h3 className="text-lg font-medium text-gray-900">Bed {bed.bedNumber}</h3>
                                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${bed.isOccupied
-                                            ? 'bg-red-100 text-red-700'
-                                            : 'bg-green-100 text-green-700'
+                                        ? 'bg-red-100 text-red-700'
+                                        : 'bg-green-100 text-green-700'
                                         }`}>
                                         {bed.isOccupied ? 'Occupied' : 'Vacant'}
                                     </span>
@@ -264,52 +266,171 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
         );
     }
 
+    const getRoomOccupancyColor = (occupancyRate) => {
+        if (occupancyRate === 0) return 'text-emerald-600 bg-emerald-50 border-emerald-200';
+        if (occupancyRate <= 50) return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+        if (occupancyRate < 100) return 'text-orange-600 bg-orange-50 border-orange-200';
+        return 'text-red-600 bg-red-50 border-red-200';
+    };
+
+    const getStatusIcon = (occupancyRate) => {
+        if (occupancyRate === 0) return <CheckCircle className="w-4 h-4" />;
+        if (occupancyRate < 100) return <AlertCircle className="w-4 h-4" />;
+        return <Users className="w-4 h-4" />;
+    };
+
+
+    
     if (selectedHostel && selectedFloor) {
         return (
-            <div>
-                <div className="flex items-center mb-6">
-                    <button onClick={onBack} className="flex items-center text-blue-600 hover:text-blue-700 mr-4">
-                        <ArrowLeft className="w-4 h-4 mr-1" />
-                        Back
-                    </button>
-                    <h2 className="text-xl font-semibold text-gray-900">
-                        Rooms on Floor {selectedFloor.floorNumber}
-                    </h2>
+            <div className="p-6 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+                {/* Header Section */}
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center">
+                        <button
+                            onClick={onBack}
+                            className="flex items-center px-4 py-2 text-blue-600 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg transition-all duration-200 hover:shadow-sm mr-6"
+                        >
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Back to Floors
+                        </button>
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                                Floor {selectedFloor?.floorNumber || '1'} Rooms
+                            </h1>
+                            <p className="text-gray-600">
+                                {rooms.length} rooms available • Manage occupancy and bed allocation
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Floor Summary Card */}
+                    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                        <div className="flex items-center space-x-4">
+                            <div className="text-center">
+                                <p className="text-2xl font-bold text-blue-600">
+                                    {rooms.reduce((sum, room) => sum + room.totalBeds, 0)}
+                                </p>
+                                <p className="text-xs text-gray-500">Total Beds</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-2xl font-bold text-red-500">
+                                    {rooms.reduce((sum, room) => sum + room.allocatedBeds, 0)}
+                                </p>
+                                <p className="text-xs text-gray-500">Occupied</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-2xl font-bold text-green-500">
+                                    {rooms.reduce((sum, room) => sum + room.vacantBeds, 0)}
+                                </p>
+                                <p className="text-xs text-gray-500">Available</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
+                {/* Loading State */}
                 {loading ? (
-                    <div className="flex justify-center py-8">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <div className="flex flex-col items-center justify-center py-16">
+                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mb-4"></div>
+                        <p className="text-gray-600">Loading rooms...</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {rooms.map((room) => (
-                            <div
-                                key={room._id}
-                                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                                onClick={() => onSelectRoom(room)}
-                            >
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="text-lg font-medium text-gray-900">Room {room.roomNumber}</h3>
-                                    <ArrowRight className="w-4 h-4 text-gray-400" />
+                    /* Rooms Grid */
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {rooms.map((room) => {
+                            const occupancyRate = (room.allocatedBeds / room.totalBeds) * 100;
+                            const occupancyColorClass = getRoomOccupancyColor(occupancyRate);
+
+                            return (
+                                <div
+                                    key={room._id}
+                                    className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+                                    onClick={() => onSelectRoom(room)}
+                                >
+                                    {/* Card Header */}
+                                    <div className="p-5 pb-3">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center space-x-2">
+                                                <div className="p-2 bg-blue-100 rounded-lg">
+                                                    <Home className="w-5 h-5 text-blue-600" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-lg font-semibold text-gray-900">
+                                                        Room {room.roomNumber}
+                                                    </h3>
+                                                    <p className="text-sm text-gray-500">
+                                                        {room.roomType || 'Standard'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-200" />
+                                        </div>
+
+                                        {/* Occupancy Status Badge */}
+                                        <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${occupancyColorClass} mb-4`}>
+                                            {getStatusIcon(occupancyRate)}
+                                            <span className="ml-2">
+                                                {occupancyRate === 0 ? 'Available' :
+                                                    occupancyRate === 100 ? 'Full' :
+                                                        `${Math.round(occupancyRate)}% Occupied`}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Bed Statistics */}
+                                    <div className="px-5 pb-5">
+                                        <div className="grid grid-cols-3 gap-3">
+                                            <div className="text-center p-3 bg-gray-50 rounded-lg">
+                                                <div className="flex items-center justify-center mb-1">
+                                                    <Bed className="w-4 h-4 text-gray-600" />
+                                                </div>
+                                                <p className="text-xl font-bold text-gray-900">{room.totalBeds}</p>
+                                                <p className="text-xs text-gray-500">Total</p>
+                                            </div>
+                                            <div className="text-center p-3 bg-red-50 rounded-lg">
+                                                <div className="flex items-center justify-center mb-1">
+                                                    <Users className="w-4 h-4 text-red-600" />
+                                                </div>
+                                                <p className="text-xl font-bold text-red-600">{room.allocatedBeds}</p>
+                                                <p className="text-xs text-red-500">Occupied</p>
+                                            </div>
+                                            <div className="text-center p-3 bg-green-50 rounded-lg">
+                                                <div className="flex items-center justify-center mb-1">
+                                                    <CheckCircle className="w-4 h-4 text-green-600" />
+                                                </div>
+                                                <p className="text-xl font-bold text-green-600">{room.vacantBeds}</p>
+                                                <p className="text-xs text-green-500">Vacant</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Progress Bar */}
+                                    <div className="px-5 pb-5">
+                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                            <div
+                                                className={`h-2 rounded-full transition-all duration-300 ${occupancyRate === 0 ? 'bg-green-500' :
+                                                        occupancyRate <= 50 ? 'bg-yellow-500' :
+                                                            occupancyRate < 100 ? 'bg-orange-500' : 'bg-red-500'
+                                                    }`}
+                                                style={{ width: `${occupancyRate}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <p className="text-sm text-gray-600 mb-2">Type: {room.roomType || 'Standard'}</p>
-                                <div className="grid grid-cols-3 gap-2 text-sm">
-                                    <div>
-                                        <span className="text-gray-500">Total:</span>
-                                        <span className="ml-1 font-medium">{room.totalBeds}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-gray-500">Occupied:</span>
-                                        <span className="ml-1 font-medium text-red-600">{room.allocatedBeds}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-gray-500">Vacant:</span>
-                                        <span className="ml-1 font-medium text-green-600">{room.vacantBeds}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
+                    </div>
+                )}
+
+                {/* Empty State */}
+                {!loading && rooms.length === 0 && (
+                    <div className="text-center py-16">
+                        <div className="p-4 bg-gray-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                            <Home className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No rooms found</h3>
+                        <p className="text-gray-600">No rooms are available on this floor.</p>
                     </div>
                 )}
             </div>
@@ -347,36 +468,13 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
                         </div>
                     ) : (
                         <>
-                            {/* Stats Overview */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                                    <div className="text-2xl font-bold text-gray-900">{floors.length}</div>
-                                    <div className="text-sm text-gray-500 mt-1">Total Floors</div>
-                                </div>
-                                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                                    <div className="text-2xl font-bold text-blue-600">
-                                        {floors.reduce((sum, floor) => sum + floor.totalRooms, 0)}
-                                    </div>
-                                    <div className="text-sm text-gray-500 mt-1">Total Rooms</div>
-                                </div>
-                                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                                    <div className="text-2xl font-bold text-green-600">
-                                        {floors.reduce((sum, floor) => sum + floor.vacantBeds, 0)}
-                                    </div>
-                                    <div className="text-sm text-gray-500 mt-1">Vacant Beds</div>
-                                </div>
-                                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                                    <div className="text-2xl font-bold text-orange-600">
-                                        {floors.reduce((sum, floor) => sum + floor.allocatedBeds, 0)}
-                                    </div>
-                                    <div className="text-sm text-gray-500 mt-1">Occupied Beds</div>
-                                </div>
-                            </div>
-
                             {/* Floors Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {floors.map((floor) => {
-                                    const occupancyRate = ((Number(floor?.allocatedBeds) || 0  / Number(floor?.totalBeds) || 0) * 100).toFixed(0) || 0;
+                                    const occupancyRate = floor?.totalBeds
+                                        ? (((Number(floor?.allocatedBeds) || 0) / (Number(floor?.totalBeds) || 1)) * 100).toFixed(0)
+                                        : 0;
+
 
                                     return (
                                         <div
@@ -461,10 +559,10 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
                                             {/* Status Badge */}
                                             <div className="px-6 pb-6">
                                                 <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${floor.vacantBeds === 0
-                                                        ? 'bg-red-100 text-red-800'
-                                                        : floor.vacantBeds <= 2
-                                                            ? 'bg-yellow-100 text-yellow-800'
-                                                            : 'bg-green-100 text-green-800'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : floor.vacantBeds <= 2
+                                                        ? 'bg-yellow-100 text-yellow-800'
+                                                        : 'bg-green-100 text-green-800'
                                                     }`}>
                                                     {floor.vacantBeds === 0
                                                         ? 'Full'
@@ -591,8 +689,8 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
                                         <div className="w-full bg-gray-200 rounded-full h-2">
                                             <div
                                                 className={`h-2 rounded-full transition-all duration-300 ${occupancyRate >= 90 ? 'bg-red-500' :
-                                                        occupancyRate >= 70 ? 'bg-yellow-500' :
-                                                            'bg-green-500'
+                                                    occupancyRate >= 70 ? 'bg-yellow-500' :
+                                                        'bg-green-500'
                                                     }`}
                                                 style={{ width: `${occupancyRate}%` }}
                                             ></div>
