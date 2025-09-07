@@ -15,7 +15,7 @@ const getRoleDisplayName = (roleKey) => {
         CollegeLibrarian: "Librarian",
         CollegeAdmissionDepartment: "Admission Department",
         CollegeFinance: "Finance Department",
-        CollegeExamBody: "Examination Controller"
+        CollegeExaminationBody: "Examination Controller"
     };
 
     return roleNames[roleKey] || roleKey;

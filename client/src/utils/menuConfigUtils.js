@@ -3,12 +3,16 @@ import {
     Home,
     Folder,
     Settings,
+    FileText,
+    Users,
     Shield,
     Plus,
-    BookOpen, 
+    BookOpen,
     RefreshCw,
     CheckCircle,
     ClipboardList,
+    CalendarDays,
+    Calendar,
     GraduationCap,
     Wallet,
     Building2,
@@ -59,6 +63,27 @@ import CollegeFinanceDashboard from "../components/College/CollegeFinance/Colleg
 import CollegeFinanceVerifyPayment from "../components/College/CollegeFinance/CollegeFinanceVerifyPayment";
 import CollegeFinanceFeeManagement from "../components/College/CollegeFinance/CollegeFinanceFeeManagement";
 import CollegeFinanceRefund from "../components/College/CollegeFinance/CollegeFinanceRefund";
+
+// College Examination Body
+import CollegeExamDashboard from "../components/College/CollegeExamination/CollegeExamDashboard";
+import CollegeExamSchedule from "../components/College/CollegeExamination/CollegeExamSchedule";
+import CollegeExternalExamRegistration from "../components/College/CollegeExamination/CollegeExternalExamRegistration";
+
+// College Faculty
+import CollegeFacultyDashboard from "../components/College/CollegeFaculty/CollegeFacultyDashboard";
+import CollegeFacultyCourses from "../components/College/CollegeFaculty/CollegeFacultyCourses";
+import CollegeFacultyAttendance from "../components/College/CollegeFaculty/CollegeFacultyAttendance";
+import CollegeFacultyMarks from "../components/College/CollegeFaculty/CollegeFacultyMarks";
+import CollegeFacultyAssignments from "../components/College/CollegeFaculty/CollegeFacultyAssignments";
+import CollegeFacultyMentorship from "../components/College/CollegeFaculty/CollegeFacultyMentorship";
+
+//College HOD
+import CollegeHODDashboard from "../components/College/CollegeHOD/CollegeHODDashboard";
+import CollegeHODManageFaculty from "../components/College/CollegeHOD/CollegeHODManageFaculty";
+import CollegeHODCourseAllocation from "../components/College/CollegeHOD/CollegeHODCourseAllocation";
+import CollegeHODStudentPerformance from "../components/College/CollegeHOD/CollegeHODStudentPerformance";
+import CollegeHODMeetings from "../components/College/CollegeHOD/CollegeHODMeetings";
+import CollegeHODSchedule from "../components/College/CollegeHOD/CollegeHODSchedule.jsx";
 
 // Common MyProfile Component (for all roles)
 import MyProfile from "../components/Common/MyProfile";
@@ -218,6 +243,124 @@ const menuConfig = {
             path: "/college-admin/my-profile",
             component: MyProfile,
             role: "CollegeAdmin",
+        },
+    ],
+
+     CollegeHOD: [
+        {
+            id: "dashboard",
+            label: "Dashboard",
+            icon: Home,
+            path: "/college-hod/dashboard",
+            component: CollegeHODDashboard,
+            role: "CollegeHOD",
+        },
+        {
+            id: "manage-faculty",
+            label: "Manage Faculty",
+            icon: Users,
+            path: "/college-hod/manage-faculty",
+            component: CollegeHODManageFaculty,
+            role: "CollegeHOD",
+        },
+        {
+            id: "course-allocation",
+            label: "Course Allocation",
+            icon: BookOpen,
+            path: "/college-hod/course-allocation",
+            component: CollegeHODCourseAllocation,
+            role: "CollegeHOD",
+        },
+        {
+            id: "student-performance",
+            label: "Student Performance",
+            icon: GraduationCap,
+            path: "/college-hod/student-performance",
+            component: CollegeHODStudentPerformance,
+            role: "CollegeHOD",
+        },
+        {
+            id: "schedule",
+            label: "Schedule",
+            icon: Calendar,
+            path: "/college-hod/schedule",
+            component: CollegeHODSchedule,
+            role: "CollegeHOD",
+        },
+        {
+            id: "meetings",
+            label: "Meetings & Notices",
+            icon: ClipboardList,
+            path: "/college-hod/meetings",
+            component: CollegeHODMeetings,
+            role: "CollegeHOD",
+        },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/college-hod/my-profile",
+            component: MyProfile,
+            role: "CollegeHOD",
+        },
+    ],
+
+    CollegeFaculty: [
+        {
+            id: "dashboard",
+            label: "Dashboard",
+            icon: Home,
+            path: "/college-faculty/dashboard",
+            component: CollegeFacultyDashboard,
+            role: "CollegeFaculty",
+        },
+        {
+            id: "courses",
+            label: "Manage Courses",
+            icon: BookOpen,
+            path: "/college-faculty/courses",
+            component: CollegeFacultyCourses,
+            role: "CollegeFaculty",
+        },
+        {
+            id: "attendance",
+            label: "Mark Attendance",
+            icon: ClipboardList,
+            path: "/college-faculty/attendance",
+            component: CollegeFacultyAttendance,
+            role: "CollegeFaculty",
+        },
+        {
+            id: "marks",
+            label: "Upload Marks",
+            icon: GraduationCap,
+            path: "/college-faculty/marks",
+            component: CollegeFacultyMarks,
+            role: "CollegeFaculty",
+        },
+        {
+            id: "assignments",
+            label: "Assignments & Materials",
+            icon: FileText,
+            path: "/college-faculty/assignments",
+            component: CollegeFacultyAssignments,
+            role: "CollegeFaculty",
+        },
+        {
+            id: "mentorship",
+            label: "Student Mentorship",
+            icon: Users,
+            path: "/college-faculty/mentorship",
+            component: CollegeFacultyMentorship,
+            role: "CollegeFaculty",
+        },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/college-faculty/my-profile",
+            component: MyProfile,
+            role: "CollegeFaculty",
         },
     ],
 
@@ -388,45 +531,41 @@ const menuConfig = {
         },
     ],
 
-    // 🔹 College Faculty
-    CollegeFaculty: [
+    CollegeExaminationBody: [
         {
             id: "dashboard",
             label: "Dashboard",
             icon: Home,
-            path: "/college-faculty/dashboard",
-            role: "CollegeFaculty",
+            path: "/college-exam/dashboard",
+            component: CollegeExamDashboard,
+            role: "CollegeExaminationBody",
         },
         {
-            id: "courses",
-            label: "Courses",
-            icon: BookOpen,
-            path: "/college-faculty/courses",
-            role: "CollegeFaculty",
+            id: "schedule-exam",
+            label: "Schedule Exam",
+            icon: CalendarDays,
+            path: "/college-exam/schedule-exam",
+            component: CollegeExamSchedule,
+            role: "CollegeExaminationBody",
         },
         {
-            id: "students",
-            label: "Students",
-            icon: GraduationCap,
-            path: "/college-faculty/students",
-            role: "CollegeFaculty",
-        },
-        {
-            id: "settings",
-            label: "Settings",
-            icon: Settings,
-            path: "/college-faculty/settings",
-            role: "CollegeFaculty",
+            id: "external-exam-registration",
+            label: "External Exam Registration",
+            icon: ClipboardList,
+            path: "/college-exam/external-exam-registration",
+            component: CollegeExternalExamRegistration,
+            role: "CollegeExaminationBody",
         },
         {
             id: "my-profile",
             label: "My Profile",
             icon: User,
-            path: "/college-faculty/my-profile",
+            path: "/college-exam/my-profile",
             component: MyProfile,
-            role: "CollegeFaculty",
+            role: "CollegeExaminationBody",
         },
     ],
+
 };
 
 export default menuConfig;
