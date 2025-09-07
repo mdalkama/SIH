@@ -13,87 +13,63 @@ const VacateBedForm = ({ hostels }) => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
 
-   const fetchFloors = async (hostelId) => {
-    try {
-        setLoading(true);
-        const res = await fetch(
-            `https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors`,
-            {
-                method: "GET",
-                credentials: "include", // include cookies/session
-                headers: {
-                    "Content-Type": "application/json",
-                },
+    const fetchFloors = async (hostelId) => {
+        try {
+            const res = await fetch(
+                `https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors`,
+                { credentials: "include" }
+            );
+            const data = await res.json();
+            if (data.success) {
+                setFloors(data.data || []);
+            } else {
+                console.error("Failed to fetch floors:", data.error || "Unknown error");
             }
-        );
-
-        const data = await res.json();
-        if (data.success) {
-            setFloors(data.data);
-        } else {
-            console.error("Failed to fetch floors:", data.error || "Unknown error");
+        } catch (err) {
+            console.error("Error fetching floors:", err);
         }
-    } catch (error) {
-        console.error("Error fetching floors:", error);
-    } finally {
-        setLoading(false);
-    }
-};
+    };
 
-const fetchRooms = async (hostelId, floorId) => {
-    try {
-        setLoading(true);
-        const res = await fetch(
-            `https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms`,
-            {
-                method: "GET",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+    const fetchRooms = async (hostelId, floorId) => {
+        try {
+            const res = await fetch(
+                `https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms`,
+                { credentials: "include" }
+            );
+            const data = await res.json();
+            if (data.success) {
+                setRooms(data.data || []);
+            } else {
+                console.error("Failed to fetch rooms:", data.error || "Unknown error");
             }
-        );
-
-        const data = await res.json();
-        if (data.success) {
-            setRooms(data.data);
-        } else {
-            console.error("Failed to fetch rooms:", data.error || "Unknown error");
+        } catch (err) {
+            console.error("Error fetching rooms:", err);
         }
-    } catch (error) {
-        console.error("Error fetching rooms:", error);
-    } finally {
-        setLoading(false);
-    }
-};
+    };
 
-const fetchBeds = async (hostelId, floorId, roomId) => {
-    try {
-        setLoading(true);
-        const res = await fetch(
-            `https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms/${roomId}/beds`,
-            {
-                method: "GET",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+    const fetchBeds = async (hostelId, floorId, roomId) => {
+        try {
+            const res = await fetch(
+                `https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms/${roomId}/beds`,
+                { credentials: "include" }
+            );
+            const data = await res.json();
+            if (data.success) {
+                // ✅ Show vacant + occupied, with vacancy flag
+                setBeds(
+                    (data.data || []).map((bed) => ({
+                        ...bed,
+                        isVacant: !bed.isOccupied,
+                    }))
+                );
+            } else {
+                console.error("Failed to fetch beds:", data.error || "Unknown error");
             }
-        );
-
-        const data = await res.json();
-        if (data.success) {
-            // Only show occupied beds
-            setBeds(data.data.filter((bed) => bed.isOccupied));
-        } else {
-            console.error("Failed to fetch beds:", data.error || "Unknown error");
+        } catch (err) {
+            console.error("Error fetching beds:", err);
         }
-    } catch (error) {
-        console.error("Error fetching beds:", error);
-    } finally {
-        setLoading(false);
-    }
-};
+    };
+
 
 
     const handleHostelChange = (hostelId) => {
@@ -125,34 +101,47 @@ const fetchBeds = async (hostelId, floorId, roomId) => {
             setBeds([]);
         }
     };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setMessage('');
 
         try {
-            const response = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${formData.hostelId}/floors/${formData.floorId}/rooms/${formData.roomId}/beds/${formData.bedId}/vacate`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
+            const res = await fetch(
+                `https://sih-4ptm.onrender.com/api/v1/hostel/${formData.hostelId}/floors/${formData.floorId}/rooms/${formData.roomId}/beds/${formData.bedId}/vacate`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    credentials: "include", // agar session/cookies use ho rahe ho
                 }
-            });
+            );
 
-            const data = await response.json();
+            const data = await res.json();
 
             if (data.success) {
-                setMessage('Bed vacated successfully!');
-                setFormData({ hostelId: '', floorId: '', roomId: '', bedId: '' });
+                setMessage("Bed vacated successfully!");
+                setFormData({
+                    hostelId: "",
+                    floorId: "",
+                    roomId: "",
+                    bedId: "",
+                });
+
+                // Optionally refresh beds list
+                // fetchBeds(formData.hostelId, formData.floorId, formData.roomId);
             } else {
-                setMessage(data.error || 'Failed to vacate bed');
+                setMessage(data.error || "Failed to vacate bed");
             }
-        } catch (error) {
-            setMessage('Error vacating bed');
+        } catch (err) {
+            console.error("Error vacating bed:", err);
+            setMessage("Error vacating bed");
         } finally {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="max-w-md mx-auto">

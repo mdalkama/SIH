@@ -318,55 +318,179 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
 
     if (selectedHostel) {
         return (
-            <div>
-                <div className="flex items-center mb-6">
-                    <button onClick={onBack} className="flex items-center text-blue-600 hover:text-blue-700 mr-4">
-                        <ArrowLeft className="w-4 h-4 mr-1" />
-                        Back
-                    </button>
-                    <h2 className="text-xl font-semibold text-gray-900">
-                        Floors in {selectedHostel.name}
-                    </h2>
-                </div>
-
-                {loading ? (
-                    <div className="flex justify-center py-8">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {floors.map((floor) => (
-                            <div
-                                key={floor._id}
-                                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                                onClick={() => onSelectFloor(floor)}
+            <div className="min-h-screen bg-gray-50 p-6">
+                {/* Header Section */}
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center">
+                            <button
+                                onClick={onBack}
+                                className="flex items-center px-4 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200 mr-6 font-medium"
                             >
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="text-lg font-medium text-gray-900">Floor {floor.floorNumber}</h3>
-                                    <ArrowRight className="w-4 h-4 text-gray-400" />
+                                <ArrowLeft className="w-5 h-5 mr-2" />
+                                Back to Hostels
+                            </button>
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-900">
+                                    {selectedHostel.name}
+                                </h1>
+                                <p className="text-gray-600 mt-1">Floor Management</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Loading State */}
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-20">
+                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mb-4"></div>
+                            <p className="text-gray-500 text-lg">Loading floors...</p>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Stats Overview */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                                    <div className="text-2xl font-bold text-gray-900">{floors.length}</div>
+                                    <div className="text-sm text-gray-500 mt-1">Total Floors</div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <span className="text-gray-500">Rooms:</span>
-                                        <span className="ml-1 font-medium">{floor.totalRooms}</span>
+                                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                                    <div className="text-2xl font-bold text-blue-600">
+                                        {floors.reduce((sum, floor) => sum + floor.totalRooms, 0)}
                                     </div>
-                                    <div>
-                                        <span className="text-gray-500">Beds:</span>
-                                        <span className="ml-1 font-medium">{floor.totalBeds}</span>
+                                    <div className="text-sm text-gray-500 mt-1">Total Rooms</div>
+                                </div>
+                                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                                    <div className="text-2xl font-bold text-green-600">
+                                        {floors.reduce((sum, floor) => sum + floor.vacantBeds, 0)}
                                     </div>
-                                    <div>
-                                        <span className="text-gray-500">Occupied:</span>
-                                        <span className="ml-1 font-medium text-red-600">{floor.allocatedBeds}</span>
+                                    <div className="text-sm text-gray-500 mt-1">Vacant Beds</div>
+                                </div>
+                                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                                    <div className="text-2xl font-bold text-orange-600">
+                                        {floors.reduce((sum, floor) => sum + floor.allocatedBeds, 0)}
                                     </div>
-                                    <div>
-                                        <span className="text-gray-500">Vacant:</span>
-                                        <span className="ml-1 font-medium text-green-600">{floor.vacantBeds}</span>
-                                    </div>
+                                    <div className="text-sm text-gray-500 mt-1">Occupied Beds</div>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                )}
+
+                            {/* Floors Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {floors.map((floor) => {
+                                    const occupancyRate = ((Number(floor?.allocatedBeds) || 0  / Number(floor?.totalBeds) || 0) * 100).toFixed(0) || 0;
+
+                                    return (
+                                        <div
+                                            key={floor._id}
+                                            className="bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 transition-all duration-300 cursor-pointer group hover:-translate-y-1"
+                                            onClick={() => onSelectFloor(floor)}
+                                        >
+                                            {/* Card Header */}
+                                            <div className="p-6 pb-4">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="flex items-center">
+                                                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                                            <span className="text-blue-600 font-bold text-lg">
+                                                                {floor.floorNumber}
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-xl font-semibold text-gray-900">
+                                                                Floor {floor.floorNumber}
+                                                            </h3>
+                                                            <p className="text-sm text-gray-500">
+                                                                {occupancyRate}% occupied
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-200" />
+                                                </div>
+
+                                                {/* Progress Bar */}
+                                                <div className="mb-4">
+                                                    <div className="flex justify-between text-xs text-gray-500 mb-2">
+                                                        <span>Occupancy</span>
+                                                        <span>{occupancyRate}%</span>
+                                                    </div>
+                                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                                        <div
+                                                            className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500"
+                                                            style={{ width: `${occupancyRate}%` }}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Stats Grid */}
+                                            <div className="px-6 pb-6">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                                                        <div className="text-lg font-bold text-gray-900">
+                                                            {floor.totalRooms}
+                                                        </div>
+                                                        <div className="text-xs text-gray-500 uppercase tracking-wide">
+                                                            Rooms
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                                                        <div className="text-lg font-bold text-gray-900">
+                                                            {floor.totalBeds}
+                                                        </div>
+                                                        <div className="text-xs text-gray-500 uppercase tracking-wide">
+                                                            Total Beds
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-center p-3 bg-red-50 rounded-lg">
+                                                        <div className="text-lg font-bold text-red-600">
+                                                            {floor.allocatedBeds}
+                                                        </div>
+                                                        <div className="text-xs text-red-500 uppercase tracking-wide">
+                                                            Occupied
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                                                        <div className="text-lg font-bold text-green-600">
+                                                            {floor.vacantBeds}
+                                                        </div>
+                                                        <div className="text-xs text-green-500 uppercase tracking-wide">
+                                                            Vacant
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Status Badge */}
+                                            <div className="px-6 pb-6">
+                                                <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${floor.vacantBeds === 0
+                                                        ? 'bg-red-100 text-red-800'
+                                                        : floor.vacantBeds <= 2
+                                                            ? 'bg-yellow-100 text-yellow-800'
+                                                            : 'bg-green-100 text-green-800'
+                                                    }`}>
+                                                    {floor.vacantBeds === 0
+                                                        ? 'Full'
+                                                        : floor.vacantBeds <= 2
+                                                            ? 'Nearly Full'
+                                                            : 'Available'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Empty State */}
+                            {floors.length === 0 && (
+                                <div className="text-center py-20">
+                                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <ArrowRight className="w-8 h-8 text-gray-400" />
+                                    </div>
+                                    <h3 className="text-lg font-medium text-gray-900 mb-2">No floors found</h3>
+                                    <p className="text-gray-500">This hostel doesn't have any floors configured yet.</p>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
             </div>
         );
     }
