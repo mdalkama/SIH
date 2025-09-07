@@ -53,7 +53,7 @@ export const getHostels = async (req, res) => {
     try {
         const userId = req.user.id;
         const userCollegeCode = await Staff.findById(userId).select("collegeCode");
-        if (!userCollegeCode) return res.status(404).json({ message: "collegeCode not found" })
+        if (!userCollegeCode) return res.status(404).json({ message: "collegeCode not found" });
         
 
         // fetch hostels only for that college
@@ -189,12 +189,17 @@ export const addFloor = async (req, res) => {
             return res.status(404).json({ error: "Hostel not found" });
         }
 
+        // Check if floorNumber exceeds totalFloors
+        if (hostel.floors.length >= hostel.totalFloors) {
+            return res.status(400).json({ error: `Cannot add more than ${hostel.totalFloors} floors` });
+        }
+
         // Check duplicate floorNumber
         if (hostel.floors.some(f => f.floorNumber === floorNumber)) {
             return res.status(400).json({ error: "Floor number already exists in this hostel" });
         }
 
-        hostel.floors.push(req.body);
+        hostel.floors.push({ floorNumber, rooms: [] }); // initialize rooms array
         await hostel.save();
 
         res.status(201).json({ success: true, data: hostel });
@@ -202,6 +207,7 @@ export const addFloor = async (req, res) => {
         res.status(400).json({ error: err.message });
     }
 };
+
 
 // update floor
 export const updateFloor = async (req, res) => {
