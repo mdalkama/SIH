@@ -92,9 +92,6 @@ export const getHostels = async (req, res) => {
 };
 
 
-
-
-
 // ✅ Get hostel by ID
 export const getHostelById = async (req, res) => {
     try {

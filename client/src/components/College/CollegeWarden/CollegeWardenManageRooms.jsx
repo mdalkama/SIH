@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Building, Users, Bed, ArrowRight, ArrowLeft, UserCheck, UserX, ArrowUpDown } from 'lucide-react';
+import { Plus, Building, MapPin, Users, Bed, ArrowRight, ArrowLeft, UserCheck, UserX, ArrowUpDown } from 'lucide-react';
+import ShiftStudentForm from './CollegeWardenManageRooms/components/ShiftStudentForm';
+import AddHostelForm from './CollegeWardenManageRooms/components/AddHostelForm';
 
 const HostelManagementSystem = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -12,24 +14,32 @@ const HostelManagementSystem = () => {
     const BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/hostel';
 
     // Fetch hostels
-    const fetchHostels = async () => {
-        try {
-            setLoading(true);
-            const response = await fetch(BASE_URL);
-            const data = await response.json();
-            if (data.success) {
-                setHostels(data.data);
-            }
-        } catch (error) {
-            console.error('Error fetching hostels:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+const fetchHostels = async () => {
+    try {
+        setLoading(true);
+        const res = await fetch("https://sih-4ptm.onrender.com/api/v1/hostel", {
+            method: "GET",
+            credentials: "include", // send cookies/session
+        });
 
-    useEffect(() => {
-        fetchHostels();
-    }, []);
+        const data = await res.json();
+        if (data.success) {
+            setHostels(data.data);
+            console.log(data);
+        } else {
+            console.error("Failed to fetch hostels:", data.error);
+        }
+    } catch (err) {
+        console.error("Error fetching hostels:", err);
+    } finally {
+        setLoading(false);
+    }
+};
+
+useEffect(() => {
+    fetchHostels();
+}, []);
+
 
     const tabs = [
         { id: 'dashboard', label: 'Dashboard', icon: Building },
@@ -83,9 +93,8 @@ const HostelManagementSystem = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="min-h-screen">
             <div className="max-w-7xl mx-auto">
-                <h1 className="text-3xl font-bold text-gray-900 mb-8">Hostel Management System</h1>
 
                 {/* Tab Navigation */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
@@ -132,32 +141,44 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
     const [loading, setLoading] = useState(false);
 
     const BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/hostel';
-
     const fetchFloors = async (hostelId) => {
         try {
             setLoading(true);
-            const response = await fetch(`${BASE_URL}/${hostelId}/floors`);
-            const data = await response.json();
+            const res = await fetch(`${BASE_URL}/${hostelId}/floors`, {
+                method: "GET",
+                credentials: "include", // include cookies/session
+            });
+
+            const data = await res.json();
             if (data.success) {
                 setFloors(data.data);
+            } else {
+                console.error("Failed to fetch floors:", data.error);
             }
         } catch (error) {
-            console.error('Error fetching floors:', error);
+            console.error("Error fetching floors:", error);
         } finally {
             setLoading(false);
         }
     };
 
+
     const fetchRooms = async (hostelId, floorId) => {
         try {
             setLoading(true);
-            const response = await fetch(`${BASE_URL}/${hostelId}/floors/${floorId}/rooms`);
-            const data = await response.json();
+            const res = await fetch(`${BASE_URL}/${hostelId}/floors/${floorId}/rooms`, {
+                method: "GET",
+                credentials: "include", // include cookies/session
+            });
+
+            const data = await res.json();
             if (data.success) {
                 setRooms(data.data);
+            } else {
+                console.error("Failed to fetch rooms:", data.error);
             }
         } catch (error) {
-            console.error('Error fetching rooms:', error);
+            console.error("Error fetching rooms:", error);
         } finally {
             setLoading(false);
         }
@@ -166,17 +187,24 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
     const fetchBeds = async (hostelId, floorId, roomId) => {
         try {
             setLoading(true);
-            const response = await fetch(`${BASE_URL}/${hostelId}/floors/${floorId}/rooms/${roomId}/beds`);
-            const data = await response.json();
+            const res = await fetch(`${BASE_URL}/${hostelId}/floors/${floorId}/rooms/${roomId}/beds`, {
+                method: "GET",
+                credentials: "include", // include cookies/session
+            });
+
+            const data = await res.json();
             if (data.success) {
                 setBeds(data.data);
+            } else {
+                console.error("Failed to fetch beds:", data.error);
             }
         } catch (error) {
-            console.error('Error fetching beds:', error);
+            console.error("Error fetching beds:", error);
         } finally {
             setLoading(false);
         }
     };
+
 
     useEffect(() => {
         if (selectedHostel && !selectedFloor) {
@@ -338,151 +366,138 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
         );
     }
 
+    const getOccupancyRate = (allocated, total) => {
+        if (total === 0) return 0;
+        return Math.round((allocated / total) * 100);
+    };
+
+    const getOccupancyColor = (rate) => {
+        if (rate >= 90) return 'text-red-500 bg-red-50';
+        if (rate >= 70) return 'text-yellow-600 bg-yellow-50';
+        return 'text-green-600 bg-green-50';
+    };
+
     return (
         <div>
             <h2 className="text-xl font-semibold text-gray-900 mb-6">All Hostels</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {hostels.map((hostel) => (
-                    <div
-                        key={hostel._id}
-                        className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
-                        onClick={() => onSelectHostel(hostel)}
-                    >
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-gray-900">{hostel.name}</h3>
-                            <ArrowRight className="w-5 h-5 text-gray-400" />
+                {hostels.map((hostel) => {
+                    const occupancyRate = getOccupancyRate(hostel.allocatedBeds, hostel.totalBeds);
+                    const occupancyColorClass = getOccupancyColor(occupancyRate);
+
+                    const formatAddress = (address) => {
+                        const parts = [address.street, address.city, address.state, address.zipCode].filter(Boolean);
+                        return parts.join(', ');
+                    };
+
+
+                    return (
+                        <div
+                            key={hostel._id}
+                            className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-200 cursor-pointer group relative overflow-hidden"
+                            onClick={() => onSelectHostel(hostel)}
+                        >
+                            {/* Header */}
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors mb-2">
+                                        {hostel.name}
+                                    </h3>
+                                    <div className="flex items-start text-sm text-gray-600">
+                                        <MapPin className="w-4 h-4 mr-1 mt-0.5 flex-shrink-0" />
+                                        <span className="leading-relaxed">{formatAddress(hostel.address)}</span>
+                                    </div>
+                                </div>
+                                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all duration-200" />
+                            </div>
+
+                            {/* Stats Grid */}
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div className="bg-gray-50 rounded-lg p-3">
+                                    <div className="flex items-center mb-1">
+                                        <Building className="w-4 h-4 text-gray-500 mr-1" />
+                                        <span className="text-xs text-gray-500 uppercase tracking-wide">Floors</span>
+                                    </div>
+                                    <span className="text-lg font-bold text-gray-900">{hostel.totalFloors}</span>
+                                </div>
+
+                                <div className="bg-gray-50 rounded-lg p-3">
+                                    <div className="flex items-center mb-1">
+                                        <Users className="w-4 h-4 text-gray-500 mr-1" />
+                                        <span className="text-xs text-gray-500 uppercase tracking-wide">Rooms</span>
+                                    </div>
+                                    <span className="text-lg font-bold text-gray-900">{hostel.totalRooms}</span>
+                                </div>
+                            </div>
+
+                            {/* Bed Information */}
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center">
+                                        <Bed className="w-4 h-4 text-gray-500 mr-2" />
+                                        <span className="text-sm text-gray-600">Total Beds</span>
+                                    </div>
+                                    <span className="font-semibold text-gray-900">{hostel.totalBeds}</span>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-gray-600">Allocated</span>
+                                    <span className="font-semibold text-gray-900">{hostel.allocatedBeds}</span>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-gray-600">Vacant</span>
+                                    <span className="font-semibold text-green-600">{hostel.vacantBeds}</span>
+                                </div>
+
+                                {/* Occupancy Rate */}
+                                {hostel.totalBeds > 0 && (
+                                    <div className="pt-2 border-t border-gray-100">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-sm text-gray-600">Occupancy</span>
+                                            <span className={`text-sm font-semibold px-2 py-1 rounded-full ${occupancyColorClass}`}>
+                                                {occupancyRate}%
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                            <div
+                                                className={`h-2 rounded-full transition-all duration-300 ${occupancyRate >= 90 ? 'bg-red-500' :
+                                                        occupancyRate >= 70 ? 'bg-yellow-500' :
+                                                            'bg-green-500'
+                                                    }`}
+                                                style={{ width: `${occupancyRate}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* No Data State */}
+                                {hostel.totalBeds === 0 && (
+                                    <div className="pt-2 border-t border-gray-100">
+                                        <div className="text-center py-2">
+                                            <span className="text-sm text-gray-400 italic">No bed data available</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* College Code */}
+                            {hostel.collegeCode && (
+                                <div className="absolute top-3 right-12 bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full font-medium">
+                                    {hostel.collegeCode}
+                                </div>
+                            )}
+
+                            {/* Hover Effect Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
                         </div>
-                        <p className="text-sm text-gray-600 mb-4">{hostel.address}</p>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <span className="text-gray-500">Floors:</span>
-                                <span className="ml-1 font-medium">{hostel.totalFloors}</span>
-                            </div>
-                            <div>
-                                <span className="text-gray-500">Rooms:</span>
-                                <span className="ml-1 font-medium">{hostel.totalRooms}</span>
-                            </div>
-                            <div>
-                                <span className="text-gray-500">Total Beds:</span>
-                                <span className="ml-1 font-medium">{hostel.totalBeds}</span>
-                            </div>
-                            <div>
-                                <span className="text-gray-500">Vacant:</span>
-                                <span className="ml-1 font-medium text-green-600">{hostel.vacantBeds}</span>
-                            </div>
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
 };
 
-// Add Hostel Form
-const AddHostelForm = ({ onSuccess }) => {
-    const [formData, setFormData] = useState({
-        name: '',
-        address: '',
-        totalFloors: ''
-    });
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setMessage('');
-
-        try {
-            const response = await fetch('https://sih-4ptm.onrender.com/api/v1/hostel', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer your-token' // Add actual token
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    totalFloors: formData.totalFloors ? parseInt(formData.totalFloors) : undefined
-                })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                setMessage('Hostel created successfully!');
-                setFormData({ name: '', address: '', totalFloors: '' });
-                onSuccess();
-            } else {
-                setMessage(data.error || 'Failed to create hostel');
-            }
-        } catch (error) {
-            setMessage('Error creating hostel');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="max-w-md mx-auto">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Add New Hostel</h2>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Hostel Name *
-                    </label>
-                    <input
-                        type="text"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Address *
-                    </label>
-                    <textarea
-                        value={formData.address}
-                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        rows={3}
-                        required
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Total Floors
-                    </label>
-                    <input
-                        type="number"
-                        value={formData.totalFloors}
-                        onChange={(e) => setFormData({ ...formData, totalFloors: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        min="0"
-                    />
-                </div>
-
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
-                >
-                    {loading ? 'Creating...' : 'Create Hostel'}
-                </button>
-
-                {message && (
-                    <div className={`text-sm ${message.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
-                        {message}
-                    </div>
-                )}
-            </form>
-        </div>
-    );
-};
 
 // Add Floor Form
 const AddFloorForm = ({ hostels }) => {
@@ -499,29 +514,38 @@ const AddFloorForm = ({ hostels }) => {
         setMessage('');
 
         try {
-            const response = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${formData.hostelId}/floors`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    floorNumber: parseInt(formData.floorNumber)
-                })
-            });
+            setLoading(true);
+            const response = await fetch(
+                `https://sih-4ptm.onrender.com/api/v1/hostel/${formData.hostelId}/floors`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include', // include cookies/session
+                    body: JSON.stringify({
+                        floorNumber: Number(formData.floorNumber) || 0, // ensure it's a number
+                    }),
+                }
+            );
 
             const data = await response.json();
 
             if (data.success) {
                 setMessage('Floor added successfully!');
                 setFormData({ hostelId: '', floorNumber: '' });
+                // optionally refetch floors here
+                // fetchFloors(formData.hostelId);
             } else {
                 setMessage(data.error || 'Failed to add floor');
             }
         } catch (error) {
+            console.error('Error adding floor:', error);
             setMessage('Error adding floor');
         } finally {
             setLoading(false);
         }
+
     };
 
     return (
@@ -947,7 +971,10 @@ const AllocateBedForm = ({ hostels }) => {
 
     const fetchFloors = async (hostelId) => {
         try {
-            const response = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors`);
+            const response = await fetch(
+                `https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors`,
+                { credentials: 'include' }
+            );
             const data = await response.json();
             if (data.success) {
                 setFloors(data.data);
@@ -959,7 +986,10 @@ const AllocateBedForm = ({ hostels }) => {
 
     const fetchRooms = async (hostelId, floorId) => {
         try {
-            const response = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms`);
+            const response = await fetch(
+                `https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms`,
+                { credentials: 'include' }
+            );
             const data = await response.json();
             if (data.success) {
                 setRooms(data.data);
@@ -971,15 +1001,23 @@ const AllocateBedForm = ({ hostels }) => {
 
     const fetchBeds = async (hostelId, floorId, roomId) => {
         try {
-            const response = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms/${roomId}/beds`);
+            const response = await fetch(
+                `https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms/${roomId}/beds`,
+                { credentials: 'include' }
+            );
             const data = await response.json();
             if (data.success) {
-                setBeds(data.data.filter(bed => !bed.isOccupied)); // Only show vacant beds
+                // Only show vacant beds
+                setBeds(data.data.map(bed => ({
+                    ...bed,
+                    isVacant: !bed.isOccupied
+                })));
             }
         } catch (error) {
             console.error('Error fetching beds:', error);
         }
     };
+
 
     const handleHostelChange = (hostelId) => {
         setFormData({ ...formData, hostelId, floorId: '', roomId: '', bedId: '' });
@@ -1369,229 +1407,6 @@ const VacateBedForm = ({ hostels }) => {
 };
 
 // Shift Student Form
-const ShiftStudentForm = ({ hostels }) => {
-    const [formData, setFormData] = useState({
-        studentId: '',
-        newHostelId: '',
-        newFloorId: '',
-        newRoomId: '',
-        newBedId: ''
-    });
-    const [floors, setFloors] = useState([]);
-    const [rooms, setRooms] = useState([]);
-    const [beds, setBeds] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
 
-    const fetchFloors = async (hostelId) => {
-        try {
-            const response = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors`);
-            const data = await response.json();
-            if (data.success) {
-                setFloors(data.data);
-            }
-        } catch (error) {
-            console.error('Error fetching floors:', error);
-        }
-    };
-
-    const fetchRooms = async (hostelId, floorId) => {
-        try {
-            const response = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms`);
-            const data = await response.json();
-            if (data.success) {
-                setRooms(data.data);
-            }
-        } catch (error) {
-            console.error('Error fetching rooms:', error);
-        }
-    };
-
-    const fetchBeds = async (hostelId, floorId, roomId) => {
-        try {
-            const response = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms/${roomId}/beds`);
-            const data = await response.json();
-            if (data.success) {
-                setBeds(data.data.filter(bed => !bed.isOccupied));
-            }
-        } catch (error) {
-            console.error('Error fetching beds:', error);
-        }
-    };
-
-    const handleHostelChange = (hostelId) => {
-        setFormData({ ...formData, newHostelId: hostelId, newFloorId: '', newRoomId: '', newBedId: '' });
-        if (hostelId) {
-            fetchFloors(hostelId);
-        } else {
-            setFloors([]);
-        }
-        setRooms([]);
-        setBeds([]);
-    };
-
-    const handleFloorChange = (floorId) => {
-        setFormData({ ...formData, newFloorId: floorId, newRoomId: '', newBedId: '' });
-        if (floorId && formData.newHostelId) {
-            fetchRooms(formData.newHostelId, floorId);
-        } else {
-            setRooms([]);
-        }
-        setBeds([]);
-    };
-
-    const handleRoomChange = (roomId) => {
-        setFormData({ ...formData, newRoomId: roomId, newBedId: '' });
-        if (roomId && formData.newHostelId && formData.newFloorId) {
-            fetchBeds(formData.newHostelId, formData.newFloorId, roomId);
-        } else {
-            setBeds([]);
-        }
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setMessage('');
-
-        try {
-            const response = await fetch('https://sih-4ptm.onrender.com/api/v1/hostel/shift-student', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                setMessage('Student shifted successfully!');
-                setFormData({ studentId: '', newHostelId: '', newFloorId: '', newRoomId: '', newBedId: '' });
-            } else {
-                setMessage(data.error || 'Failed to shift student');
-            }
-        } catch (error) {
-            setMessage('Error shifting student');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="max-w-md mx-auto">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Shift Student</h2>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Student ID *
-                    </label>
-                    <input
-                        type="text"
-                        value={formData.studentId}
-                        onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                        placeholder="Enter student ID"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        New Hostel *
-                    </label>
-                    <select
-                        value={formData.newHostelId}
-                        onChange={(e) => handleHostelChange(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                    >
-                        <option value="">Choose a hostel</option>
-                        {hostels.map((hostel) => (
-                            <option key={hostel._id} value={hostel._id}>
-                                {hostel.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        New Floor *
-                    </label>
-                    <select
-                        value={formData.newFloorId}
-                        onChange={(e) => handleFloorChange(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                        disabled={!floors.length}
-                    >
-                        <option value="">Choose a floor</option>
-                        {floors.map((floor) => (
-                            <option key={floor._id} value={floor._id}>
-                                Floor {floor.floorNumber}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        New Room *
-                    </label>
-                    <select
-                        value={formData.newRoomId}
-                        onChange={(e) => handleRoomChange(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                        disabled={!rooms.length}
-                    >
-                        <option value="">Choose a room</option>
-                        {rooms.map((room) => (
-                            <option key={room._id} value={room._id}>
-                                Room {room.roomNumber} ({room.vacantBeds} vacant)
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        New Bed *
-                    </label>
-                    <select
-                        value={formData.newBedId}
-                        onChange={(e) => setFormData({ ...formData, newBedId: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                        disabled={!beds.length}
-                    >
-                        <option value="">Choose a bed</option>
-                        {beds.map((bed) => (
-                            <option key={bed._id} value={bed._id}>
-                                Bed {bed.bedNumber}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <button
-                    type="submit"
-                    disabled={loading || !formData.studentId || !formData.newHostelId || !formData.newFloorId || !formData.newRoomId || !formData.newBedId}
-                    className="w-full bg-orange-600 text-white py-2 px-4 rounded-md hover:bg-orange-700 disabled:opacity-50"
-                >
-                    {loading ? 'Shifting...' : 'Shift Student'}
-                </button>
-
-                {message && (
-                    <div className={`text-sm ${message.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
-                        {message}
-                    </div>
-                )}
-            </form>
-        </div>
-    );
-};
 
 export default HostelManagementSystem;
