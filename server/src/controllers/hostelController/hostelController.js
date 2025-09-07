@@ -51,9 +51,15 @@ export const createHostel = async (req, res) => {
 // ✅ Get all hostels
 export const getHostels = async (req, res) => {
     try {
-        const hostels = await Hostel.find()
+        const userId = req.user.id;
+        const userCollegeCode = await Staff.findById(userId).select("collegeCode");
+        if (!userCollegeCode) return res.status(404).json({ message: "collegeCode not found" })
+        
+
+        // fetch hostels only for that college
+        const hostels = await Hostel.find({ collegeCode: userCollegeCode.collegeCode })
             .sort({ createdAt: -1 })
-            .select("_id name address totalFloors collegeCode floors"); // fetch floors to calculate
+            .select("_id name address totalFloors collegeCode floors");
 
         const data = hostels.map(hostel => {
             let totalRooms = 0;
@@ -81,7 +87,7 @@ export const getHostels = async (req, res) => {
                 totalBeds,
                 allocatedBeds,
                 vacantBeds,
-                collegeCode: hostel.collegeCode
+                collegeCode: userCollegeCode.collegeCode
             };
         });
 
@@ -90,6 +96,7 @@ export const getHostels = async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 };
+
 
 
 // ✅ Get hostel by ID
