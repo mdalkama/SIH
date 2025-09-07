@@ -4,6 +4,9 @@ import { Plus, Search, Edit2, Trash2, Users, UserCheck, UserX, Filter, X, Eye, E
 const UniversityAdminManageRoles = () => {
     const [activeTab, setActiveTab] = useState('all');
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteEmployeeId, setDeleteEmployeeId] = useState('');
+    const [deleteEmployeeName, setDeleteEmployeeName] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -146,6 +149,9 @@ const UniversityAdminManageRoles = () => {
         setSelectedRole('');
         setIsEditing(false);
         setEditingEmployeeId('');
+        setShowDeleteModal(false);
+        setDeleteEmployeeId('');
+        setDeleteEmployeeName('');
     };
 
     const handleAddOrUpdate = async () => {
@@ -162,6 +168,11 @@ const UniversityAdminManageRoles = () => {
         };
 
         if (selectedRole === 'CollegeAdmin' && formData.collegeId) {
+            payload.collegeId = formData.collegeId;
+        }
+        
+        // For editing, include collegeId if it exists
+        if (isEditing && formData.collegeId) {
             payload.collegeId = formData.collegeId;
         }
 
@@ -188,6 +199,7 @@ const UniversityAdminManageRoles = () => {
                     phone: data?.staff?.phone ?? payload.phone,
                     salary: data?.staff?.salary ?? payload.salary,
                     gender: data?.staff?.gender ? data.staff.gender.charAt(0).toUpperCase() + data.staff.gender.slice(1) : emp.gender,
+                    collegeId: data?.staff?.collegeId ?? payload.collegeId ?? emp.collegeId,
                 } : emp));
             } else {
                 const endpoint = getEndpointForSelectedRole();
@@ -244,9 +256,39 @@ const UniversityAdminManageRoles = () => {
             salary: employee.salary || '',
             phone: employee.phone || '',
             department: employee.department || '',
-            collegeId: '',
+            collegeId: employee.collegeId || '',
             subjects: []
         });
+    };
+
+    const handleDeleteClick = (employee) => {
+        setDeleteEmployeeId(employee.id);
+        setDeleteEmployeeName(employee.name);
+        setShowDeleteModal(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        try {
+            setLoading(true);
+            const res = await fetch(`${API_BASE}/add-university-Staff/${deleteEmployeeId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.message || 'Failed to delete employee');
+
+            // Remove employee from the list
+            setEmployees(prev => prev.filter(emp => emp.id !== deleteEmployeeId));
+            
+            setShowDeleteModal(false);
+            setDeleteEmployeeId('');
+            setDeleteEmployeeName('');
+        } catch (e) {
+            console.error(e);
+            alert(e.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const getStats = () => {
@@ -449,10 +491,18 @@ const UniversityAdminManageRoles = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex space-x-2">
-                                                <button onClick={() => handleEditClick(employee)} className="text-blue-600 hover:text-blue-900">
+                                                <button 
+                                                    onClick={() => handleEditClick(employee)} 
+                                                    className="text-blue-600 hover:text-blue-900 transition-colors"
+                                                    title="Edit Employee"
+                                                >
                                                     <Edit2 size={16} />
                                                 </button>
-                                                <button className="text-red-600 hover:text-red-900">
+                                                <button 
+                                                    onClick={() => handleDeleteClick(employee)}
+                                                    className="text-red-600 hover:text-red-900 transition-colors"
+                                                    title="Delete Employee"
+                                                >
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>
@@ -480,9 +530,11 @@ const UniversityAdminManageRoles = () => {
 
                         <div className="p-6 border-b" style={{ borderColor: '#E5E7EB' }}>
                             <div className="flex items-center justify-between">
-                                <h2 style={{ color: '#111827' }} className="text-xl font-bold">Add New Employee</h2>
+                                <h2 style={{ color: '#111827' }} className="text-xl font-bold">
+                                    {isEditing ? 'Edit Employee' : 'Add New Employee'}
+                                </h2>
                                 <button
-                                    onClick={() => setShowAddModal(false)}
+                                    onClick={() => { setShowAddModal(false); resetForm(); }}
                                     className="text-gray-400 hover:text-gray-600"
                                 >
                                     <X size={20} />
@@ -491,26 +543,40 @@ const UniversityAdminManageRoles = () => {
                         </div>
 
                         <div className="p-6 space-y-6">
-                            {/* Role Selection */}
-                            <div>
-                                <label style={{ color: '#111827' }} className="block text-sm font-medium mb-2">
-                                    Employee Role *
-                                </label>
-                                <div className="relative">
-                                    <select
-                                        value={selectedRole}
-                                        onChange={(e) => setSelectedRole(e.target.value)}
-                                        style={{ borderColor: '#E5E7EB' }}
-                                        className="w-full px-3 py-2 pr-10 border rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-blue-300 transition appearance-none"
-                                    >
-                                        <option value="">Select role</option>
-                                        {availableRoles.map(r => (
-                                            <option key={r.value} value={r.value}>{r.label}</option>
-                                        ))}
-                                    </select>
-                                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▼</span>
+                            {/* Role Selection - Only show when adding new employee */}
+                            {!isEditing && (
+                                <div>
+                                    <label style={{ color: '#111827' }} className="block text-sm font-medium mb-2">
+                                        Employee Role *
+                                    </label>
+                                    <div className="relative">
+                                        <select
+                                            value={selectedRole}
+                                            onChange={(e) => setSelectedRole(e.target.value)}
+                                            style={{ borderColor: '#E5E7EB' }}
+                                            className="w-full px-3 py-2 pr-10 border rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-blue-300 transition appearance-none"
+                                        >
+                                            <option value="">Select role</option>
+                                            {availableRoles.map(r => (
+                                                <option key={r.value} value={r.value}>{r.label}</option>
+                                            ))}
+                                        </select>
+                                        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▼</span>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
+
+                            {/* Show current role when editing */}
+                            {isEditing && (
+                                <div>
+                                    <label style={{ color: '#111827' }} className="block text-sm font-medium mb-2">
+                                        Current Role
+                                    </label>
+                                    <div className="px-3 py-2 border rounded-lg bg-gray-50 text-gray-700">
+                                        {getRoleDisplayName(selectedRole)}
+                                    </div>
+                                </div>
+                            )}
                             {/* Form Fields */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -603,7 +669,7 @@ const UniversityAdminManageRoles = () => {
 
                             <div>
                                 <label style={{ color: '#111827' }} className="block text-sm font-medium mb-1">
-                                    Password *
+                                    Password {!isEditing ? '*' : '(Leave blank to keep current password)'}
                                 </label>
                                 <div className="relative">
                                     <input
@@ -612,7 +678,7 @@ const UniversityAdminManageRoles = () => {
                                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                         style={{ borderColor: '#E5E7EB' }}
                                         className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="Enter password"
+                                        placeholder={isEditing ? "Enter new password (optional)" : "Enter password"}
                                     />
                                     <button
                                         type="button"
@@ -645,7 +711,7 @@ const UniversityAdminManageRoles = () => {
 
                         <div className="p-6 border-t flex justify-end space-x-3" style={{ borderColor: '#E5E7EB' }}>
                             <button
-                                onClick={() => setShowAddModal(false)}
+                                onClick={() => { setShowAddModal(false); resetForm(); }}
                                 style={{ borderColor: '#E5E7EB', color: '#6B7280' }}
                                 className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition-colors"
                             >
@@ -657,7 +723,71 @@ const UniversityAdminManageRoles = () => {
                                 className="px-4 py-2 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                                 onClick={handleAddOrUpdate}
                             >
-                                {loading ? (isEditing ? 'Saving...' : 'Adding...') : (isEditing ? 'Save Changes' : 'Add Employee')}
+                                {loading ? (isEditing ? 'Updating...' : 'Adding...') : (isEditing ? 'Update Employee' : 'Add Employee')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black/30 backdrop-blur-sm top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] h-full w-full flex items-center justify-center z-[100]">
+                    <div style={{ backgroundColor: '#FFFFFF' }}
+                        className="rounded-lg shadow-xl w-full max-w-md">
+                        
+                        <div className="p-6 border-b" style={{ borderColor: '#E5E7EB' }}>
+                            <div className="flex items-center justify-between">
+                                <h2 style={{ color: '#111827' }} className="text-xl font-bold">Delete Employee</h2>
+                                <button
+                                    onClick={() => { setShowDeleteModal(false); setDeleteEmployeeId(''); setDeleteEmployeeName(''); }}
+                                    className="text-gray-400 hover:text-gray-600"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                        </div>
+                       // delete modal popup hai 
+                        <div className="p-6">
+                            <div className="flex items-center mb-4">
+                                <div className="flex-shrink-0">
+                                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                        <Trash2 size={24} className="text-red-600" />
+                                    </div>
+                                </div>
+                                <div className="ml-4">
+                                    <h3 style={{ color: '#111827' }} className="text-lg font-medium">
+                                        Are you sure you want to delete this employee?
+                                    </h3>
+                                    <p style={{ color: '#6B7280' }} className="text-sm mt-1">
+                                        This action cannot be undone.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div style={{ backgroundColor: '#FEF2F2', borderColor: '#FECACA' }} 
+                                className="p-4 border rounded-lg">
+                                <p style={{ color: '#991B1B' }} className="text-sm font-medium">
+                                    Employee: <span className="font-semibold">{deleteEmployeeName}</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="p-6 border-t flex justify-end space-x-3" style={{ borderColor: '#E5E7EB' }}>
+                            <button
+                                onClick={() => { setShowDeleteModal(false); setDeleteEmployeeId(''); setDeleteEmployeeName(''); }}
+                                style={{ borderColor: '#E5E7EB', color: '#6B7280' }}
+                                className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                disabled={loading}
+                                style={{ backgroundColor: '#DC2626' }}
+                                className="px-4 py-2 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                                onClick={handleDeleteConfirm}
+                            >
+                                {loading ? 'Deleting...' : 'Delete Employee'}
                             </button>
                         </div>
                     </div>
