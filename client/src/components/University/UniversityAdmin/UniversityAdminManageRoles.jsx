@@ -7,6 +7,11 @@ const UniversityAdminManageRoles = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editingEmployeeId, setEditingEmployeeId] = useState('');
+    const API_BASE = 'https://sih-4ptm.onrender.com/api/v1';
+    // const[role,setRole] = useState('UniversityGoverningBody');
+
 
     const [formData, setFormData] = useState({
         name: '',
@@ -17,6 +22,7 @@ const UniversityAdminManageRoles = () => {
         salary: '',
         phone: '',
         department: '',
+        collegeId: '',
         subjects: []
     });
 
@@ -24,10 +30,13 @@ const UniversityAdminManageRoles = () => {
     const availableRoles = [
         { value: 'UniversityGoverningBody', label: 'Governing Body Member', endpoint: '/add-governing-body' },
         { value: 'UniversityRegistrar', label: 'University Registrar', endpoint: '/add-registrar' },
-        { value: 'UniversityExaminationBody', label: 'Examination Body Member', endpoint: '/add-exam-body' }
+        { value: 'UniversityExaminationBody', label: 'Examination Body Member', endpoint: '/add-exam-body' },
+        { value: 'CollegeAdmin', label: 'College Admin', endpoint: '/add-college-admin' }
     ];
 
-    const [employees, setEmployees] = useState([]);
+    const [employees, setEmployees] = useState([
+    ]);
+    const [selectedRole, setSelectedRole] = useState('');
     useEffect(() => {
         const fetchStaff = async () => {
             setLoading(true);
@@ -91,6 +100,153 @@ const UniversityAdminManageRoles = () => {
             case 'UniversityExaminationBody': return 'Examination Body';
             default: return role;
         }
+    };
+
+    const getEndpointForSelectedRole = () => {
+        const cfg = availableRoles.find(r => r.value === selectedRole);
+        return cfg ? cfg.endpoint : '';
+    };
+
+    const validateForm = () => {
+        const required = ['name', 'email', 'staffId', 'gender', 'salary', 'phone'];
+        for (const key of required) {
+            if (!String(formData[key] || '').trim()) {
+                alert(`${key} is required`);
+                return false;
+            }
+        }
+        if (!isEditing && !String(formData.password || '').trim()) {
+            alert('password is required');
+            return false;
+        }
+        if (!isEditing && !selectedRole) {
+            alert('Please select a role');
+            return false;
+        }
+        if (!isEditing && selectedRole === 'CollegeAdmin' && !String(formData.collegeId || '').trim()) {
+            alert('collegeId is required for CollegeAdmin');
+            return false;
+        }
+        return true;
+    };
+
+    const resetForm = () => {
+        setFormData({
+            name: '',
+            email: '',
+            password: '',
+            staffId: '',
+            gender: '',
+            salary: '',
+            phone: '',
+            department: '',
+            collegeId: '',
+            subjects: []
+        });
+        setSelectedRole('');
+        setIsEditing(false);
+        setEditingEmployeeId('');
+    };
+
+    const handleAddOrUpdate = async () => {
+        if (!validateForm()) return;
+
+        const payload = {
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+            staffId: formData.staffId,
+            gender: formData.gender,
+            salary: formData.salary,
+            phone: formData.phone,
+        };
+
+        if (selectedRole === 'CollegeAdmin' && formData.collegeId) {
+            payload.collegeId = formData.collegeId;
+        }
+
+        if (isEditing && !payload.password) {
+            delete payload.password;
+        }
+
+        try {
+            setLoading(true);
+            if (isEditing) {
+                const res = await fetch(`${API_BASE}/add-university-Staff/${editingEmployeeId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data?.message || 'Failed to update');
+
+                setEmployees(prev => prev.map(emp => emp.id === editingEmployeeId ? {
+                    ...emp,
+                    name: data?.staff?.name ?? payload.name,
+                    email: data?.staff?.email ?? payload.email,
+                    phone: data?.staff?.phone ?? payload.phone,
+                    salary: data?.staff?.salary ?? payload.salary,
+                    gender: data?.staff?.gender ? data.staff.gender.charAt(0).toUpperCase() + data.staff.gender.slice(1) : emp.gender,
+                } : emp));
+            } else {
+                const endpoint = getEndpointForSelectedRole();
+                if (!endpoint) {
+                    alert('Invalid role selection');
+                    return;
+                }
+                const res = await fetch(`${API_BASE}/add-university-Staff${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ ...payload, role: selectedRole })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data?.message || 'Failed to add');
+
+                const s = data.staff;
+                setEmployees(prev => [{
+                    id: s._id,
+                    name: s.name,
+                    email: s.email,
+                    staffId: s.staffId,
+                    role: s.role,
+                    department: s.department,
+                    phone: s.phone,
+                    salary: s.salary,
+                    gender: s.gender ? s.gender.charAt(0).toUpperCase() + s.gender.slice(1) : '',
+                    status: s.status ? s.status.charAt(0).toUpperCase() + s.status.slice(1) : 'Active',
+                    joinDate: s.createdAt ? s.createdAt.slice(0, 10) : '',
+                }, ...prev]);
+            }
+
+            resetForm();
+            setShowAddModal(false);
+        } catch (e) {
+            console.error(e);
+            alert(e.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEditClick = (employee) => {
+        setIsEditing(true);
+        setEditingEmployeeId(employee.id);
+        setShowAddModal(true);
+        setSelectedRole(employee.role);
+        setFormData({
+            name: employee.name || '',
+            email: employee.email || '',
+            password: '',
+            staffId: employee.staffId || '',
+            gender: employee.gender || '',
+            salary: employee.salary || '',
+            phone: employee.phone || '',
+            department: employee.department || '',
+            collegeId: '',
+            subjects: []
+        });
     };
 
     const getStats = () => {
@@ -197,7 +353,7 @@ const UniversityAdminManageRoles = () => {
                             </div>
 
                             <button
-                                onClick={() => setShowAddModal(true)}
+                                onClick={() => { resetForm(); setShowAddModal(true); }}
                                 style={{ backgroundColor: '#2563EB' }}
                                 className="flex items-center px-4 py-2 text-white rounded-lg hover:bg-blue-700 transition-colors"
                             >
@@ -293,7 +449,7 @@ const UniversityAdminManageRoles = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex space-x-2">
-                                                <button className="text-blue-600 hover:text-blue-900">
+                                                <button onClick={() => handleEditClick(employee)} className="text-blue-600 hover:text-blue-900">
                                                     <Edit2 size={16} />
                                                 </button>
                                                 <button className="text-red-600 hover:text-red-900">
@@ -340,30 +496,21 @@ const UniversityAdminManageRoles = () => {
                                 <label style={{ color: '#111827' }} className="block text-sm font-medium mb-2">
                                     Employee Role *
                                 </label>
-                                <div className="grid grid-cols-1 gap-3">
-                                    {availableRoles.map((role) => (
-                                        <button
-                                            key={role.value}
-                                            type="button"
-                                            onClick={() => {
-                                                const selectedRoleData = availableRoles.find(r => r.value === role.value);
-                                                if (selectedRoleData) {
-                                                    // handleAddEmployee(selectedRoleData.endpoint);
-                                                }
-                                            }}
-                                            disabled={loading}
-                                            style={{ backgroundColor: '#2563EB' }}
-                                            className="w-full p-4 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
-                                        >
-                                            <div className="font-medium">{role.label}</div>
-                                            <div className="text-sm text-blue-100 mt-1">
-                                                Click to add a new {role.label.toLowerCase()}
-                                            </div>
-                                        </button>
-                                    ))}
+                                <div className="relative">
+                                    <select
+                                        value={selectedRole}
+                                        onChange={(e) => setSelectedRole(e.target.value)}
+                                        style={{ borderColor: '#E5E7EB' }}
+                                        className="w-full px-3 py-2 pr-10 border rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-blue-300 transition appearance-none"
+                                    >
+                                        <option value="">Select role</option>
+                                        {availableRoles.map(r => (
+                                            <option key={r.value} value={r.value}>{r.label}</option>
+                                        ))}
+                                    </select>
+                                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▼</span>
                                 </div>
                             </div>
-
                             {/* Form Fields */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -433,9 +580,9 @@ const UniversityAdminManageRoles = () => {
                                         className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     >
                                         <option value="">Select gender</option>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
                                     </select>
                                 </div>
 
@@ -477,19 +624,23 @@ const UniversityAdminManageRoles = () => {
                                 </div>
                             </div>
 
-                            <div>
-                                <label style={{ color: '#111827' }} className="block text-sm font-medium mb-1">
-                                    Department
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.department}
-                                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                                    style={{ borderColor: '#E5E7EB' }}
-                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Enter department (optional)"
-                                />
-                            </div>
+                            
+
+                            {selectedRole === 'CollegeAdmin' && (
+                                <div>
+                                    <label style={{ color: '#111827' }} className="block text-sm font-medium mb-1">
+                                        College ID
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.collegeId}
+                                        onChange={(e) => setFormData({ ...formData, collegeId: e.target.value })}
+                                        style={{ borderColor: '#E5E7EB' }}
+                                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Enter College ID"
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         <div className="p-6 border-t flex justify-end space-x-3" style={{ borderColor: '#E5E7EB' }}>
@@ -504,8 +655,9 @@ const UniversityAdminManageRoles = () => {
                                 disabled={loading}
                                 style={{ backgroundColor: '#2563EB' }}
                                 className="px-4 py-2 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                                onClick={handleAddOrUpdate}
                             >
-                                {loading ? 'Adding...' : 'Add Employee'}
+                                {loading ? (isEditing ? 'Saving...' : 'Adding...') : (isEditing ? 'Save Changes' : 'Add Employee')}
                             </button>
                         </div>
                     </div>
