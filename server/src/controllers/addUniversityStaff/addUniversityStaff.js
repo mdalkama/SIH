@@ -1,16 +1,22 @@
-// controllers/staffController.js
 import Staff from "../../models/staffModel.js";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 
+// Create/Add Staff
 export const addStaffByRole = async (req, res) => {
     try {
-        const Id = req.user.id;
-        const admin = await Staff.findById(Id)
+        const adminId = req.user.id;
+        const admin = await Staff.findById(adminId);
         if (!admin) return res.status(404).json({ message: "Admin not found" });
 
-        const { name, email, password, staffId, gender, salary, phone } = req.body;
-        if (!name || !email || !password || !staffId || !gender || !salary || !phone) {
+        const { name, email, password, staffId, gender, salary, phone, role, collegeId } = req.body;
+
+        // College ID required if role is CollegeAdmin
+        if (role === "CollegeAdmin" && !collegeId) {
+            return res.status(400).json({ message: "collegeId is required for CollegeAdmin" });
+        }
+
+        if (!name || !email || !password || !staffId || !gender || !salary || !phone || !role) {
             return res.status(400).json({ message: "Please provide all required fields" });
         }
 
@@ -22,8 +28,6 @@ export const addStaffByRole = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const role = req.role; // <-- dynamically set in route
-
         const newStaff = new Staff({
             name,
             email,
@@ -33,8 +37,9 @@ export const addStaffByRole = async (req, res) => {
             role,
             salary,
             gender,
-            createdBy: new mongoose.Types.ObjectId(Id),
-            updatedBy: new mongoose.Types.ObjectId(Id)
+            collegeId: role === "CollegeAdmin" ? collegeId : undefined,
+            createdBy: new mongoose.Types.ObjectId(adminId),
+            updatedBy: new mongoose.Types.ObjectId(adminId)
         });
 
         await newStaff.save();
@@ -42,13 +47,98 @@ export const addStaffByRole = async (req, res) => {
         const result = newStaff.toObject();
         delete result.password;
 
-        res.status(201).json({
-            message: `${role} added successfully`,
-            staff: result
-        });
+        res.status(201).json({ message: `${role} added successfully`, staff: result });
 
     } catch (error) {
         console.error("Error adding staff:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// Get all University-level Staff or College-level staff filtered by collegeId
+export const getStaff = async (req, res) => {
+    try {
+        const { staffId, role, collegeId } = req.query;
+
+        let filter = {};
+
+        if (role) filter.role = role;
+
+        // Only allowed university roles
+        const universityRoles = [
+            'UniversityGoverningBody',
+            'UniversityRegistrar',
+            'UniversityExaminationBody',
+            'UniversityExamCellStaff',
+            'CollegeAdmin'
+        ];
+
+        filter.role = { $in: universityRoles };
+
+        if (staffId) filter.staffId = staffId;
+        if (collegeId) filter.collegeId = collegeId;
+
+        const staffList = await Staff.find(filter).select("-password").sort({ createdAt: -1 });
+
+        res.json({ success: true, count: staffList.length, staff: staffList });
+    } catch (error) {
+        console.error("Error fetching staff:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// Get Staff by ID
+export const getStaffById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid staff ID" });
+
+        const staff = await Staff.findById(id).select("-password");
+        if (!staff) return res.status(404).json({ message: "Staff not found" });
+
+        res.json({ success: true, staff });
+    } catch (error) {
+        console.error("Error fetching staff:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// Update Staff
+export const updateStaff = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const adminId = req.user.id;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid staff ID" });
+
+        const updateData = { ...req.body, updatedBy: new mongoose.Types.ObjectId(adminId) };
+
+        if (updateData.password) {
+            updateData.password = await bcrypt.hash(updateData.password, 10);
+        }
+
+        const updatedStaff = await Staff.findByIdAndUpdate(id, updateData, { new: true }).select("-password");
+        if (!updatedStaff) return res.status(404).json({ message: "Staff not found" });
+
+        res.json({ success: true, message: "Staff updated successfully", staff: updatedStaff });
+    } catch (error) {
+        console.error("Error updating staff:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// Delete Staff
+export const deleteStaff = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid staff ID" });
+
+        const staff = await Staff.findByIdAndDelete(id);
+        if (!staff) return res.status(404).json({ message: "Staff not found" });
+
+        res.json({ success: true, message: "Staff deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting staff:", error);
         res.status(500).json({ message: "Server error" });
     }
 };
