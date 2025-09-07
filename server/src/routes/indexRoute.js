@@ -11,6 +11,7 @@ import universityManageStaffRoute from "../routes/universityManageStaffRoute.js"
 import {getMyProfile} from "../controllers/studentController/studentController.js";
 import {getStaffProfile} from "../controllers/staffController/staffController.js";
 import hostelRoute from "../routes/hostelRoute.js";
+import libraryRoute from "../routes/libraryRoutes.js";
 
 const router = Router();
 
@@ -23,6 +24,7 @@ router.use("/hostel", role(['CollegeHostelWarden']), hostelRoute)
 router.use("/course",role(['UniversityAdmin']), courseRoute)
 router.use("/subject", role(['UniversityAdmin']), subjectRoute)
 router.use("/add-university-Staff", universityManageStaffRoute)
+router.use("/library", role(['CollegeLibrarian']), libraryRoute)
 router.get("/my-profile", role(['student', ...staffRoles]), (req, res) => {
     try {
         if(req.user.role === 'student'){
