@@ -570,7 +570,6 @@ export const addBed = async (req, res) => {
     }
 };
 
-// ✅ Get All Beds in a Room
 export const getBeds = async (req, res) => {
     try {
         const { hostelId, floorId, roomId } = req.params;
@@ -588,11 +587,28 @@ export const getBeds = async (req, res) => {
         const room = floor.rooms.id(roomId);
         if (!room) return res.status(404).json({ error: "Room not found" });
 
-        res.json({ success: true, data: room.beds });
+        // Beds with student details if occupied
+        const bedsWithStudents = await Promise.all(
+            room.beds.map(async (bed) => {
+                if (bed.isOccupied && bed.occupant) {
+                    const student = await Student.findById(bed.occupant)
+                        .select("name degree branch registrationNumber");
+                    return {
+                        ...bed.toObject(),
+                        student: student ? student.toObject() : null,
+                    };
+                }
+                return bed.toObject();
+            })
+        );
+
+        res.json({ success: true, data: bedsWithStudents });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+
+
 
 // ✅ Get Bed by ID
 export const getBedById = async (req, res) => {
