@@ -49,7 +49,7 @@ import CollegeLibrarianTrackReturn from "../components/College/CollegeLibrarian/
 
 // College Warden
 import CollegeWardenDashboard from "../components/College/CollegeWarden/CollegeWardenDashboard";
-import CollegeWardenManageRooms from "../components/College/CollegeWarden/CollegeWardenManageRooms";
+import CollegeWardenManageRooms from "../components/College/CollegeWarden/CollegeWardenManageRooms/CollegeWardenManageRooms";
 import CollegeWardenHandleComplaint from "../components/College/CollegeWarden/CollegeWardenHandleComplaint";
 
 // College Admission
