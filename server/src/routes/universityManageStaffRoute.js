@@ -25,7 +25,7 @@ router.post("/add-exam-body", role(["UniversityAdmin"]), (req, res, next) => {
     next();
 }, addStaffByRole);
 
-router.post("/add-exam-cell-staff", role(["UniversityAdmin"]), (req, res, next) => {
+router.post("/add-exam-cell-staff", role(["UniversityExamBody"]), (req, res, next) => {
     req.body.role = "UniversityExamCellStaff";
     next();
 }, addStaffByRole);
