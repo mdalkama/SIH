@@ -31,7 +31,9 @@ import {
 
 const Navbar = () => {
     const navigate = useNavigate();
-    const [activeMenu, setActiveMenu] = useState("dashboard");
+    const path = window.location.pathname;
+    const lastSegment = path.split("/").pop();
+    const [activeMenu, setActiveMenu] = useState(lastSegment);
     const { user, setUser } = useUser();
     const [loggedInUser, setLoggedInUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -87,7 +89,7 @@ const Navbar = () => {
     const navigationItems = menuConfig[user?.role] || [];
 
     if (loading) {
-        return <Loading/>
+        return <Loading />
     }
 
 

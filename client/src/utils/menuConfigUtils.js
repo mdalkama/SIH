@@ -420,7 +420,7 @@ const menuConfig = {
         },
         {
             id: "manage-rooms",
-            label: "Manage Hostel Rooms",
+            label: "Manage Hostel",
             icon: Building2,
             path: "/college-warden/manage-rooms",
             component: CollegeWardenManageRooms,
