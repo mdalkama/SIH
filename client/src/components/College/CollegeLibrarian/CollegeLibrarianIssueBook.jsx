@@ -195,7 +195,7 @@ function CollegeLibrarianIssueBook() {
         <div className="border-b border-slate-200 px-6 py-4">
           <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
             <User size={20} className="text-blue-600" />
-            Step 1: Find Student
+            Find Student by registration number
           </h2>
         </div>
         <div className="p-6">

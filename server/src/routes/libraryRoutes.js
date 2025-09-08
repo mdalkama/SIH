@@ -9,7 +9,8 @@ import {
     returnCopy,
     getBooks,
     getStudentBooks,
-    getStudentByRegNo
+    getStudentByRegNo,
+    getAllIssuedBooks
 } from "../controllers/libraryController/libraryController.js";
 import { role } from "../middlewares/authMiddleware.js"; // if you have role-based auth
 
@@ -28,6 +29,9 @@ router.get("/all/:collegeCode", getBooks);
 
 // Get all books issued to a student
 router.post("/student/issued-books", getStudentBooks);
+
+// Get all issued books for a college
+router.get("/issued-books/:collegeCode", getAllIssuedBooks);
 
 // Get student by registration number
 router.get("/student/search/:regNo", getStudentByRegNo);
