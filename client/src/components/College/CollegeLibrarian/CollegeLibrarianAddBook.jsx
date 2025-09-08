@@ -1,600 +1,832 @@
-import React, { useState } from 'react';
-import { Book, Plus, Minus, Copy, AlertCircle, CheckCircle, X, Filter, Download, Search,Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import {
+  Book,
+  Plus,
+  AlertCircle,
+  CheckCircle,
+  X,
+  Download,
+  Search,
+  Trash,
+  Loader2,
+  Pencil,
+} from "lucide-react";
 
-const CollegeLibrarianAddBook = () => {
-    const [activeTab, setActiveTab] = useState('addBook');
-    const [books, setBooks] = useState([
-        {
-            _id: '1',
-            title: 'Introduction to Computer Science',
-            author: 'John Smith',
-            isbn: '978-0123456789',
-            category: 'Computer Science',
-            totalCopies: 5,
-            copies: [
-                { copyId: 'C1', occupiedBy: null },
-                { copyId: 'C2', occupiedBy: 'student1' },
-                { copyId: 'C3', occupiedBy: null },
-                { copyId: 'C4', occupiedBy: null },
-                { copyId: 'C5', occupiedBy: 'student2' }
-            ]
-        },
-        {
-            _id: '2',
-            title: 'Mathematics for Engineers',
-            author: 'Jane Doe',
-            isbn: '978-0987654321',
-            category: 'Mathematics',
-            totalCopies: 3,
-            copies: [
-                { copyId: 'C1', occupiedBy: null },
-                { copyId: 'C2', occupiedBy: null },
-                { copyId: 'C3', occupiedBy: 'student3' }
-            ]
-        }
-    ]);
+const BASE = "https://sih-4ptm.onrender.com/api/v1";
 
-    const [newBook, setNewBook] = useState({
-        title: '',
-        author: '',
-        isbn: '',
-        category: '',
-        totalCopies: 1
-    });
+function CollegeLibrarianAddBook() {
+  // Basic data
+  const [books, setBooks] = useState([]);
+  const [collegeCode, setCollegeCode] = useState("");
 
-    const [selectedBook, setSelectedBook] = useState('');
-    const [copyOperation, setCopyOperation] = useState('add');
-    const [copyCount, setCopyCount] = useState(1);
-    const [selectedCopies, setSelectedCopies] = useState([]);
-    const [notification, setNotification] = useState(null);
+  // UI states
+  const [loading, setLoading] = useState(false); // for table/profile/books load
+  const [notification, setNotification] = useState(null);
 
-    const showNotification = (message, type = 'success') => {
-        setNotification({ message, type });
-        setTimeout(() => setNotification(null), 3000);
-    };
+  // Add book form + loading
+  const [addingBook, setAddingBook] = useState(false);
+  const [newBook, setNewBook] = useState({
+    title: "",
+    author: "",
+    isbn: "",
+    category: "",
+    totalCopies: 1,
+  });
 
-    const handleAddBook = (e) => {
-        e.preventDefault();
-        if (!newBook.title || !newBook.totalCopies) {
-            showNotification('Title and total copies are required', 'error');
-            return;
-        }
+  // Delete modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
-        if (newBook.isbn && books.some(book => book.isbn === newBook.isbn)) {
-            showNotification('Book with this ISBN already exists', 'error');
-            return;
-        }
+  // Edit copies modal
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editTarget, setEditTarget] = useState(null); // whole book object
+  const [editMode, setEditMode] = useState("add"); // add | delete
+  const [editCopyCount, setEditCopyCount] = useState(1);
+  const [editSelectedCopies, setEditSelectedCopies] = useState([]);
+  const [savingEdit, setSavingEdit] = useState(false);
 
-        const copies = Array.from({ length: parseInt(newBook.totalCopies) }, (_, i) => ({
-            copyId: `C${i + 1}`,
-            occupiedBy: null
-        }));
+  // Search + Sort
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("newest"); // newest | oldest | title-asc | title-desc
 
-        const bookToAdd = {
-            _id: Date.now().toString(),
-            ...newBook,
-            totalCopies: parseInt(newBook.totalCopies),
-            copies
-        };
+  // Small helper toasts
+  function showNotification(message, type = "success") {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 2500);
+  }
 
-        setBooks([...books, bookToAdd]);
-        setNewBook({ title: '', author: '', isbn: '', category: '', totalCopies: 1 });
-        showNotification('Book added successfully!');
-    };
-
-    const handleCopyOperation = (e) => {
-        e.preventDefault();
-        const book = books.find(b => b._id === selectedBook);
-        if (!book) {
-            showNotification('Please select a book', 'error');
-            return;
-        }
-
-        if (copyOperation === 'add') {
-            const currentCount = book.copies.length;
-            const newCopies = Array.from({ length: parseInt(copyCount) }, (_, i) => ({
-                copyId: `C${currentCount + i + 1}`,
-                occupiedBy: null
-            }));
-
-            const updatedBooks = books.map(b =>
-                b._id === selectedBook
-                    ? {
-                        ...b,
-                        copies: [...b.copies, ...newCopies],
-                        totalCopies: b.totalCopies + parseInt(copyCount)
-                    }
-                    : b
-            );
-            setBooks(updatedBooks);
-            showNotification(`${copyCount} copies added successfully!`);
+  // On mount: get profile -> load books
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        setLoading(true);
+        const res = await fetch(`${BASE}/my-profile`, {
+          method: "GET",
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (res.ok && data?.user?.collegeCode) {
+          setCollegeCode(data.user.collegeCode);
+          await loadBooks(data.user.collegeCode);
         } else {
-            if (selectedCopies.length === 0) {
-                showNotification('Please select copies to delete', 'error');
-                return;
-            }
-
-            const updatedBooks = books.map(b =>
-                b._id === selectedBook
-                    ? {
-                        ...b,
-                        copies: b.copies.filter(copy => !selectedCopies.includes(copy.copyId)),
-                        totalCopies: b.copies.length - selectedCopies.length
-                    }
-                    : b
-            );
-            setBooks(updatedBooks);
-            setSelectedCopies([]);
-            showNotification(`${selectedCopies.length} copies deleted successfully!`);
+          showNotification(data?.message || "College code not found in profile", "error");
         }
+      } catch (err) {
+        showNotification(err.message || "Profile error", "error");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProfile();
+  }, []);
 
-        setCopyCount(1);
-        setSelectedBook('');
-    };
+  // Load all books for a college
+  async function loadBooks(codeParam) {
+    const code = (codeParam || collegeCode || "").trim();
+    if (!code) {
+      showNotification("College code missing", "error");
+      return;
+    }
+    try {
+      setLoading(true);
+      const res = await fetch(`${BASE}/library/all/${encodeURIComponent(code)}`, {
+        method: "GET",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setBooks(data.books || []);
+      } else {
+        showNotification(data?.message || "Failed to load books", "error");
+      }
+    } catch (err) {
+      showNotification(err.message || "Load failed", "error");
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    const handleCopySelection = (copyId) => {
-        setSelectedCopies(prev =>
-            prev.includes(copyId)
-                ? prev.filter(id => id !== copyId)
-                : [...prev, copyId]
-        );
-    };
+  // Add a book
+  async function handleAddBook(e) {
+    e.preventDefault();
+    if (!newBook.title || !newBook.totalCopies) {
+      showNotification("Title and total copies are required", "error");
+      return;
+    }
+    try {
+      setAddingBook(true);
+      const res = await fetch(`${BASE}/library/add`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...newBook,
+          totalCopies: Number(newBook.totalCopies),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNewBook({ title: "", author: "", isbn: "", category: "", totalCopies: 1 });
+        await loadBooks();
+        showNotification("Book added successfully!");
+      } else {
+        showNotification(data?.message || "Failed to add book", "error");
+      }
+    } catch (err) {
+      showNotification(err.message || "Add failed", "error");
+    } finally {
+      setAddingBook(false);
+    }
+  }
 
-    const selectedBookData = books.find(b => b._id === selectedBook);
+  // Delete flow
+  function openDeleteModal(book) {
+    setDeleteTarget(book);
+    setShowDeleteModal(true);
+  }
+  function closeDeleteModal() {
+    if (deleting) return;
+    setShowDeleteModal(false);
+    setDeleteTarget(null);
+  }
+  async function confirmDeleteBook() {
+    if (!deleteTarget || !collegeCode) {
+      showNotification("College code missing or book not selected", "error");
+      return;
+    }
+    try {
+      setDeleting(true);
+      const res = await fetch(
+        `${BASE}/library/delete/${encodeURIComponent(collegeCode)}/${deleteTarget._id}`,
+        { method: "DELETE", credentials: "include" }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setBooks((prev) => prev.filter((b) => b._id !== deleteTarget._id));
+        showNotification("Book deleted successfully!");
+        closeDeleteModal();
+      } else {
+        showNotification(data?.message || "Failed to delete book", "error");
+      }
+    } catch (err) {
+      showNotification(err.message || "Delete failed", "error");
+    } finally {
+      setDeleting(false);
+    }
+  }
 
+  // Edit copies flow
+  function openEditModal(book) {
+    setEditTarget(book);
+    setEditMode("add");
+    setEditCopyCount(1);
+    setEditSelectedCopies([]);
+    setShowEditModal(true);
+  }
+  function closeEditModal() {
+    if (savingEdit) return;
+    setShowEditModal(false);
+    setEditTarget(null);
+    setEditSelectedCopies([]);
+    setEditCopyCount(1);
+  }
+  function toggleEditCopySelection(copyId) {
+    setEditSelectedCopies((prev) =>
+      prev.includes(copyId) ? prev.filter((id) => id !== copyId) : [...prev, copyId]
+    );
+  }
+  async function saveEdit() {
+    if (!editTarget) return;
+    try {
+      setSavingEdit(true);
+      if (editMode === "add") {
+        if (!editCopyCount || Number(editCopyCount) < 1) {
+          showNotification("Enter a valid number of copies", "error");
+          setSavingEdit(false);
+          return;
+        }
+        const res = await fetch(`${BASE}/library/copies/add`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bookId: editTarget._id,
+            newCopies: Number(editCopyCount),
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.message || "Failed to add copies");
+        await loadBooks();
+        showNotification(`${editCopyCount} copies added`);
+        closeEditModal();
+      } else {
+        if (editSelectedCopies.length === 0) {
+          showNotification("Select copies to delete", "error");
+          setSavingEdit(false);
+          return;
+        }
+        const res = await fetch(`${BASE}/library/copies/delete`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bookId: editTarget._id,
+            copyIds: editSelectedCopies,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.message || "Failed to delete copies");
+        await loadBooks();
+        showNotification(`${editSelectedCopies.length} copies deleted`);
+        closeEditModal();
+      }
+    } catch (err) {
+      showNotification(err.message || "Save failed", "error");
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
+  // Simple filter (search by title/author/category/isbn)
+  const filteredBooks = books.filter((b) => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return true;
+    const title = (b.title || "").toLowerCase();
+    const author = (b.author || "").toLowerCase();
+    const category = (b.category || "").toLowerCase();
+    const isbn = (b.isbn || "").toLowerCase();
     return (
-        <div className="min-h-screen">
+      title.includes(q) || author.includes(q) || category.includes(q) || isbn.includes(q)
+    );
+  });
 
+  // Get a timestamp for sorting (prefer createdAt, else infer from _id)
+  function getCreatedAtMs(book) {
+    if (book?.createdAt) {
+      const t = new Date(book.createdAt).getTime();
+      if (!isNaN(t)) return t;
+    }
+    // Fallback: extract timestamp from MongoDB ObjectId
+    try {
+      if (book?._id && typeof book._id === "string" && book._id.length >= 8) {
+        const tsHex = book._id.substring(0, 8);
+        const ts = parseInt(tsHex, 16);
+        if (!isNaN(ts)) return ts * 1000;
+      }
+    } catch {}
+    return 0;
+  }
 
-            {/* Notification */}
-            {notification && (
-                <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg flex items-center gap-2 ${notification.type === 'success'
-                        ? 'bg-green-50 text-green-800 border border-green-200'
-                        : 'bg-red-50 text-red-800 border border-red-200'
-                    }`}>
-                    {notification.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
-                    <span>{notification.message}</span>
-                    <button onClick={() => setNotification(null)} className="ml-2 hover:opacity-70">
-                        <X size={16} />
-                    </button>
-                </div>
-            )}
+  // Apply sort on filtered list
+  const sortedBooks = [...filteredBooks].sort((a, b) => {
+    if (sortBy === "newest") return getCreatedAtMs(b) - getCreatedAtMs(a);
+    if (sortBy === "oldest") return getCreatedAtMs(a) - getCreatedAtMs(b);
+    if (sortBy === "title-asc")
+      return (a.title || "").localeCompare(b.title || "", undefined, {
+        sensitivity: "base",
+      });
+    if (sortBy === "title-desc")
+      return (b.title || "").localeCompare(a.title || "", undefined, {
+        sensitivity: "base",
+      });
+    return 0;
+  });
 
-            {/* Tab Navigation */}
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 mb-6">
-                <div className="flex border-b border-slate-200">
-                    <button
-                        onClick={() => setActiveTab('addBook')}
-                        className={`px-6 py-4 font-semibold transition-colors ${activeTab === 'addBook'
-                                ? 'text-blue-600 border-b-2 border-blue-600'
-                                : 'text-slate-600 hover:text-slate-800'
-                            }`}
-                    >
-                        <div className="flex items-center gap-2">
-                            <Book size={20} />
-                            Add New Book
-                        </div>
-                    </button>
-                          <button
-                        onClick={() => setActiveTab('deleteBook')}
-                        className={`px-6 py-4 font-semibold transition-colors ${activeTab === 'deleteBook'
-                                ? 'text-blue-600 border-b-2 border-blue-600'
-                                : 'text-slate-600 hover:text-slate-800'
-                            }`}
-                    >
-                        <div className="flex items-center gap-2">
-                            <Book size={20} />
-                            Delete Book
-                        </div>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('manageCopies')}
-                        className={`px-6 py-4 font-semibold transition-colors ${activeTab === 'manageCopies'
-                                ? 'text-blue-600 border-b-2 border-blue-600'
-                                : 'text-slate-600 hover:text-slate-800'
-                            }`}
-                    >
-                        <div className="flex items-center gap-2">
-                            <Copy size={20} />
-                            Manage Copies
-                        </div>
-                    </button>
-                </div>
+  // Simple table skeleton rows
+  function renderSkeletonRows() {
+    const rows = [];
+    for (let i = 0; i < 8; i++) {
+      rows.push(
+        <tr key={i} className="border-b border-gray-200 animate-pulse">
+          <td className="p-3">
+            <div className="h-3 bg-slate-200 rounded w-6" />
+          </td>
+          <td className="p-3">
+            <div className="h-3 bg-slate-200 rounded w-40" />
+          </td>
+          <td className="p-3">
+            <div className="h-3 bg-slate-200 rounded w-32" />
+          </td>
+          <td className="p-3">
+            <div className="h-5 bg-slate-200 rounded w-20" />
+          </td>
+          <td className="p-3 text-center">
+            <div className="h-3 bg-slate-200 rounded w-8 mx-auto" />
+          </td>
+          <td className="p-3 text-center">
+            <div className="h-3 bg-slate-200 rounded w-10 mx-auto" />
+          </td>
+          <td className="p-3 text-center">
+            <div className="h-3 bg-slate-200 rounded w-8 mx-auto" />
+          </td>
+          <td className="p-3 text-center">
+            <div className="h-3 bg-slate-200 rounded w-12 mx-auto" />
+          </td>
+          <td className="p-2 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <div className="h-6 w-6 bg-slate-200 rounded" />
+              <div className="h-6 w-6 bg-slate-200 rounded" />
+            </div>
+          </td>
+        </tr>
+      );
+    }
+    return rows;
+  }
 
-                <div className="p-6">
-                    {activeTab === 'addBook' && (
-                        <form onSubmit={handleAddBook} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                        Book Title *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={newBook.title}
-                                        onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        placeholder="Enter book title"
-                                        required
-                                    />
-                                </div>
+  return (
+    <div className="min-h-screen">
+      {/* Toast */}
+      {notification && (
+        <div
+          className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg flex items-center gap-2 ${
+            notification.type === "success"
+              ? "bg-green-50 text-green-800 border border-green-200"
+              : "bg-red-50 text-red-800 border border-red-200"
+          }`}
+        >
+          {notification.type === "success" ? (
+            <CheckCircle size={20} />
+          ) : (
+            <AlertCircle size={20} />
+          )}
+          <span>{notification.message}</span>
+          <button onClick={() => setNotification(null)} className="ml-2 hover:opacity-70">
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                        Author
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={newBook.author}
-                                        onChange={(e) => setNewBook({ ...newBook, author: e.target.value })}
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        placeholder="Enter author name"
-                                    />
-                                </div>
+      {/* Add Book */}
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 mb-6">
+        <div className="border-b border-slate-200 px-6 py-4">
+          <div className="flex items-center gap-2 font-semibold text-slate-700">
+            <Book size={20} />
+            Add New Book
+          </div>
+        </div>
+        <div className="p-6">
+          <form onSubmit={handleAddBook} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Book Title *
+                </label>
+                <input
+                  type="text"
+                  value={newBook.title}
+                  onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg"
+                  placeholder="Enter book title"
+                  required
+                />
+              </div>
 
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                        ISBN
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={newBook.isbn}
-                                        onChange={(e) => setNewBook({ ...newBook, isbn: e.target.value })}
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        placeholder="Enter ISBN (optional)"
-                                    />
-                                </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Author
+                </label>
+                <input
+                  type="text"
+                  value={newBook.author}
+                  onChange={(e) => setNewBook({ ...newBook, author: e.target.value })}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg"
+                  placeholder="Enter author name"
+                />
+              </div>
 
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                        Category
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={newBook.category}
-                                        onChange={(e) => setNewBook({ ...newBook, category: e.target.value })}
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        placeholder="Enter category"
-                                    />
-                                </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  ISBN
+                </label>
+                <input
+                  type="text"
+                  value={newBook.isbn}
+                  onChange={(e) => setNewBook({ ...newBook, isbn: e.target.value })}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg"
+                  placeholder="Enter ISBN (optional)"
+                />
+              </div>
 
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                        Total Copies *
-                                    </label>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={newBook.totalCopies}
-                                        onChange={(e) => setNewBook({ ...newBook, totalCopies: e.target.value })}
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        required
-                                    />
-                                </div>
-                            </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Category
+                </label>
+                <input
+                  type="text"
+                  value={newBook.category}
+                  onChange={(e) => setNewBook({ ...newBook, category: e.target.value })}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg"
+                  placeholder="Enter category"
+                />
+              </div>
 
-                            <button
-                                type="submit"
-                                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
-                            >
-                                <Plus size={20} />
-                                Add Book
-                            </button>
-                        </form>
-                    )}
-
-                    {activeTab === 'deleteBook' && (
-                        <form onSubmit={() =>{console.log(deleted);
-                        }} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                               <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                    Select Book
-                                </label>
-                                <select
-                                    value={selectedBook}
-                                    onChange={(e) => {
-                                        setSelectedBook(e.target.value);
-                                        setSelectedCopies([]);
-                                    }}
-                                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                >
-                                    <option value="">Choose a book...</option>
-                                    {books.map(book => (
-                                        <option key={book._id} value={book._id}>
-                                            {book.title} - {book.author} (Total: {book.totalCopies})
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                             
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
-                            >
-                                <Trash2 size={20} />
-                                Delete Book
-                            </button>
-                        </form>
-                    )}
-
-
-                    {activeTab === 'manageCopies' && (
-                        <div className="space-y-6">
-                            {/* Book Selection */}
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                    Select Book
-                                </label>
-                                <select
-                                    value={selectedBook}
-                                    onChange={(e) => {
-                                        setSelectedBook(e.target.value);
-                                        setSelectedCopies([]);
-                                    }}
-                                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                >
-                                    <option value="">Choose a book...</option>
-                                    {books.map(book => (
-                                        <option key={book._id} value={book._id}>
-                                            {book.title} - {book.author} (Total: {book.totalCopies})
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Operation Type */}
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-3">
-                                    Operation
-                                </label>
-                                <div className="flex gap-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setCopyOperation('add');
-                                            setSelectedCopies([]);
-                                        }}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${copyOperation === 'add'
-                                                ? 'bg-green-100 text-green-800 border-2 border-green-300'
-                                                : 'bg-slate-100 text-slate-600 border-2 border-slate-200 hover:bg-slate-200'
-                                            }`}
-                                    >
-                                        <Plus size={16} />
-                                        Add Copies
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setCopyOperation('delete');
-                                            setSelectedCopies([]);
-                                        }}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${copyOperation === 'delete'
-                                                ? 'bg-red-100 text-red-800 border-2 border-red-300'
-                                                : 'bg-slate-100 text-slate-600 border-2 border-slate-200 hover:bg-slate-200'
-                                            }`}
-                                    >
-                                        <Minus size={16} />
-                                        Delete Copies
-                                    </button>
-                                </div>
-                            </div>
-
-                            {copyOperation === 'add' && (
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                        Number of Copies to Add
-                                    </label>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={copyCount}
-                                        onChange={(e) => setCopyCount(e.target.value)}
-                                        className="w-full max-w-xs px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                    />
-                                </div>
-                            )}
-
-                            {copyOperation === 'delete' && selectedBookData && (
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-3">
-                                        Select Copies to Delete
-                                    </label>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                                        {selectedBookData.copies.map((copy) => (
-                                            <button
-                                                key={copy.copyId}
-                                                type="button"
-                                                onClick={() => handleCopySelection(copy.copyId)}
-                                                disabled={copy.occupiedBy}
-                                                className={`p-3 rounded-lg border-2 transition-colors font-semibold text-sm ${copy.occupiedBy
-                                                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                                                        : selectedCopies.includes(copy.copyId)
-                                                            ? 'bg-red-100 text-red-800 border-red-300'
-                                                            : 'bg-white text-slate-700 border-slate-200 hover:border-red-300 hover:bg-red-50'
-                                                    }`}
-                                            >
-                                                {copy.copyId}
-                                                {copy.occupiedBy && <div className="text-xs mt-1">Occupied</div>}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    {selectedCopies.length > 0 && (
-                                        <p className="mt-2 text-sm text-slate-600">
-                                            {selectedCopies.length} copy(ies) selected for deletion
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-
-                            <button
-                                onClick={handleCopyOperation}
-                                disabled={!selectedBook}
-                                className={`px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 ${!selectedBook
-                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                        : copyOperation === 'add'
-                                            ? 'bg-green-600 text-white hover:bg-green-700'
-                                            : 'bg-red-600 text-white hover:bg-red-700'
-                                    }`}
-                            >
-                                {copyOperation === 'add' ? <Plus size={20} /> : <Minus size={20} />}
-                                {copyOperation === 'add' ? 'Add Copies' : 'Delete Selected Copies'}
-                            </button>
-                        </div>
-                    )}
-                </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Total Copies *
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={newBook.totalCopies}
+                  onChange={(e) => setNewBook({ ...newBook, totalCopies: e.target.value })}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg"
+                  required
+                />
+              </div>
             </div>
 
-            {/* Books Summary */}
-            <div className="bg-white">
-                {/* Excel-style header */}
-                <div className="bg-gray-50 border-b border-gray-300 px-4 py-3">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <h1 className="text-lg font-semibold text-gray-800">Library Collection</h1>
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <Book size={16} />
-                                <span>{books.length} books</span>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50">
-                                <Filter size={14} />
-                                Filter
+            <button
+              type="submit"
+              disabled={addingBook}
+              className={`bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 ${
+                addingBook ? "opacity-70 cursor-not-allowed" : "hover:bg-blue-700"
+              }`}
+            >
+              {addingBook ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <Plus size={20} />
+                  Add Book
+                </>
+              )}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* Books List */}
+      <div className="bg-white">
+        {/* Header */}
+        <div className="bg-gray-50 border-b border-gray-300 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-lg font-semibold text-gray-800">Library Collection</h1>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Book size={16} />
+                <span>{sortedBooks.length} books</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {/* Sort */}
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-slate-600">Sort:</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="px-2 py-1.5 text-sm border border-gray-300 rounded bg-white"
+                >
+                  <option value="newest">Newest</option>
+                  <option value="oldest">Oldest</option>
+                  <option value="title-asc">A → Z</option>
+                  <option value="title-desc">Z → A</option>
+                </select>
+              </div>
+              <button className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50">
+                <Download size={14} />
+                Export
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="bg-white border-b border-gray-300 px-4 py-2">
+          <div className="relative max-w-md">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by title, author, category, ISBN..."
+              className="w-full pl-10 pr-10 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                title="Clear"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Table (responsive scroll) */}
+        <div className="w-full overflow-x-auto">
+          <div className="inline-block min-w-full align-middle">
+            <table className="w-full min-w-[1100px] border-collapse table-fixed">
+              <thead>
+                <tr className="bg-gray-100 border-b border-gray-300">
+                  <th className="p-3 text-left text-sm w-10">#</th>
+                  <th className="p-3 text-left text-sm min-w-[200px]">Title</th>
+                  <th className="p-3 text-left text-sm min-w-[150px]">Author</th>
+                  <th className="p-3 text-left text-sm">Category</th>
+                  <th className="p-3 text-center text-sm w-20 whitespace-nowrap">Total</th>
+                  <th className="p-3 text-center text-sm w-24 whitespace-nowrap">Available</th>
+                  <th className="p-3 text-center text-sm w-20 whitespace-nowrap">Occupied</th>
+                  <th className="p-3 text-center text-sm w-24 whitespace-nowrap">Occupancy %</th>
+                  <th className="p-2 text-center w-20">
+                    <span className="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+
+              {loading ? (
+                <tbody>{renderSkeletonRows()}</tbody>
+              ) : (
+                <tbody>
+                  {sortedBooks.map((book, index) => {
+                    const copiesArr = Array.isArray(book.copies) ? book.copies : [];
+                    const available = copiesArr.filter((c) => !c.occupiedBy).length;
+                    const occupied = copiesArr.filter((c) => c.occupiedBy).length;
+                    const occupancy =
+                      book.totalCopies > 0 ? ((occupied / book.totalCopies) * 100).toFixed(1) : "0.0";
+
+                    return (
+                      <tr
+                        key={book._id}
+                        className="border-b border-gray-200 hover:bg-blue-50 transition-colors"
+                      >
+                        <td className="p-3 text-sm text-gray-600 font-mono">
+                          {String(index + 1).padStart(2, "0")}
+                        </td>
+                        <td className="p-3 text-sm font-medium text-gray-800">{book.title}</td>
+                        <td className="p-3 text-sm text-gray-700">{book.author}</td>
+                        <td className="p-3 text-sm">
+                          <span className="inline-block px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                            {book.category || "-"}
+                          </span>
+                        </td>
+                        <td className="p-3 text-sm text-center font-mono whitespace-nowrap">
+                          {book.totalCopies}
+                        </td>
+                        <td className="p-3 text-sm text-center font-mono text-green-600 font-semibold whitespace-nowrap">
+                          {available}
+                        </td>
+                        <td className="p-3 text-sm text-center font-mono text-red-600 font-semibold whitespace-nowrap">
+                          {occupied}
+                        </td>
+                        <td className="p-3 text-sm text-center font-mono whitespace-nowrap">
+                          {occupancy}%
+                        </td>
+                        <td className="p-2 text-center w-20">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              onClick={() => openEditModal(book)}
+                              className="inline-flex p-1.5 rounded text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                              title="Edit copies"
+                              aria-label={`Edit copies of ${book.title}`}
+                            >
+                              <Pencil size={16} />
                             </button>
-                            <button className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50">
-                                <Download size={14} />
-                                Export
+                            <button
+                              onClick={() => openDeleteModal(book)}
+                              className="inline-flex p-1.5 rounded text-red-600 hover:text-red-700 hover:bg-red-50"
+                              title="Delete book"
+                              aria-label={`Delete ${book.title}`}
+                            >
+                              <Trash size={16} />
                             </button>
-                        </div>
-                    </div>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              )}
+            </table>
+
+            {!loading && searchTerm && sortedBooks.length === 0 && (
+              <div className="text-center py-8 text-sm text-slate-500">
+                No books found for “{searchTerm}”
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer with summary (based on shown list) */}
+        <div className="bg-gray-100 border-t border-gray-300 px-4 py-2">
+          <div className="flex justify-between items-center text-sm text-gray-600">
+            <span>
+              Showing {sortedBooks.length} of {books.length} books
+            </span>
+            <div className="flex gap-4">
+              <span>
+                Total Books:{" "}
+                {sortedBooks.reduce((sum, b) => sum + (b.totalCopies || 0), 0)}
+              </span>
+              <span>
+                Available:{" "}
+                {sortedBooks.reduce(
+                  (sum, b) =>
+                    sum +
+                    (Array.isArray(b.copies) ? b.copies.filter((c) => !c.occupiedBy).length : 0),
+                  0
+                )}
+              </span>
+              <span>
+                Occupied:{" "}
+                {sortedBooks.reduce(
+                  (sum, b) =>
+                    sum +
+                    (Array.isArray(b.copies) ? b.copies.filter((c) => c.occupiedBy).length : 0),
+                  0
+                )}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Delete Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/50" onClick={closeDeleteModal} />
+          <div className="absolute inset-0 flex items-center justify-center p-4">
+            <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="text-red-500" size={24} />
+                <div className="grow">
+                  <h3 className="font-semibold text-lg text-slate-800">Delete book?</h3>
+                  <p className="text-sm text-slate-600 mt-1">
+                    {deleteTarget ? (
+                      <>
+                        You are about to delete <strong>{deleteTarget.title}</strong>. This
+                        action cannot be undone.
+                      </>
+                    ) : (
+                      "Are you sure?"
+                    )}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-6 flex items-center justify-end gap-2">
+                <button
+                  onClick={closeDeleteModal}
+                  disabled={deleting}
+                  className="px-4 py-2 rounded border border-slate-300 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDeleteBook}
+                  disabled={deleting}
+                  className={`px-4 py-2 rounded bg-red-600 text-white flex items-center gap-2 ${
+                    deleting ? "opacity-70 cursor-not-allowed" : "hover:bg-red-700"
+                  }`}
+                >
+                  {deleting ? <Loader2 size={16} className="animate-spin" /> : <Trash size={16} />}
+                  {deleting ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Copies Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/50" onClick={closeEditModal} />
+          <div className="absolute inset-0 flex items-center justify-center p-4">
+            <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg flex flex-col max-h-[85vh]">
+              {/* Header */}
+              <div className="px-6 py-4 border-b flex items-center justify-between">
+                <h3 className="font-semibold text-lg text-slate-800">
+                  Edit Copies{editTarget ? ` — ${editTarget.title}` : ""}
+                </h3>
+                <button onClick={closeEditModal} className="p-1 rounded hover:bg-slate-100">
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="px-6 py-4 overflow-y-auto grow">
+                {/* Mode buttons */}
+                <div className="flex gap-2 mb-4">
+                  <button
+                    onClick={() => {
+                      setEditMode("add");
+                      setEditSelectedCopies([]);
+                    }}
+                    className={`px-3 py-1.5 rounded border text-sm ${
+                      editMode === "add"
+                        ? "bg-green-100 border-green-300 text-green-800"
+                        : "bg-slate-100 border-slate-200 text-slate-700"
+                    }`}
+                  >
+                    Add Copies
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditMode("delete");
+                      setEditCopyCount(1);
+                    }}
+                    className={`px-3 py-1.5 rounded border text-sm ${
+                      editMode === "delete"
+                        ? "bg-red-100 border-red-300 text-red-800"
+                        : "bg-slate-100 border-slate-200 text-slate-700"
+                    }`}
+                  >
+                    Delete Copies
+                  </button>
                 </div>
 
-                {/* Search bar */}
-                <div className="bg-white border-b border-gray-300 px-4 py-2">
-                    <div className="relative max-w-md">
-                        <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search books..."
-                            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                    </div>
-                </div>
-
-                {/* Excel-style table */}
-                <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                        {/* Table header */}
-                        <thead>
-                            <tr className="bg-gray-100 border-b border-gray-300">
-                                <th className="text-left p-3 font-semibold text-gray-700 border-r border-gray-300 text-sm">#</th>
-                                <th className="text-left p-3 font-semibold text-gray-700 border-r border-gray-300 text-sm min-w-[200px]">Title</th>
-                                <th className="text-left p-3 font-semibold text-gray-700 border-r border-gray-300 text-sm min-w-[150px]">Author</th>
-                                <th className="text-left p-3 font-semibold text-gray-700 border-r border-gray-300 text-sm">Category</th>
-                                <th className="text-center p-3 font-semibold text-gray-700 border-r border-gray-300 text-sm">Total</th>
-                                <th className="text-center p-3 font-semibold text-gray-700 border-r border-gray-300 text-sm">Available</th>
-                                <th className="text-center p-3 font-semibold text-gray-700 border-r border-gray-300 text-sm">Occupied</th>
-                                <th className="text-center p-3 font-semibold text-gray-700 border-r border-gray-300 text-sm">Occupancy %</th>
-                                <th className="text-left p-3 font-semibold text-gray-700 text-sm min-w-[120px]">Status</th>
-                            </tr>
-                        </thead>
-
-                        {/* Table body */}
-                        <tbody>
-                            {books.map((book, index) => {
-                                const availableCopies = book.copies.filter(copy => !copy.occupiedBy).length;
-                                const occupiedCopies = book.copies.filter(copy => copy.occupiedBy).length;
-                                const occupancyRate = (occupiedCopies / book.totalCopies) * 100;
-
-                                return (
-                                    <tr
-                                        key={book._id}
-                                        className="border-b border-gray-200 hover:bg-blue-50 transition-colors"
-                                    >
-                                        <td className="p-3 text-sm text-gray-600 border-r border-gray-200 font-mono">
-                                            {String(index + 1).padStart(2, '0')}
-                                        </td>
-                                        <td className="p-3 text-sm font-medium text-gray-800 border-r border-gray-200">
-                                            {book.title}
-                                        </td>
-                                        <td className="p-3 text-sm text-gray-700 border-r border-gray-200">
-                                            {book.author}
-                                        </td>
-                                        <td className="p-3 text-sm border-r border-gray-200">
-                                            <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${book.category === 'Fiction' ? 'bg-green-100 text-green-800' :
-                                                    book.category === 'Classic' ? 'bg-purple-100 text-purple-800' :
-                                                        book.category === 'Technical' ? 'bg-blue-100 text-blue-800' :
-                                                            'bg-gray-100 text-gray-800'
-                                                }`}>
-                                                {book.category}
-                                            </span>
-                                        </td>
-                                        <td className="p-3 text-sm text-center font-mono border-r border-gray-200">
-                                            {book.totalCopies}
-                                        </td>
-                                        <td className="p-3 text-sm text-center font-mono font-semibold text-green-600 border-r border-gray-200">
-                                            {availableCopies}
-                                        </td>
-                                        <td className="p-3 text-sm text-center font-mono font-semibold text-red-600 border-r border-gray-200">
-                                            {occupiedCopies}
-                                        </td>
-                                        <td className="p-3 text-sm text-center font-mono border-r border-gray-200">
-                                            {occupancyRate.toFixed(1)}%
-                                        </td>
-                                        <td className="p-3 text-sm border-r border-gray-200">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-16 bg-gray-200 rounded-full h-2">
-                                                    <div
-                                                        className={`h-2 rounded-full ${occupancyRate > 80 ? 'bg-red-500' :
-                                                                occupancyRate > 50 ? 'bg-yellow-500' : 'bg-green-500'
-                                                            }`}
-                                                        style={{ width: `${occupancyRate}%` }}
-                                                    ></div>
-                                                </div>
-                                                <span className={`text-xs font-medium ${occupancyRate > 80 ? 'text-red-600' :
-                                                        occupancyRate > 50 ? 'text-yellow-600' : 'text-green-600'
-                                                    }`}>
-                                                    {occupancyRate > 80 ? 'High' : occupancyRate > 50 ? 'Medium' : 'Low'}
-                                                </span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Empty state */}
-                {books.length === 0 && (
-                    <div className="text-center py-16 bg-gray-50">
-                        <Book size={48} className="mx-auto text-gray-400 mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-600 mb-2">No books in library</h3>
-                        <p className="text-gray-500">Import your first book collection to get started</p>
-                        <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                            Import Books
-                        </button>
-                    </div>
+                {/* Add mode */}
+                {editMode === "add" && (
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Number of copies to add
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={editCopyCount}
+                      onChange={(e) => setEditCopyCount(e.target.value)}
+                      className="px-3 py-2 border rounded w-32"
+                    />
+                  </div>
                 )}
 
-                {/* Footer with summary */}
-                <div className="bg-gray-100 border-t border-gray-300 px-4 py-2">
-                    <div className="flex justify-between items-center text-sm text-gray-600">
-                        <span>Showing {books.length} of {books.length} books</span>
-                        <div className="flex gap-4">
-                            <span>Total Books: {books.reduce((sum, book) => sum + book.totalCopies, 0)}</span>
-                            <span>Available: {books.reduce((sum, book) => sum + book.copies.filter(copy => !copy.occupiedBy).length, 0)}</span>
-                            <span>Occupied: {books.reduce((sum, book) => sum + book.copies.filter(copy => copy.occupiedBy).length, 0)}</span>
-                        </div>
+                {/* Delete mode */}
+                {editMode === "delete" && editTarget && (
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">
+                      Select copies to delete
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                      {(Array.isArray(editTarget.copies) ? editTarget.copies : []).map((copy) => {
+                        const disabled = Boolean(copy.occupiedBy);
+                        const selected = editSelectedCopies.includes(copy.copyId);
+                        return (
+                          <button
+                            key={copy.copyId}
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => toggleEditCopySelection(copy.copyId)}
+                            className={`p-3 rounded-lg border-2 text-sm font-semibold ${
+                              disabled
+                                ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                                : selected
+                                ? "bg-red-100 text-red-800 border-red-300"
+                                : "bg-white text-slate-700 border-slate-200 hover:border-red-300 hover:bg-red-50"
+                            }`}
+                          >
+                            {copy.copyId}
+                            {copy.occupiedBy && <div className="text-xs mt-1">Occupied</div>}
+                          </button>
+                        );
+                      })}
                     </div>
-                </div>
+                    {editSelectedCopies.length > 0 && (
+                      <p className="mt-2 text-sm text-slate-600">
+                        {editSelectedCopies.length} copy(ies) selected for deletion
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 border-t flex items-center justify-end gap-2">
+                <button
+                  onClick={closeEditModal}
+                  disabled={savingEdit}
+                  className="px-4 py-2 rounded border border-slate-300 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveEdit}
+                  disabled={savingEdit}
+                  className={`px-4 py-2 rounded text-white flex items-center gap-2 ${
+                    savingEdit
+                      ? "opacity-70 cursor-not-allowed bg-slate-400"
+                      : editMode === "add"
+                      ? "bg-green-600 hover:bg-green-700"
+                      : "bg-red-600 hover:bg-red-700"
+                  }`}
+                >
+                  {savingEdit && <Loader2 size={16} className="animate-spin" />}
+                  {savingEdit ? "Saving..." : editMode === "add" ? "Save" : "Delete Selected"}
+                </button>
+              </div>
             </div>
+          </div>
         </div>
-    );
-};
+      )}
+    </div>
+  );
+}
 
 export default CollegeLibrarianAddBook;
