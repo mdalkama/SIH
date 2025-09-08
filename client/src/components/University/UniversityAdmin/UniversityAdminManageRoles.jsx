@@ -92,6 +92,7 @@ const UniversityAdminManageRoles = () => {
             case 'UniversityGoverningBody': return 'bg-blue-100 text-blue-800';
             case 'UniversityRegistrar': return 'bg-green-100 text-green-800';
             case 'UniversityExaminationBody': return 'bg-orange-100 text-orange-800';
+            case 'CollegeAdmin': return 'bg-purple-100 text-purple-800';
             default: return 'bg-gray-100 text-gray-800';
         }
     };
@@ -101,6 +102,7 @@ const UniversityAdminManageRoles = () => {
             case 'UniversityGoverningBody': return 'Governing Body';
             case 'UniversityRegistrar': return 'Registrar';
             case 'UniversityExaminationBody': return 'Examination Body';
+            case 'CollegeAdmin': return 'College Admin';
             default: return role;
         }
     };
@@ -298,7 +300,8 @@ const UniversityAdminManageRoles = () => {
         const governingBody = employees.filter(emp => emp.role === 'UniversityGoverningBody').length;
         const registrar = employees.filter(emp => emp.role === 'UniversityRegistrar').length;
         const examBody = employees.filter(emp => emp.role === 'UniversityExaminationBody').length;
-        return { total, active, inactive, governingBody, registrar, examBody };
+        const collegeAdmin = employees.filter(emp => emp.role === 'CollegeAdmin').length;
+        return { total, active, inactive, governingBody, registrar, examBody, collegeAdmin };
     };
     const stats = getStats();
 
@@ -365,6 +368,13 @@ const UniversityAdminManageRoles = () => {
                             <p style={{ color: '#111827' }} className="text-2xl font-bold">{stats.examBody}</p>
                         </div>
                     </div>
+                    <div style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }}
+                        className="p-4 rounded-lg border shadow-sm">
+                        <div>
+                            <p style={{ color: '#6B7280' }} className="text-sm font-medium">College Admin</p>
+                            <p style={{ color: '#111827' }} className="text-2xl font-bold">{stats.collegeAdmin}</p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Main Content Card */}
@@ -408,7 +418,8 @@ const UniversityAdminManageRoles = () => {
                                 { key: 'inactive', label: 'Inactive' },
                                 { key: 'UniversityGoverningBody', label: 'Governing Body' },
                                 { key: 'UniversityRegistrar', label: 'Registrar' },
-                                { key: 'UniversityExaminationBody', label: 'Exam Body' }
+                                { key: 'UniversityExaminationBody', label: 'Exam Body' },
+                                { key: 'CollegeAdmin', label: 'College Admin' }
                             ].map(tab => (
                                 <button
                                     key={tab.key}
@@ -663,28 +674,30 @@ const UniversityAdminManageRoles = () => {
                                 </div>
                             </div>
 
-                            <div>
-                                <label style={{ color: '#111827' }} className="block text-sm font-medium mb-1">
-                                    Password {!isEditing ? '*' : '(Leave blank to keep current password)'}
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        value={formData.password}
-                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                        style={{ borderColor: '#E5E7EB' }}
-                                        className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder={isEditing ? "Enter new password (optional)" : "Enter password"}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                                    >
-                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                    </button>
+                            {!isEditing && (
+                                <div>
+                                    <label style={{ color: '#111827' }} className="block text-sm font-medium mb-1">
+                                        Password *
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            value={formData.password}
+                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                            style={{ borderColor: '#E5E7EB' }}
+                                            className="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="Enter password"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                                        >
+                                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             
 
