@@ -1,159 +1,116 @@
-import React, { useEffect, useState } from "react";
-import { Search, User, Book, Calendar, Clock, CheckCircle, AlertCircle, UserCheck } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  Search,
+  User,
+  Book,
+  Calendar,
+  CheckCircle,
+  AlertCircle,
+  UserCheck,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Loader2,
+} from "lucide-react";
 
 const BASE = "https://sih-4ptm.onrender.com/api/v1";
 
+
 function CollegeLibrarianIssueBook() {
-  // Inputs / selections
+  // Inputs and Selections
   const [registrationNumber, setRegistrationNumber] = useState("");
   const [student, setStudent] = useState(null);
-  const [studentLoading, setStudentLoading] = useState(false);
-  const [studentError, setStudentError] = useState("");
-
-  // Librarian/profile
-  const [staffName, setStaffName] = useState("");
-  const [staffRole, setStaffRole] = useState("");
-  const [collegeCode, setCollegeCode] = useState("");
-
-  // Books
-  const [books, setBooks] = useState([]);
-  const [booksLoading, setBooksLoading] = useState(false);
-
-  // Selection
   const [selectedBook, setSelectedBook] = useState(null);
   const [selectedCopy, setSelectedCopy] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  console.log("selectedBook",selectedBook?._id);
-  console.log("selectedCopy",selectedCopy?.copyId)
-  console.log("student",student?._id)
 
-
-  // Issue
+  // Data from Backend
+  const [librarianProfile, setLibrarianProfile] = useState({ name: "", role: "", collegeCode: "" });
+  const [books, setBooks] = useState([]);
+  
+  // UI States
+  const [studentLoading, setStudentLoading] = useState(false);
+  const [studentError, setStudentError] = useState("");
+  const [booksLoading, setBooksLoading] = useState(false);
   const [issuing, setIssuing] = useState(false);
   const [issueComplete, setIssueComplete] = useState(false);
+  const [showCopyModal, setShowCopyModal] = useState(false);
 
-  // Load profile -> books
+  // Book Table States
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+
+  // Load profile and all books on component mount
   useEffect(() => {
-    async function loadProfileAndBooks() {
+    async function loadInitialData() {
       try {
         setBooksLoading(true);
-
-        // Profile
-        const r1 = await fetch(`${BASE}/my-profile`, {
-          method: "GET",
-          credentials: "include",
-        });
-        const d1 = await r1.json();
-        if (!r1.ok) {
-          console.error(d1?.message || "Failed to fetch profile");
-          return;
-        }
-        const user = d1?.user || {};
-        const name =
-          user.name ||
-          user.fullName ||
-          [user.firstName, user.lastName].filter(Boolean).join(" ") ||
-          user.username ||
-          "";
-
-        setStaffName(name);
-        setStaffRole(user.role || "");
-        setCollegeCode(user.collegeCode || "");
-
-        // Books
-        if (user.collegeCode) {
-          const r2 = await fetch(`${BASE}/library/all/${encodeURIComponent(user.collegeCode)}`, {
-            method: "GET",
-            credentials: "include",
-          });
-          const d2 = await r2.json();
-          if (!r2.ok) {
-            console.error(d2?.message || "Failed to fetch books");
-            setBooks([]);
-          } else {
-            setBooks(Array.isArray(d2?.books) ? d2.books : []);
+        const profileRes = await fetch(`${BASE}/my-profile`, { credentials: "include" });
+        const profileData = await profileRes.json();
+        if (profileRes.ok && profileData.user) {
+          const user = profileData.user;
+          const name = user.name || [user.firstName, user.lastName].filter(Boolean).join(" ") || "";
+          setLibrarianProfile({ name, role: user.role, collegeCode: user.collegeCode, id: user.id || user._id });
+          
+          if (user.collegeCode) {
+            const booksRes = await fetch(`${BASE}/library/all/${encodeURIComponent(user.collegeCode)}`, { credentials: "include" });
+            const booksData = await booksRes.json();
+            if (booksRes.ok) {
+              setBooks(Array.isArray(booksData.books) ? booksData.books : []);
+            }
           }
         }
       } catch (e) {
-        console.error(e);
-        setBooks([]);
+        console.error("Error loading initial data:", e);
       } finally {
         setBooksLoading(false);
       }
     }
-    loadProfileAndBooks();
+    loadInitialData();
   }, []);
 
-  // Search student by registration number
+  // Search for a student by registration number
   async function handleStudentSearch() {
-    const regNo = registrationNumber.trim();
+    const regNo = registrationNumber.trim().toUpperCase();
     if (!regNo) {
-      setStudent(null);
-      setStudentError("Enter a registration number");
+      setStudentError("Please enter a registration number.");
       return;
     }
     try {
       setStudentLoading(true);
       setStudentError("");
       setStudent(null);
+      setSelectedBook(null);
+      setSelectedCopy(null);
 
-      const res = await fetch(`${BASE}/library/student/search/${regNo}`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const res = await fetch(`${BASE}/library/student/search/${encodeURIComponent(regNo)}`, { credentials: "include" });
       const data = await res.json();
-      if (!res.ok) {
-        setStudentError(data?.message || "Student not found");
-        setStudent(null);
-        return;
-      }
-      // data: { _id, regNo, name, email, course, branch, year, booksIssued, maxBooks }
+      if (!res.ok) throw new Error(data.message || "Student not found");
       setStudent(data);
     } catch (e) {
-      console.error(e);
-      setStudentError(e.message || "Failed to search student");
-      setStudent(null);
+      setStudentError(e.message);
     } finally {
       setStudentLoading(false);
     }
   }
 
-  // Filter books (show all if search empty)
-  const booksToShow = (() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return books;
-    return books.filter((b) => {
-      const t = (b.title || "").toLowerCase();
-      const a = (b.author || "").toLowerCase();
-      const c = (b.category || "").toLowerCase();
-      const i = (b.isbn || "").toLowerCase();
-      return t.includes(q) || a.includes(q) || c.includes(q) || i.includes(q);
-    });
-  })();
-
-  // Helpers
-  function getAvailableCopies(book) {
-    const copies = Array.isArray(book.copies) ? book.copies : [];
-    return copies.filter((c) => !c.occupiedBy);
-  }
-  function getAvailableCount(book) {
-    return getAvailableCopies(book).length;
+  // When a book row is clicked, open the copy selection modal
+  function handleBookSelect(book) {
+    setSelectedBook(book);
+    setSelectedCopy(null); // Reset previous copy selection
+    setShowCopyModal(true);
   }
 
-  const currentDateTime = new Date().toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    dateStyle: "full",
-    timeStyle: "medium",
-  });
-  const dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN");
+  // When a copy is selected from the modal
+  function handleCopySelect(copy) {
+    setSelectedCopy(copy);
+    setShowCopyModal(false); // Close the modal
+  }
 
-
-
-
-  // Issue (real API call) — do NOT send staffId; backend uses req.user.id
+  // Issue the book to the student
   async function handleIssueBook() {
     if (!student || !selectedBook || !selectedCopy) return;
-    console.log()
     try {
       setIssuing(true);
       const res = await fetch(`${BASE}/library/copies/issue`, {
@@ -161,33 +118,15 @@ function CollegeLibrarianIssueBook() {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          bookId: selectedBook?._id,
-          copyId: selectedCopy?.copyId,
-          studentId: student?._id, // from student search
+          bookId: selectedBook._id,
+          copyId: selectedCopy.copyId,
+          studentId: student._id,
         }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        alert(data?.message || "Failed to issue");
-        return;
-      }
-
-      // Success UI
+      if (!res.ok) throw new Error(data.message || "Failed to issue book");
+      
       setIssueComplete(true);
-
-      // Refresh books (so availability updates)
-      if (collegeCode) {
-        try {
-          const r = await fetch(`${BASE}/library/all/${encodeURIComponent(collegeCode)}`, {
-            method: "GET",
-            credentials: "include",
-          });
-          const d = await r.json();
-          if (r.ok) setBooks(Array.isArray(d?.books) ? d.books : []);
-        } catch {}
-      }
-
-      // Auto reset after a few seconds
       setTimeout(() => {
         setIssueComplete(false);
         setStudent(null);
@@ -195,262 +134,234 @@ function CollegeLibrarianIssueBook() {
         setSelectedCopy(null);
         setRegistrationNumber("");
         setSearchQuery("");
+        if (librarianProfile.collegeCode) {
+          loadAllBooks(librarianProfile.collegeCode);
+        }
       }, 3000);
     } catch (e) {
-      console.error(e);
-      alert(e.message || "Failed to issue");
+      alert(`Error: ${e.message}`);
     } finally {
       setIssuing(false);
     }
   }
+  
+  async function loadAllBooks(code) {
+      const booksRes = await fetch(`${BASE}/library/all/${encodeURIComponent(code)}`, { credentials: "include" });
+      const booksData = await booksRes.json();
+      if (booksRes.ok) setBooks(Array.isArray(booksData.books) ? booksData.books : []);
+  }
+
+  // Client-side filtering, sorting, and pagination
+  const processedBooks = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const filtered = q ? books.filter(b => (b.title || "").toLowerCase().includes(q) || (b.author || "").toLowerCase().includes(q)) : books;
+    const sorted = [...filtered].sort((a, b) => {
+      if (sortBy === 'newest') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      if (sortBy === 'oldest') return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+      if (sortBy === 'title-asc') return (a.title || '').localeCompare(b.title || '');
+      if (sortBy === 'title-desc') return (b.title || '').localeCompare(a.title || '');
+      return 0;
+    });
+    return sorted;
+  }, [books, searchQuery, sortBy]);
+
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, sortBy, itemsPerPage]);
+
+  const totalPages = Math.ceil(processedBooks.length / itemsPerPage);
+  const paginatedBooks = processedBooks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const getAvailableCopies = (book) => Array.isArray(book?.copies) ? book.copies.filter(c => !c.occupiedBy) : [];
 
   if (issueComplete) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-12 h-12 text-green-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Book Issued Successfully!</h2>
-            <div className="space-y-2 text-gray-600">
-              <p>
-                <strong>Librarian:</strong> {staffName || "—"} {staffRole ? `(${staffRole})` : ""}
-              </p>
-              <p>
-                <strong>Student:</strong> {student?.name} ({student?.regNo})
-              </p>
-              <p>
-                <strong>Book:</strong> {selectedBook?.title}
-              </p>
-              <p>
-                <strong>Copy ID:</strong> {selectedCopy?.copyId}
-              </p>
-              <p>
-                <strong>Issue Date:</strong> {currentDateTime}
-              </p>
-              <p>
-                <strong>Due Date:</strong> {dueDate}
-              </p>
-            </div>
-            <div className="mt-6 text-sm text-gray-500">Redirecting to main form in a few seconds...</div>
+      <div className="min-h-screen bg-slate-50 p-6 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center animate-fade-in-up">
+          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-slate-800 mb-4">Book Issued Successfully!</h2>
+          <div className="text-left bg-slate-50 p-4 rounded-lg space-y-2 text-sm text-slate-700">
+            <p><strong>Student:</strong> {student?.name}</p>
+            <p><strong>Book:</strong> {selectedBook?.title}</p>
+            <p><strong>Copy ID:</strong> {selectedCopy?.copyId}</p>
           </div>
+          <p className="text-xs text-slate-500 mt-4">This screen will reset in a moment...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Student Search */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <User className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-800">Student Details</h2>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Registration Number</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={registrationNumber}
-                    onChange={(e) => setRegistrationNumber(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleStudentSearch()}
-                    placeholder="Enter registration number"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  <button
-                    onClick={handleStudentSearch}
-                    disabled={studentLoading}
-                    className={`px-4 py-2 text-white rounded-lg flex items-center ${
-                      studentLoading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                    }`}
-                  >
-                    <Search className="w-4 h-4" />
-                  </button>
-                </div>
-                {studentLoading && <div className="text-sm text-slate-500 mt-1">Searching...</div>}
-              </div>
-
-              {student && (
-                <div className="bg-blue-50 rounded-lg p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <UserCheck className="w-5 h-5 text-green-600" />
-                    <span className="font-medium text-gray-800">Student Found</span>
-                  </div>
-                  <div className="space-y-2 text-sm">
-                    <div><strong>Name:</strong> {student.name}</div>
-                    <div><strong>Course:</strong> {student.course || "—"}</div>
-                    <div><strong>Email:</strong> {student.email || "—"}</div>
-                    <div><strong>Books Issued:</strong> {student.booksIssued}/{student.maxBooks}</div>
-                  </div>
-                  {student.booksIssued >= student.maxBooks && (
-                    <div className="flex items-center gap-2 text-red-600 text-sm">
-                      <AlertCircle className="w-4 h-4" />
-                      <span>Maximum book limit reached</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {!student && studentError && (
-                <div className="text-red-600 text-sm flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4" />
-                  <span>{studentError}</span>
-                </div>
+    <div className="min-h-screen  space-y-6">
+      {/* Step 1: Student Search */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200">
+        <div className="border-b border-slate-200 px-6 py-4">
+          <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+            <User size={20} className="text-blue-600" />
+            Step 1: Find Student
+          </h2>
+        </div>
+        <div className="p-6">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={registrationNumber}
+              onChange={(e) => setRegistrationNumber(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleStudentSearch()}
+              placeholder="Enter student's registration number..."
+              className="flex-1 px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            />
+            <button onClick={handleStudentSearch} disabled={studentLoading} className="px-5 py-2 text-white rounded-md flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400">
+              <Search size={16} />
+              {studentLoading ? "Searching..." : "Search"}
+            </button>
+          </div>
+          {studentError && <p className="text-sm text-red-600 mt-2">{studentError}</p>}
+          {student && (
+            <div className="mt-4 bg-green-50 border border-green-200 text-green-800 rounded-lg p-4 space-y-2 text-sm">
+              <div className="font-bold flex items-center gap-2"><UserCheck size={16} /> Student Found</div>
+              <p><strong>Name:</strong> {student.name}</p>
+              <p><strong>Course:</strong> {student.course || "—"}</p>
+              <p><strong>Books Issued:</strong> {student.booksIssued} / {student.maxBooks}</p>
+              {student.booksIssued >= student.maxBooks && (
+                <p className="font-bold text-red-600 flex items-center gap-1"><AlertCircle size={14} /> Book limit reached.</p>
               )}
             </div>
+          )}
+        </div>
+      </div>
+
+      {/* Step 2: Select Book (only appears after student is found) */}
+      {student && (
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200">
+          <div className="border-b border-slate-200 px-6 py-4">
+            <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+              <Book size={20} className="text-blue-600" />
+              Step 2: Select a Book from the Collection
+            </h2>
           </div>
-
-          {/* Book Search + List */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Book className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-800">Select Book</h2>
+          <div className="px-4 py-3 border-b flex flex-wrap items-center justify-between gap-3">
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search books by title or author..." className="w-full sm:w-64 pl-9 pr-4 py-2 text-sm border rounded-md" />
             </div>
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-2 py-2 text-sm border rounded-md">
+              <option value="newest">Sort by: Newest</option>
+              <option value="oldest">Sort by: Oldest</option>
+              <option value="title-asc">Sort by: A-Z</option>
+              <option value="title-desc">Sort by: Z-A</option>
+            </select>
+          </div>
+          <div className="w-full overflow-x-auto">
+            <table className="w-full min-w-[600px] text-sm">
+              <thead className="bg-slate-50 text-slate-600">
+                <tr>
+                  <th className="px-4 py-2 text-left font-medium">Title</th>
+                  <th className="px-4 py-2 text-left font-medium">Author</th>
+                  <th className="px-4 py-2 text-center font-medium w-32">Available Copies</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {booksLoading ? <tr><td colSpan={3} className="text-center p-8">Loading...</td></tr> : 
+                 paginatedBooks.map(book => (
+                  <tr key={book._id} onClick={() => handleBookSelect(book)} className={`cursor-pointer ${selectedBook?._id === book._id ? "bg-blue-100 font-semibold" : "hover:bg-slate-50"}`}>
+                    <td className="px-4 py-3">{book.title}</td>
+                    <td className="px-4 py-3 text-slate-600">{book.author || "—"}</td>
+                    <td className="px-4 py-3 text-center font-medium text-green-600">{getAvailableCopies(book).length}</td>
+                  </tr>
+                 ))}
+              </tbody>
+            </table>
+          </div>
+          {totalPages > 1 && (
+            <div className="border-t border-slate-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+              <select value={itemsPerPage} onChange={(e) => setItemsPerPage(Number(e.target.value))} className="px-2 py-1 text-sm border rounded-md">
+                <option value={5}>5 per page</option>
+                <option value={10}>10 per page</option>
+              </select>
+              <div className="flex gap-2">
+                <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className="px-3 py-1.5 rounded-md border text-sm flex items-center gap-1.5 disabled:opacity-50">
+                  <ChevronLeft size={14} /> Prev
+                </button>
+                <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages} className="px-3 py-1.5 rounded-md border text-sm flex items-center gap-1.5 disabled:opacity-50">
+                  Next <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
-            <div className="space-y-4">
+      {/* Step 3: Issue Summary */}
+      {student && selectedBook && selectedCopy && (
+        <div className="bg-white rounded-xl shadow-lg border border-slate-200">
+          <div className="border-b border-slate-200 px-6 py-4">
+            <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+              <Calendar size={20} className="text-blue-600" />
+              Step 3: Confirm and Issue
+            </h2>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Search Books</label>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by title, author, category, or ISBN"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <p className="font-medium text-slate-500 mb-1">Student</p>
+                <p className="font-semibold text-slate-800">{student.name} ({student.regNo})</p>
               </div>
-
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {booksLoading ? (
-                  <div className="text-sm text-slate-500 px-1">Loading books...</div>
-                ) : booksToShow.length === 0 ? (
-                  <div className="text-sm text-slate-500 px-1">No books found.</div>
-                ) : (
-                  booksToShow.map((book) => (
-                    <div
-                      key={book._id}
-                      onClick={() => {
-                        setSelectedBook(book);
-                        setSelectedCopy(null);
-                      }}
-                      className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                        selectedBook?._id === book._id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-blue-300"
-                      }`}
-                    >
-                      <div className="font-medium text-gray-800">{book.title}</div>
-                      <div className="text-sm text-gray-600">{book.author || "-"}</div>
-                      <div className="text-sm text-gray-500">
-                        Available: {getAvailableCount(book)} of {book.totalCopies || 0}
-                      </div>
-                    </div>
-                  ))
-                )}
+              <div>
+                <p className="font-medium text-slate-500 mb-1">Book</p>
+                <p className="font-semibold text-slate-800">{selectedBook.title}</p>
+              </div>
+              <div>
+                <p className="font-medium text-slate-500 mb-1">Copy ID</p>
+                <p className="font-mono bg-slate-100 inline-block px-2 py-0.5 rounded text-slate-800">{selectedCopy.copyId}</p>
+              </div>
+              <div>
+                <p className="font-medium text-slate-500 mb-1">Due Date</p>
+                <p className="font-semibold text-slate-800">{new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN", { day: 'numeric', month: 'long', year: 'numeric' })}</p>
               </div>
             </div>
-
-            {/* Copy Selection */}
-            {selectedBook && (
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <h3 className="font-medium text-gray-800 mb-2">Select Copy</h3>
-                {getAvailableCopies(selectedBook).length === 0 ? (
-                  <div className="text-sm text-slate-500">All copies are currently issued.</div>
-                ) : (
-                  <div className="space-y-2">
-                    {getAvailableCopies(selectedBook).map((copy) => (
-                      <div
-                        key={copy.copyId}
-                        onClick={() => setSelectedCopy(copy)}
-                        className={`p-2 rounded border cursor-pointer transition-colors ${
-                          selectedCopy?.copyId === copy.copyId ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-blue-300"
-                        }`}
-                      >
-                        <div className="flex justify-between items-center">
-                          <span className="font-medium">{copy.copyId}</span>
-                          <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-700">Available</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+            <button
+              onClick={handleIssueBook}
+              disabled={issuing || (student && student.booksIssued >= student.maxBooks)}
+              className="w-full mt-6 py-3 bg-blue-600 text-white rounded-lg font-semibold text-base hover:bg-blue-700 disabled:bg-gray-400 flex items-center justify-center gap-2"
+            >
+              {issuing && <Loader2 size={18} className="animate-spin" />}
+              {issuing ? "Issuing Book..." : "Confirm & Issue Book"}
+            </button>
           </div>
+        </div>
+      )}
 
-          {/* Issue Summary */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Calendar className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-800">Issue Summary</h2>
-            </div>
-
-            <div className="space-y-4">
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Clock className="w-4 h-4" />
-                  <span>Issue Date & Time</span>
-                </div>
-                <div className="text-sm font-medium text-gray-800">{currentDateTime}</div>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Issuing Librarian</div>
-                  <div className="font-medium text-gray-800">{staffName || "—"}</div>
-                  <div className="text-sm text-gray-500">{staffRole || "—"}</div>
-                </div>
-
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Student</div>
-                  <div className="font-medium text-gray-800">{student ? student.name : "Not selected"}</div>
-                  {student && <div className="text-sm text-gray-500">{student.regNo}</div>}
-                </div>
-
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Book</div>
-                  <div className="font-medium text-gray-800">{selectedBook ? selectedBook.title : "Not selected"}</div>
-                  {selectedBook && <div className="text-sm text-gray-500">by {selectedBook.author || "-"}</div>}
-                </div>
-
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Copy ID</div>
-                  <div className="font-medium text-gray-800">{selectedCopy ? selectedCopy.copyId : "Not selected"}</div>
-                </div>
-
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Due Date</div>
-                  <div className="font-medium text-gray-800">{dueDate}</div>
-                  <div className="text-xs text-gray-500">14 days from issue date</div>
-                </div>
-              </div>
-
-              <button
-                onClick={handleIssueBook}
-                disabled={
-                  issuing ||
-                  !student ||
-                  !selectedBook ||
-                  !selectedCopy ||
-                  student.booksIssued >= student.maxBooks
-                }
-                className={`w-full py-3 text-white rounded-lg font-medium transition-colors ${
-                  issuing ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                }`}
-              >
-                {issuing ? "Issuing..." : "Issue Book"}
+      {/* Copy Selection Modal (Updated with scroll and bigger size) */}
+      {showCopyModal && selectedBook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-lg bg-white rounded-lg shadow-lg flex flex-col animate-fade-in-up">
+            <div className="px-6 py-4 border-b flex justify-between items-center">
+              <h3 className="font-semibold text-lg text-slate-800">Select an Available Copy</h3>
+              <button onClick={() => setShowCopyModal(false)} className="p-1 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-800">
+                <X size={18} />
               </button>
-
-              {student && student.booksIssued >= student.maxBooks && (
-                <div className="text-red-600 text-sm text-center">Cannot issue: Maximum book limit reached</div>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              <p className="text-sm mb-4">
+                Available copies for <strong>{selectedBook.title}</strong>:
+              </p>
+              {getAvailableCopies(selectedBook).length === 0 ? (
+                <p className="text-sm text-slate-500">No copies available for this book.</p>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                  {getAvailableCopies(selectedBook).map(copy => (
+                    <button
+                      key={copy.copyId}
+                      onClick={() => handleCopySelect(copy)}
+                      className="px-4 py-2 rounded-md border font-mono text-center bg-white hover:bg-blue-50 hover:border-blue-400 focus:ring-2 focus:ring-blue-500"
+                    >
+                      {copy.copyId}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -394,36 +394,39 @@ export const getStudentBooks = async (req, res) => {
 
 export const getStudentByRegNo = async (req, res) => {
   try {
-    const regNo = req.params.regNo;
+    const regNoRaw = req.params.regNo || "";
+    const regNo = regNoRaw.trim().toUpperCase();
 
     if (!regNo) {
-      return res.status(400).json({ message: "Registration number required" });
+      return res.status(400).json({ message: "Registration number is required" });
     }
 
-    // 1) Find main Student by registrationNumber
-    const student = await StudentLibrary.findOne({ registrationNumber: regNo })
-      .select("registrationNumber")
+    // 1. Student collection me dhoondo
+    const student = await Student.findOne({ registrationNumber: regNo })
+      .select("_id name email course registrationNumber")
+      .lean();
 
+    // Agar student hi nahi hai, toh aage nahi badhna
     if (!student) {
-      return res.status(404).json({ message: "Student not found" });
+      return res.status(404).json({ message: "Student with this registration number not found" });
     }
 
-    // 2) Find StudentLibrary by occupiedBy OR registrationNumber
+    // 2. Ab StudentLibrary find karo ya create karo
     let studentLibrary = await StudentLibrary.findOne({
-      $or: [{ occupiedBy: student._id }, { registrationNumber: regNo }],
+      occupiedBy: student._id,
     });
 
-    // 3) Auto-create if missing (UPsert style)
+    // Agar student ka library account nahi hai, toh abhi bana do
     if (!studentLibrary) {
       studentLibrary = await StudentLibrary.create({
-        registrationNumber: student.registrationNumber, // REQUIRED by schema
-        occupiedBy: student._id, // REQUIRED by schema
+        registrationNumber: student.registrationNumber, // Student model se
+        occupiedBy: student._id,                         // Student model se
         activity: [],
         issuedBooks: [],
       });
     }
 
-    // 4) Respond
+    // 3. Dono se data combine karke response bhejo
     return res.json({
       _id: student._id,
       regNo: student.registrationNumber,
@@ -433,10 +436,11 @@ export const getStudentByRegNo = async (req, res) => {
       branch: student.branch,
       year: student.year,
       booksIssued: studentLibrary.issuedBooks.length,
-      maxBooks: 5,
+      maxBooks: 5, // Aapka hardcoded limit
     });
+
   } catch (err) {
     console.error("Error fetching student by regNo:", err);
-    return res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 };
