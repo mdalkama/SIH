@@ -61,6 +61,7 @@ const UniversityAdminManageRoles = () => {
                     phone: s.phone,
                     salary: s.salary,
                     gender: s.gender ? s.gender.charAt(0).toUpperCase() + s.gender.slice(1) : '',
+                    collegeId: s.collegeId || s.collegeCode || '',
                     status: s.status ? s.status.charAt(0).toUpperCase() + s.status.slice(1) : 'Active',
                     joinDate: s.createdAt ? s.createdAt.slice(0, 10) : '',
                 }));
@@ -107,6 +108,8 @@ const UniversityAdminManageRoles = () => {
         }
     };
 
+    const isValidObjectId = (id) => /^[a-fA-F0-9]{24}$/.test(String(id || '').trim());
+
     const getEndpointForSelectedRole = () => {
         const cfg = availableRoles.find(r => r.value === selectedRole);
         return cfg ? cfg.endpoint : '';
@@ -128,9 +131,12 @@ const UniversityAdminManageRoles = () => {
             alert('Please select a role');
             return false;
         }
-        if (!isEditing && selectedRole === 'CollegeAdmin' && !String(formData.collegeId || '').trim()) {
-            alert('collegeId is required for CollegeAdmin');
-            return false;
+        if (selectedRole === 'CollegeAdmin') {
+            const hasCollegeId = String(formData.collegeId || '').trim().length > 0;
+            if (!isEditing && !hasCollegeId) {
+                alert('collegeId is required for CollegeAdmin');
+                return false;
+            }
         }
         return true;
     };
@@ -164,18 +170,28 @@ const UniversityAdminManageRoles = () => {
             email: formData.email,
             password: formData.password,
             staffId: formData.staffId,
-            gender: formData.gender,
+            gender: (formData.gender || '').toLowerCase(),
             salary: formData.salary,
             phone: formData.phone,
         };
 
-        if (selectedRole === 'CollegeAdmin' && formData.collegeId) {
-            payload.collegeId = formData.collegeId;
+        if (selectedRole === 'CollegeAdmin') {
+            const value = String(formData.collegeId || '').trim();
+            if (isValidObjectId(value)) {
+                payload.collegeId = value;
+            } else if (value) {
+                payload.collegeCode = value; // fallback to string code
+            }
         }
         
         // For editing, include collegeId if it exists
         if (isEditing && formData.collegeId) {
-            payload.collegeId = formData.collegeId;
+            const value = String(formData.collegeId || '').trim();
+            if (isValidObjectId(value)) {
+                payload.collegeId = value;
+            } else {
+                payload.collegeCode = value;
+            }
         }
 
         if (isEditing && !payload.password) {
@@ -192,7 +208,7 @@ const UniversityAdminManageRoles = () => {
                     body: JSON.stringify(payload)
                 });
                 const data = await res.json();
-                if (!res.ok) throw new Error(data?.message || 'Failed to update');
+                if (!res.ok) throw new Error(data?.message || 'Server error');
 
                 setEmployees(prev => prev.map(emp => emp.id === editingEmployeeId ? {
                     ...emp,
@@ -201,7 +217,7 @@ const UniversityAdminManageRoles = () => {
                     phone: data?.staff?.phone ?? payload.phone,
                     salary: data?.staff?.salary ?? payload.salary,
                     gender: data?.staff?.gender ? data.staff.gender.charAt(0).toUpperCase() + data.staff.gender.slice(1) : emp.gender,
-                    collegeId: data?.staff?.collegeId ?? payload.collegeId ?? emp.collegeId,
+                    collegeId: data?.staff?.collegeId ?? data?.staff?.collegeCode ?? payload.collegeId ?? payload.collegeCode ?? emp.collegeId,
                 } : emp));
             } else {
                 const endpoint = getEndpointForSelectedRole();
@@ -254,7 +270,7 @@ const UniversityAdminManageRoles = () => {
             email: employee.email || '',
             password: '',
             staffId: employee.staffId || '',
-            gender: employee.gender || '',
+            gender: (employee.gender || '').toLowerCase(),
             salary: employee.salary || '',
             phone: employee.phone || '',
             department: employee.department || '',
