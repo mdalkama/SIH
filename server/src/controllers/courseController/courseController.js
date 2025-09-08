@@ -79,11 +79,12 @@ export const updateCourse = async (req, res) => {
         if (!course) {
             return res.status(404).json({ message: "Course not found" });
         }
+        console.log(course)
 
         course.courseId = courseId || course.courseId;
         course.degree = degree || course.degree;
-        course.branch = branch || course.branch;
-        course.specialization = specialization || course.specialization;
+        course.branch = branch == "" || branch || course.branch;
+        course.specialization = specialization == "" || specialization || course.specialization;
         course.totalSemester = totalSemester ?? course.totalSemester;
         course.semesters = semesters || course.semesters;
 
