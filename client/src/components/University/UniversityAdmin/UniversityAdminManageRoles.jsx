@@ -747,7 +747,7 @@ const UniversityAdminManageRoles = () => {
                                 </button>
                             </div>
                         </div>
-                       // delete modal popup hai 
+                      {/* ye delete popup hai  */}
                         <div className="p-6">
                             <div className="flex items-center mb-4">
                                 <div className="flex-shrink-0">
