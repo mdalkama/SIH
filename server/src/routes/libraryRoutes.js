@@ -1,4 +1,4 @@
-// routes/libraryRoutes.js
+
 import express from "express";
 import {
     addBook,
@@ -8,7 +8,8 @@ import {
     issueCopy,
     returnCopy,
     getBooks,
-    getStudentBooks
+    getStudentBooks,
+    getStudentByRegNo
 } from "../controllers/libraryController/libraryController.js";
 import { role } from "../middlewares/authMiddleware.js"; // if you have role-based auth
 
@@ -26,7 +27,11 @@ router.delete("/delete/:collegeCode/:bookId", deleteBook);
 router.get("/all/:collegeCode", getBooks);
 
 // Get all books issued to a student
-router.get("/student/:studentId", getStudentBooks);
+router.get("/student", getStudentBooks);
+
+// Get student by registration number
+router.get("/student/search/:regNo", getStudentByRegNo);
+
 
 // ---------- COPY ROUTES ----------
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import getRoleDisplayName from "../../utils/roleUtils.js"
 import menuConfig from "../../utils/menuConfigUtils.js";
@@ -34,35 +34,9 @@ const Navbar = () => {
     const path = window.location.pathname;
     const lastSegment = path.split("/").pop();
     const [activeMenu, setActiveMenu] = useState(lastSegment);
-    const { user, setUser } = useUser();
-    const [loggedInUser, setLoggedInUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const { user, setUser, loading } = useUser();
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const res = await fetch(
-                    "https://sih-4ptm.onrender.com/api/v1/my-profile",
-                    {
-                        method: "GET",
-                        credentials: "include",
-                    }
-                );
-                const data = await res.json();
-                if (data) {
-                    setLoggedInUser(data.user);
-                    console.log(data);
-                    setLoading(false);
-                }
-            } catch (err) {
-                console.error("Error fetching logged-in user:", err);
-                setLoading(false);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchUser();
-    }, []);
+
 
 
 
@@ -104,10 +78,10 @@ const Navbar = () => {
                             </div>
                             <div className="md:flex hidden flex-col h-10 items-start justify-center">
                                 <div className="text-[#ffffff] font-medium text-nowrap text-[14px]">
-                                    {loggedInUser?.name || "Md Alkama"}
+                                    {user?.name || "Md Alkama"}
                                 </div>
                                 <div className="text-[Grey] font-medium text-[14px]">
-                                    {getRoleDisplayName(loggedInUser?.role) || "Student"}
+                                    {getRoleDisplayName(user?.role) || "Student"}
                                 </div>
                             </div>
                             <div className="h-10 w-10 rounded-full md:hidden flex items-center justify-center">
