@@ -1,11 +1,9 @@
 import React from 'react'
 
-const CollegeAdminCourses = () => {
-    return (
-        <div>
-            College Admin Courses
-        </div>
-    )
+const CollegeAdminManageCourses = () => {
+  return (
+    <div>CollegeAdminManageCourses</div>
+  )
 }
 
-export default CollegeAdminCourses
+export default CollegeAdminManageCourses
