@@ -246,7 +246,7 @@ const LibraryDashboard = () => {
     const renderDashboard = () => (
         <div className="space-y-6">
             {/* Library Account Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 justify-between bg-black">
                 <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
                     <div className="flex items-center justify-between">
                         <div>
@@ -266,16 +266,6 @@ const LibraryDashboard = () => {
                             <p className="text-2xl font-bold text-red-700">₹{studentLibraryData.totalFine}</p>
                         </div>
                         <CreditCard className="w-8 h-8 text-red-600" />
-                    </div>
-                </div>
-
-                <div className="bg-green-50 p-6 rounded-lg border border-green-200">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-green-600 text-sm font-medium">Renewals Left</p>
-                            <p className="text-2xl font-bold text-green-700">{studentLibraryData.renewalsLeft}</p>
-                        </div>
-                        <RefreshCw className="w-8 h-8 text-green-600" />
                     </div>
                 </div>
 
