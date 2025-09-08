@@ -14,7 +14,7 @@ const getRoleDisplayName = (roleKey) => {
         CollegeHostelWarden: "Hostel Warden",
         CollegeLibrarian: "Librarian",
         CollegeAdmissionDepartment: "Admission Department",
-        CollegeFinance: "Finance Department",
+        CollegeFinanceBody: "Finance Department",
         CollegeExaminationBody: "Examination Controller"
     };
 
