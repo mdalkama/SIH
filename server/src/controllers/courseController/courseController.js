@@ -82,9 +82,9 @@ export const updateCourse = async (req, res) => {
         console.log(course)
 
         course.courseId = courseId || course.courseId;
-        course.degree = degree || course.degree;
-        course.branch = branch != undefined || branch;
-        course.specialization = specialization != undefined || specialization;
+        course.degree = degree|| course.degree;
+        course.branch = branch!=undefined ? branch : course.branch;
+        course.specialization = specialization!=undefined ? specialization : course.specialization;
         course.totalSemester = totalSemester ?? course.totalSemester;
         course.semesters = semesters || course.semesters;
 
