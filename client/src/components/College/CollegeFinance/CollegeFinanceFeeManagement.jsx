@@ -192,7 +192,7 @@ const FinanceFeeCollection = () => {
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto">
 
-        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-8">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-8">
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center gap-4">
             <div className="relative w-full sm:flex-grow">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
