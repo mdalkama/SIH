@@ -1,3 +1,4 @@
+// controllers/staffController.js
 import Staff from "../../models/staffModel.js";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
@@ -9,26 +10,36 @@ export const addStaffByRole = async (req, res) => {
         const admin = await Staff.findById(adminId);
         if (!admin) return res.status(404).json({ message: "Admin not found" });
 
-        const { name, email, password, staffId, gender, salary, phone, role, collegeId } = req.body;
+        // Destructuring collegeCode instead of collegeId for clarity
+        const { name, email, password, staffId, gender, salary, phone, role, collegeCode } = req.body;
 
-        // College ID required if role is CollegeAdmin
-        if (role === "CollegeAdmin" && !collegeId) {
-            return res.status(400).json({ message: "collegeId is required for CollegeAdmin" });
+        // collegeCode is mandatory only if the role is CollegeAdmin.
+        if (role === "CollegeAdmin" && !collegeCode) {
+            return res.status(400).json({ message: "collegeCode is required for CollegeAdmin role" });
         }
 
         if (!name || !email || !password || !staffId || !gender || !salary || !phone || !role) {
             return res.status(400).json({ message: "Please provide all required fields" });
         }
 
-        // Check duplicates
+        // Check for duplicates
         const existingStaff = await Staff.findOne({
             $or: [{ email }, { phone }, { staffId }]
         });
         if (existingStaff) return res.status(400).json({ message: "Email, Phone or StaffId already exists" });
 
+        // Only add collegeCode to the data if the role is CollegeAdmin.
+        if (role === "CollegeAdmin") {
+            // Check if a CollegeAdmin with this collegeCode already exists.
+            const existingCollegeAdmin = await Staff.findOne({ collegeCode, role: "CollegeAdmin" });
+            if (existingCollegeAdmin) {
+                return res.status(400).json({ message: `A CollegeAdmin for college code ${collegeCode} already exists.` });
+            }
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newStaff = new Staff({
+        const newStaffData = {
             name,
             email,
             staffId,
@@ -37,11 +48,15 @@ export const addStaffByRole = async (req, res) => {
             role,
             salary,
             gender,
-            collegeId: role === "CollegeAdmin" ? collegeId : undefined,
             createdBy: new mongoose.Types.ObjectId(adminId),
             updatedBy: new mongoose.Types.ObjectId(adminId)
-        });
+        };
+        
+        if (role === "CollegeAdmin") {
+            newStaffData.collegeCode = collegeCode;
+        }
 
+        const newStaff = new Staff(newStaffData);
         await newStaff.save();
 
         const result = newStaff.toObject();
@@ -58,7 +73,7 @@ export const addStaffByRole = async (req, res) => {
 // Get all University-level Staff or College-level staff filtered by collegeId
 export const getStaff = async (req, res) => {
     try {
-        const { staffId, role, collegeId } = req.query;
+        const { staffId, role, collegeCode } = req.query;
 
         let filter = {};
 
@@ -73,10 +88,13 @@ export const getStaff = async (req, res) => {
             'CollegeAdmin'
         ];
 
-        filter.role = { $in: universityRoles };
+        // This filter will apply only if no specific role is requested in the query
+        if (!role) {
+            filter.role = { $in: universityRoles };
+        }
 
         if (staffId) filter.staffId = staffId;
-        if (collegeId) filter.collegeId = collegeId;
+        if (collegeCode) filter.collegeCode = collegeCode;
 
         const staffList = await Staff.find(filter).select("-password").sort({ createdAt: -1 });
 
@@ -142,3 +160,4 @@ export const deleteStaff = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
