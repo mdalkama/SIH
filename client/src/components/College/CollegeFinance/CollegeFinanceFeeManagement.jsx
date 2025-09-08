@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, IndianRupee, Landmark, X, Download, Loader2, Book, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, IndianRupee, Landmark, X, Download, Loader2, Book, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
 
 // --- Mock Data based on your Mongoose Schema ---
 const mockStudentPaymentData = {
@@ -69,7 +69,7 @@ const FinanceFeeCollection = () => {
   const [tableFilter, setTableFilter] = useState('');
   const [sortBy, setSortBy] = useState("default");
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Payment Modal State
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -136,11 +136,12 @@ const FinanceFeeCollection = () => {
     setSortBy('default');
     setTableFilter('');
     setCurrentPage(1);
+    setRowsPerPage(10);
   };
 
   // --- Data Processing Logic (Filtering, Sorting, Pagination) ---
   const processedData = useMemo(() => {
-    if (!studentData) return { pagedData: [], totalCount: 0 };
+    if (!studentData) return { pagedData: [], totalCount: 0, sortedData: [] };
 
     let sourceData = [];
     if (activeTab === 'semesters') sourceData = studentData.semesters;
@@ -182,15 +183,14 @@ const FinanceFeeCollection = () => {
     // 3. Pagination
     const pagedData = sorted.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
-    return { pagedData, totalCount: filtered.length };
+    return { pagedData, totalCount: filtered.length, sortedData: sorted };
   }, [studentData, activeTab, tableFilter, sortBy, currentPage, rowsPerPage]);
 
-  const { pagedData, totalCount } = processedData;
+  const { pagedData, totalCount, sortedData } = processedData;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Fee Collection</h1>
 
         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-8">
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center gap-4">
@@ -240,23 +240,16 @@ const FinanceFeeCollection = () => {
               </div>
 
               <TableView
-                title={activeTab === 'semesters' ? "Semester Fees" : activeTab === 'fines' ? "Fines" : "Payment History"}
-                sortOptions={
-                  activeTab === 'semesters' ? [{ value: 'default', label: 'By Semester' }, { value: 'pending-desc', label: 'Pending High-Low' }, { value: 'pending-asc', label: 'Pending Low-High' }] :
-                    activeTab === 'fines' ? [{ value: 'default', label: 'Newest' }, { value: 'amount-desc', label: 'Amount High-Low' }, { value: 'amount-asc', label: 'Amount Low-High' }] :
-                      [{ value: 'default', label: 'Newest' }, { value: 'date-asc', label: 'Oldest' }, { value: 'amount-desc', label: 'Amount High-Low' }]
-                }
-                onSortChange={setSortBy}
                 filterValue={tableFilter}
                 onFilterChange={setTableFilter}
                 filterPlaceholder={
                   activeTab === 'fines' ? 'Search by reason...' :
-                    activeTab === 'history' ? 'Search description, receipt, method...' : 'Search...'
+                    activeTab === 'history' ? 'Search description, receipt...' : 'Search...'
                 }
               >
-                {activeTab === 'semesters' && <SemesterFeeTable semesters={pagedData} onPay={openPaymentModal} formatCurrency={formatCurrency} />}
-                {activeTab === 'fines' && <FinesTable fines={pagedData} onPay={openPaymentModal} formatCurrency={formatCurrency} formatDate={formatDate} />}
-                {activeTab === 'history' && <PaymentHistoryTable history={pagedData} formatCurrency={formatCurrency} formatDate={formatDate} />}
+                {activeTab === 'semesters' && <SemesterFeeTable semesters={pagedData} onPay={openPaymentModal} formatCurrency={formatCurrency} currentPage={currentPage} rowsPerPage={rowsPerPage} />}
+                {activeTab === 'fines' && <FinesTable fines={pagedData} onPay={openPaymentModal} formatCurrency={formatCurrency} formatDate={formatDate} currentPage={currentPage} rowsPerPage={rowsPerPage} />}
+                {activeTab === 'history' && <PaymentHistoryTable history={pagedData} formatCurrency={formatCurrency} formatDate={formatDate} currentPage={currentPage} rowsPerPage={rowsPerPage} />}
 
                 {pagedData.length === 0 && (
                   <div className="text-center py-10 text-gray-500">
@@ -264,15 +257,18 @@ const FinanceFeeCollection = () => {
                     {tableFilter && <p className="text-sm">Try adjusting your filter.</p>}
                   </div>
                 )}
-
-                <Pagination
-                  currentPage={currentPage}
-                  totalCount={totalCount}
-                  pageSize={rowsPerPage}
-                  onPageChange={setCurrentPage}
-                  onPageSizeChange={setRowsPerPage}
-                />
               </TableView>
+
+              <Pagination
+                currentPage={currentPage}
+                totalCount={totalCount}
+                pageSize={rowsPerPage}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={(size) => { setRowsPerPage(size); setCurrentPage(1); }}
+                sortedData={sortedData}
+                activeTab={activeTab}
+                formatCurrency={formatCurrency}
+              />
             </div>
           </div>
         )}
@@ -298,27 +294,19 @@ const TabButton = ({ label, active, onClick }) => (
   </button>
 );
 
-const TableView = ({ title, sortOptions, onSortChange, filterValue, onFilterChange, filterPlaceholder, children }) => (
+const TableView = ({ filterValue, onFilterChange, filterPlaceholder, children }) => (
   <div>
-    <div className="bg-gray-50 border-b border-gray-200 px-4 py-3">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:w-auto sm:flex-grow max-w-md">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            value={filterValue}
-            onChange={(e) => onFilterChange(e.target.value)}
-            placeholder={filterPlaceholder}
-            className="w-full pl-9 pr-8 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
-          {filterValue && <button onClick={() => onFilterChange('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><X size={14} /></button>}
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-600">Sort by:</label>
-          <select onChange={(e) => onSortChange(e.target.value)} className="px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-white">
-            {sortOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-          </select>
-        </div>
+    <div className="bg-white border-b border-gray-200 px-4 py-3">
+      <div className="relative w-full sm:w-auto sm:flex-grow max-w-xs">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          value={filterValue}
+          onChange={(e) => onFilterChange(e.target.value)}
+          placeholder={filterPlaceholder}
+          className="w-full pl-9 pr-8 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+        />
+        {filterValue && <button onClick={() => onFilterChange('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><X size={14} /></button>}
       </div>
     </div>
     <div className="w-full overflow-x-auto">
@@ -327,40 +315,70 @@ const TableView = ({ title, sortOptions, onSortChange, filterValue, onFilterChan
   </div>
 );
 
-const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSizeChange }) => {
+const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSizeChange, sortedData, activeTab, formatCurrency }) => {
   const totalPages = Math.ceil(totalCount / pageSize);
+  const startItem = (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(startItem + pageSize - 1, totalCount);
 
-  if (totalPages <= 1) return null;
+  const summaryStats = useMemo(() => {
+    if (!sortedData || sortedData.length === 0) return null;
+    if (activeTab === 'semesters') {
+      const totalPending = sortedData.reduce((sum, s) => sum + ((s.tuitionFee + s.examFee + s.otherFee) - s.paid), 0);
+      return { label: 'Total Pending:', value: formatCurrency(totalPending) };
+    }
+    if (activeTab === 'fines') {
+      const totalAmount = sortedData.reduce((sum, f) => sum + f.amount, 0);
+      return { label: 'Total Fine Amount:', value: formatCurrency(totalAmount) };
+    }
+    if (activeTab === 'history') {
+      const totalPaid = sortedData.reduce((sum, h) => sum + h.amount, 0);
+      return { label: 'Total Paid in History:', value: formatCurrency(totalPaid) };
+    }
+    return null;
+  }, [sortedData, activeTab, formatCurrency]);
+
 
   return (
-    <div className="bg-gray-50 border-t border-gray-200 px-4 py-3 flex items-center justify-between text-sm">
-      <div className="flex items-center gap-2">
-        <span className="text-gray-600">Rows per page:</span>
-        <select value={pageSize} onChange={e => onPageSizeChange(Number(e.target.value))} className="px-2 py-1 border border-gray-300 rounded-md bg-white">
-          {[5, 10, 20].map(size => <option key={size} value={size}>{size}</option>)}
-        </select>
-      </div>
+    <div className="bg-gray-50 border-t border-gray-200 px-4 py-2 flex flex-col sm:flex-row items-center justify-between text-sm text-gray-600 gap-4">
       <div className="flex items-center gap-4">
-        <span className="text-gray-600">
-          Page {currentPage} of {totalPages}
-        </span>
-        <div className="flex items-center gap-1">
-          <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="p-1.5 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
-            <ChevronLeft size={16} />
-          </button>
-          <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="p-1.5 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
-            <ChevronRight size={16} />
-          </button>
+        <div className="flex items-center gap-2">
+          <span>Show:</span>
+          <select value={pageSize} onChange={e => onPageSizeChange(Number(e.target.value))} className="px-2 py-1 border border-gray-300 rounded-md bg-white">
+            {[5, 10, 20].map(size => <option key={size} value={size}>{size}</option>)}
+          </select>
         </div>
+        {totalCount > 0 && <span>Showing {startItem}-{endItem} of {totalCount} records</span>}
+      </div>
+
+      <div className="flex items-center gap-6">
+        {summaryStats && (
+          <div className="font-semibold">
+            <span>{summaryStats.label} </span>
+            <span className="text-gray-800">{summaryStats.value}</span>
+          </div>
+        )}
+        {totalPages > 1 && (
+          <div className="flex items-center gap-2">
+            <span>Page {currentPage} of {totalPages}</span>
+            <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="px-2 py-1 rounded-md border bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+              Previous
+            </button>
+            <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-2 py-1 rounded-md border bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-const SemesterFeeTable = ({ semesters, onPay, formatCurrency }) => (
+
+const SemesterFeeTable = ({ semesters, onPay, formatCurrency, currentPage, rowsPerPage }) => (
   <table className="w-full min-w-[700px]">
-    <thead className="bg-gray-100 text-left text-xs text-gray-600 uppercase">
+    <thead className="bg-gray-100 text-left text-xs text-gray-500 uppercase tracking-wider">
       <tr>
+        <th className="p-3 font-semibold w-12 text-center">#</th>
         <th className="p-3 font-semibold">Semester</th>
         <th className="p-3 font-semibold text-right">Total Fee</th>
         <th className="p-3 font-semibold text-right">Amount Paid</th>
@@ -369,20 +387,22 @@ const SemesterFeeTable = ({ semesters, onPay, formatCurrency }) => (
       </tr>
     </thead>
     <tbody className="divide-y divide-gray-200 text-sm">
-      {semesters.map(s => {
+      {semesters.map((s, index) => {
         const totalFee = s.tuitionFee + s.examFee + s.otherFee;
         const pending = totalFee - s.paid;
+        const itemNumber = (currentPage - 1) * rowsPerPage + index + 1;
         return (
-          <tr key={s._id} className="hover:bg-blue-50">
+          <tr key={s._id} className="hover:bg-gray-50">
+            <td className="p-3 text-center text-gray-500 font-mono">{String(itemNumber).padStart(2, '0')}</td>
             <td className="p-3 text-gray-800 font-medium">{s.semester}</td>
-            <td className="p-3 text-right text-gray-600">{formatCurrency(totalFee)}</td>
-            <td className="p-3 text-right text-green-600 font-semibold">{formatCurrency(s.paid)}</td>
-            <td className="p-3 text-right text-red-600 font-semibold">{formatCurrency(pending)}</td>
+            <td className="p-3 text-right text-gray-600 font-mono">{formatCurrency(totalFee)}</td>
+            <td className="p-3 text-right text-green-600 font-semibold font-mono">{formatCurrency(s.paid)}</td>
+            <td className="p-3 text-right text-red-600 font-semibold font-mono">{formatCurrency(pending)}</td>
             <td className="p-3 text-center">
               {pending > 0 ? (
-                <button onClick={() => onPay('semester', s)} className="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full hover:bg-green-200">Collect Fee</button>
+                <button onClick={() => onPay('semester', s)} className="text-blue-600 hover:text-blue-800 font-semibold text-xs">Collect Fee</button>
               ) : (
-                <span className="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-full">Cleared</span>
+                <span className="text-gray-500 text-xs font-bold">Cleared</span>
               )}
             </td>
           </tr>
@@ -392,10 +412,11 @@ const SemesterFeeTable = ({ semesters, onPay, formatCurrency }) => (
   </table>
 );
 
-const FinesTable = ({ fines, onPay, formatCurrency, formatDate }) => (
+const FinesTable = ({ fines, onPay, formatCurrency, formatDate, currentPage, rowsPerPage }) => (
   <table className="w-full min-w-[700px]">
-    <thead className="bg-gray-100 text-left text-xs text-gray-600 uppercase">
+    <thead className="bg-gray-100 text-left text-xs text-gray-500 uppercase tracking-wider">
       <tr>
+        <th className="p-3 font-semibold w-12 text-center">#</th>
         <th className="p-3 font-semibold">Date</th>
         <th className="p-3 font-semibold">Reason</th>
         <th className="p-3 font-semibold text-right">Amount</th>
@@ -404,29 +425,34 @@ const FinesTable = ({ fines, onPay, formatCurrency, formatDate }) => (
       </tr>
     </thead>
     <tbody className="divide-y divide-gray-200 text-sm">
-      {fines.map(f => (
-        <tr key={f._id} className="hover:bg-blue-50">
-          <td className="p-3 text-gray-600">{formatDate(f.createdAt)}</td>
-          <td className="p-3 text-gray-800 font-medium">{f.reason}</td>
-          <td className="p-3 text-right text-gray-800 font-semibold">{formatCurrency(f.amount)}</td>
-          <td className="p-3 text-center">
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${f.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{f.status}</span>
-          </td>
-          <td className="p-3 text-center">
-            {f.status === 'unpaid' ? (
-              <button onClick={() => onPay('fine', f)} className="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full hover:bg-green-200">Pay Fine</button>
-            ) : '--'}
-          </td>
-        </tr>
-      ))}
+      {fines.map((f, index) => {
+        const itemNumber = (currentPage - 1) * rowsPerPage + index + 1;
+        return (
+          <tr key={f._id} className="hover:bg-gray-50">
+            <td className="p-3 text-center text-gray-500 font-mono">{String(itemNumber).padStart(2, '0')}</td>
+            <td className="p-3 text-gray-600">{formatDate(f.createdAt)}</td>
+            <td className="p-3 text-gray-800 font-medium">{f.reason}</td>
+            <td className="p-3 text-right text-gray-800 font-semibold font-mono">{formatCurrency(f.amount)}</td>
+            <td className="p-3 text-center">
+              <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${f.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>{f.status}</span>
+            </td>
+            <td className="p-3 text-center">
+              {f.status !== 'paid' ? (
+                <button onClick={() => onPay('fine', f)} className="text-blue-600 hover:text-blue-800 font-semibold text-xs">Collect Fee</button>
+              ) : '--'}
+            </td>
+          </tr>
+        )
+      })}
     </tbody>
   </table>
 );
 
-const PaymentHistoryTable = ({ history, formatCurrency, formatDate }) => (
+const PaymentHistoryTable = ({ history, formatCurrency, formatDate, currentPage, rowsPerPage }) => (
   <table className="w-full min-w-[800px]">
-    <thead className="bg-gray-100 text-left text-xs text-gray-600 uppercase">
+    <thead className="bg-gray-100 text-left text-xs text-gray-500 uppercase tracking-wider">
       <tr>
+        <th className="p-3 font-semibold w-12 text-center">#</th>
         <th className="p-3 font-semibold">Date</th>
         <th className="p-3 font-semibold">Description</th>
         <th className="p-3 font-semibold">Method</th>
@@ -436,20 +462,29 @@ const PaymentHistoryTable = ({ history, formatCurrency, formatDate }) => (
       </tr>
     </thead>
     <tbody className="divide-y divide-gray-200 text-sm">
-      {history.map(h => (
-        <tr key={h._id} className="hover:bg-blue-50">
-          <td className="p-3 text-gray-600 whitespace-nowrap">{formatDate(h.date)}</td>
-          <td className="p-3 text-gray-800 font-medium">{h.description}</td>
-          <td className="p-3 text-gray-600 capitalize">{h.method}</td>
-          <td className="p-3 text-gray-600">{h.receiptNo}</td>
-          <td className="p-3 text-right text-gray-800 font-semibold">{formatCurrency(h.amount)}</td>
-          <td className="p-3 text-center">
-            <button onClick={() => alert(`Downloading receipt ${h.receiptNo}...`)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-full" title="Download Receipt">
-              <Download size={16} />
-            </button>
-          </td>
-        </tr>
-      ))}
+      {history.map((h, index) => {
+        const itemNumber = (currentPage - 1) * rowsPerPage + index + 1;
+        return (
+          <tr key={h._id} className="hover:bg-gray-50">
+            <td className="p-3 text-center text-gray-500 font-mono">{String(itemNumber).padStart(2, '0')}</td>
+            <td className="p-3 text-gray-600 whitespace-nowrap">{formatDate(h.date)}</td>
+            <td className="p-3 text-gray-800 font-medium">{h.description}</td>
+            <td className="p-3 text-center">
+              <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full capitalize ${h.method === 'online' ? 'bg-blue-100 text-blue-800' :
+                  h.method === 'cash' ? 'bg-green-100 text-green-800' :
+                    'bg-yellow-100 text-yellow-800'
+                }`}>{h.method}</span>
+            </td>
+            <td className="p-3 text-gray-600 font-mono">{h.receiptNo}</td>
+            <td className="p-3 text-right text-gray-800 font-semibold font-mono">{formatCurrency(h.amount)}</td>
+            <td className="p-3 text-center">
+              <button onClick={() => alert(`Downloading receipt ${h.receiptNo}...`)} className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full" title="Download Receipt">
+                <Download size={16} />
+              </button>
+            </td>
+          </tr>
+        )
+      })}
     </tbody>
   </table>
 );
