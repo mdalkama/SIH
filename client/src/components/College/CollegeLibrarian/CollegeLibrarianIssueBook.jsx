@@ -97,7 +97,7 @@ function CollegeLibrarianIssueBook() {
       setStudentError("");
       setStudent(null);
 
-      const res = await fetch(`${BASE}/library/student/search/${encodeURIComponent(regNo)}`, {
+      const res = await fetch(`${BASE}/library/student/search/${regNo}}`, {
         method: "GET",
         credentials: "include",
       });
@@ -154,9 +154,13 @@ function CollegeLibrarianIssueBook() {
   });
   const dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN");
 
+
+
+
   // Issue (real API call) — do NOT send staffId; backend uses req.user.id
   async function handleIssueBook() {
     if (!student || !selectedBook || !selectedCopy) return;
+    console.log()
     try {
       setIssuing(true);
       const res = await fetch(`${BASE}/library/copies/issue`, {
