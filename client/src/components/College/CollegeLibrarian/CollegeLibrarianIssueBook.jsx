@@ -97,7 +97,7 @@ function CollegeLibrarianIssueBook() {
       setStudentError("");
       setStudent(null);
 
-      const res = await fetch(`${BASE}/library/student/search/${regNo}}`, {
+      const res = await fetch(`${BASE}/library/student/search/${regNo}`, {
         method: "GET",
         credentials: "include",
       });
@@ -117,13 +117,6 @@ function CollegeLibrarianIssueBook() {
       setStudentLoading(false);
     }
   }
-
-  // function onRegInputKeyDown(e) {
-  //   if (e.key === "Enter") {
-  //     e.preventDefault();
-  //     handleStudentSearch();
-  //   }
-  // }
 
   // Filter books (show all if search empty)
   const booksToShow = (() => {
