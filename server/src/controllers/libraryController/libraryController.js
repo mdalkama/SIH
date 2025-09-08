@@ -392,6 +392,70 @@ export const getStudentBooks = async (req, res) => {
 };
 
 
+export const getAllIssuedBooks = async (req, res) => {
+  try {
+    const { collegeCode } = req.params;
+    if (!collegeCode) {
+      return res.status(400).json({ message: "College code is required" });
+    }
+
+    const library = await Library.findOne({ collegeCode }).lean();
+    if (!library || !library.books) {
+      return res.json({ issuedBooks: [] });
+    }
+
+    const issuedCopies = [];
+    library.books.forEach(book => {
+      if (Array.isArray(book.copies)) {
+        book.copies.forEach(copy => {
+          if (copy.occupiedBy) {
+            issuedCopies.push({
+              bookId: book._id,
+              title: book.title,
+              author: book.author,
+              isbn: book.isbn,
+              copyId: copy.copyId,
+              occupiedBy: copy.occupiedBy, // Student ID
+              issuedAt: copy.occupiedAt,
+              issuedBy: copy.issuedBy,   // Staff ID
+            });
+          }
+        });
+      }
+    });
+
+    if (issuedCopies.length === 0) {
+      return res.json({ issuedBooks: [] });
+    }
+
+    const studentIds = issuedCopies.map(copy => copy.occupiedBy);
+    const students = await Student.find({ _id: { $in: studentIds } })
+      .select("_id name registrationNumber course")
+      .lean();
+    
+    const studentMap = new Map(students.map(s => [s._id.toString(), s]));
+
+    const finalData = issuedCopies.map(copy => {
+      const student = studentMap.get(copy.occupiedBy.toString());
+      return {
+        ...copy,
+        student: {
+          id: student?._id,
+          name: student?.name || "Unknown",
+          regNo: student?.registrationNumber || "N/A",
+          course: student?.course || "N/A",
+        },
+      };
+    });
+
+    res.json({ success: true, issuedBooks: finalData });
+  } catch (err) {
+    console.error("Error fetching all issued books:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 export const getStudentByRegNo = async (req, res) => {
   try {
     const regNoRaw = req.params.regNo || "";
