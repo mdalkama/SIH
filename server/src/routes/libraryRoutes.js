@@ -27,7 +27,7 @@ router.delete("/delete/:collegeCode/:bookId", deleteBook);
 router.get("/all/:collegeCode", getBooks);
 
 // Get all books issued to a student
-router.get("/student", getStudentBooks);
+router.get("/student/:registrationNumber", getStudentBooks);
 
 // Get student by registration number
 router.get("/student/search/:regNo", getStudentByRegNo);
