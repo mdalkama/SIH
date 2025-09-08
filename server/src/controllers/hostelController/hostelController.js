@@ -2,6 +2,8 @@ import Hostel from "../../models/hostelSchema.js";
 import mongoose from "mongoose";
 import Staff from "../../models/staffModel.js";
 import Student from "../../models/studentModel.js";
+import StudentHostel from "../../models/studntHostelModal.js";
+
 
 
 
@@ -708,19 +710,29 @@ export const deleteBed = async (req, res) => {
     }
 };
 
-// Allocate Bed
+
+// Allocate Bed + Update StudentHostel (Fetch studentId from Student schema)
 export const allocateBed = async (req, res) => {
     try {
         const { hostelId, floorId, roomId, bedId } = req.params;
-        const { studentId } = req.body;
+        const { registrationNumber } = req.body; // 👈 only reg no. aayega
 
+        // Validate hostel/floor/room/bed IDs
         if (![hostelId, floorId, roomId, bedId].every(id => mongoose.Types.ObjectId.isValid(id))) {
             return res.status(400).json({ error: "Invalid ID(s)" });
         }
-        if (!mongoose.Types.ObjectId.isValid(studentId)) {
-            return res.status(400).json({ error: "Invalid student ID" });
+        if (!registrationNumber) {
+            return res.status(400).json({ error: "Registration number required" });
         }
 
+        // 🔹 Get studentId from Student schema
+        const student = await Student.findOne({ registrationNumber });
+        if (!student) {
+            return res.status(404).json({ error: "Student not found with this registration number" });
+        }
+        const studentId = student._id;
+
+        // 🔹 Fetch hostel
         const hostel = await Hostel.findById(hostelId);
         if (!hostel) return res.status(404).json({ error: "Hostel not found" });
 
@@ -732,11 +744,12 @@ export const allocateBed = async (req, res) => {
 
         const bed = room.beds.id(bedId);
         if (!bed) return res.status(404).json({ error: "Bed not found" });
-
+        // Bed occupied check
         if (bed.isOccupied) {
             return res.status(400).json({ error: "Bed already occupied" });
         }
 
+        // Already allocated check
         const alreadyAllocated = await Hostel.findOne({
             "floors.rooms.beds.occupant": studentId,
         });
@@ -744,26 +757,61 @@ export const allocateBed = async (req, res) => {
             return res.status(400).json({ error: "Student already allocated in another bed" });
         }
 
+        // ✅ Mark bed occupied
         bed.isOccupied = true;
         bed.occupant = studentId;
-
         await hostel.save();
 
-        res.json({ success: true, message: "Bed allocated successfully", data: bed });
+        // ✅ Fetch StudentHostel by registrationNumber
+        let studentHostel = await StudentHostel.findOne({ registrationNumber });
+
+        if (!studentHostel) {
+            // create new
+            studentHostel = new StudentHostel({
+                registrationNumber,
+                occupant: studentId,
+            });
+        } else {
+            // check occupant consistency
+            if (!studentHostel.occupant.equals(studentId)) {
+                return res.status(400).json({
+                    error: "Registration number already linked with another student",
+                });
+            }
+        }
+
+        // ✅ Assign current hostel
+        studentHostel.currentHostel = {
+            hostel: hostelId,
+            floor: floorId,
+            room: roomId,
+            bed: bedId,
+        };
+
+        await studentHostel.save();
+
+        res.json({
+            success: true,
+            message: "Bed allocated & StudentHostel updated successfully",
+            data: { bed, studentHostel },
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
-// Vacate Bed
+
+// Vacate Bed (By Selection Only)
 export const vacateBed = async (req, res) => {
     try {
         const { hostelId, floorId, roomId, bedId } = req.params;
 
+        // Validate IDs
         if (![hostelId, floorId, roomId, bedId].every(id => mongoose.Types.ObjectId.isValid(id))) {
             return res.status(400).json({ error: "Invalid ID(s)" });
         }
 
+        // Fetch Hostel
         const hostel = await Hostel.findById(hostelId);
         if (!hostel) return res.status(404).json({ error: "Hostel not found" });
 
@@ -776,44 +824,58 @@ export const vacateBed = async (req, res) => {
         const bed = room.beds.id(bedId);
         if (!bed) return res.status(404).json({ error: "Bed not found" });
 
-        if (!bed.isOccupied) {
+        if (!bed.isOccupied || !bed.occupant) {
             return res.status(400).json({ error: "Bed is already vacant" });
         }
 
+        const studentId = bed.occupant;
+
+        // Vacate Bed
         bed.isOccupied = false;
         bed.occupant = null;
-
         await hostel.save();
 
-        res.json({ success: true, message: "Bed vacated successfully", data: bed });
+        // Update StudentHostel
+        const studentHostel = await StudentHostel.findOne({ occupant: studentId });
+        if (studentHostel) {
+            studentHostel.currentHostel = null;
+            await studentHostel.save();
+        }
+
+        res.json({
+            success: true,
+            message: "Bed vacated successfully",
+            data: { studentId, hostelId, floorId, roomId, bedId },
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
-// shift student
+
+
 export const shiftStudent = async (req, res) => {
     try {
         const { studentId, newHostelId, newFloorId, newRoomId, newBedId } = req.body;
 
-        // 1. Validate IDs
-        const ids = [studentId, newHostelId, newFloorId, newRoomId, newBedId];
-        if (!ids.every(id => mongoose.Types.ObjectId.isValid(id))) {
+        // 1️⃣ Validate IDs
+        if (![studentId, newHostelId, newFloorId, newRoomId, newBedId].every(id => mongoose.Types.ObjectId.isValid(id))) {
             return res.status(400).json({ error: "Invalid ID(s)" });
         }
 
-        // 2. Find student
+        // 2️⃣ Find student
         const student = await Student.findById(studentId);
         if (!student) return res.status(404).json({ error: "Student not found" });
 
-        // 3. Free old bed (if allocated)
-        if (student.hostel && student.floor && student.room && student.bed) {
-            const oldHostel = await Hostel.findById(student.hostel);
+        // 3️⃣ Free old bed using StudentHostel
+        let studentHostel = await StudentHostel.findOne({ occupant: student._id });
+        if (studentHostel && studentHostel.currentHostel) {
+            const { hostel: oldHostelId, floor: oldFloorId, room: oldRoomId, bed: oldBedId } = studentHostel.currentHostel;
+            const oldHostel = await Hostel.findById(oldHostelId);
             if (oldHostel) {
-                const oldFloor = oldHostel.floors.id(student.floor);
-                const oldRoom = oldFloor?.rooms.id(student.room);
-                const oldBed = oldRoom?.beds.id(student.bed);
-
+                const oldFloor = oldHostel.floors.id(oldFloorId);
+                const oldRoom = oldFloor?.rooms.id(oldRoomId);
+                const oldBed = oldRoom?.beds.id(oldBedId);
                 if (oldBed) {
                     oldBed.isOccupied = false;
                     oldBed.occupant = null;
@@ -822,7 +884,7 @@ export const shiftStudent = async (req, res) => {
             }
         }
 
-        // 4. Allocate new bed
+        // 4️⃣ Allocate new bed
         const newHostel = await Hostel.findById(newHostelId);
         if (!newHostel) return res.status(404).json({ error: "New Hostel not found" });
 
@@ -835,28 +897,43 @@ export const shiftStudent = async (req, res) => {
         const newBed = newRoom.beds.id(newBedId);
         if (!newBed) return res.status(404).json({ error: "New Bed not found" });
 
-        if (newBed.isOccupied) {
-            return res.status(400).json({ error: "New Bed is already occupied" });
-        }
+        if (newBed.isOccupied) return res.status(400).json({ error: "New Bed is already occupied" });
 
         newBed.isOccupied = true;
         newBed.occupant = student._id;
         await newHostel.save();
 
-        // 5. Update student record
+        // 5️⃣ Update Student record
         student.hostel = newHostelId;
         student.floor = newFloorId;
         student.room = newRoomId;
         student.bed = newBedId;
         await student.save();
 
+        // 6️⃣ Update StudentHostel record
+        if (!studentHostel) {
+            studentHostel = new StudentHostel({
+                registrationNumber: student.registrationNumber,
+                occupant: student._id,
+            });
+        }
+
+        studentHostel.currentHostel = {
+            hostel: newHostelId,
+            floor: newFloorId,
+            room: newRoomId,
+            bed: newBedId,
+        };
+        await studentHostel.save();
+
         res.json({
             success: true,
             message: "Student shifted successfully",
-            data: student
+            data: { student, studentHostel, newBed }
         });
 
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+

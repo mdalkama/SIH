@@ -43,13 +43,6 @@ const studentSchema = new Schema({
     resumeLink: { type: String, default: "" },
     profilePictureLink: { type: String, default: "" },
 
-    // hostel 
-    hostel: { type: Schema.Types.ObjectId, ref: "Hostel" },
-    floor: { type: Schema.Types.ObjectId, ref: "Floor" },
-    room: { type: Schema.Types.ObjectId, ref: "Room" },
-    bed: { type: Schema.Types.ObjectId, ref: "Bed" },
-
-
     // status
     status: { type: String, enum: ['active', 'inactive', 'alumni'], default: 'active' },
     role: { type: String, enum: ['student'], default: 'student' }

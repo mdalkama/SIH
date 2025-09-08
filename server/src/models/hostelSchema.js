@@ -6,17 +6,17 @@ const { Schema } = mongoose;
 const bedSchema = new Schema({
     bedNumber: { type: String, required: true },
     isOccupied: { type: Boolean, default: false },
-    occupant: { type: mongoose.Schema.Types.ObjectId, ref: "Student" }, // 👈 direct reference
+    occupant: { type: mongoose.Schema.Types.ObjectId, ref: "Student" }
 });
-
 
 // Room details schema
 const roomSchema = new Schema({
     roomNumber: { type: String, required: true }, // eg. 101, 102
     roomType: { type: String, enum: ["Single", "Double", "Triple", "Dorm"], required: true },
-    capacity: { type: Number, required: true }, // total no. of beds
-    beds: [bedSchema], // actual seats
+    capacity: { type: Number, required: true },
+    beds: [bedSchema],
     facilities: [{ type: String }], // eg. ["AC", "Attached Bathroom"]
+    price: { type: Number, required: true } // 👈 Room-level price only
 });
 
 // Floor schema
