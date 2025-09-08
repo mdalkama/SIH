@@ -296,10 +296,6 @@ useEffect(() => {
                                         <Eye className="h-4 w-4 text-green-600" />
                                         <span className="text-sm text-gray-700">View Timetable</span>
                                     </button>
-                                    <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-gray-50 rounded-lg transition-colors">
-                                        <Edit3 className="h-4 w-4 text-orange-600" />
-                                        <span className="text-sm text-gray-700">Update Profile</span>
-                                    </button>
                                 </div>
                             </div>
                         </div>
