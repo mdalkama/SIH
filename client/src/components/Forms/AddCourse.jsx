@@ -48,29 +48,24 @@ const AddEditModal = ({
                     credentials: 'include'
                 });
                 
-                console.log('Subject API response status:', response.status);
-                console.log('Subject API response headers:', [...response.headers.entries()]);
-                
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('Subject API error response:', errorText);
                     throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
                 }
                 
                 const data = await response.json();
-                console.log('Subject API response data:', data);
                 
-                // Ensure data is an array
                 if (Array.isArray(data)) {
-                    setAllSubjects(data);
-                    console.log('Subjects loaded successfully:', data.length);
+                    const uniqueSubjects = data.filter((subject, index, self) => 
+                        index === self.findIndex(s => s._id === subject._id)
+                    );
+                    setAllSubjects(uniqueSubjects);
                 } else {
-                    console.error('Received non-array data for subjects:', data);
                     setAllSubjects([]);
                 }
             } catch (error) {
-                console.error('Error fetching subjects:', error);
-                // Keep mock data as fallback
+                console.log(error);
+                
                 setAllSubjects([]);
             } finally {
                 setSubjectsLoading(false);
@@ -82,8 +77,6 @@ const AddEditModal = ({
 
     // Initialize form data based on mode
     useEffect(() => {
-        console.log('Initializing form data:', { mode, initialData, activeTab });
-        
         if (mode === 'edit' && initialData) {
             if (activeTab === 'courses') {
                 setCourseId(initialData.courseId || '');
@@ -92,31 +85,20 @@ const AddEditModal = ({
                 setSpecialization(initialData.specialization || '');
                 setTotalSemester(initialData.totalSemester || 8);
                 
-                // For edit mode, generate semesters based on totalSemester
                 const semesterCount = initialData.totalSemester || 8;
                 let existingSemesters = initialData.semesters || [];
                 
-                // Ensure we have the correct number of semesters
                 const updatedSemesters = Array.from({ length: semesterCount }, (_, index) => {
                     const existingSem = existingSemesters.find(sem => sem.semesterNumber === index + 1);
+                    const normalizedSubjects = (existingSem?.subjects || []).map(s => typeof s === 'string' ? s : s?._id).filter(Boolean);
                     return {
                         semesterNumber: index + 1,
-                        subjects: existingSem ? existingSem.subjects || [] : []
+                        subjects: normalizedSubjects
                     };
                 });
                 
                 setSemesters(updatedSemesters);
-                
-                console.log('Course edit mode initialized with:', {
-                    courseId: initialData.courseId,
-                    degree: initialData.degree,
-                    branch: initialData.branch,
-                    specialization: initialData.specialization,
-                    totalSemester: initialData.totalSemester,
-                    semesters: updatedSemesters
-                });
             } else {
-                // For subject editing, populate the form with existing data
                 const subjectData = {
                     name: initialData.name || '',
                     code: initialData.code || '',
@@ -129,84 +111,74 @@ const AddEditModal = ({
                     }
                 };
                 setSubjectForm(subjectData);
-                console.log('Subject edit mode initialized with:', subjectData);
             }
         } else if (mode === 'add') {
-            // Reset form for add mode
-            setCourseId("");
-            setDegree("");
-            setBranch("");
-            setSpecialization("");
-            setTotalSemester(2);
-            setSemesters([]);
-            
-            // Reset subject form for add mode
-            setSubjectForm({
-                name: '',
-                code: '',
-                credits: '',
-                type: 'CORE',
-                maxMarks: {
-                    internal: 30,
-                    external: 70,
-                    practical: 0
-                }
-            });
+            if (activeTab === 'courses') {
+                setCourseId("");
+                setDegree("");
+                setBranch("");
+                setSpecialization("");
+                setTotalSemester(2);
+                setSemesters([]);
+            } else {
+                setSubjectForm({
+                    name: '',
+                    code: '',
+                    credits: '',
+                    type: 'CORE',
+                    maxMarks: {
+                        internal: 30,
+                        external: 70,
+                        practical: 0
+                    }
+                });
+            }
         }
     }, [mode, initialData, activeTab]);
 
-    // Generate semesters when totalSemester changes (for both add and edit modes)
+    // Generate semesters when totalSemester changes (for add mode only)
     useEffect(() => {
-        const newSemesters = Array.from({ length: totalSemester }, (_, index) => {
-            // Try to preserve existing semester data if available
-            const existingSem = semesters.find(sem => sem.semesterNumber === index + 1);
-            return {
-                semesterNumber: index + 1,
-                subjects: existingSem ? existingSem.subjects || [] : []
-            };
-        });
-        
-        setSemesters(newSemesters);
-    }, [totalSemester]);
+        if (mode === 'add') {
+            const newSemesters = Array.from({ length: totalSemester }, (_, index) => {
+                const existingSem = semesters.find(sem => sem.semesterNumber === index + 1);
+                return {
+                    semesterNumber: index + 1,
+                    subjects: existingSem ? existingSem.subjects || [] : []
+                };
+            });
+            
+            setSemesters(newSemesters);
+        }
+    }, [totalSemester, mode, semesters]);
 
     // Add subject to semester
     const handleAddSubjectToSemester = (semIndex, subjectId) => {
-        console.log('Adding subject to semester:', { semIndex, subjectId });
-        
         if (!subjectId) return;
 
         setSemesters(prevSemesters => {
             const updated = [...prevSemesters];
-            // Ensure subjects array exists
             if (!updated[semIndex].subjects) {
                 updated[semIndex].subjects = [];
             }
-            // Add subject if not already present
             if (!updated[semIndex].subjects.includes(subjectId)) {
                 updated[semIndex].subjects.push(subjectId);
             }
-            console.log('Updated semesters after adding subject:', updated);
             return updated;
         });
     };
 
     // Remove subject from semester
     const handleRemoveSubjectFromSemester = (semIndex, subjectId) => {
-        console.log('Removing subject from semester:', { semIndex, subjectId });
-        
         setSemesters(prevSemesters => {
             const updated = [...prevSemesters];
-            // Ensure subjects array exists
             if (!updated[semIndex].subjects) {
                 updated[semIndex].subjects = [];
             }
             updated[semIndex].subjects = updated[semIndex].subjects.filter(id => id !== subjectId);
-            console.log('Updated semesters after removing subject:', updated);
             return updated;
         });
     };
 
-    // Get subject name by ID
     const getSubjectById = (id) => {
         return allSubjects.find(subject => subject._id === id);
     };
@@ -215,7 +187,6 @@ const AddEditModal = ({
     const handleCourseSubmit = async () => {
         setLoading(true);
         try {
-            // Validate that at least one subject is selected
             const hasSubjects = semesters.some(sem => 
                 sem.subjects && Array.isArray(sem.subjects) && sem.subjects.length > 0
             );
@@ -268,7 +239,6 @@ const AddEditModal = ({
                 }
             }
         } catch (error) {
-            console.error('Error saving course:', error);
             const errorMessage = error.message || 'An error occurred while saving the course';
             if (mode === 'edit') {
                 onUpdateError && onUpdateError(new Error(errorMessage));
@@ -284,7 +254,6 @@ const AddEditModal = ({
     const handleSubjectSubmit = async () => {
         setLoading(true);
         try {
-            // Validate subject form
             if (!subjectForm.name || !subjectForm.code) {
                 throw new Error('Subject name and code are required.');
             }
@@ -324,7 +293,6 @@ const AddEditModal = ({
                 }
             }
         } catch (error) {
-            console.error('Error saving subject:', error);
             const errorMessage = error.message || 'An error occurred while saving the subject';
             if (mode === 'edit') {
                 onUpdateError && onUpdateError(new Error(errorMessage));
@@ -480,7 +448,7 @@ const AddEditModal = ({
                                                         onChange={(e) => {
                                                             if (e.target.value) {
                                                                 handleAddSubjectToSemester(semIndex, e.target.value);
-                                                                e.target.value = ''; // Reset selection
+                                                                e.target.value = '';
                                                             }
                                                         }}
                                                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -490,18 +458,21 @@ const AddEditModal = ({
                                                         {subjectsLoading ? (
                                                             <option disabled>Loading subjects...</option>
                                                         ) : Array.isArray(allSubjects) && allSubjects.length > 0 ? (
-                                                            allSubjects.map((subject) => {
-                                                                // Only show subjects that are not already added
-                                                                const isAlreadyAdded = sem.subjects && Array.isArray(sem.subjects) && 
-                                                                    sem.subjects.some(id => id === subject._id);
-                                                                return (
-                                                                    !isAlreadyAdded && (
-                                                                        <option key={subject._id} value={subject._id}>
-                                                                            {subject.name} ({subject.code})
-                                                                        </option>
-                                                                    )
-                                                                );
-                                                            })
+                                                            allSubjects
+                                                                .filter((subject, index, self) => 
+                                                                    index === self.findIndex(s => s._id === subject._id)
+                                                                )
+                                                                .map((subject) => {
+                                                                    const isAlreadyAdded = sem.subjects && Array.isArray(sem.subjects) && 
+                                                                        sem.subjects.some(id => id === subject._id);
+                                                                    return (
+                                                                        !isAlreadyAdded && (
+                                                                            <option key={subject._id} value={subject._id}>
+                                                                                {subject.name} ({subject.code})
+                                                                            </option>
+                                                                        )
+                                                                    );
+                                                                })
                                                         ) : (
                                                             <option disabled>No subjects available</option>
                                                         )}
@@ -511,7 +482,7 @@ const AddEditModal = ({
                                                 {/* Selected Subjects */}
                                                 <div className="space-y-2 max-h-32 overflow-y-auto">
                                                     {sem.subjects && Array.isArray(sem.subjects) && sem.subjects.length > 0 ? (
-                                                        sem.subjects.map((subjectId) => {
+                                                        [...new Set(sem.subjects)].map((subjectId) => {
                                                             const subject = getSubjectById(subjectId);
                                                             return (
                                                                 <div
@@ -558,7 +529,7 @@ const AddEditModal = ({
                                     <input
                                         type="text"
                                         value={subjectForm.name}
-                                        onChange={(e) => setSubjectForm({ ...subjectForm, name: e.target.value })}
+                                        onChange={(e) => setSubjectForm(prev => ({ ...prev, name: e.target.value }))}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="e.g., Data Structures and Algorithms"
                                         required
@@ -572,7 +543,7 @@ const AddEditModal = ({
                                     <input
                                         type="text"
                                         value={subjectForm.code}
-                                        onChange={(e) => setSubjectForm({ ...subjectForm, code: e.target.value })}
+                                        onChange={(e) => setSubjectForm(prev => ({ ...prev, code: e.target.value }))}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="e.g., CS101"
                                         required
@@ -586,7 +557,7 @@ const AddEditModal = ({
                                     <input
                                         type="number"
                                         value={subjectForm.credits}
-                                        onChange={(e) => setSubjectForm({ ...subjectForm, credits: e.target.value })}
+                                        onChange={(e) => setSubjectForm(prev => ({ ...prev, credits: e.target.value }))}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="e.g., 4"
                                         min="0"
@@ -600,7 +571,7 @@ const AddEditModal = ({
                                     </label>
                                     <select
                                         value={subjectForm.type}
-                                        onChange={(e) => setSubjectForm({ ...subjectForm, type: e.target.value })}
+                                        onChange={(e) => setSubjectForm(prev => ({ ...prev, type: e.target.value }))}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     >
                                         <option value="CORE">Core</option>
@@ -623,10 +594,10 @@ const AddEditModal = ({
                                         <input
                                             type="number"
                                             value={subjectForm.maxMarks.internal}
-                                            onChange={(e) => setSubjectForm({
-                                                ...subjectForm,
-                                                maxMarks: { ...subjectForm.maxMarks, internal: parseInt(e.target.value) || 0 }
-                                            })}
+                                            onChange={(e) => setSubjectForm(prev => ({
+                                                ...prev,
+                                                maxMarks: { ...prev.maxMarks, internal: parseInt(e.target.value) || 0 }
+                                            }))}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             min="0"
                                             max="100"
@@ -639,10 +610,10 @@ const AddEditModal = ({
                                         <input
                                             type="number"
                                             value={subjectForm.maxMarks.external}
-                                            onChange={(e) => setSubjectForm({
-                                                ...subjectForm,
-                                                maxMarks: { ...subjectForm.maxMarks, external: parseInt(e.target.value) || 0 }
-                                            })}
+                                            onChange={(e) => setSubjectForm(prev => ({
+                                                ...prev,
+                                                maxMarks: { ...prev.maxMarks, external: parseInt(e.target.value) || 0 }
+                                            }))}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             min="0"
                                             max="100"
@@ -655,10 +626,10 @@ const AddEditModal = ({
                                         <input
                                             type="number"
                                             value={subjectForm.maxMarks.practical}
-                                            onChange={(e) => setSubjectForm({
-                                                ...subjectForm,
-                                                maxMarks: { ...subjectForm.maxMarks, practical: parseInt(e.target.value) || 0 }
-                                            })}
+                                            onChange={(e) => setSubjectForm(prev => ({
+                                                ...prev,
+                                                maxMarks: { ...prev.maxMarks, practical: parseInt(e.target.value) || 0 }
+                                            }))}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             min="0"
                                             max="100"
