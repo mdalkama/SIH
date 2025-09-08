@@ -4,6 +4,19 @@ import AddCourse from '../../Forms/AddCourse';
 
 /**
  * Custom Alert Notification Component - Integrated directly in this file
+ * 
+ * This component provides a professional notification system with different types:
+ * - success: Green theme for successful operations
+ * - error: Red theme for error messages
+ * - warning: Yellow theme for warnings
+ * - info: Blue theme for informational messages
+ * 
+ * Features:
+ * - Auto-dismiss after specified duration
+ * - Manual close functionality
+ * - Smooth animations
+ * - Professional styling with icons
+ * - Responsive design
  */
 const AlertNotification = ({ 
     type = 'info', 
@@ -11,8 +24,8 @@ const AlertNotification = ({
     duration = 4000, 
     onClose, 
     show = false,
-    position = 'top-right',
-    size = 'medium', 
+    position = 'top-right', // 'top-right', 'top-left', 'bottom-right', 'bottom-left', 'top-center', 'bottom-center'
+    size = 'medium', // 'small', 'medium', 'large'
     closable = true,
     autoClose = true
 }) => {
@@ -135,6 +148,19 @@ const AlertNotification = ({
 
 /**
  * Professional Delete Confirmation Modal Component - Integrated directly in this file
+ * 
+ * This component provides a consistent and professional delete confirmation experience
+ * across the application. It replaces basic browser confirm() dialogs with a more
+ * polished and user-friendly interface.
+ * 
+ * Features:
+ * - Professional design with clear visual hierarchy
+ * - Warning icons and color scheme for better UX
+ * - Customizable title and description
+ * - Loading state support for async operations
+ * - Keyboard navigation support (ESC to close)
+ * - Responsive design
+ * - Smooth animations
  */
 const DeleteConfirmationModal = ({
     isOpen = false,
@@ -279,107 +305,120 @@ const UniversityAdminManageCourses = () => {
         itemType: 'item' 
     });
 
-        const [courseForm, setCourseForm] = useState({
-            courseId: '',
-            degree: '',
-            branch: '',
-            specialization: '',
-            totalSemester: '',
-            semesters: []
-        });
+    const [courseForm, setCourseForm] = useState({
+        courseId: '',
+        degree: '',
+        branch: '',
+        specialization: '',
+        totalSemester: '',
+        semesters: []
+    });
+
+    // Listen for messages from child windows (modals)
+    useEffect(() => {
+        const handleMessage = (event) => {
+            // Handle messages from our own origin
+            if (event.data && event.data.type === 'alert') {
+                const { type, message } = event.data.data;
+                
+                // Validate message format
+                if (type && message) {
+                    setAlert(event.data.data);
+                } else {
+                    console.error('Invalid alert message format:', event.data.data);
+                    setAlert({
+                        show: true,
+                        type: 'error',
+                        message: 'Received invalid alert message'
+                    });
+                }
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+        
+        return () => {
+            window.removeEventListener('message', handleMessage);
+        };
+    }, []);
 
     useEffect(() => {
-        const fetchUser = async () => {
+        const fetchCourses = async () => {
             try {
+                setLoading(true);
                 const res = await fetch("https://sih-4ptm.onrender.com/api/v1/course", {
                     method: "GET",
                     credentials: "include",
                 });
+                
+                console.log('Course API response status:', res.status);
+                
                 const data = await res.json();
-                if (data) {
+                console.log('Course API response data:', data);
+                
+                if (res.ok) {
                     setCourses(data);
-                    console.log(data);
+                } else {
+                    console.error("Error fetching courses:", data.message);
+                    setAlert({
+                        show: true,
+                        type: 'error',
+                        message: `Error fetching courses: ${data.message}`
+                    });
                 }
             } catch (err) {
-                console.error("Error fetching logged-in user:", err);
-                // Add some mock data for testing if API fails
-                setCourses([
-                    {
-                        _id: "1",
-                        courseId: "CS101",
-                        degree: "B.Tech",
-                        branch: "Computer Science",
-                        specialization: "Software Engineering",
-                        totalSemester: 8,
-                        semesters: [1, 2, 3, 4, 5, 6, 7, 8]
-                    },
-                    {
-                        _id: "2",
-                        courseId: "IT102",
-                        degree: "B.Tech",
-                        branch: "Information Technology",
-                        specialization: "Data Science",
-                        totalSemester: 8,
-                        semesters: [1, 2, 3, 4, 5, 6, 7, 8]
-                    }
-                ]);
+                console.error("Error fetching courses:", err);
+                setAlert({
+                    show: true,
+                    type: 'error',
+                    message: `Network error while fetching courses: ${err.message}`
+                });
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchUser();
+        fetchCourses();
     }, []);
 
     useEffect(() => {
-        const fetchUser = async () => {
+        const fetchSubjects = async () => {
             try {
+                setLoading(true);
                 const res = await fetch("https://sih-4ptm.onrender.com/api/v1/subject", {
                     method: "GET",
                     credentials: "include",
                 });
+                
+                console.log('Subject API response status:', res.status);
+                
                 const data = await res.json();
-                if (data) {
+                console.log('Subject API response data:', data);
+                
+                if (res.ok) {
                     setSubjects(data);
-                    console.log(data);
+                } else {
+                    console.error("Error fetching subjects:", data.message);
+                    setAlert({
+                        show: true,
+                        type: 'error',
+                        message: `Error fetching subjects: ${data.message}`
+                    });
                 }
             } catch (err) {
-                console.error("Error fetching logged-in user:", err);
-                // Add some mock data for testing if API fails
-                setSubjects([
-                    {
-                        _id: "1",
-                        name: "Data Structures",
-                        code: "CS101",
-                        credits: 4,
-                        type: "CORE",
-                        maxMarks: { internal: 30, external: 70, practical: 0 }
-                    },
-                    {
-                        _id: "2",
-                        name: "Algorithms",
-                        code: "CS102",
-                        credits: 4,
-                        type: "CORE",
-                        maxMarks: { internal: 30, external: 70, practical: 0 }
-                    },
-                    {
-                        _id: "3",
-                        name: "Web Development",
-                        code: "CS103",
-                        credits: 3,
-                        type: "ELECTIVE",
-                        maxMarks: { internal: 30, external: 50, practical: 20 }
-                    }
-                ]);
+                console.error("Error fetching subjects:", err);
+                setAlert({
+                    show: true,
+                    type: 'error',
+                    message: `Network error while fetching subjects: ${err.message}`
+                });
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchUser();
+        fetchSubjects();
     }, []);
-
 
     // Subject Form State
     const [subjectForm, setSubjectForm] = useState({
@@ -402,8 +441,8 @@ const UniversityAdminManageCourses = () => {
     // Convenience methods for different alert types
     const showSuccessAlert = (message) => showAlert('success', message);
     const showErrorAlert = (message) => showAlert('error', message);
-    const showWarningAlert = (message) => showAlert('warning', message);
-    const showInfoAlert = (message) => showAlert('info', message);
+    // const showWarningAlert = (message) => showAlert('warning', message);
+    // const showInfoAlert = (message) => showAlert('info', message);
 
     const hideAlert = () => {
         setAlert({ show: false, type: 'info', message: '' });
@@ -433,25 +472,46 @@ const UniversityAdminManageCourses = () => {
     };
 
     const handleEdit = (item) => {
-        setEditingItem(item);
-        if (activeTab === 'courses') {
-            setCourseForm({
-                courseId: item.courseId,
-                degree: item.degree,
-                branch: item.branch,
-                specialization: item.specialization || '',
-                totalSemester: item.totalSemester, // Keep as number, don't convert to string
-                semesters: item.semesters || []
-            });
-        } else {
-            setSubjectForm({
-                name: item.name,
-                code: item.code,
-                credits: item.credits.toString(),
-                type: item.type,
-                maxMarks: item.maxMarks
-            });
+        console.log('Editing item:', item);
+        
+        if (!item) {
+            console.error('Invalid item passed to handleEdit');
+            return;
         }
+        
+        setEditingItem(item);
+        
+        if (activeTab === 'courses') {
+            // Ensure course data is properly structured
+            const courseData = {
+                courseId: item.courseId || '',
+                degree: item.degree || '',
+                branch: item.branch || '',
+                specialization: item.specialization || '',
+                totalSemester: item.totalSemester || 0,
+                semesters: item.semesters || []
+            };
+            
+            console.log('Setting course form with:', courseData);
+            setCourseForm(courseData);
+        } else {
+            // Ensure subject data is properly structured
+            const subjectData = {
+                name: item.name || '',
+                code: item.code || '',
+                credits: item.credits ? item.credits.toString() : '',
+                type: item.type || 'CORE',
+                maxMarks: {
+                    internal: item.maxMarks?.internal || 30,
+                    external: item.maxMarks?.external || 70,
+                    practical: item.maxMarks?.practical || 0
+                }
+            };
+            
+            console.log('Setting subject form with:', subjectData);
+            setSubjectForm(subjectData);
+        }
+        
         setShowEditModal(true);
     };
 
@@ -568,6 +628,178 @@ const UniversityAdminManageCourses = () => {
         setDeleteModal({ show: false, itemId: null, itemName: '', itemType: 'item' });
     };
 
+    // Edit course function
+    const handleEditCourse = (course) => {
+        setEditingItem(course);
+        setShowEditModal(true);
+    };
+
+    // Edit subject function
+    const handleEditSubject = (subject) => {
+        setEditingItem(subject);
+        setShowEditModal(true);
+    };
+
+    // Update course function
+    const handleUpdateCourse = async (courseId, courseData) => {
+        try {
+            setLoading(true);
+            const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/course/${courseId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(courseData),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setCourses(courses.map(course => course._id === courseId ? data.course : course));
+                setAlert({
+                    show: true,
+                    type: 'success',
+                    message: `Course updated successfully`
+                });
+                return true;
+            } else {
+                setAlert({
+                    show: true,
+                    type: 'error',
+                    message: `Error updating course: ${data.message}`
+                });
+                return false;
+            }
+        } catch (error) {
+            setAlert({
+                show: true,
+                type: 'error',
+                message: `Network error updating course: ${error.message}`
+            });
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Update subject function
+    const handleUpdateSubject = async (subjectId, subjectData) => {
+        try {
+            setLoading(true);
+            const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/subject/${subjectId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(subjectData),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setSubjects(subjects.map(subject => subject._id === subjectId ? data.subject : subject));
+                setAlert({
+                    show: true,
+                    type: 'success',
+                    message: `Subject updated successfully`
+                });
+                return true;
+            } else {
+                setAlert({
+                    show: true,
+                    type: 'error',
+                    message: `Error updating subject: ${data.message}`
+                });
+                return false;
+            }
+        } catch (error) {
+            setAlert({
+                show: true,
+                type: 'error',
+                message: `Network error updating subject: ${error.message}`
+            });
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Delete course function
+    const handleDeleteCourse = async (courseId, courseName) => {
+        try {
+            setLoading(true);
+            const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/course/${courseId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setCourses(courses.filter(course => course._id !== courseId));
+                setAlert({
+                    show: true,
+                    type: 'success',
+                    message: `Course "${courseName}" deleted successfully`
+                });
+            } else {
+                setAlert({
+                    show: true,
+                    type: 'error',
+                    message: `Error deleting course: ${data.message}`
+                });
+            }
+        } catch (error) {
+            setAlert({
+                show: true,
+                type: 'error',
+                message: `Network error deleting course: ${error.message}`
+            });
+        } finally {
+            setLoading(false);
+            setDeleteModal({ show: false, itemId: null, itemName: '', itemType: 'item' });
+        }
+    };
+
+    // Delete subject function
+    const handleDeleteSubject = async (subjectId, subjectName) => {
+        try {
+            setLoading(true);
+            const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/subject/${subjectId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setSubjects(subjects.filter(subject => subject._id !== subjectId));
+                setAlert({
+                    show: true,
+                    type: 'success',
+                    message: `Subject "${subjectName}" deleted successfully`
+                });
+            } else {
+                setAlert({
+                    show: true,
+                    type: 'error',
+                    message: `Error deleting subject: ${data.message}`
+                });
+            }
+        } catch (error) {
+            setAlert({
+                show: true,
+                type: 'error',
+                message: `Network error deleting subject: ${error.message}`
+            });
+        } finally {
+            setLoading(false);
+            setDeleteModal({ show: false, itemId: null, itemName: '', itemType: 'item' });
+        }
+
+    };
 
     const filteredCourses = courses.filter(course =>
         course.courseId.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -931,43 +1163,33 @@ const UniversityAdminManageCourses = () => {
                     mode="add"
                     onAddSuccess={(response) => {
                         try {
-                            // Handle different response structures
-                            const newItem = response.data || response.course || response.subject || response;
+                            console.log('AddCourse onAddSuccess response:', response);
                             
-                            // Validate that we have a valid item
-                            if (!newItem || (!newItem._id && !newItem.id)) {
-                                // Create a fallback item with basic structure
-                                const fallbackItem = {
-                                    _id: `temp_${Date.now()}`,
-                                    courseId: response.courseId || 'New Course',
-                                    degree: response.degree || 'B.Tech',
-                                    branch: response.branch || 'Computer Science',
-                                    specialization: response.specialization || '',
-                                    totalSemester: response.totalSemester || 8,
-                                    semesters: response.semesters || []
-                                };
-                                
-                                if (activeTab === 'courses') {
-                                    setCourses(prevCourses => [...prevCourses, fallbackItem]);
-                                } else {
-                                    setSubjects(prevSubjects => [...prevSubjects, fallbackItem]);
+                            // Add new item to local state
+                            if (activeTab === 'courses') {
+                                // For courses, the response contains the full course object
+                                if (response && response.course) {
+                                    setCourses(prevCourses => [...prevCourses, response.course]);
+                                } else if (response && response._id) {
+                                    setCourses(prevCourses => [...prevCourses, response]);
                                 }
                             } else {
-                                // Add new item to local state
-                                if (activeTab === 'courses') {
-                                    setCourses(prevCourses => [...prevCourses, newItem]);
-                                } else {
-                                    setSubjects(prevSubjects => [...prevSubjects, newItem]);
+                                // For subjects, the response contains the full subject object
+                                if (response && response.subject) {
+                                    setSubjects(prevSubjects => [...prevSubjects, response.subject]);
+                                } else if (response && response._id) {
+                                    setSubjects(prevSubjects => [...prevSubjects, response]);
                                 }
                             }
                             
                             showSuccessAlert(`${activeTab === 'courses' ? 'Course' : 'Subject'} added successfully!`);
                         } catch (error) {
+                            console.error('Error in onAddSuccess:', error);
                             showErrorAlert(`Failed to add ${activeTab === 'courses' ? 'course' : 'subject'}. Please try again.`);
                         }
                     }}
                     onAddError={(error) => {
-                        showErrorAlert(`Failed to add ${activeTab === 'courses' ? 'course' : 'subject'}. ${error.message}`);
+                        showErrorAlert(`Failed to add ${activeTab === 'courses' ? 'course' : 'subject'}. ${error.message || 'Please try again.'}`);
                     }}
                 />
             )}
@@ -981,44 +1203,36 @@ const UniversityAdminManageCourses = () => {
                     initialData={editingItem}
                     onUpdateSuccess={(response) => {
                         try {
-                            // Handle different response structures
-                            const updatedItem = response.data || response.course || response.subject || response;
+                            console.log('AddCourse onUpdateSuccess response:', response);
                             
-                            // Validate that we have a valid item
-                            if (!updatedItem || (!updatedItem._id && !updatedItem.id)) {
-                                // For updates, we need to merge with existing data
-                                const existingItem = activeTab === 'courses' 
-                                    ? courses.find(c => c._id === editingItem._id)
-                                    : subjects.find(s => s._id === editingItem._id);
-                                
-                                if (existingItem) {
-                                    const mergedItem = { ...existingItem, ...response };
-                                    if (activeTab === 'courses') {
-                                        setCourses(prevCourses => 
-                                            prevCourses.map(course => 
-                                                course._id === editingItem._id ? mergedItem : course
-                                            )
-                                        );
-                                    } else {
-                                        setSubjects(prevSubjects => 
-                                            prevSubjects.map(subject => 
-                                                subject._id === editingItem._id ? mergedItem : subject
-                                            )
-                                        );
-                                    }
-                                }
-                            } else {
-                                // Update item in local state
-                                if (activeTab === 'courses') {
+                            // Update item in local state
+                            if (activeTab === 'courses') {
+                                // For courses, the response contains the full course object
+                                if (response && response.course) {
                                     setCourses(prevCourses => 
                                         prevCourses.map(course => 
-                                            course._id === updatedItem._id ? updatedItem : course
+                                            course._id === response.course._id ? response.course : course
                                         )
                                     );
-                                } else {
+                                } else if (response && response._id) {
+                                    setCourses(prevCourses => 
+                                        prevCourses.map(course => 
+                                            course._id === response._id ? response : course
+                                        )
+                                    );
+                                }
+                            } else {
+                                // For subjects, the response contains the full subject object
+                                if (response && response.subject) {
                                     setSubjects(prevSubjects => 
                                         prevSubjects.map(subject => 
-                                            subject._id === updatedItem._id ? updatedItem : subject
+                                            subject._id === response.subject._id ? response.subject : subject
+                                        )
+                                    );
+                                } else if (response && response._id) {
+                                    setSubjects(prevSubjects => 
+                                        prevSubjects.map(subject => 
+                                            subject._id === response._id ? response : subject
                                         )
                                     );
                                 }
@@ -1026,11 +1240,12 @@ const UniversityAdminManageCourses = () => {
                             
                             showSuccessAlert(`${activeTab === 'courses' ? 'Course' : 'Subject'} updated successfully!`);
                         } catch (error) {
+                            console.error('Error in onUpdateSuccess:', error);
                             showErrorAlert(`Failed to update ${activeTab === 'courses' ? 'course' : 'subject'}. Please try again.`);
                         }
                     }}
                     onUpdateError={(error) => {
-                        showErrorAlert(`Failed to update ${activeTab === 'courses' ? 'course' : 'subject'}. ${error.message}`);
+                        showErrorAlert(`Failed to update ${activeTab === 'courses' ? 'course' : 'subject'}. ${error.message || 'Please try again.'}`);
                     }}
                 />
             )}

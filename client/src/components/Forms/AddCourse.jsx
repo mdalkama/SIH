@@ -10,7 +10,7 @@ const AddEditModal = ({
     onAddSuccess,
     onAddError,
     onUpdateSuccess,
-    onUpdateError,
+    onUpdateError
 }) => {
     const [loading, setLoading] = useState(false);
 
@@ -36,21 +36,54 @@ const AddEditModal = ({
     });
 
     // Mock subjects data - replace with API call
-    const [allSubjects] = useState([
-        { _id: "64f1a1b2c3d4e5f678901234", name: "Data Structures", code: "CS101" },
-        { _id: "64f1a1b2c3d4e5f678901235", name: "Algorithms", code: "CS102" },
-        { _id: "64f1a1b2c3d4e5f678901236", name: "Database Systems", code: "CS103" },
-        { _id: "64f1a1b2c3d4e5f678901237", name: "Operating Systems", code: "CS104" },
-        { _id: "64f1a1b2c3d4e5f678901238", name: "Computer Networks", code: "CS105" },
-        { _id: "64f1a1b2c3d4e5f678901239", name: "Software Engineering", code: "CS106" },
-        { _id: "64f1a1b2c3d4e5f678901240", name: "Web Development", code: "CS107" },
-        { _id: "64f1a1b2c3d4e5f678901241", name: "Machine Learning", code: "CS108" },
-        { _id: "64f1a1b2c3d4e5f678901242", name: "Artificial Intelligence", code: "CS109" },
-        { _id: "64f1a1b2c3d4e5f678901243", name: "Computer Graphics", code: "CS110" }
-    ]);
+    const [allSubjects, setAllSubjects] = useState([]);
+    const [subjectsLoading, setSubjectsLoading] = useState(true);
+
+    // Fetch subjects from API
+    useEffect(() => {
+        const fetchSubjects = async () => {
+            try {
+                setSubjectsLoading(true);
+                const response = await fetch('https://sih-4ptm.onrender.com/api/v1/subject', {
+                    credentials: 'include'
+                });
+                
+                console.log('Subject API response status:', response.status);
+                console.log('Subject API response headers:', [...response.headers.entries()]);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Subject API error response:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Subject API response data:', data);
+                
+                // Ensure data is an array
+                if (Array.isArray(data)) {
+                    setAllSubjects(data);
+                    console.log('Subjects loaded successfully:', data.length);
+                } else {
+                    console.error('Received non-array data for subjects:', data);
+                    setAllSubjects([]);
+                }
+            } catch (error) {
+                console.error('Error fetching subjects:', error);
+                // Keep mock data as fallback
+                setAllSubjects([]);
+            } finally {
+                setSubjectsLoading(false);
+            }
+        };
+
+        fetchSubjects();
+    }, []);
 
     // Initialize form data based on mode
     useEffect(() => {
+        console.log('Initializing form data:', { mode, initialData, activeTab });
+        
         if (mode === 'edit' && initialData) {
             if (activeTab === 'courses') {
                 setCourseId(initialData.courseId || '');
@@ -58,57 +91,119 @@ const AddEditModal = ({
                 setBranch(initialData.branch || '');
                 setSpecialization(initialData.specialization || '');
                 setTotalSemester(initialData.totalSemester || 8);
-                setSemesters(initialData.semesters || []);
+                
+                // For edit mode, generate semesters based on totalSemester
+                const semesterCount = initialData.totalSemester || 8;
+                let existingSemesters = initialData.semesters || [];
+                
+                // Ensure we have the correct number of semesters
+                const updatedSemesters = Array.from({ length: semesterCount }, (_, index) => {
+                    const existingSem = existingSemesters.find(sem => sem.semesterNumber === index + 1);
+                    return {
+                        semesterNumber: index + 1,
+                        subjects: existingSem ? existingSem.subjects || [] : []
+                    };
+                });
+                
+                setSemesters(updatedSemesters);
+                
+                console.log('Course edit mode initialized with:', {
+                    courseId: initialData.courseId,
+                    degree: initialData.degree,
+                    branch: initialData.branch,
+                    specialization: initialData.specialization,
+                    totalSemester: initialData.totalSemester,
+                    semesters: updatedSemesters
+                });
             } else {
-                setSubjectForm(initialData);
+                // For subject editing, populate the form with existing data
+                const subjectData = {
+                    name: initialData.name || '',
+                    code: initialData.code || '',
+                    credits: initialData.credits?.toString() || '',
+                    type: initialData.type || 'CORE',
+                    maxMarks: {
+                        internal: initialData.maxMarks?.internal || 30,
+                        external: initialData.maxMarks?.external || 70,
+                        practical: initialData.maxMarks?.practical || 0
+                    }
+                };
+                setSubjectForm(subjectData);
+                console.log('Subject edit mode initialized with:', subjectData);
             }
+        } else if (mode === 'add') {
+            // Reset form for add mode
+            setCourseId("");
+            setDegree("");
+            setBranch("");
+            setSpecialization("");
+            setTotalSemester(2);
+            setSemesters([]);
+            
+            // Reset subject form for add mode
+            setSubjectForm({
+                name: '',
+                code: '',
+                credits: '',
+                type: 'CORE',
+                maxMarks: {
+                    internal: 30,
+                    external: 70,
+                    practical: 0
+                }
+            });
         }
     }, [mode, initialData, activeTab]);
 
-    // Generate/resize semesters when totalSemester changes (works for add and edit)
+    // Generate semesters when totalSemester changes (for both add and edit modes)
     useEffect(() => {
-        setSemesters((prev) => {
-            const desired = parseInt(totalSemester) || 0;
-            const existing = Array.isArray(prev) ? prev : [];
-
-            // Keep existing semesters up to the desired count and normalize
-            const trimmed = existing.slice(0, desired).map((s, i) => ({
-                semesterNumber: i + 1,
-                subjects: Array.isArray(s?.subjects) ? s.subjects : [],
-            }));
-
-            // If we need more, append fresh semesters
-            if (trimmed.length < desired) {
-                const toAdd = Array.from(
-                    { length: desired - trimmed.length },
-                    (_, idx) => ({
-                        semesterNumber: trimmed.length + idx + 1,
-                        subjects: [],
-                    })
-                );
-                return [...trimmed, ...toAdd];
-            }
-
-            return trimmed;
+        const newSemesters = Array.from({ length: totalSemester }, (_, index) => {
+            // Try to preserve existing semester data if available
+            const existingSem = semesters.find(sem => sem.semesterNumber === index + 1);
+            return {
+                semesterNumber: index + 1,
+                subjects: existingSem ? existingSem.subjects || [] : []
+            };
         });
+        
+        setSemesters(newSemesters);
     }, [totalSemester]);
 
     // Add subject to semester
     const handleAddSubjectToSemester = (semIndex, subjectId) => {
+        console.log('Adding subject to semester:', { semIndex, subjectId });
+        
         if (!subjectId) return;
 
-        const updated = [...semesters];
-        if (!updated[semIndex].subjects.includes(subjectId)) {
-            updated[semIndex].subjects.push(subjectId);
-        }
-        setSemesters(updated);
+        setSemesters(prevSemesters => {
+            const updated = [...prevSemesters];
+            // Ensure subjects array exists
+            if (!updated[semIndex].subjects) {
+                updated[semIndex].subjects = [];
+            }
+            // Add subject if not already present
+            if (!updated[semIndex].subjects.includes(subjectId)) {
+                updated[semIndex].subjects.push(subjectId);
+            }
+            console.log('Updated semesters after adding subject:', updated);
+            return updated;
+        });
     };
 
     // Remove subject from semester
     const handleRemoveSubjectFromSemester = (semIndex, subjectId) => {
-        const updated = [...semesters];
-        updated[semIndex].subjects = updated[semIndex].subjects.filter(id => id !== subjectId);
-        setSemesters(updated);
+        console.log('Removing subject from semester:', { semIndex, subjectId });
+        
+        setSemesters(prevSemesters => {
+            const updated = [...prevSemesters];
+            // Ensure subjects array exists
+            if (!updated[semIndex].subjects) {
+                updated[semIndex].subjects = [];
+            }
+            updated[semIndex].subjects = updated[semIndex].subjects.filter(id => id !== subjectId);
+            console.log('Updated semesters after removing subject:', updated);
+            return updated;
+        });
     };
 
     // Get subject name by ID
@@ -120,13 +215,25 @@ const AddEditModal = ({
     const handleCourseSubmit = async () => {
         setLoading(true);
         try {
+            // Validate that at least one subject is selected
+            const hasSubjects = semesters.some(sem => 
+                sem.subjects && Array.isArray(sem.subjects) && sem.subjects.length > 0
+            );
+            
+            if (!hasSubjects) {
+                throw new Error('Please add at least one subject to any semester before saving the course.');
+            }
+
             const courseData = {
                 courseId,
                 degree,
                 branch,
                 specialization,
                 totalSemester: parseInt(totalSemester),
-                semesters,
+                semesters: semesters.map(sem => ({
+                    semesterNumber: sem.semesterNumber,
+                    subjects: sem.subjects || []
+                }))
             };
 
             const url = mode === 'edit'
@@ -144,8 +251,7 @@ const AddEditModal = ({
 
             const data = await res.json();
 
-            if (data.success) {
-                // Inform parent for state update
+            if (res.ok) {
                 if (mode === 'edit') {
                     onUpdateSuccess && onUpdateSuccess(data);
                 } else {
@@ -154,13 +260,21 @@ const AddEditModal = ({
                 resetForms();
                 setShowModal(false);
             } else {
-                const err = new Error(`Error ${mode === 'edit' ? 'updating' : 'adding'} course`);
-                if (mode === 'edit') onUpdateError && onUpdateError(err);
-                else onAddError && onAddError(err);
+                const errorMessage = data.message || 'Failed to save course';
+                if (mode === 'edit') {
+                    onUpdateError && onUpdateError(new Error(errorMessage));
+                } else {
+                    onAddError && onAddError(new Error(errorMessage));
+                }
             }
         } catch (error) {
-            if (mode === 'edit') onUpdateError && onUpdateError(error);
-            else onAddError && onAddError(error);
+            console.error('Error saving course:', error);
+            const errorMessage = error.message || 'An error occurred while saving the course';
+            if (mode === 'edit') {
+                onUpdateError && onUpdateError(new Error(errorMessage));
+            } else {
+                onAddError && onAddError(new Error(errorMessage));
+            }
         } finally {
             setLoading(false);
         }
@@ -170,6 +284,11 @@ const AddEditModal = ({
     const handleSubjectSubmit = async () => {
         setLoading(true);
         try {
+            // Validate subject form
+            if (!subjectForm.name || !subjectForm.code) {
+                throw new Error('Subject name and code are required.');
+            }
+
             const url = mode === 'edit'
                 ? `https://sih-4ptm.onrender.com/api/v1/subject/${initialData._id}`
                 : 'https://sih-4ptm.onrender.com/api/v1/subject';
@@ -180,12 +299,15 @@ const AddEditModal = ({
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify(subjectForm)
+                body: JSON.stringify({
+                    ...subjectForm,
+                    credits: subjectForm.credits ? parseInt(subjectForm.credits) : 0
+                })
             });
 
             const data = await res.json();
 
-            if (data.success) {
+            if (res.ok) {
                 if (mode === 'edit') {
                     onUpdateSuccess && onUpdateSuccess(data);
                 } else {
@@ -194,13 +316,21 @@ const AddEditModal = ({
                 resetForms();
                 setShowModal(false);
             } else {
-                const err = new Error(`Error ${mode === 'edit' ? 'updating' : 'adding'} subject`);
-                if (mode === 'edit') onUpdateError && onUpdateError(err);
-                else onAddError && onAddError(err);
+                const errorMessage = data.message || 'Failed to save subject';
+                if (mode === 'edit') {
+                    onUpdateError && onUpdateError(new Error(errorMessage));
+                } else {
+                    onAddError && onAddError(new Error(errorMessage));
+                }
             }
         } catch (error) {
-            if (mode === 'edit') onUpdateError && onUpdateError(error);
-            else onAddError && onAddError(error);
+            console.error('Error saving subject:', error);
+            const errorMessage = error.message || 'An error occurred while saving the subject';
+            if (mode === 'edit') {
+                onUpdateError && onUpdateError(new Error(errorMessage));
+            } else {
+                onAddError && onAddError(new Error(errorMessage));
+            }
         } finally {
             setLoading(false);
         }
@@ -308,12 +438,9 @@ const AddEditModal = ({
                                         required
                                     >
                                         <option value="">Select semesters</option>
-                                        <option value={2}>2</option>
-                                        <option value={4}>4</option>
-                                        <option value={6}>6</option>
-                                        <option value={8}>8</option>
-                                        <option value={10}>10</option>
-                                        <option value={12}>12</option>
+                                        {[...Array(12)].map((_, i) => (
+                                            <option key={i+1} value={i+1}>{i+1}</option>
+                                        ))}
                                     </select>
                                 </div>
                             </div>
@@ -343,7 +470,7 @@ const AddEditModal = ({
                                                         Semester {sem.semesterNumber}
                                                     </h4>
                                                     <span className="text-sm text-gray-500">
-                                                        {sem.subjects.length} subjects
+                                                        {sem.subjects && Array.isArray(sem.subjects) ? sem.subjects.length : 0} subjects
                                                     </span>
                                                 </div>
 
@@ -351,55 +478,69 @@ const AddEditModal = ({
                                                 <div className="mb-3">
                                                     <select
                                                         onChange={(e) => {
-                                                            handleAddSubjectToSemester(semIndex, e.target.value);
-                                                            e.target.value = '';
+                                                            if (e.target.value) {
+                                                                handleAddSubjectToSemester(semIndex, e.target.value);
+                                                                e.target.value = ''; // Reset selection
+                                                            }
                                                         }}
                                                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                        disabled={subjectsLoading || !Array.isArray(allSubjects) || allSubjects.length === 0}
                                                     >
                                                         <option value="">+ Add Subject</option>
-                                                        {allSubjects
-                                                            .filter(subject => !sem.subjects.includes(subject._id))
-                                                            .map((subject) => (
-                                                                <option key={subject._id} value={subject._id}>
-                                                                    {subject.name} ({subject.code})
-                                                                </option>
-                                                            ))}
+                                                        {subjectsLoading ? (
+                                                            <option disabled>Loading subjects...</option>
+                                                        ) : Array.isArray(allSubjects) && allSubjects.length > 0 ? (
+                                                            allSubjects.map((subject) => {
+                                                                // Only show subjects that are not already added
+                                                                const isAlreadyAdded = sem.subjects && Array.isArray(sem.subjects) && 
+                                                                    sem.subjects.some(id => id === subject._id);
+                                                                return (
+                                                                    !isAlreadyAdded && (
+                                                                        <option key={subject._id} value={subject._id}>
+                                                                            {subject.name} ({subject.code})
+                                                                        </option>
+                                                                    )
+                                                                );
+                                                            })
+                                                        ) : (
+                                                            <option disabled>No subjects available</option>
+                                                        )}
                                                     </select>
                                                 </div>
 
                                                 {/* Selected Subjects */}
                                                 <div className="space-y-2 max-h-32 overflow-y-auto">
-                                                    {sem.subjects.map((subjectId) => {
-                                                        const subject = getSubjectById(subjectId);
-                                                        return (
-                                                            <div
-                                                                key={subjectId}
-                                                                className="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200"
-                                                            >
-                                                                <div className="flex-1 min-w-0">
-                                                                    <p className="text-sm font-medium text-gray-900 truncate">
-                                                                        {subject?.name || 'Unknown Subject'}
-                                                                    </p>
-                                                                    <p className="text-xs text-gray-500">
-                                                                        {subject?.code}
-                                                                    </p>
-                                                                </div>
-                                                                <button
-                                                                    onClick={() => handleRemoveSubjectFromSemester(semIndex, subjectId)}
-                                                                    className="ml-2 p-1 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                                    {sem.subjects && Array.isArray(sem.subjects) && sem.subjects.length > 0 ? (
+                                                        sem.subjects.map((subjectId) => {
+                                                            const subject = getSubjectById(subjectId);
+                                                            return (
+                                                                <div
+                                                                    key={subjectId}
+                                                                    className="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200"
                                                                 >
-                                                                    <Trash2 size={14} />
-                                                                </button>
-                                                            </div>
-                                                        );
-                                                    })}
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="text-sm font-medium text-gray-900 truncate">
+                                                                            {subject?.name || 'Unknown Subject'}
+                                                                        </p>
+                                                                        <p className="text-xs text-gray-500">
+                                                                            {subject?.code || 'N/A'}
+                                                                        </p>
+                                                                    </div>
+                                                                    <button
+                                                                        onClick={() => handleRemoveSubjectFromSemester(semIndex, subjectId)}
+                                                                        className="ml-2 p-1 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                    </button>
+                                                                </div>
+                                                            );
+                                                        })
+                                                    ) : (
+                                                        <p className="text-sm text-gray-400 text-center py-2">
+                                                            No subjects added yet
+                                                        </p>
+                                                    )}
                                                 </div>
-
-                                                {sem.subjects.length === 0 && (
-                                                    <p className="text-sm text-gray-400 text-center py-4">
-                                                        No subjects added yet
-                                                    </p>
-                                                )}
                                             </div>
                                         ))}
                                     </div>
