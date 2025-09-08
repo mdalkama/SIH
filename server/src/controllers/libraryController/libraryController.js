@@ -348,7 +348,6 @@ export const getStudentByRegNo = async (req, res) => {
     // 1) Find main Student by registrationNumber
     const student = await StudentLibrary.findOne({ registrationNumber: regNo })
       .select("registrationNumber")
-      .populate("name");
 
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
