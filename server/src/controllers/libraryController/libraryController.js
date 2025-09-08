@@ -176,7 +176,8 @@ export const issueCopy = async (req, res) => {
 
     const copy = book.copies.find((c) => c.copyId === copyId);
     if (!copy) return res.status(404).json({ message: "Copy not found" });
-    if (copy.occupiedBy) return res.status(400).json({ message: "Copy is already issued" });
+    if (copy.occupiedBy)
+      return res.status(400).json({ message: "Copy is already issued" });
 
     // Assign plain strings; Mongoose will cast to ObjectId on save
     copy.occupiedBy = studentId;
@@ -185,12 +186,18 @@ export const issueCopy = async (req, res) => {
     await library.save();
 
     // ----- Ensure StudentLibrary exists (with registrationNumber) -----
-    let studentLibrary = await StudentLibrary.findOne({ occupiedBy: studentId });
+    let studentLibrary = await StudentLibrary.findOne({
+      occupiedBy: studentId,
+    });
 
     if (!studentLibrary) {
-      const studentDoc = await Student.findById(studentId).select("registrationNumber");
+      const studentDoc = await Student.findById(studentId).select(
+        "registrationNumber"
+      );
       if (!studentDoc?.registrationNumber) {
-        return res.status(400).json({ message: "Student registrationNumber not found" });
+        return res
+          .status(400)
+          .json({ message: "Student registrationNumber not found" });
       }
       studentLibrary = await StudentLibrary.create({
         registrationNumber: studentDoc.registrationNumber.trim().toUpperCase(),
@@ -202,22 +209,24 @@ export const issueCopy = async (req, res) => {
 
     // Optional: enforce capacity before pushing (schema also validates)
     if (studentLibrary.issuedBooks.length >= 5) {
-      return res.status(400).json({ message: "A student can only issue up to 5 books" });
+      return res
+        .status(400)
+        .json({ message: "A student can only issue up to 5 books" });
     }
 
     // Update StudentLibrary
     studentLibrary.issuedBooks.push({
-      bookId,               // subdocument _id (embedded book), OK as per your schema
+      bookId, // subdocument _id (embedded book), OK as per your schema
       copyId,
       issuedAt: new Date(),
-      issuedBy: librarianId
+      issuedBy: librarianId,
     });
 
     studentLibrary.activity.push({
       bookName: book.title,
       copyId,
       issuedBy: librarianId,
-      issuedAt: new Date()
+      issuedAt: new Date(),
     });
 
     await studentLibrary.save();
@@ -322,7 +331,6 @@ export const getStudentBooks = async (req, res) => {
       .select("issuedBooks")
       .populate("issuedBooks.bookId", "title author")
       .populate("issuedBooks.issuedBy", "name");
-    console.log(studentLibrary);
     if (!studentLibrary) {
       return res
         .status(404)
@@ -340,35 +348,34 @@ export const getStudentByRegNo = async (req, res) => {
   try {
     const regNoRaw = req.params.regNo || "";
     const regNo = regNoRaw.trim().toUpperCase();
-
     if (!regNo) {
       return res.status(400).json({ message: "Registration number required" });
     }
 
-    // 1) Find main Student by registrationNumber
-    const student = await StudentLibrary.findOne({ registrationNumber: regNo })
-      .select("registrationNumber")
+    // 1) Student dhoondo (Student collection me)
+    const student = await Student.findOne({ registrationNumber: regNo })
+      .select("_id name email course branch year registrationNumber")
+      .lean();
 
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    // 2) Find StudentLibrary by occupiedBy OR registrationNumber
+    // 2) StudentLibrary find ya create
     let studentLibrary = await StudentLibrary.findOne({
       $or: [{ occupiedBy: student._id }, { registrationNumber: regNo }],
     });
 
-    // 3) Auto-create if missing (UPsert style)
     if (!studentLibrary) {
       studentLibrary = await StudentLibrary.create({
-        registrationNumber: student.registrationNumber, // REQUIRED by schema
-        occupiedBy: student._id, // REQUIRED by schema
+        registrationNumber: regNo, // schema me required
+        occupiedBy: student._id, // schema me required
         activity: [],
         issuedBooks: [],
       });
     }
 
-    // 4) Respond
+    // 3) Response
     return res.json({
       _id: student._id,
       regNo: student.registrationNumber,
