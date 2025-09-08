@@ -1,80 +1,95 @@
-import React, { useEffect, useState } from "react";
-import {
-  Search,
-  Book,
-  Calendar,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  BookOpen,
-  ArrowLeft,
-  AlertTriangle,
-  FileText,
-  Eye,
-} from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Search, Book, CheckCircle, AlertCircle, AlertTriangle, FileText, Eye, X, Loader2, BookOpen } from "lucide-react";
 
 const BASE = "https://sih-4ptm.onrender.com/api/v1";
+const LATE_RATE = 5; // ₹ per day (aligned with backend)
+
+const StatsSkeleton = () => (
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {[1,2,3].map(i => (
+      <div key={i} className="bg-white rounded-xl p-6 shadow-sm border flex items-center gap-4 animate-pulse">
+        <div className="w-12 h-12 bg-slate-200 rounded-lg" />
+        <div className="flex-1">
+          <div className="h-7 bg-slate-200 rounded w-20 mb-2" />
+          <div className="h-4 bg-slate-200 rounded w-32" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+const RowSkeleton = () => (
+  <tr className="animate-pulse">
+    <td className="px-4 py-3"><div className="h-4 w-40 bg-slate-200 rounded" /></td>
+    <td className="px-4 py-3"><div className="h-4 w-48 bg-slate-200 rounded" /></td>
+    <td className="px-4 py-3"><div className="h-4 w-16 bg-slate-200 rounded" /></td>
+    <td className="px-4 py-3"><div className="h-6 w-28 bg-slate-200 rounded-full" /></td>
+    <td className="px-4 py-3"><div className="h-4 w-28 bg-slate-200 rounded" /></td>
+    <td className="px-4 py-3"><div className="h-8 w-28 bg-slate-200 rounded" /></td>
+  </tr>
+);
 
 const CollegeLibrarianTrackReturn = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [issuedBooks, setIssuedBooks] = useState([]);
   const [collegeCode, setCollegeCode] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [searchError, setSearchError] = useState("");
+  const [loading, setLoading] = useState(true); // for skeletons
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const [searchResults, setSearchResults] = useState([]);
   const [selectedIssue, setSelectedIssue] = useState(null);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
 
-  const [showReturnForm, setShowReturnForm] = useState(false);
-  const [returnCondition, setReturnCondition] = useState("good");
-  const [returnNotes, setReturnNotes] = useState("");
-  const [fine, setFine] = useState(0);
+  const [fineDetails, setFineDetails] = useState({ lateFine: 0, additionalFine: 0, notes: "" });
+  const [applyFine, setApplyFine] = useState(false); // librarian can choose to waive fine
   const [returning, setReturning] = useState(false);
   const [returnComplete, setReturnComplete] = useState(false);
+  const [notification, setNotification] = useState(null);
 
-  // Mock data for stats (as requested)
-  const mockIssuedBooks = [
-    {
-      issueId: 'ISS001',
-      student: { name: 'Rahul Kumar', regNo: 'REG001' },
-      book: { title: 'Data Structures and Algorithms', copyId: 'DSA001' },
-      issueDate: new Date('2024-08-15'),
-      dueDate: new Date('2024-08-29'),
-      issuedBy: 'Smt. Kavita Gupta',
-      isOverdue: true,
-      daysOverdue: 9,
-    },
-    {
-      issueId: 'ISS002',
-      student: { name: 'Priya Sharma', regNo: 'REG002' },
-      book: { title: 'Digital Signal Processing', copyId: 'DSP001' },
-      issueDate: new Date('2024-08-25'),
-      dueDate: new Date('2024-09-08'),
-      issuedBy: 'Smt. Kavita Gupta',
-      isOverdue: false,
-      daysOverdue: 0,
-    },
-  ];
+  function showNotification(message, type = "success") {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  }
 
-  // Load profile to get collegeCode
   useEffect(() => {
-    (async () => {
+    async function loadInitialData() {
       try {
+        setLoading(true);
         const r1 = await fetch(`${BASE}/my-profile`, { credentials: "include" });
         const d1 = await r1.json();
-        if (r1.ok) {
-          setCollegeCode(d1?.user?.collegeCode || "");
-        }
-
-        if (d1?.user?.collegeCode) {
-          const r2 = await fetch(`${BASE}/library/all/${encodeURIComponent(d1.user.collegeCode)}`, { credentials: "include" });
-          const d2 = await r2.json();
-          if (r2.ok) setBooksCatalog(Array.isArray(d2?.books) ? d2.books : []);
+        if (r1.ok && d1.user?.collegeCode) {
+          const code = d1.user.collegeCode;
+          setCollegeCode(code);
+          await loadAllIssuedBooks(code);
+        } else {
+          showNotification(d1.message || "Could not load librarian profile.", "error");
         }
       } catch (e) {
-        console.error("Failed to load profile/catalog", e);
+        showNotification("An error occurred while loading data.", "error");
+        console.error(e);
+      } finally {
+        setLoading(false);
       }
-    })();
+    }
+    loadInitialData();
   }, []);
+
+  async function loadAllIssuedBooks(code) {
+    try {
+      setLoading(true);
+      const res = await fetch(`${BASE}/library/issued-books/${encodeURIComponent(code)}`, { credentials: "include" });
+      const data = await res.json();
+      if (res.ok) {
+        setIssuedBooks(Array.isArray(data.issuedBooks) ? data.issuedBooks : []);
+      } else {
+        showNotification(data.message || "Failed to load issued books.", "error");
+      }
+    } catch (e) {
+      showNotification("An error occurred.", "error");
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function computeOverdueInfo(issuedAt) {
     const issued = new Date(issuedAt);
@@ -86,88 +101,49 @@ const CollegeLibrarianTrackReturn = () => {
     return { isOverdue, daysOverdue, dueDate: due };
   }
   function calculateFine(daysOverdue) {
-    return daysOverdue * 2;
+    return daysOverdue * LATE_RATE;
   }
 
-  async function handleSearch() {
-    setSearchError("");
-    setSearchResults([]);
-    setSelectedIssue(null);
-    setShowReturnForm(false);
+  const filteredIssuedBooks = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return issuedBooks;
+    return issuedBooks.filter(issue =>
+      (issue.student?.name || "").toLowerCase().includes(q) ||
+      (issue.student?.regNo || "").toLowerCase().includes(q) ||
+      (issue.title || "").toLowerCase().includes(q) ||
+      (issue.copyId || "").toLowerCase().includes(q)
+    );
+  }, [issuedBooks, searchQuery]);
 
-    const reg = searchQuery.trim().toUpperCase();
-    if (!reg) {
-      setSearchError("Enter a registration number");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const res = await fetch(`${BASE}/library/student/issued-books`, {
-        method: "POST", // as per your route `router.post(...)`
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ registrationNumber: reg }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || "Student not found");
-
-      const student = data.student;
-      const issued = Array.isArray(data.issuedBooks) ? data.issuedBooks : [];
-
-      const issues = issued.map((ib, idx) => {
-        const { isOverdue, daysOverdue, dueDate } = computeOverdueInfo(ib.issuedAt || Date.now());
-        return {
-          issueId: `ISS-${(idx + 1).toString().padStart(3, "0")}`,
-          student: {
-            id: student?._id,
-            name: student?.name || "—",
-            regNo: student?.regNo || "—",
-            course: student?.course || "—",
-            email: student?.email || "—",
-          },
-          book: {
-            title: ib.title || "Unknown Book",
-            author: ib.author || "N/A",
-            isbn: ib.isbn || "N/A",
-            copyId: ib.copyId,
-            bookId: ib.bookId,
-          },
-          issueDate: new Date(ib.issuedAt),
-          dueDate,
-          issuedBy: ib.issuedBy?.name || "—",
-          status: "issued",
-          isOverdue,
-          daysOverdue,
-        };
-      });
-
-      setSearchResults(issues);
-    } catch (e) {
-      console.error(e);
-      setSearchError(e.message || "Search failed");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function handleReturnProcess(issue) {
+  function handleOpenReturnModal(issue) {
     setSelectedIssue(issue);
-    setShowReturnForm(true);
-    setFine(issue.isOverdue ? calculateFine(issue.daysOverdue) : 0);
+    const { isOverdue, daysOverdue } = computeOverdueInfo(issue.issuedAt);
+    setFineDetails({
+      lateFine: isOverdue ? calculateFine(daysOverdue) : 0,
+      additionalFine: 0,
+      notes: ""
+    });
+    setApplyFine(isOverdue); // default: only apply if overdue; librarian can toggle
+    setShowReturnModal(true);
   }
 
   async function handleReturnBook() {
     if (!selectedIssue) return;
     try {
       setReturning(true);
+
+      // Prepare payload — fine is optional
+      const totalFine =
+        (applyFine ? Number(fineDetails.lateFine || 0) : 0) +
+        Number(fineDetails.additionalFine || 0);
+
       const payload = {
-        collegeCode,
-        bookId: selectedIssue.book.bookId,
-        copyId: selectedIssue.book.copyId,
+        bookId: selectedIssue.bookId,
+        copyId: selectedIssue.copyId,
         studentId: selectedIssue.student.id,
+        returnNotes: fineDetails.notes || undefined,
       };
+      if (totalFine > 0) payload.fine = totalFine; // send only if applicable
 
       const res = await fetch(`${BASE}/library/copies/return`, {
         method: "POST",
@@ -176,239 +152,301 @@ const CollegeLibrarianTrackReturn = () => {
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) {
-        alert(data?.message || "Failed to process return");
-        setReturning(false);
-        return;
-      }
+      if (!res.ok) throw new Error(data.message || "Return failed");
 
       setReturnComplete(true);
-      setSearchResults(prev => prev.filter(i => i.issueId !== selectedIssue.issueId));
-      
+      setShowReturnModal(false);
+      await loadAllIssuedBooks(collegeCode);
       setTimeout(() => {
         setReturnComplete(false);
-        setShowReturnForm(false);
         setSelectedIssue(null);
-      }, 2500);
-
+      }, 2200);
     } catch (e) {
-      console.error(e);
-      alert(e.message || "Return failed");
+      showNotification(e.message, "error");
     } finally {
       setReturning(false);
     }
   }
 
-  const currentDateTime = new Date().toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    dateStyle: "full",
-    timeStyle: "medium",
-  });
-
-  if (returnComplete) {
-    return (
-      <div className="min-h-screen bg-slate-50 p-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-12 h-12 text-green-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Book Returned Successfully!</h2>
-            <div className="space-y-2 text-gray-600">
-              <p><strong>Student:</strong> {selectedIssue?.student?.name}</p>
-              <p><strong>Book:</strong> {selectedIssue?.book?.title}</p>
-              <p><strong>Copy ID:</strong> {selectedIssue?.book?.copyId}</p>
-              <p><strong>Return Date:</strong> {currentDateTime}</p>
-              {fine > 0 && <p><strong>Fine Collected:</strong> ₹{fine}</p>}
-            </div>
-            <div className="mt-6 text-sm text-gray-500">Redirecting to main form…</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (showReturnForm && selectedIssue) {
-    return (
-      <div className="min-h-screen bg-slate-50">
-        <div className="bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <button onClick={() => setShowReturnForm(false)} className="p-2 hover:bg-gray-100 rounded-lg">
-                  <ArrowLeft className="w-5 h-5 text-gray-600" />
-                </button>
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-800">Return Book</h1>
-                  <p className="text-sm text-gray-600">Process book return</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-4xl mx-auto p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Issue Details</h2>
-              <div className="space-y-4">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-2">Student Information</div>
-                  <div className="space-y-1">
-                    <div className="font-medium text-gray-800">{selectedIssue.student.name}</div>
-                    <div className="text-sm text-gray-600">{selectedIssue.student.regNo}</div>
-                  </div>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-2">Book Information</div>
-                  <div className="space-y-1">
-                    <div className="font-medium text-gray-800">{selectedIssue.book.title}</div>
-                    <div className="text-sm text-gray-600">Copy ID: {selectedIssue.book.copyId}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Return Processing</h2>
-              <div className="space-y-4">
-                {fine > 0 && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <div className="flex items-center space-x-2 text-yellow-700 mb-2">
-                      <AlertCircle className="w-5 h-5" />
-                      <span className="font-medium">Fine Applicable</span>
-                    </div>
-                    <div className="text-lg font-bold text-yellow-800">Total Fine: ₹{fine}</div>
-                  </div>
-                )}
-                <button onClick={handleReturnBook} disabled={returning} className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-blue-400">
-                  {returning ? "Processing..." : "Process Return"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const totals = useMemo(() => {
+    const overdue = issuedBooks.filter(b => computeOverdueInfo(b.issuedAt).isOverdue).length;
+    const fines = issuedBooks
+      .filter(b => computeOverdueInfo(b.issuedAt).isOverdue)
+      .reduce((sum, b) => sum + calculateFine(computeOverdueInfo(b.issuedAt).daysOverdue), 0);
+    return { issued: issuedBooks.length, overdue, fines };
+  }, [issuedBooks]);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center space-x-2 mb-4">
-            <Search className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-800">Search Issued Books</h2>
-          </div>
+    <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8 space-y-6">
+      {notification && (
+        <div className={`fixed top-5 right-5 z-[100] p-4 rounded-lg shadow-lg flex items-center gap-3 ${notification.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+          {notification.type === "success" ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+          <span className="text-sm font-medium">{notification.message}</span>
+        </div>
+      )}
+      {returnComplete && (
+        <div className="fixed top-5 right-5 z-[100] p-4 rounded-lg shadow-lg flex items-center gap-3 bg-green-50 text-green-800">
+          <CheckCircle size={20} />
+          <span className="text-sm font-medium">Book returned successfully!</span>
+        </div>
+      )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
+          <BookOpen className="text-blue-600" />
+          Track & Return Books
+        </h1>
+        <p className="text-slate-500 mt-1">View all issued books and process returns.</p>
+      </div>
+
+      {loading ? (
+        <StatsSkeleton />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-xl p-6 shadow-sm border flex items-center gap-4">
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><Book className="w-6 h-6 text-blue-600" /></div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Registration Number</label>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Enter student registration number"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
+              <div className="text-3xl font-bold text-slate-800">{totals.issued}</div>
+              <div className="text-sm text-slate-500">Total Issued Books</div>
             </div>
-            <div className="flex items-end">
-              <button onClick={handleSearch} disabled={loading} className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400">
-                {loading ? "Searching..." : "Search"}
+          </div>
+          <div className="bg-white rounded-xl p-6 shadow-sm border flex items-center gap-4">
+            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center"><AlertTriangle className="w-6 h-6 text-red-600" /></div>
+            <div>
+              <div className="text-3xl font-bold text-slate-800">{totals.overdue}</div>
+              <div className="text-sm text-slate-500">Overdue Books</div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-6 shadow-sm border flex items-center gap-4">
+            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"><FileText className="w-6 h-6 text-yellow-600" /></div>
+            <div>
+              <div className="text-3xl font-bold text-slate-800">₹{totals.fines}</div>
+              <div className="text-sm text-slate-500">Potential Late Fines</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200">
+        <div className="px-6 py-4 border-b flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-slate-800">Issued Books History</h2>
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by Student, Book, or Copy ID..."
+              className="w-full sm:w-72 pl-9 pr-8 py-2 text-sm border rounded-md"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="w-full overflow-x-auto">
+          <table className="w-full min-w-[1000px] text-sm">
+            <thead className="bg-slate-50 text-slate-600">
+              <tr>
+                <th className="px-4 py-2 text-left font-medium">Student</th>
+                <th className="px-4 py-2 text-left font-medium">Book Title</th>
+                <th className="px-4 py-2 text-left font-medium">Copy ID</th>
+                <th className="px-4 py-2 text-left font-medium">Status</th>
+                <th className="px-4 py-2 text-left font-medium">Due Date</th>
+                <th className="px-4 py-2 text-center font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
+                <>
+                  <RowSkeleton /><RowSkeleton /><RowSkeleton /><RowSkeleton /><RowSkeleton />
+                </>
+              ) : filteredIssuedBooks.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center p-10">
+                    <div className="flex flex-col items-center gap-2 text-slate-500">
+                      <BookOpen className="w-8 h-8" />
+                      <div>No issued books found.</div>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredIssuedBooks.map((issue) => {
+                  const { isOverdue, daysOverdue, dueDate } = computeOverdueInfo(issue.issuedAt);
+                  return (
+                    <tr key={`${issue.bookId}-${issue.copyId}`} className="hover:bg-slate-50">
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-slate-800">{issue.student.name}</div>
+                        <div className="text-slate-500">{issue.student.regNo}</div>
+                      </td>
+                      <td className="px-4 py-3 text-slate-700">{issue.title}</td>
+                      <td className="px-4 py-3 font-mono text-slate-700">{issue.copyId}</td>
+                      <td className="px-4 py-3">
+                        {isOverdue ? (
+                          <span className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full">
+                            Overdue ({daysOverdue} days)
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">On Time</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {dueDate.toLocaleDateString("en-IN")}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex justify-center items-center gap-2">
+                          <button
+                            onClick={() => handleOpenReturnModal(issue)}
+                            className="px-3 py-1.5 bg-blue-600 text-white rounded-md text-xs flex items-center gap-1.5 hover:bg-blue-700"
+                          >
+                            <CheckCircle size={14} /> Return
+                          </button>
+                          <button
+                            onClick={() => { setSelectedIssue(issue); setShowViewModal(true); }}
+                            className="p-1.5 rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                            title="View Details"
+                          >
+                            <Eye size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Return Modal */}
+      {showReturnModal && selectedIssue && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-lg bg-white rounded-lg shadow-lg">
+            <div className="px-6 py-4 border-b flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Process Book Return</h3>
+              <button onClick={() => setShowReturnModal(false)} className="p-1 rounded-full hover:bg-slate-100">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm">
+                You are returning <strong>{selectedIssue.title}</strong> for{" "}
+                <strong>{selectedIssue.student.name}</strong>.
+              </p>
+
+              <div className="bg-slate-50 p-4 rounded-md space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-medium text-slate-700 mb-1">Collect Late Fine</div>
+                    <div className="text-xs text-slate-500">
+                      ₹{LATE_RATE}/day after 14 days
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setApplyFine((v) => !v)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      applyFine ? "bg-blue-600" : "bg-slate-300"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-5 w-5 rounded-full bg-white transform transition-transform ${
+                        applyFine ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {applyFine && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Late Fine</label>
+                    <div className="font-bold text-lg">₹{fineDetails.lateFine}</div>
+                    {fineDetails.lateFine > 0 && (
+                      <p className="text-xs text-slate-500">
+                        {computeOverdueInfo(selectedIssue.issuedAt).daysOverdue} days overdue
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Additional Fine (optional)
+                  </label>
+                  <input
+                    type="number"
+                    value={fineDetails.additionalFine}
+                    onChange={(e) => setFineDetails({ ...fineDetails, additionalFine: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-md"
+                    placeholder="e.g., 50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Return Notes</label>
+                  <textarea
+                    value={fineDetails.notes}
+                    onChange={(e) => setFineDetails({ ...fineDetails, notes: e.target.value })}
+                    rows={2}
+                    className="w-full px-3 py-2 border rounded-md"
+                    placeholder="e.g., Book cover is slightly torn."
+                  />
+                </div>
+
+                <div className="border-t pt-3 mt-3">
+                  <p className="text-lg font-bold">
+                    Total Fine to Collect: ₹
+                    {(applyFine ? Number(fineDetails.lateFine || 0) : 0) + Number(fineDetails.additionalFine || 0)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t flex justify-end gap-2">
+              <button onClick={() => setShowReturnModal(false)} className="px-4 py-2 rounded-md border">
+                Cancel
+              </button>
+              <button
+                onClick={handleReturnBook}
+                disabled={returning}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center gap-2"
+              >
+                {returning && <Loader2 size={16} className="animate-spin" />}
+                {returning ? "Processing..." : "Confirm Return"}
               </button>
             </div>
           </div>
-
-          {searchError && <div className="text-sm text-red-600">{searchError}</div>}
-
-          {searchResults.length > 0 && (
-            <div className="border-t border-gray-200 pt-4">
-              <div className="space-y-3">
-                {searchResults.map((issue) => (
-                  <div key={issue.issueId} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Student</div>
-                        <div className="font-medium text-gray-800">{issue.student.name}</div>
-                        <div className="text-sm text-gray-600">{issue.student.regNo}</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Book</div>
-                        <div className="font-medium text-gray-800">{issue.book.title}</div>
-                        <div className="text-sm text-gray-600">Copy: {issue.book.copyId}</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Status</div>
-                        <div className="flex items-center space-x-2">
-                          {issue.isOverdue ? (
-                            <span className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full">Overdue</span>
-                          ) : (
-                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">On Time</span>
-                          )}
-                        </div>
-                        <div className="text-sm text-gray-600 mt-1">Due: {issue.dueDate.toLocaleDateString("en-IN")}</div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <button onClick={() => handleReturnProcess(issue)} className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm flex items-center space-x-1">
-                          <CheckCircle className="w-4 h-4" />
-                          <span>Return</span>
-                        </button>
-                        <button onClick={() => setSelectedIssue(issue)} className="px-3 py-2 bg-gray-600 text-white rounded-lg text-sm flex items-center space-x-1">
-                          <Eye className="w-4 h-4" />
-                          <span>View</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
+      )}
 
-        {/* Quick Stats (kept as dummy) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Book className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-800">{mockIssuedBooks.length}</div>
-                <div className="text-sm text-gray-600">Total Issued Books</div>
-              </div>
+      {/* View Modal */}
+      {showViewModal && selectedIssue && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-lg bg-white rounded-lg shadow-lg">
+            <div className="px-6 py-4 border-b flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Issue Details</h3>
+              <button onClick={() => setShowViewModal(false)} className="p-1 rounded-full hover:bg-slate-100">
+                <X size={18} />
+              </button>
             </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-red-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-800">{mockIssuedBooks.filter(b => b.isOverdue).length}</div>
-                <div className="text-sm text-gray-600">Overdue Books</div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <FileText className="w-6 h-6 text-yellow-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-800">
-                  ₹{mockIssuedBooks.filter(b => b.isOverdue).reduce((sum, b) => sum + calculateFine(b.daysOverdue), 0)}
-                </div>
-                <div className="text-sm text-gray-600">Pending Fines</div>
-              </div>
+            <div className="p-6 space-y-4 text-sm">
+              <div><strong className="text-slate-500 w-24 inline-block">Student:</strong> {selectedIssue.student.name} ({selectedIssue.student.regNo})</div>
+              <div><strong className="text-slate-500 w-24 inline-block">Book:</strong> {selectedIssue.title}</div>
+              <div><strong className="text-slate-500 w-24 inline-block">Copy ID:</strong> {selectedIssue.copyId}</div>
+              <div><strong className="text-slate-500 w-24 inline-block">Issue Date:</strong> {new Date(selectedIssue.issuedAt).toLocaleDateString("en-IN")}</div>
+              <div><strong className="text-slate-500 w-24 inline-block">Due Date:</strong> {computeOverdueInfo(selectedIssue.issuedAt).dueDate.toLocaleDateString("en-IN")}</div>
+              <div><strong className="text-slate-500 w-24 inline-block">Issued By:</strong> {selectedIssue.librarian.name}</div>
             </div>
           </div>
         </div>
-
-      </div>
+      )}
     </div>
   );
 };
