@@ -7,6 +7,7 @@ import menuConfig from "./utils/menuConfigUtils.js";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import ProtectedLoginRoute from "./components/ProtectedLoginRoute.jsx";
 import Unauthorized from "./components/Unauthorized.jsx";
+import Application from "./components/Application/Application.jsx";
 
 
 function App() {
@@ -23,7 +24,7 @@ function App() {
               </ProtectedLoginRoute>
             }
           />
-
+          <Route path="/application" element={<Application />} />"
           {/* Layout with Navbar */}
           <Route path="/" element={<Navbar />}>
             {Object.values(menuConfig).flat().map((item) =>
