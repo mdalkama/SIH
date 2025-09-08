@@ -4,8 +4,8 @@ const getRoleDisplayName = (roleKey) => {
         UniversityAdmin: "University Admin",
         UniversityGoverningBody: "University Governing",
         UniversityRegistrar: "University Registrar",
-        UniversityExamBody: "University Exam Body",
-        UniversityExamCell: "University Exam Cell",
+        UniversityExaminationBody: "University Exam Body",
+        UniversityExamCellStaff: "University Exam Cell",
         CollegeAdmin: "College Admin",
         CollegeDirector: "Director",
         CollegeDean: "Dean",
@@ -14,7 +14,7 @@ const getRoleDisplayName = (roleKey) => {
         CollegeHostelWarden: "Hostel Warden",
         CollegeLibrarian: "Librarian",
         CollegeAdmissionDepartment: "Admission Department",
-        CollegeFinanceBody: "Finance Department",
+        CollegeFinance: "Finance Department",
         CollegeExaminationBody: "Examination Controller"
     };
 

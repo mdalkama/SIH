@@ -5,10 +5,23 @@ import {
     Settings,
     FileText,
     Users,
+    FileCheck,
+    CheckSquare,
+    Briefcase,
+    Megaphone,
+    Share2,
+    PlusSquare,
+    Package,
+    PenLine,
     Shield,
+    Award,
+    Database,
+    ShieldCheck,
     Plus,
     BookOpen,
     RefreshCw,
+    BarChart3,
+    ClipboardCheck,
     CheckCircle,
     ClipboardList,
     CalendarDays,
@@ -17,7 +30,7 @@ import {
     Wallet,
     Building2,
     Library,
-    User, // 👈 Added User icon for My Profile
+    User, // Added User icon for My Profile
 } from "lucide-react";
 
 // Student
@@ -35,11 +48,52 @@ import UniversityAdminManageCollege from "../components/University/UniversityAdm
 import UniversityAdminManageUniversity from "../components/University/UniversityAdmin/UniversityAdminManageUniversity";
 import UniversityAdminManageCourses from "../components/University/UniversityAdmin/UniversityAdminManageCourses";
 
-// College Admin
-import CollegeAdminDashboard from "../components/College/CollegeAdmin/CollegeAdminDashbord";
-import CollegeAdminManageRoles from "../components/College/CollegeAdmin/CollegeAdminManageRoles";
-import CollegeAdminManageCollege from "../components/College/CollegeAdmin/CollegeAdminManageCollege";
+// University Governing Body Components
+import GoverningBodyDashboard from "../components/University/GoverningBody/GoverningBodyDashboard";
+import GoverningBodyCollegeReports from "../components/University/GoverningBody/GoverningBodyCollegeReports";
+import GoverningBodyPolicies from "../components/University/GoverningBody/GoverningBodyPolicies";
+import GoverningBodyAdmissionRules from "../components/University/GoverningBody/GoverningBodyAdmissionRules";
+import GoverningBodyBudget from "../components/University/GoverningBody/GoverningBodyBudget";
+import GoverningBodyAccreditation from "../components/University/GoverningBody/GoverningBodyAccreditation";
+import GoverningBodyNewColleges from "../components/University/GoverningBody/GoverningBodyNewColleges";
+
+// University Registrar Components
+import RegistrarDashboard from "../components/University/Registrar/RegistrarDashboard";
+import RegistrarDegreeIssuance from "../components/University/Registrar/RegistrarDegreeIssuance";
+import RegistrarStudentRecords from "../components/University/Registrar/RegistrarStudentRecords";
+import RegistrarMigrationCertificates from "../components/University/Registrar/RegistrarMigrationCertificates";
+import RegistrarNotifications from "../components/University/Registrar/RegistrarNotifications";
+import RegistrarCompliance from "../components/University/Registrar/RegistrarCompliance";
+
+
+// University Examination Body Components
+import ExamBodyDashboard from "../components/University/ExamBody/ExamBodyDashboard";
+import ExamBodyEntrancePolicy from "../components/University/ExamBody/ExamBodyEntrancePolicy";
+import ExamBodySemesterPolicy from "../components/University/ExamBody/ExamBodySemesterPolicy";
+import ExamBodyResultApproval from "../components/University/ExamBody/ExamBodyResultApproval";
+import ExamBodySeatAllotmentApproval from "../components/University/ExamBody/ExamBodySeatAllotmentApproval";
+
+// University Exam Cell Staff Components
+import ExamCellDashboard from "../components/University/ExamCell/ExamCellDashboard";
+import ExamCellScheduleEntranceExam from "../components/University/ExamCell/ExamCellScheduleEntranceExam";
+import ExamCellConductSemesterExam from "../components/University/ExamCell/ExamCellConductSemesterExam";
+import ExamCellAssignEvaluators from "../components/University/ExamCell/ExamCellAssignEvaluators";
+import ExamCellCollectMarks from "../components/University/ExamCell/ExamCellCollectMarks";
+import ExamCellExternalRegistration from "../components/University/ExamCell/ExamCellExternalRegistration";
+import ExamCellPublishAdmitCard from "../components/University/ExamCell/ExamCellPublishAdmitCard";
+import ExamCellResultProcessing from "../components/University/ExamCell/ExamCellResultProcessing";
+import ExamCellSeatAllotmentExecution from "../components/University/ExamCell/ExamCellSeatAllotmentExecution";
+
+// College Admin Components
+import CollegeAdminDashboard from "../components/College/CollegeAdmin/CollegeAdminDashboard";
+import CollegeAdminManageEmployees from "../components/College/CollegeAdmin/CollegeAdminManageEmployees";
+import CollegeAdminPlacement from "../components/College/CollegeAdmin/CollegeAdminPlacement";
+import CollegeAdminPublishInfo from "../components/College/CollegeAdmin/CollegeAdminPublishInfo";
+import CollegeAdminAlumniConnect from "../components/College/CollegeAdmin/CollegeAdminAlumniConnect";
+import CollegeAdminResources from "../components/College/CollegeAdmin/CollegeAdminResources";
+import CollegeAdminApproveActivities from "../components/College/CollegeAdmin/CollegeAdminApproveActivities";
 import CollegeAdminManageCourses from "../components/College/CollegeAdmin/CollegeAdminManageCourses";
+
 
 // College Librarian
 import CollegeLibrarianDashboard from "../components/College/CollegeLibrarian/CollegeLibrarianDashboard";
@@ -91,6 +145,15 @@ import CollegeDeanApproveCourses from "../components/College/CollegeDean/College
 import CollegeDeanEvaluateFaculty from "../components/College/CollegeDean/CollegeDeanEvaluateFaculty";
 import CollegeDeanBudgetResources from "../components/College/CollegeDean/CollegeDeanBudgetResources";
 
+// College Director Components
+import CollegeDirectorDashboard from "../components/College/CollegeDirector/CollegeDirectorDashboard";
+import CollegeDirectorManageDeans from "../components/College/CollegeDirector/CollegeDirectorManageDeans";
+import CollegeDirectorCollegeActivities from "../components/College/CollegeDirector/CollegeDirectorCollegeActivities";
+import CollegeDirectorApproveBudget from "../components/College/CollegeDirector/CollegeDirectorApproveBudget";
+import CollegeDirectorStudentAffairs from "../components/College/CollegeDirector/CollegeDirectorStudentAffairs";
+import CollegeDirectorLeavesNOCs from "../components/College/CollegeDirector/CollegeDirectorLeavesNOCs";
+import CollegeDirectorReports from "../components/College/CollegeDirector/CollegeDirectorReports";
+import CollegeDirectorMeetings from "../components/College/CollegeDirector/CollegeDirectorMeetings";
 
 // Common MyProfile Component (for all roles)
 import MyProfile from "../components/Common/MyProfile";
@@ -209,6 +272,266 @@ const menuConfig = {
         },
     ],
 
+    UniversityGoverningBody: [
+        {
+            id: "dashboard",
+            label: "Dashboard",
+            icon: Home,
+            path: "/university-governing-body/dashboard",
+            component: GoverningBodyDashboard,
+            role: "UniversityGoverningBody",
+        },
+        {
+            id: "college-reports",
+            label: "View College Reports",
+            icon: BarChart3,
+            path: "/university-governing-body/college-reports",
+            component: GoverningBodyCollegeReports,
+            role: "UniversityGoverningBody",
+        },
+        {
+            id: "policies",
+            label: "Approve Policies",
+            icon: ClipboardCheck,
+            path: "/university-governing-body/policies",
+            component: GoverningBodyPolicies,
+            role: "UniversityGoverningBody",
+        },
+        {
+            id: "admission-rules",
+            label: "Set Admission Rules",
+            icon: FileText,
+            path: "/university-governing-body/admission-rules",
+            component: GoverningBodyAdmissionRules,
+            role: "UniversityGoverningBody",
+        },
+        {
+            id: "budget",
+            label: "Budget Approval",
+            icon: Wallet,
+            path: "/university-governing-body/budget",
+            component: GoverningBodyBudget,
+            role: "UniversityGoverningBody",
+        },
+        {
+            id: "accreditation",
+            label: "Review Accreditations",
+            icon: Shield,
+            path: "/university-governing-body/accreditation",
+            component: GoverningBodyAccreditation,
+            role: "UniversityGoverningBody",
+        },
+        {
+            id: "new-colleges",
+            label: "Approve New Colleges/Departments",
+            icon: PlusSquare,
+            path: "/university-governing-body/new-colleges",
+            component: GoverningBodyNewColleges,
+            role: "UniversityGoverningBody",
+        },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/university-governing-body/my-profile",
+            component: MyProfile,
+            role: "UniversityGoverningBody",
+        },
+    ],
+
+    UniversityRegistrar: [
+        {
+            id: "dashboard",
+            label: "Dashboard",
+            icon: Home,
+            path: "/university-registrar/dashboard",
+            component: RegistrarDashboard,
+            role: "UniversityRegistrar",
+        },
+        {
+            id: "degree-issuance",
+            label: "Issue Degree",
+            icon: Award,
+            path: "/university-registrar/issue-degree",
+            component: RegistrarDegreeIssuance,
+            role: "UniversityRegistrar",
+        },
+        {
+            id: "student-records",
+            label: "Maintain Student Records",
+            icon: Database,
+            path: "/university-registrar/student-records",
+            component: RegistrarStudentRecords,
+            role: "UniversityRegistrar",
+        },
+        {
+            id: "migration-certificates",
+            label: "Migration / Transfer Certificates",
+            icon: FileText,
+            path: "/university-registrar/migration-certificates",
+            component: RegistrarMigrationCertificates,
+            role: "UniversityRegistrar",
+        },
+        {
+            id: "notifications",
+            label: "Publish Notifications",
+            icon: Megaphone,
+            path: "/university-registrar/notifications",
+            component: RegistrarNotifications,
+            role: "UniversityRegistrar",
+        },
+        {
+            id: "compliance",
+            label: "Legal & RTI Compliance",
+            icon: ShieldCheck,
+            path: "/university-registrar/compliance",
+            component: RegistrarCompliance,
+            role: "UniversityRegistrar",
+        },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/university-registrar/my-profile",
+            component: MyProfile,
+            role: "UniversityRegistrar",
+        },
+    ],
+
+    UniversityExaminationBody: [
+        {
+            id: "dashboard",
+            label: "Dashboard",
+            icon: Home,
+            path: "/university-exam-body/dashboard",
+            component: ExamBodyDashboard,
+            role: "UniversityExaminationBody",
+        },
+        {
+            id: "entrance-policy",
+            label: "Approve Entrance Exam Rules",
+            icon: ClipboardList,
+            path: "/university-exam-body/entrance-policy",
+            component: ExamBodyEntrancePolicy,
+            role: "UniversityExaminationBody",
+        },
+        {
+            id: "semester-policy",
+            label: "Approve Semester Exam Rules",
+            icon: FileCheck,
+            path: "/university-exam-body/semester-policy",
+            component: ExamBodySemesterPolicy,
+            role: "UniversityExaminationBody",
+        },
+        {
+            id: "result-approval",
+            label: "Approve Results",
+            icon: CheckSquare,
+            path: "/university-exam-body/result-approval",
+            component: ExamBodyResultApproval,
+            role: "UniversityExaminationBody",
+        },
+        {
+            id: "seat-allotment-approval",
+            label: "Approve Seat Allotment",
+            icon: Users,
+            path: "/university-exam-body/seat-allotment-approval",
+            component: ExamBodySeatAllotmentApproval,
+            role: "UniversityExaminationBody",
+        },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/university-exam-body/my-profile",
+            component: MyProfile,
+            role: "UniversityExaminationBody",
+        },
+    ],
+
+    UniversityExamCellStaff: [
+        {
+            id: "dashboard",
+            label: "Dashboard",
+            icon: Home,
+            path: "/university-exam-cell/dashboard",
+            component: ExamCellDashboard,
+            role: "UniversityExamCellStaff",
+        },
+        {
+            id: "schedule-entrance-exam",
+            label: "Schedule Entrance Exam",
+            icon: Calendar,
+            path: "/university-exam-cell/schedule-entrance-exam",
+            component: ExamCellScheduleEntranceExam,
+            role: "UniversityExamCellStaff",
+        },
+        {
+            id: "conduct-semester-exam",
+            label: "Conduct Semester Exam",
+            icon: BookOpen,
+            path: "/university-exam-cell/conduct-semester-exam",
+            component: ExamCellConductSemesterExam,
+            role: "UniversityExamCellStaff",
+        },
+        {
+            id: "assign-evaluators",
+            label: "Assign Evaluators",
+            icon: PenLine,
+            path: "/university-exam-cell/assign-evaluators",
+            component: ExamCellAssignEvaluators,
+            role: "UniversityExamCellStaff",
+        },
+        {
+            id: "collect-marks",
+            label: "Collect External Marks",
+            icon: GraduationCap,
+            path: "/university-exam-cell/collect-marks",
+            component: ExamCellCollectMarks,
+            role: "UniversityExamCellStaff",
+        },
+        {
+            id: "external-registration",
+            label: "External Exam Registration",
+            icon: ClipboardList,
+            path: "/university-exam-cell/external-registration",
+            component: ExamCellExternalRegistration,
+            role: "UniversityExamCellStaff",
+        },
+        {
+            id: "publish-admit-card",
+            label: "Publish Admit Card",
+            icon: FileText,
+            path: "/university-exam-cell/publish-admit-card",
+            component: ExamCellPublishAdmitCard,
+            role: "UniversityExamCellStaff",
+        },
+        {
+            id: "result-processing",
+            label: "Result Processing",
+            icon: FileText,
+            path: "/university-exam-cell/result-processing",
+            component: ExamCellResultProcessing,
+            role: "UniversityExamCellStaff",
+        },
+        {
+            id: "seat-allotment-execution",
+            label: "Seat Allotment Execution",
+            icon: Users,
+            path: "/university-exam-cell/seat-allotment-execution",
+            component: ExamCellSeatAllotmentExecution,
+            role: "UniversityExamCellStaff",
+        },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/university-exam-cell/my-profile",
+            component: MyProfile,
+            role: "UniversityExamCellStaff",
+        },
+    ],
+
     // 🔹 College Admin
     CollegeAdmin: [
         {
@@ -220,19 +543,11 @@ const menuConfig = {
             role: "CollegeAdmin",
         },
         {
-            id: "manage-employee",
-            label: "Manage Employee",
-            icon: Plus,
-            path: "/college-admin/manage-employee",
-            component: CollegeAdminManageRoles,
-            role: "CollegeAdmin",
-        },
-        {
-            id: "manage-college",
-            label: "Manage College",
-            icon: Folder,
-            path: "/college-admin/manage-college",
-            component: CollegeAdminManageCollege,
+            id: "manage-employees",
+            label: "Manage Employees",
+            icon: Users,
+            path: "/college-admin/manage-employees",
+            component: CollegeAdminManageEmployees,
             role: "CollegeAdmin",
         },
         {
@@ -244,12 +559,127 @@ const menuConfig = {
             role: "CollegeAdmin",
         },
         {
+            id: "placement",
+            label: "Placement Coordination",
+            icon: Briefcase,
+            path: "/college-admin/placement",
+            component: CollegeAdminPlacement,
+            role: "CollegeAdmin",
+        },
+        {
+            id: "publish-info",
+            label: "Publish Information",
+            icon: Megaphone,
+            path: "/college-admin/publish-info",
+            component: CollegeAdminPublishInfo,
+            role: "CollegeAdmin",
+        },
+        {
+            id: "alumni-connect",
+            label: "Alumni Connect",
+            icon: Share2,
+            path: "/college-admin/alumni-connect",
+            component: CollegeAdminAlumniConnect,
+            role: "CollegeAdmin",
+        },
+        {
+            id: "resources",
+            label: "Provide Resources",
+            icon: Package,
+            path: "/college-admin/resources",
+            component: CollegeAdminResources,
+            role: "CollegeAdmin",
+        },
+        {
+            id: "approve-activities",
+            label: "Approve College Activities",
+            icon: ClipboardCheck,
+            path: "/college-admin/approve-activities",
+            component: CollegeAdminApproveActivities,
+            role: "CollegeAdmin",
+        },
+        {
             id: "my-profile",
             label: "My Profile",
             icon: User,
             path: "/college-admin/my-profile",
             component: MyProfile,
             role: "CollegeAdmin",
+        },
+    ],
+
+    CollegeDirector: [
+        {
+            id: "dashboard",
+            label: "Dashboard",
+            icon: Home,
+            path: "/college-director/dashboard",
+            component: CollegeDirectorDashboard,
+            role: "CollegeDirector",
+        },
+        {
+            id: "manage-deans",
+            label: "Manage Deans & HODs",
+            icon: Users,
+            path: "/college-director/manage-deans",
+            component: CollegeDirectorManageDeans,
+            role: "CollegeDirector",
+        },
+        {
+            id: "college-activities",
+            label: "College Activities",
+            icon: Users,
+            path: "/college-director/college-activities",
+            component: CollegeDirectorCollegeActivities,
+            role: "CollegeDirector",
+        },
+        {
+            id: "approve-budget",
+            label: "Approve Budget",
+            icon: Wallet,
+            path: "/college-director/approve-budget",
+            component: CollegeDirectorApproveBudget,
+            role: "CollegeDirector",
+        },
+        {
+            id: "student-affairs",
+            label: "Student Affairs",
+            icon: GraduationCap,
+            path: "/college-director/student-affairs",
+            component: CollegeDirectorStudentAffairs,
+            role: "CollegeDirector",
+        },
+        {
+            id: "leaves-nocs",
+            label: "Leaves & NOCs",
+            icon: ClipboardCheck,
+            path: "/college-director/leaves-nocs",
+            component: CollegeDirectorLeavesNOCs,
+            role: "CollegeDirector",
+        },
+        {
+            id: "reports",
+            label: "Reports & Analytics",
+            icon: BarChart3,
+            path: "/college-director/reports",
+            component: CollegeDirectorReports,
+            role: "CollegeDirector",
+        },
+        {
+            id: "meetings",
+            label: "Meetings & Notices",
+            icon: FileText,
+            path: "/college-director/meetings",
+            component: CollegeDirectorMeetings,
+            role: "CollegeDirector",
+        },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/college-director/my-profile",
+            component: MyProfile,
+            role: "CollegeDirector",
         },
     ],
 
@@ -296,7 +726,7 @@ const menuConfig = {
         },
     ],
 
-     CollegeHOD: [
+    CollegeHOD: [
         {
             id: "dashboard",
             label: "Dashboard",

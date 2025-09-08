@@ -35,6 +35,8 @@ const Navbar = () => {
     const lastSegment = path.split("/").pop();
     const [activeMenu, setActiveMenu] = useState(lastSegment);
     const { user, setUser, loading } = useUser();
+    console.log(user);
+    
 
 
 

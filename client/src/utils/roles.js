@@ -1,11 +1,11 @@
 export const staffRoles = [
     'UniversityAdmin', //done
-    'UniversityGoverningBody',
-    'UniversityRegistrar',
-    'UniversityExaminationBody',
+    'UniversityGoverningBody', //done
+    'UniversityRegistrar', //done 
+    'UniversityExaminationBody', //done
     'UniversityExamCellStaff',
     'CollegeAdmin',
-    'CollegeDirector',
+    'CollegeDirector', //done
     'CollegeDean',//done
     'CollegeHOD',//done
     'CollegeFaculty',//done
