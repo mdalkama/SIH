@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Search, User, Book, Calendar, Clock, CheckCircle, AlertCircle, UserCheck } from "lucide-react";
 
-const BASE = "http://localhost:8000/api/v1";
+const BASE = "https://sih-4ptm.onrender.com/api/v1";
 
 function CollegeLibrarianIssueBook() {
   // Inputs / selections
@@ -13,7 +13,6 @@ function CollegeLibrarianIssueBook() {
   // Librarian/profile
   const [staffName, setStaffName] = useState("");
   const [staffRole, setStaffRole] = useState("");
-  const [staffId, setStaffId] = useState("");
   const [collegeCode, setCollegeCode] = useState("");
 
   // Books
@@ -24,11 +23,14 @@ function CollegeLibrarianIssueBook() {
   const [selectedBook, setSelectedBook] = useState(null);
   const [selectedCopy, setSelectedCopy] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  console.log("selectedBook",selectedBook?._id);
+  console.log("selectedCopy",selectedCopy?.copyId)
+  console.log("student",student?._id)
+
 
   // Issue
   const [issuing, setIssuing] = useState(false);
   const [issueComplete, setIssueComplete] = useState(false);
-  console.log(registrationNumber)
 
   // Load profile -> books
   useEffect(() => {
@@ -56,7 +58,6 @@ function CollegeLibrarianIssueBook() {
 
         setStaffName(name);
         setStaffRole(user.role || "");
-        setStaffId(user.id || user._id || "");
         setCollegeCode(user.collegeCode || "");
 
         // Books
@@ -96,12 +97,11 @@ function CollegeLibrarianIssueBook() {
       setStudentError("");
       setStudent(null);
 
-      const res = await fetch(`${BASE}/library/student/search/${encodeURIComponent(regNo)}`, {
+      const res = await fetch(`${BASE}/library/student/search/${regNo}}`, {
         method: "GET",
         credentials: "include",
       });
       const data = await res.json();
-      console.log(data)
       if (!res.ok) {
         setStudentError(data?.message || "Student not found");
         setStudent(null);
@@ -118,12 +118,12 @@ function CollegeLibrarianIssueBook() {
     }
   }
 
-  function onRegInputKeyDown(e) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleStudentSearch();
-    }
-  }
+  // function onRegInputKeyDown(e) {
+  //   if (e.key === "Enter") {
+  //     e.preventDefault();
+  //     handleStudentSearch();
+  //   }
+  // }
 
   // Filter books (show all if search empty)
   const booksToShow = (() => {
@@ -154,9 +154,13 @@ function CollegeLibrarianIssueBook() {
   });
   const dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN");
 
-  // Issue (real API call)
+
+
+
+  // Issue (real API call) — do NOT send staffId; backend uses req.user.id
   async function handleIssueBook() {
     if (!student || !selectedBook || !selectedCopy) return;
+    console.log()
     try {
       setIssuing(true);
       const res = await fetch(`${BASE}/library/copies/issue`, {
@@ -164,10 +168,9 @@ function CollegeLibrarianIssueBook() {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          bookId: selectedBook._id,
-          copyId: selectedCopy.copyId,
-          studentId: student._id, // from student search
-          staffId,                // from profile
+          bookId: selectedBook?._id,
+          copyId: selectedCopy?.copyId,
+          studentId: student?._id, // from student search
         }),
       });
       const data = await res.json();
@@ -180,7 +183,6 @@ function CollegeLibrarianIssueBook() {
       setIssueComplete(true);
 
       // Refresh books (so availability updates)
-      // Optional: re-fetch books or update local state
       if (collegeCode) {
         try {
           const r = await fetch(`${BASE}/library/all/${encodeURIComponent(collegeCode)}`, {
@@ -288,24 +290,10 @@ function CollegeLibrarianIssueBook() {
                     <span className="font-medium text-gray-800">Student Found</span>
                   </div>
                   <div className="space-y-2 text-sm">
-                    <div>
-                      <strong>Name:</strong> {student.name}
-                    </div>
-                    <div>
-                      <strong>Course:</strong> {student.course || "—"}
-                    </div>
-                    <div>
-                      <strong>Branch:</strong> {student.branch || "—"}
-                    </div>
-                    <div>
-                      <strong>Year:</strong> {student.year || "—"}
-                    </div>
-                    <div>
-                      <strong>Email:</strong> {student.email || "—"}
-                    </div>
-                    <div>
-                      <strong>Books Issued:</strong> {student.booksIssued}/{student.maxBooks}
-                    </div>
+                    <div><strong>Name:</strong> {student.name}</div>
+                    <div><strong>Course:</strong> {student.course || "—"}</div>
+                    <div><strong>Email:</strong> {student.email || "—"}</div>
+                    <div><strong>Books Issued:</strong> {student.booksIssued}/{student.maxBooks}</div>
                   </div>
                   {student.booksIssued >= student.maxBooks && (
                     <div className="flex items-center gap-2 text-red-600 text-sm">
@@ -457,9 +445,7 @@ function CollegeLibrarianIssueBook() {
                   student.booksIssued >= student.maxBooks
                 }
                 className={`w-full py-3 text-white rounded-lg font-medium transition-colors ${
-                  issuing
-                    ? "bg-blue-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
+                  issuing ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
                 }`}
               >
                 {issuing ? "Issuing..." : "Issue Book"}

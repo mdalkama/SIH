@@ -152,20 +152,23 @@ export const deleteCopies = async (req, res) => {
 // Issue a copy to a student
 export const issueCopy = async (req, res) => {
   try {
-    const librarianId = req.user.id;
-    const collegeCode = await Staff.findById(librarianId).select("collegeCode");
-    if (!collegeCode)
-      return res.status(404).json({ message: "college Code not found" });
+    const librarianId = req.user?.id;
+    if (!librarianId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
-    const { bookId, copyId, studentId, staffId } = req.body;
-    if (!bookId || !copyId || !studentId || !staffId) {
+    const staff = await Staff.findById(librarianId).select("collegeCode");
+    if (!staff?.collegeCode) {
+      return res.status(404).json({ message: "college Code not found" });
+    }
+
+    const { bookId, copyId, studentId } = req.body;
+    if (!bookId || !copyId || !studentId) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     // ----- Update Library -----
-    const library = await Library.findOne({
-      collegeCode: collegeCode.collegeCode,
-    });
+    const library = await Library.findOne({ collegeCode: staff.collegeCode });
     if (!library) return res.status(404).json({ message: "Library not found" });
 
     const book = library.books.id(bookId);
@@ -176,9 +179,10 @@ export const issueCopy = async (req, res) => {
     if (copy.occupiedBy)
       return res.status(400).json({ message: "Copy is already issued" });
 
-    copy.occupiedBy = mongoose.Types.ObjectId(studentId);
+    // Assign plain strings; Mongoose will cast to ObjectId on save
+    copy.occupiedBy = studentId;
     copy.occupiedAt = new Date();
-    copy.issuedBy = mongoose.Types.ObjectId(staffId);
+    copy.issuedBy = librarianId;
     await library.save();
 
     // ----- Ensure StudentLibrary exists (with registrationNumber) -----
@@ -196,25 +200,32 @@ export const issueCopy = async (req, res) => {
           .json({ message: "Student registrationNumber not found" });
       }
       studentLibrary = await StudentLibrary.create({
-        registrationNumber: studentDoc.registrationNumber, // REQUIRED
+        registrationNumber: studentDoc.registrationNumber.trim().toUpperCase(),
         occupiedBy: studentId,
         issuedBooks: [],
         activity: [],
       });
     }
 
+    // Optional: enforce capacity before pushing (schema also validates)
+    if (studentLibrary.issuedBooks.length >= 5) {
+      return res
+        .status(400)
+        .json({ message: "A student can only issue up to 5 books" });
+    }
+
     // Update StudentLibrary
     studentLibrary.issuedBooks.push({
-      bookId,
+      bookId, // subdocument _id (embedded book), OK as per your schema
       copyId,
       issuedAt: new Date(),
-      issuedBy: staffId,
+      issuedBy: librarianId,
     });
 
     studentLibrary.activity.push({
       bookName: book.title,
       copyId,
-      issuedBy: staffId,
+      issuedBy: librarianId,
       issuedAt: new Date(),
     });
 
@@ -315,11 +326,11 @@ export const getStudentBooks = async (req, res) => {
     const { registrationNumber } = req.body;
 
     const studentLibrary = await StudentLibrary.findOne({
-      registrationNumber
-    }).select("issuedBooks")
+      registrationNumber,
+    })
+      .select("issuedBooks")
       .populate("issuedBooks.bookId", "title author")
       .populate("issuedBooks.issuedBy", "name");
-console.log(studentLibrary)
     if (!studentLibrary) {
       return res
         .status(404)
@@ -337,36 +348,34 @@ export const getStudentByRegNo = async (req, res) => {
   try {
     const regNoRaw = req.params.regNo || "";
     const regNo = regNoRaw.trim().toUpperCase();
-
     if (!regNo) {
       return res.status(400).json({ message: "Registration number required" });
     }
 
-    // 1) Find main Student by registrationNumber
-    const student = await Student.findOne({ registrationNumber: regNo }).select(
-      "_id name email course branch year registrationNumber"
-    );
+    // 1) Student dhoondo (Student collection me)
+    const student = await Student.findOne({ registrationNumber: regNo })
+      .select("_id name email course branch year registrationNumber")
+      .lean();
 
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    // 2) Find StudentLibrary by occupiedBy OR registrationNumber
+    // 2) StudentLibrary find ya create
     let studentLibrary = await StudentLibrary.findOne({
       $or: [{ occupiedBy: student._id }, { registrationNumber: regNo }],
     });
 
-    // 3) Auto-create if missing (UPsert style)
     if (!studentLibrary) {
       studentLibrary = await StudentLibrary.create({
-        registrationNumber: student.registrationNumber, // REQUIRED by schema
-        occupiedBy: student._id, // REQUIRED by schema
+        registrationNumber: regNo, // schema me required
+        occupiedBy: student._id, // schema me required
         activity: [],
         issuedBooks: [],
       });
     }
 
-    // 4) Respond
+    // 3) Response
     return res.json({
       _id: student._id,
       regNo: student.registrationNumber,
