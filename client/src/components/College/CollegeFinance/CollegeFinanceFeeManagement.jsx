@@ -1,64 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Search, IndianRupee, Landmark, X, Download, Loader2, Book, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
-
-// --- Mock Data based on your Mongoose Schema ---
-const mockStudentPaymentData = {
-  _id: "60c72b2f9b1d8c001f8e4c6a",
-  registrationNumber: "STU2024001",
-  student: {
-    _id: "60c72b2f9b1d8c001f8e4c6b",
-    name: "Aisha Sharma",
-    course: "B.Tech Computer Science",
-    currentSemester: "Semester 4",
-  },
-  fines: [
-    { _id: "fine01", reason: "Late library book return", finedBy: "Library Dept", role: "Librarian", status: "unpaid", amount: 250, paidAmount: 0, createdAt: "2024-04-15T10:00:00Z" },
-    { _id: "fine02", reason: "Lab equipment damage", finedBy: "CSE Dept", role: "HOD", status: "paid", amount: 1500, paidAmount: 1500, createdAt: "2024-02-20T09:00:00Z" },
-    { _id: "fine03", reason: "ID Card Lost", finedBy: "Admin Office", role: "Clerk", status: "unpaid", amount: 500, paidAmount: 0, createdAt: "2024-08-01T11:00:00Z" },
-    { _id: "fine04", reason: "Disciplinary Action", finedBy: "Proctor Office", role: "Proctor", status: "paid", amount: 2000, paidAmount: 2000, createdAt: "2023-11-25T15:00:00Z" },
-    { _id: "fine05", reason: "Sports Equipment Damage", finedBy: "Sports Dept", role: "Coach", status: "unpaid", amount: 750, paidAmount: 250, createdAt: "2024-09-05T16:00:00Z" },
-    { _id: "fine06", reason: "Hostel Rule Violation", finedBy: "Hostel Warden", role: "Warden", status: "unpaid", amount: 1000, paidAmount: 0, createdAt: "2024-09-10T12:00:00Z" },
-    { _id: "fine07", reason: "Parking Violation", finedBy: "Security Office", role: "Security", status: "paid", amount: 300, paidAmount: 300, createdAt: "2024-07-20T18:00:00Z" },
-  ],
-  semesters: [
-    { _id: "sem01", semester: "Semester 1", tuitionFee: 60000, examFee: 2000, otherFee: 1500, paid: 63500 },
-    { _id: "sem02", semester: "Semester 2", tuitionFee: 60000, examFee: 2000, otherFee: 1500, paid: 63500 },
-    { _id: "sem03", semester: "Semester 3", tuitionFee: 65000, examFee: 2500, otherFee: 2000, paid: 50000 },
-    { _id: "sem04", semester: "Semester 4", tuitionFee: 65000, examFee: 2500, otherFee: 2000, paid: 0 },
-    { _id: "sem05", semester: "Semester 5", tuitionFee: 70000, examFee: 3000, otherFee: 2500, paid: 0 },
-    { _id: "sem06", semester: "Semester 6", tuitionFee: 70000, examFee: 3000, otherFee: 2500, paid: 0 },
-    { _id: "sem07", semester: "Semester 7", tuitionFee: 75000, examFee: 3500, otherFee: 3000, paid: 0 },
-    { _id: "sem08", semester: "Semester 8", tuitionFee: 75000, examFee: 3500, otherFee: 3000, paid: 0 },
-  ],
-  paymentHistory: [
-    { _id: "hist20", date: new Date("2024-09-10T12:05:00Z"), type: "Fine", description: "Parking Violation", amount: 300, method: "online", receiptNo: "RCPT2024F7", status: "paid" },
-    { _id: "hist19", date: new Date("2024-09-06T10:00:00Z"), type: "Fine", description: "Partial payment for Sports Equipment Damage", amount: 250, method: "cash", receiptNo: "RCPT2024F5P1", status: "paid" },
-    { _id: "hist18", date: new Date("2024-08-10T10:00:00Z"), type: "Semester Fee", description: "Partial payment for Semester 3", amount: 50000, method: "online", receiptNo: "RCPT2024S3P1", status: "paid" },
-    { _id: "hist17", date: new Date("2024-02-20T09:00:00Z"), type: "Fine", description: "Lab equipment damage", amount: 1500, method: "online", receiptNo: "RCPT2024F2", status: "paid" },
-    { _id: "hist16", date: new Date("2024-01-15T11:30:00Z"), type: "Semester Fee", description: "Full payment for Semester 2", amount: 63500, method: "cheque", receiptNo: "RCPT2024S2F", status: "paid" },
-    { _id: "hist15", date: new Date("2023-11-25T15:10:00Z"), type: "Fine", description: "Disciplinary Action", amount: 2000, method: "online", receiptNo: "RCPT2023F4", status: "paid" },
-    { _id: "hist14", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F", status: "paid" },
-    { _id: "hist13", date: new Date("2023-02-10T10:00:00Z"), type: "Semester Fee", description: "Partial payment for Semester 2", amount: 30000, method: "online", receiptNo: "RCPT2023S2P2", status: "failed" },
-    { _id: "hist12", date: new Date("2023-01-20T11:00:00Z"), type: "Semester Fee", description: "Partial payment for Semester 2", amount: 33500, method: "cash", receiptNo: "RCPT2023S2P1", status: "paid" },
-    { _id: "hist11", date: new Date("2022-09-01T15:00:00Z"), type: "Fine", description: "Late submission of documents", amount: 100, method: "cash", receiptNo: "RCPT2022F1", status: "paid" },
-    { _id: "hist10", date: new Date("2022-08-15T12:30:00Z"), type: "Semester Fee", description: "Partial payment for Semester 1", amount: 40000, method: "online", receiptNo: "RCPT2022S1P2", status: "paid" },
-    { _id: "hist09", date: new Date("2022-08-01T09:00:00Z"), type: "Semester Fee", description: "Admission Fee (Part of Sem 1)", amount: 23500, method: "online", receiptNo: "RCPT2022S1P1", status: "paid" },
-    { _id: "hist08", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP1", status: "paid" },
-    { _id: "hist07", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP2", status: "paid" },
-    { _id: "hist06", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP3", status: "paid" },
-    { _id: "hist05", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP4", status: "paid" },
-    { _id: "hist04", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP5", status: "paid" },
-    { _id: "hist03", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP6", status: "paid" },
-    { _id: "hist02", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP7", status: "paid" },
-    { _id: "hist01", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP8", status: "paid" },
-  ],
-  stats: {
-    totalFine: 6300, fineCollected: 4050, finePending: 2250, totalSemester: 580000,
-    semesterCollected: 177000, semesterPending: 403000, overallCollected: 181050, overallPending: 405250,
-  }
-};
+import { Search, IndianRupee, Landmark, X, Download, Loader2, Book, ChevronLeft, ChevronRight, Edit, PlusCircle } from 'lucide-react';
+import {useUser} from '../../../context/UserContext'
 
 const FinanceFeeCollection = () => {
+  const {user}  = useUser();
   const [searchTerm, setSearchTerm] = useState('');
   const [studentData, setStudentData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -78,22 +23,46 @@ const FinanceFeeCollection = () => {
   const [paymentMethod, setPaymentMethod] = useState('online');
   const [processingPayment, setProcessingPayment] = useState(false);
 
+  // Add Fine Modal State
+  const [showAddFineModal, setShowAddFineModal] = useState(false);
+  const [processingAddFine, setProcessingAddFine] = useState(false);
+
   const formatCurrency = (amount) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(amount);
   const formatDate = (dateString) => new Date(dateString).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!searchTerm) return;
+
     setLoading(true);
     setError('');
     setStudentData(null);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    if (searchTerm.toLowerCase() === 'stu2024001') {
-      setStudentData(mockStudentPaymentData);
-    } else {
-      setError('No student found with that registration number.');
+
+    try {
+      // The API endpoint as specified
+      const response = await fetch(`http://localhost:8000/api/v1/payment/${searchTerm}`);
+
+      if (response.status === 404) {
+        setError('No student found with that registration number.');
+        return;
+      }
+
+      if (!response.ok) {
+        // Handle other server-side errors
+        const errorResult = await response.json().catch(() => ({ message: 'An error occurred while fetching the data.' }));
+        throw new Error(errorResult.message || 'An error occurred while fetching the data.');
+      }
+
+      const data = await response.json();
+      setStudentData(data);
+      console.log("Fetched student data:", data);
+
+    } catch (error) {
+      console.error("Failed to fetch payment details:", error);
+      setError(error.message || 'Failed to fetch payment details. Please check the network and try again.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const clearStudentSearch = () => {
@@ -131,6 +100,62 @@ const FinanceFeeCollection = () => {
     closePaymentModal();
   };
 
+  // Handlers for Add Fine Modal
+  const openAddFineModal = () => setShowAddFineModal(true);
+  const closeAddFineModal = () => {
+    if (processingAddFine) return;
+    setShowAddFineModal(false);
+  };
+
+  const handleAddFine = async (newFineData) => { // newFineData contains { reason, amount }
+    if (!studentData) {
+      alert("No student selected.");
+      return;
+    }
+
+    setProcessingAddFine(true);
+
+    try {
+      // In a real app, you'd get this from user context/auth state
+      const currentUserInfo = {
+        finedBy: user?.name,
+        role: user?.role
+      };
+
+      const payload = {
+        ...newFineData,
+        ...currentUserInfo,
+        studentId: studentData._id,
+      };
+      console.log(payload)
+      // Replace with your actual API endpoint. Using a placeholder for now.
+      const response = await fetch(`/api/students/${studentData.registrationNumber}/fines`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorResult = await response.json().catch(() => ({ message: 'An unknown error occurred.' }));
+        throw new Error(errorResult.message || 'Failed to add the fine.');
+      }
+
+      // Assuming the API returns the full, updated student payment document
+      const updatedData = await response.json();
+      setStudentData(updatedData); // Update the state with the fresh data from the server
+
+      closeAddFineModal();
+    } catch (error) {
+      console.error("Error adding fine:", error);
+      alert(`Error: ${error.message}`); // Display error to the user in a real app with a toast/notification
+    } finally {
+      setProcessingAddFine(false);
+    }
+  };
+
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSortBy('default');
@@ -153,7 +178,7 @@ const FinanceFeeCollection = () => {
       const query = tableFilter.toLowerCase();
       if (!query) return true;
       if (activeTab === 'semesters') return item.semester.toLowerCase().includes(query);
-      if (activeTab === 'fines') return item.reason.toLowerCase().includes(query);
+      if (activeTab === 'fines') return item.reason.toLowerCase().includes(query) || item.finedBy.toLowerCase().includes(query);
       if (activeTab === 'history') return item.description.toLowerCase().includes(query) || item.receiptNo.toLowerCase().includes(query) || item.method.toLowerCase().includes(query);
       return true;
     });
@@ -167,6 +192,9 @@ const FinanceFeeCollection = () => {
         return (a.semester || "").localeCompare(b.semester || "");
       }
       if (activeTab === 'fines') {
+        const getPending = f => f.amount - f.paidAmount;
+        if (sortBy === 'pending-desc') return getPending(b) - getPending(a);
+        if (sortBy === 'pending-asc') return getPending(a) - getPending(b);
         if (sortBy === 'amount-desc') return (b.amount || 0) - (a.amount || 0);
         if (sortBy === 'amount-asc') return (a.amount || 0) - (b.amount || 0);
         return new Date(b.createdAt) - new Date(a.createdAt);
@@ -189,10 +217,10 @@ const FinanceFeeCollection = () => {
   const { pagedData, totalCount, sortedData } = processedData;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
 
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-8">
+        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm mb-8">
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center gap-4">
             <div className="relative w-full sm:flex-grow">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -218,9 +246,9 @@ const FinanceFeeCollection = () => {
           <div>
             <div className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-                <h2 className="text-xl font-bold text-gray-800">{studentData.student.name}</h2>
+                <h2 className="text-xl font-bold text-gray-800">{studentData.student?.name || 'Student Details'}</h2>
                 <p className="text-sm text-gray-500">Reg No: {studentData.registrationNumber}</p>
-                <p className="text-sm text-gray-500">{studentData.student.course}</p>
+                <p className="text-sm text-gray-500">{studentData.student?.course || 'Course info not available'}</p>
               </div>
               <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard title="Overall Collected" amount={studentData.stats.overallCollected} color="text-green-600" />
@@ -243,9 +271,13 @@ const FinanceFeeCollection = () => {
                 filterValue={tableFilter}
                 onFilterChange={setTableFilter}
                 filterPlaceholder={
-                  activeTab === 'fines' ? 'Search by reason...' :
+                  activeTab === 'fines' ? 'Search by reason, department...' :
                     activeTab === 'history' ? 'Search description, receipt...' : 'Search...'
                 }
+                activeTab={activeTab}
+                onAddFineClick={openAddFineModal}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
               >
                 {activeTab === 'semesters' && <SemesterFeeTable semesters={pagedData} onPay={openPaymentModal} formatCurrency={formatCurrency} currentPage={currentPage} rowsPerPage={rowsPerPage} />}
                 {activeTab === 'fines' && <FinesTable fines={pagedData} onPay={openPaymentModal} formatCurrency={formatCurrency} formatDate={formatDate} currentPage={currentPage} rowsPerPage={rowsPerPage} />}
@@ -275,6 +307,7 @@ const FinanceFeeCollection = () => {
       </div>
 
       {showPaymentModal && <PaymentModal target={paymentTarget} amount={paymentAmount} method={paymentMethod} onAmountChange={setPaymentAmount} onMethodChange={setPaymentMethod} onClose={closePaymentModal} onConfirm={handleProcessPayment} processing={processingPayment} formatCurrency={formatCurrency} />}
+      {showAddFineModal && <AddFineModal isOpen={showAddFineModal} onClose={closeAddFineModal} onConfirm={handleAddFine} processing={processingAddFine} />}
     </div>
   );
 };
@@ -294,20 +327,65 @@ const TabButton = ({ label, active, onClick }) => (
   </button>
 );
 
-const TableView = ({ filterValue, onFilterChange, filterPlaceholder, children }) => (
+const sortOptions = {
+  semesters: [
+    { value: 'default', label: 'Default' },
+    { value: 'pending-desc', label: 'Pending (High to Low)' },
+    { value: 'pending-asc', label: 'Pending (Low to High)' },
+  ],
+  fines: [
+    { value: 'default', label: 'Newest First' },
+    { value: 'pending-desc', label: 'Pending (High to Low)' },
+    { value: 'pending-asc', label: 'Pending (Low to High)' },
+    { value: 'amount-desc', label: 'Amount (High to Low)' },
+    { value: 'amount-asc', label: 'Amount (Low to High)' },
+  ],
+  history: [
+    { value: 'default', label: 'Newest First' },
+    { value: 'date-asc', label: 'Oldest First' },
+    { value: 'amount-desc', label: 'Amount (High to Low)' },
+    { value: 'amount-asc', label: 'Amount (Low to High)' },
+  ]
+};
+
+const TableView = ({ filterValue, onFilterChange, filterPlaceholder, children, activeTab, onAddFineClick, sortBy, onSortChange }) => (
   <div>
-    <div className="bg-white border-b border-gray-200 px-4 py-3">
-      <div className="relative w-full sm:w-auto sm:flex-grow max-w-xs">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input
-          type="text"
-          value={filterValue}
-          onChange={(e) => onFilterChange(e.target.value)}
-          placeholder={filterPlaceholder}
-          className="w-full pl-9 pr-8 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-        {filterValue && <button onClick={() => onFilterChange('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><X size={14} /></button>}
+    <div className="bg-white border-b border-gray-200 px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div className="flex items-center gap-4 flex-grow">
+        <div className="relative w-full sm:w-auto sm:flex-grow max-w-xs">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            value={filterValue}
+            onChange={(e) => onFilterChange(e.target.value)}
+            placeholder={filterPlaceholder}
+            className="w-full pl-9 pr-8 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+          {filterValue && <button onClick={() => onFilterChange('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><X size={14} /></button>}
+        </div>
+        <div className="flex items-center gap-2">
+          <label htmlFor="sort-by" className="text-sm font-medium text-gray-600">Sort by:</label>
+          <select
+            id="sort-by"
+            value={sortBy}
+            onChange={(e) => onSortChange(e.target.value)}
+            className="px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            {sortOptions[activeTab].map(option => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
+      {activeTab === 'fines' && (
+        <button
+          onClick={onAddFineClick}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+        >
+          <PlusCircle size={16} />
+          Add Fine
+        </button>
+      )}
     </div>
     <div className="w-full overflow-x-auto">
       <div className="inline-block min-w-full align-middle">{children}</div>
@@ -327,8 +405,8 @@ const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSiz
       return { label: 'Total Pending:', value: formatCurrency(totalPending) };
     }
     if (activeTab === 'fines') {
-      const totalAmount = sortedData.reduce((sum, f) => sum + f.amount, 0);
-      return { label: 'Total Fine Amount:', value: formatCurrency(totalAmount) };
+      const totalPending = sortedData.reduce((sum, f) => sum + (f.amount - f.paidAmount), 0);
+      return { label: 'Total Pending Fines:', value: formatCurrency(totalPending) };
     }
     if (activeTab === 'history') {
       const totalPaid = sortedData.reduce((sum, h) => sum + h.amount, 0);
@@ -360,11 +438,11 @@ const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSiz
         {totalPages > 1 && (
           <div className="flex items-center gap-2">
             <span>Page {currentPage} of {totalPages}</span>
-            <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="px-2 py-1 rounded-md border bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
-              Previous
+            <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="p-1.5 rounded-md border bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+              <ChevronLeft size={16} />
             </button>
-            <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-2 py-1 rounded-md border bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
-              Next
+            <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="p-1.5 rounded-md border bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+              <ChevronRight size={16} />
             </button>
           </div>
         )}
@@ -402,7 +480,7 @@ const SemesterFeeTable = ({ semesters, onPay, formatCurrency, currentPage, rowsP
               {pending > 0 ? (
                 <button onClick={() => onPay('semester', s)} className="text-blue-600 hover:text-blue-800 font-semibold text-xs">Collect Fee</button>
               ) : (
-                <span className="text-gray-500 text-xs font-bold">Cleared</span>
+                <span className="text-green-700 text-xs font-bold">Cleared</span>
               )}
             </td>
           </tr>
@@ -413,13 +491,16 @@ const SemesterFeeTable = ({ semesters, onPay, formatCurrency, currentPage, rowsP
 );
 
 const FinesTable = ({ fines, onPay, formatCurrency, formatDate, currentPage, rowsPerPage }) => (
-  <table className="w-full min-w-[700px]">
+  <table className="w-full min-w-[800px]">
     <thead className="bg-gray-100 text-left text-xs text-gray-500 uppercase tracking-wider">
       <tr>
         <th className="p-3 font-semibold w-12 text-center">#</th>
         <th className="p-3 font-semibold">Date</th>
         <th className="p-3 font-semibold">Reason</th>
-        <th className="p-3 font-semibold text-right">Amount</th>
+        <th className="p-3 font-semibold">Fined By</th>
+        <th className="p-3 font-semibold text-right">Total Amount</th>
+        <th className="p-3 font-semibold text-right">Paid Amount</th>
+        <th className="p-3 font-semibold text-right">Pending</th>
         <th className="p-3 font-semibold text-center">Status</th>
         <th className="p-3 font-semibold text-center">Action</th>
       </tr>
@@ -427,17 +508,30 @@ const FinesTable = ({ fines, onPay, formatCurrency, formatDate, currentPage, row
     <tbody className="divide-y divide-gray-200 text-sm">
       {fines.map((f, index) => {
         const itemNumber = (currentPage - 1) * rowsPerPage + index + 1;
+        const pending = f.amount - f.paidAmount;
+        let statusLabel = 'Unpaid';
+        let statusColor = 'bg-red-100 text-red-800';
+        if (pending <= 0) {
+          statusLabel = 'Paid';
+          statusColor = 'bg-green-100 text-green-800';
+        } else if (f.paidAmount > 0) {
+          statusLabel = 'Partially Paid';
+          statusColor = 'bg-yellow-100 text-yellow-800';
+        }
         return (
           <tr key={f._id} className="hover:bg-gray-50">
             <td className="p-3 text-center text-gray-500 font-mono">{String(itemNumber).padStart(2, '0')}</td>
             <td className="p-3 text-gray-600">{formatDate(f.createdAt)}</td>
             <td className="p-3 text-gray-800 font-medium">{f.reason}</td>
+            <td className="p-3 text-gray-600">{f.finedBy}</td>
             <td className="p-3 text-right text-gray-800 font-semibold font-mono">{formatCurrency(f.amount)}</td>
+            <td className="p-3 text-right text-green-600 font-mono">{formatCurrency(f.paidAmount)}</td>
+            <td className="p-3 text-right text-red-600 font-semibold font-mono">{formatCurrency(pending)}</td>
             <td className="p-3 text-center">
-              <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${f.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>{f.status}</span>
+              <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full capitalize ${statusColor}`}>{statusLabel}</span>
             </td>
             <td className="p-3 text-center">
-              {f.status !== 'paid' ? (
+              {pending > 0 ? (
                 <button onClick={() => onPay('fine', f)} className="text-blue-600 hover:text-blue-800 font-semibold text-xs">Collect Fee</button>
               ) : '--'}
             </td>
@@ -471,8 +565,8 @@ const PaymentHistoryTable = ({ history, formatCurrency, formatDate, currentPage,
             <td className="p-3 text-gray-800 font-medium">{h.description}</td>
             <td className="p-3 text-center">
               <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full capitalize ${h.method === 'online' ? 'bg-blue-100 text-blue-800' :
-                  h.method === 'cash' ? 'bg-green-100 text-green-800' :
-                    'bg-yellow-100 text-yellow-800'
+                h.method === 'cash' ? 'bg-green-100 text-green-800' :
+                  'bg-yellow-100 text-yellow-800'
                 }`}>{h.method}</span>
             </td>
             <td className="p-3 text-gray-600 font-mono">{h.receiptNo}</td>
@@ -534,6 +628,56 @@ const PaymentModal = ({ target, amount, method, onAmountChange, onMethodChange, 
     </div>
   );
 };
+
+const AddFineModal = ({ isOpen, onClose, onConfirm, processing }) => {
+  const [reason, setReason] = useState('');
+  const [amount, setAmount] = useState('');
+  const [formError, setFormError] = useState('');
+
+  const handleSubmit = () => {
+    if (!reason || !amount || isNaN(amount) || Number(amount) <= 0) {
+      setFormError('Please fill all fields with valid data.');
+      return;
+    }
+    setFormError('');
+    onConfirm({ reason, amount: Number(amount) });
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
+        <div className="p-4 border-b flex items-center justify-between">
+          <h2 className="text-lg font-bold text-gray-800">Add New Fine</h2>
+          <button onClick={onClose} disabled={processing} className="text-gray-400 hover:text-gray-600 disabled:opacity-50"><X size={20} /></button>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Reason *</label>
+            <input type="text" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g., Late submission of assignment" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Amount *</label>
+            <div className="relative">
+              <IndianRupee size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="e.g., 500" className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg" />
+            </div>
+          </div>
+          {formError && <p className="text-red-600 text-sm">{formError}</p>}
+        </div>
+        <div className="p-4 bg-gray-50 border-t flex justify-end gap-3">
+          <button onClick={onClose} disabled={processing} className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 disabled:opacity-50">Cancel</button>
+          <button onClick={handleSubmit} disabled={processing} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 flex items-center">
+            {processing ? <Loader2 size={16} className="animate-spin mr-2" /> : <PlusCircle size={16} className="mr-2" />}
+            {processing ? 'Adding...' : 'Add Fine'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 export default FinanceFeeCollection;
 

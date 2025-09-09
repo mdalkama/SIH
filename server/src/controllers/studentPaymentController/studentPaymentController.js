@@ -2,17 +2,32 @@ import StudentPayment from "../../models/studentPaymentModal.js";
 import mongoose from "mongoose";
 import Student from "../../models/studentModel.js";
 
-// 🔹 Add Fine
+
 export const addFine = async (req, res) => {
     try {
+        // Log 1: See the user object as soon as the function starts.
+        console.log("Received req.user object:", req.user);
+
         const { regNo } = req.params;
-        const { reason, finedBy, role, amount, studentId } = req.body;
+        const { reason, amount, studentId } = req.body;
+
+        if (!req.user || !req.user.name || !req.user.role) {
+            return res.status(401).json({ message: "Authentication error: User name and role not found in request." });
+        }
+        const { name: finedByName, role: finedByRole } = req.user;
+
+        // Add an explicit check on the variable after destructuring
+        if (typeof finedByName === 'undefined') {
+            console.error("Critical issue: 'finedByName' became undefined immediately after destructuring from req.user.");
+            return res.status(500).json({ message: "Internal server error: Could not process user identity." });
+        }
 
         let payment = await StudentPayment.findOne({ registrationNumber: regNo });
 
-        // Create new record if not exists
         if (!payment) {
-            if (!studentId) return res.status(400).json({ message: "studentId required for new record" });
+            if (!studentId) {
+                return res.status(400).json({ message: "studentId is required to create a new payment record." });
+            }
 
             payment = new StudentPayment({
                 registrationNumber: regNo,
@@ -23,22 +38,39 @@ export const addFine = async (req, res) => {
             });
         }
 
-        payment.fines.push({
+        const newFine = {
             reason,
-            finedBy,
-            role,
             amount,
+            finedBy: finedByName,
+            role: finedByRole,
             paidAmount: 0,
             status: "unpaid",
-        });
+        };
+
+        // Log 2: This is the most important log. It shows exactly what is being pushed to the array.
+        console.log("Attempting to push the following fine object:", newFine);
+
+        payment.fines.push(newFine);
 
         await payment.save();
-        res.json({ message: "Fine added successfully", fines: payment.fines });
+
+        res.status(201).json({ message: "Fine added successfully", fines: payment.fines });
+
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: err.message });
+        // Log 3: Log the full error object for better insight.
+        console.error("Error occurred in addFine controller:", err);
+
+        if (err.name === 'ValidationError') {
+            return res.status(400).json({ error: err.message });
+        }
+
+        res.status(500).json({ error: "An internal server error occurred." });
     }
 };
+
+
+
+
 
 // 🔹 Pay Fee (Fine or Semester)
 export const payFee = async (req, res) => {
