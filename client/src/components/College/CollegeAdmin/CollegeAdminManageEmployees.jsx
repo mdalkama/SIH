@@ -283,8 +283,15 @@ const CollegeAdminManageEmployees = () => {
     }), [employees]);
 
     return (
-        <div className="min-h-screen font-sans">
-            <div className="max-w-7xl mx-auto">
+        <div className="min-h-screen font-sans" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            <div className="max-w-7xl mx-auto p-6">
+                {/* Page Header */}
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-blue-900 mb-2">Employee Management</h1>
+                    <p className="text-gray-600">Manage staff and employees for your college</p>
+                </div>
+
+                {/* Stats Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
                     <StatCard icon={<Users size={20} className="text-blue-600" />} title="Total Staff" value={stats.total} />
                     <StatCard icon={<UserCheck size={20} className="text-green-500" />} title="Active" value={stats.active} />

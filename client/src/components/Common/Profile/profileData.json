@@ -1,0 +1,215 @@
+{
+  "student": {
+    "_id": "6547a8b9c3d4e5f678901234",
+    "name": "Aarav Kumar",
+    "email": "aarav.kumar@university.edu",
+    "phone": "+91 9876543210",
+    "alternatePhone": "+91 9765432109",
+    "registrationNumber": "STU-24-01983",
+    "rollNumber": "2024CSE001",
+    "collegeCode": "CSE001",
+    "semester": 3,
+    "yearOfAdmission": 2024,
+    "yearOfPassing": 2028,
+    "address": {
+      "street": "21 MG Road",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "zipCode": "560001",
+      "country": "India"
+    },
+    "personalDetails": {
+      "fatherName": "Rajesh Kumar",
+      "motherName": "Priya Kumar",
+      "guardianName": "Rajesh Kumar",
+      "parentsNumber": "+91 9876543210",
+      "dob": "2005-07-15",
+      "gender": "male",
+      "aadharNumber": "1234 5678 9012",
+      "abcNumber": "ABC123456789",
+      "caste": "General",
+      "religion": "Hindu",
+      "category": "General",
+      "bloodGroup": "B+",
+      "nationality": "Indian"
+    },
+    "academicDetails": {
+      "course": "B.Tech Computer Science",
+      "department": "Computer Science & Engineering",
+      "section": "A",
+      "currentCGPA": 8.6,
+      "attendance": "92%",
+      "currentSubjects": [
+        {
+          "code": "CS301",
+          "name": "Data Structures & Algorithms",
+          "credits": 4
+        },
+        {
+          "code": "CS302",
+          "name": "Database Management Systems",
+          "credits": 3
+        },
+        {
+          "code": "CS303",
+          "name": "Computer Networks",
+          "credits": 3
+        },
+        {
+          "code": "CS304",
+          "name": "Operating Systems",
+          "credits": 4
+        }
+      ],
+      "pastResults": [
+        {
+          "semester": 1,
+          "cgpa": 8.2,
+          "status": "Pass"
+        },
+        {
+          "semester": 2,
+          "cgpa": 8.4,
+          "status": "Pass"
+        }
+      ]
+    },
+    "documents": [
+      {
+        "name": "Admission Letter",
+        "type": "pdf",
+        "uploaded": "2024-06-15",
+        "status": "verified"
+      },
+      {
+        "name": "10th Marksheet",
+        "type": "pdf",
+        "uploaded": "2024-06-15",
+        "status": "verified"
+      },
+      {
+        "name": "12th Marksheet",
+        "type": "pdf",
+        "uploaded": "2024-06-15",
+        "status": "verified"
+      },
+      {
+        "name": "Aadhar Card",
+        "type": "pdf",
+        "uploaded": "2024-06-15",
+        "status": "verified"
+      }
+    ],
+    "emergencyContact": {
+      "name": "Rajesh Kumar (Father)",
+      "phone": "+91 9876543210",
+      "relation": "Father"
+    },
+    "hostelDetails": {
+      "allocated": true,
+      "hostelName": "Hostel Block A",
+      "roomNumber": "A-204",
+      "floor": 2
+    },
+    "libraryDetails": {
+      "booksIssued": 2,
+      "maxBooks": 5,
+      "fine": 0
+    },
+    "status": "active",
+    "profilePictureLink": "/api/placeholder/150/150"
+  },
+  "staff": {
+    "_id": "6547a8b9c3d4e5f678905678",
+    "staffId": "EMP-22-00741",
+    "employeeCode": "FAC001",
+    "name": "Dr. Ankita Sharma",
+    "email": "ankita.sharma@university.edu",
+    "phone": "+91 9123456789",
+    "designation": "Assistant Professor",
+    "department": "Computer Science & Engineering",
+    "role": "CollegeFaculty",
+    "address": {
+      "street": "42 Brigade Road",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "zipCode": "560025",
+      "country": "India"
+    },
+    "personalDetails": {
+      "dob": "1990-03-22",
+      "gender": "female",
+      "nationality": "Indian",
+      "bloodGroup": "A+",
+      "maritalStatus": "Married",
+      "aadhaarNo": "9876 5432 1098",
+      "panNo": "ABCDE1234F"
+    },
+    "employmentDetails": {
+      "joiningDate": "2022-07-15",
+      "employmentType": "permanent",
+      "experience": 6,
+      "salary": 85000,
+      "qualifications": "Ph.D. in Computer Science, M.Tech CSE, B.Tech CSE",
+      "previousExperience": "2 years at TCS, 3 years at Infosys"
+    },
+    "academicDetails": {
+      "subjects": [
+        {
+          "code": "CS301",
+          "name": "Data Structures & Algorithms"
+        },
+        {
+          "code": "CS401",
+          "name": "Machine Learning"
+        },
+        {
+          "code": "CS501",
+          "name": "Artificial Intelligence"
+        }
+      ],
+      "researchArea": "Machine Learning, AI, Data Science",
+      "publications": 12,
+      "conferences": 8
+    },
+    "leaves": {
+      "total": 30,
+      "taken": 8,
+      "remaining": 22
+    },
+    "documents": [
+      {
+        "name": "Joining Letter",
+        "type": "pdf",
+        "uploaded": "2022-07-15",
+        "status": "verified"
+      },
+      {
+        "name": "Ph.D Certificate",
+        "type": "pdf",
+        "uploaded": "2022-07-15",
+        "status": "verified"
+      },
+      {
+        "name": "Experience Certificate",
+        "type": "pdf",
+        "uploaded": "2022-07-15",
+        "status": "verified"
+      },
+      {
+        "name": "PAN Card",
+        "type": "pdf",
+        "uploaded": "2022-07-15",
+        "status": "verified"
+      }
+    ],
+    "emergencyContact": {
+      "name": "Rahul Sharma (Spouse)",
+      "phone": "+91 9234567890",
+      "relation": "Spouse"
+    },
+    "status": "active",
+    "profilePic": "/api/placeholder/150/150",
+    "lastLogin": "2024-01-15T10:30:00Z"
+  }
+}
