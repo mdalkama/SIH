@@ -16,7 +16,7 @@ import studentPaymentRoute from "../routes/studentPaymentRoute.js";
 import collegeAdmissionRoute from "./admissionRoutes/collegeAdmissionRoute.js";
 import universityAdmissionRoute from "./admissionRoutes/universityAdmissionRoutes.js";
 import applicationRoute from "./admissionRoutes/applicationRoute.js";
-
+import manageCollegeRoute from "./manageCollegeRoute.js";
 
 
 const router = Router();
@@ -35,6 +35,7 @@ router.use("/payment", role([...staffRoles]), studentPaymentRoute)
 router.use("/admission", applicationRoute)
 router.use("/admission-university", universityAdmissionRoute)
 router.use("/admission-college", collegeAdmissionRoute)
+router.use("/manage-college", manageCollegeRoute)
 router.get("/my-profile", role(['student', ...staffRoles]), (req, res) => {
     try {
         if(req.user.role === 'student'){
