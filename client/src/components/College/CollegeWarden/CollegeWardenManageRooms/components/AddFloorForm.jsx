@@ -72,13 +72,20 @@ const AddFloorForm = ({ hostels }) => {
             setIsFetchingDetails(true);
             try {
                 const response = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}`, { credentials: 'include' });
+                
+                // YAHAN FIX KIYA GAYA HAI: Server-side errors ko theek se handle karna
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to fetch details');
+                }
+
                 const data = await response.json();
                 if (data.success) {
                     setDetailedHostelData(data.data);
                 }
             } catch (error) {
                 console.error("Failed to fetch hostel details", error);
-                setMessage({ type: 'error', text: 'Could not fetch hostel details.' });
+                setMessage({ type: 'error', text: error.message });
             } finally {
                 setIsFetchingDetails(false);
             }
@@ -128,7 +135,6 @@ const AddFloorForm = ({ hostels }) => {
         setMessage('');
     };
     
-    // YAHAN CHANGE HUA HAI: Ab search term khali hone par bhi saare hostels dikhenge
     const filteredHostels = hostels ? hostels.filter(h => 
         h.name.toLowerCase().includes(searchTerm.toLowerCase())
     ) : [];
@@ -151,9 +157,11 @@ const AddFloorForm = ({ hostels }) => {
             });
             const data = await response.json();
 
-            if (data.success) {
+            // YAHAN BHI FIX KIYA GAYA HAI
+            if (response.ok) {
                 setMessage({ type: 'success', text: `Floor ${floorNumber} added successfully to ${selectedHostel.name}!` });
                 setFloorNumber(''); 
+                
                 const updatedResponse = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}`, { credentials: 'include' });
                 const updatedData = await updatedResponse.json();
                 if (updatedData.success) {
@@ -174,7 +182,8 @@ const AddFloorForm = ({ hostels }) => {
     }
 
     return (
-        <div className="max-w-md mx-auto p-4 sm:p-6 bg-white rounded-xl shadow-lg border border-gray-200">
+        // YAHAN FIX KIYA GAYA HAI: Aapka container jaisa tha, waisa hi rakha gaya hai
+        <div className="">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Floor Management Panel</h2>
             
             <form onSubmit={handleSubmit} className="space-y-6">

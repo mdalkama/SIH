@@ -60,11 +60,7 @@ const AddBedForm = ({ hostels }) => {
         const fetchFloorsForHostel = async () => {
             setIsFetchingFloors(true);
             try {
-                const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors`, { 
-                    method: "GET",
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" }
-                });
+                const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors`, { credentials: "include" });
                 if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to fetch'); }
                 const data = await res.json(); 
                 setFloors(data.success ? data.data : []);
@@ -79,11 +75,7 @@ const AddBedForm = ({ hostels }) => {
         const fetchRoomsForFloor = async () => {
             setIsFetchingRooms(true);
             try {
-                const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}/rooms`, { 
-                    method: "GET",
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" }
-                });
+                const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}/rooms`, { credentials: "include" });
                 if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to fetch'); }
                 const data = await res.json(); 
                 setRooms(data.success ? data.data : []);
@@ -98,11 +90,7 @@ const AddBedForm = ({ hostels }) => {
         const fetchRoomDetails = async () => {
             setIsFetchingDetails(true);
             try {
-                const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}/rooms/${selectedRoom._id}`, { 
-                    method: "GET",
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" }
-                });
+                const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}/rooms/${selectedRoom._id}`, { credentials: "include" });
                 if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to fetch'); }
                 const data = await res.json(); 
                 if(data.success) setDetailedRoomData(data.data);
@@ -148,11 +136,7 @@ const AddBedForm = ({ hostels }) => {
             if (res.ok) {
                 setMessage({ type: 'success', text: `Bed ${bedNumber} added successfully!` });
                 setBedNumber('');
-                const updatedRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}/rooms/${selectedRoom._id}`, { 
-                    method: "GET",
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" }
-                });
+                const updatedRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}/rooms/${selectedRoom._id}`, { credentials: "include" });
                 const updatedData = await updatedRes.json(); if(updatedData.success) setDetailedRoomData(updatedData.data);
             } else {
                 setMessage({ type: 'error', text: data.error || "Failed to add bed" });
@@ -161,10 +145,11 @@ const AddBedForm = ({ hostels }) => {
         finally { setIsSubmitting(false); }
     };
     
-    if (!hostels) { return <div className="max-w-xl mx-auto p-6 text-center"><Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto" /><p className="mt-2 text-gray-500">Loading initial data...</p></div>; }
+    if (!hostels) { return <div className="text-center"><Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto" /><p className="mt-2 text-gray-500">Loading initial data...</p></div>; }
 
     return (
-        <div className="max-w-xl mx-auto p-4 sm:p-6 bg-white rounded-xl shadow-lg border border-gray-200">
+        // YAHAN FIX KIYA GAYA HAI: Outer container se styling hata di gayi hai
+        <div className="">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Add a New Bed</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
                 <fieldset className="space-y-2">
@@ -173,7 +158,7 @@ const AddBedForm = ({ hostels }) => {
                         <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onFocus={() => setIsDropdownVisible(true)} placeholder="Search for a hostel..." className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
                         {isDropdownVisible && (<ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">{hostels.filter(h => h.name.toLowerCase().includes(searchTerm.toLowerCase())).map(h => (<li key={h._id} onClick={() => {setSelectedHostel(h); setSearchTerm(''); setIsDropdownVisible(false);}} className="px-4 py-2 cursor-pointer hover:bg-blue-50">{h.name}</li>))}</ul>)}
                     </div>
-                    {selectedHostel && (<div className="mt-2 p-3 bg-blue-50 border border-gray-300 rounded-lg flex items-center justify-between"><p className="font-bold text-blue-800 flex items-center"><Building className="w-4 h-4 mr-2" />{selectedHostel.name}</p><button type="button" onClick={resetSelections} className="p-1.5 text-blue-600 hover:text-red-700 hover:bg-red-100 rounded-full" title="Change Hostel"><X className="w-4 h-4" /></button></div>)}
+                    {selectedHostel && (<div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between"><p className="font-bold text-blue-800 flex items-center"><Building className="w-4 h-4 mr-2" />{selectedHostel.name}</p><button type="button" onClick={resetSelections} className="p-1.5 text-blue-600 hover:text-red-700 hover:bg-red-100 rounded-full" title="Change Hostel"><X className="w-4 h-4" /></button></div>)}
                 </fieldset>
 
                 <fieldset className="space-y-2" disabled={!selectedHostel}>

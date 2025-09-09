@@ -10,7 +10,8 @@ import {
     addBed, getBeds, getBedById, updateBed, deleteBed,
     // Occupant
     allocateBed, vacateBed, shiftStudent,
-    findStudentForShift
+    findStudentForShift,
+    findStudentForAllocation
 } from "../controllers/hostelController/hostelController.js";
 
 const router = express.Router();
@@ -50,6 +51,8 @@ router.delete("/:hostelId/floors/:floorId/rooms/:roomId/beds/:bedId", deleteBed)
 
 // ---------------- Occupant (Student Allocation) ----------------
 router.post("/:hostelId/floors/:floorId/rooms/:roomId/beds/:bedId/allocate", allocateBed);  // Allocate student
+router.get("/student/find/:regNo", findStudentForAllocation);
+
 router.post("/:hostelId/floors/:floorId/rooms/:roomId/beds/:bedId/vacate", vacateBed);      // Vacate bed
 
 // ---------------- Shift Student ----------------
