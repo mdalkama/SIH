@@ -229,7 +229,7 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
         return (
             <div>
                 <div className="flex items-center mb-6">
-                    <button onClick={onBack} className="flex items-center text-blue-600 hover:text-blue-700 mr-4">
+                    <button onClick={onBack} className="flex items-center px-4 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200 mr-6 font-medium">
                         <ArrowLeft className="w-4 h-4 mr-1" />
                         Back
                     </button>
@@ -283,13 +283,13 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
     
     if (selectedHostel && selectedFloor) {
         return (
-            <div className="p-6 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+            <div className=" bg-gradient-to-br min-h-screen">
                 {/* Header Section */}
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center">
                         <button
                             onClick={onBack}
-                            className="flex items-center px-4 py-2 text-blue-600 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg transition-all duration-200 hover:shadow-sm mr-6"
+                            className="flex items-center px-4 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200 mr-6 font-medium"
                         >
                             <ArrowLeft className="w-4 h-4 mr-2" />
                             Back to Floors
@@ -439,7 +439,7 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
 
     if (selectedHostel) {
         return (
-            <div className="min-h-screen bg-gray-50 p-6">
+            <div className="min-h-screen">
                 {/* Header Section */}
                 <div className="max-w-7xl mx-auto">
                     <div className="flex items-center justify-between mb-8">

@@ -9,7 +9,7 @@ const fineSchema = new Schema({
     status: { type: String, enum: ["paid", "unpaid"], default: "unpaid" },
     amount: { type: Number, required: true },
     paidAmount: { type: Number, default: 0 },
-});
+}, { timestamps: true });
 
 // Semester schema
 const semesterSchema = new Schema({
@@ -18,7 +18,7 @@ const semesterSchema = new Schema({
     examFee: { type: Number, required: true },
     otherFee: { type: Number, default: 0 },
     paid: { type: Number, default: 0 },
-});
+}, { timestamps: true });
 
 // Payment history schema
 const historySchema = new Schema({
@@ -29,7 +29,7 @@ const historySchema = new Schema({
     method: { type: String, enum: ["cash", "online", "cheque"], required: true },
     receiptNo: { type: String, required: true },
     status: { type: String, enum: ["paid", "failed", "pending"], default: "paid" },
-});
+}, { timestamps: true });
 
 // Stats schema (auto-calculated)
 const statsSchema = new Schema({
