@@ -2,7 +2,7 @@ import Hostel from "../../models/hostelSchema.js";
 import mongoose from "mongoose";
 import Staff from "../../models/staffModel.js";
 import Student from "../../models/studentModel.js";
-import StudentHostel from "../../models/studntHostelModal.js";
+import StudentHostel from "../../models/studentHostelModal.js";
 
 
 
@@ -937,3 +937,61 @@ export const shiftStudent = async (req, res) => {
     }
 };
 
+export const findStudentForShift = async (req, res) => {
+  try {
+    const { regNo } = req.params;
+
+    // 1. Student ko registration number se dhoondho
+    const student = await Student.findOne({ registrationNumber: regNo }).lean();
+    if (!student) {
+      return res.status(404).json({ error: "Student not found with this registration number." });
+    }
+
+    // 2. StudentHostel se uski current location ki IDs nikaalo
+    // SIRF hostel ko populate karein, kyunki sirf wahi ek alag model hai
+    const studentHostelInfo = await StudentHostel.findOne({ occupant: student._id })
+      .populate('currentHostel.hostel', 'name') // Yeh theek hai
+      .lean();
+
+    // Check karo ki student allocated hai ya nahi
+    if (!studentHostelInfo || !studentHostelInfo.currentHostel) {
+        return res.status(404).json({ error: "This student is not allocated to any bed." });
+    }
+    
+    const { hostel, floor: floorId, room: roomId, bed: bedId } = studentHostelInfo.currentHostel;
+
+    // 3. Poora Hostel document fetch karo taaki hum uske andar se details nikaal sakein
+    const fullHostelDoc = await Hostel.findById(hostel._id);
+    if (!fullHostelDoc) {
+        return res.status(404).json({ error: "Associated hostel data not found for the student." });
+    }
+
+    // 4. Mongoose .id() method se Hostel document ke andar floor, room, aur bed ko dhoondho
+    const floor = fullHostelDoc.floors.id(floorId);
+    const room = floor ? floor.rooms.id(roomId) : null;
+    const bed = room ? room.beds.id(bedId) : null;
+
+    if (!floor || !room || !bed) {
+        return res.status(404).json({ error: "Could not locate the specific floor, room, or bed for this student. Data might be inconsistent." });
+    }
+
+    // 5. Ab sab data combine karke response bhejo
+    const responseData = {
+      _id: student._id,
+      name: student.name,
+      registrationNumber: student.registrationNumber,
+      currentLocation: {
+        hostelName: hostel.name,           // Populated data se
+        floorNumber: floor.floorNumber,    // Traversed data se
+        roomNumber: room.roomNumber,       // Traversed data se
+        bedNumber: bed.bedNumber           // Traversed data se
+      },
+    };
+    
+    res.json({ success: true, data: responseData });
+
+  } catch (error) {
+    console.error("Error finding student for shift:", error);
+    res.status(500).json({ error: "Server error while finding student." });
+  }
+};
