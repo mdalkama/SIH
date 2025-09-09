@@ -27,7 +27,7 @@ router.use("/course",role(['UniversityAdmin']), courseRoute)
 router.use("/subject", role(['UniversityAdmin']), subjectRoute)
 router.use("/add-university-Staff", universityManageStaffRoute)
 router.use("/library", role(['CollegeLibrarian']), libraryRoute)
-router.use("/payment", studentPaymentRoute)
+router.use("/payment", role([...staffRoles]), studentPaymentRoute)
 router.get("/my-profile", role(['student', ...staffRoles]), (req, res) => {
     try {
         if(req.user.role === 'student'){

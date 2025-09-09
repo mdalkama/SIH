@@ -1,64 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { Search, IndianRupee, Landmark, X, Download, Loader2, Book, ChevronLeft, ChevronRight, Edit, PlusCircle } from 'lucide-react';
-
-// --- Mock Data (can be used for testing or as a fallback) ---
-const mockStudentPaymentData = {
-  _id: "60c72b2f9b1d8c001f8e4c6a",
-  registrationNumber: "STU2024001",
-  student: {
-    _id: "60c72b2f9b1d8c001f8e4c6b",
-    name: "Aisha Sharma",
-    course: "B.Tech Computer Science",
-    currentSemester: "Semester 4",
-  },
-  fines: [
-    { _id: "fine01", reason: "Late library book return", finedBy: "Library Dept", role: "Librarian", status: "unpaid", amount: 250, paidAmount: 0, createdAt: "2024-04-15T10:00:00Z" },
-    { _id: "fine02", reason: "Lab equipment damage", finedBy: "CSE Dept", role: "HOD", status: "paid", amount: 1500, paidAmount: 1500, createdAt: "2024-02-20T09:00:00Z" },
-    { _id: "fine03", reason: "ID Card Lost", finedBy: "Admin Office", role: "Clerk", status: "unpaid", amount: 500, paidAmount: 0, createdAt: "2024-08-01T11:00:00Z" },
-    { _id: "fine04", reason: "Disciplinary Action", finedBy: "Proctor Office", role: "Proctor", status: "paid", amount: 2000, paidAmount: 2000, createdAt: "2023-11-25T15:00:00Z" },
-    { _id: "fine05", reason: "Sports Equipment Damage", finedBy: "Sports Dept", role: "Coach", status: "unpaid", amount: 750, paidAmount: 250, createdAt: "2024-09-05T16:00:00Z" },
-    { _id: "fine06", reason: "Hostel Rule Violation", finedBy: "Hostel Warden", role: "Warden", status: "unpaid", amount: 1000, paidAmount: 0, createdAt: "2024-09-10T12:00:00Z" },
-    { _id: "fine07", reason: "Parking Violation", finedBy: "Security Office", role: "Security", status: "paid", amount: 300, paidAmount: 300, createdAt: "2024-07-20T18:00:00Z" },
-  ],
-  semesters: [
-    { _id: "sem01", semester: "Semester 1", tuitionFee: 60000, examFee: 2000, otherFee: 1500, paid: 63500 },
-    { _id: "sem02", semester: "Semester 2", tuitionFee: 60000, examFee: 2000, otherFee: 1500, paid: 63500 },
-    { _id: "sem03", semester: "Semester 3", tuitionFee: 65000, examFee: 2500, otherFee: 2000, paid: 50000 },
-    { _id: "sem04", semester: "Semester 4", tuitionFee: 65000, examFee: 2500, otherFee: 2000, paid: 0 },
-    { _id: "sem05", semester: "Semester 5", tuitionFee: 70000, examFee: 3000, otherFee: 2500, paid: 0 },
-    { _id: "sem06", semester: "Semester 6", tuitionFee: 70000, examFee: 3000, otherFee: 2500, paid: 0 },
-    { _id: "sem07", semester: "Semester 7", tuitionFee: 75000, examFee: 3500, otherFee: 3000, paid: 0 },
-    { _id: "sem08", semester: "Semester 8", tuitionFee: 75000, examFee: 3500, otherFee: 3000, paid: 0 },
-  ],
-  paymentHistory: [
-    { _id: "hist20", date: new Date("2024-09-10T12:05:00Z"), type: "Fine", description: "Parking Violation", amount: 300, method: "online", receiptNo: "RCPT2024F7", status: "paid" },
-    { _id: "hist19", date: new Date("2024-09-06T10:00:00Z"), type: "Fine", description: "Partial payment for Sports Equipment Damage", amount: 250, method: "cash", receiptNo: "RCPT2024F5P1", status: "paid" },
-    { _id: "hist18", date: new Date("2024-08-10T10:00:00Z"), type: "Semester Fee", description: "Partial payment for Semester 3", amount: 50000, method: "online", receiptNo: "RCPT2024S3P1", status: "paid" },
-    { _id: "hist17", date: new Date("2024-02-20T09:00:00Z"), type: "Fine", description: "Lab equipment damage", amount: 1500, method: "online", receiptNo: "RCPT2024F2", status: "paid" },
-    { _id: "hist16", date: new Date("2024-01-15T11:30:00Z"), type: "Semester Fee", description: "Full payment for Semester 2", amount: 63500, method: "cheque", receiptNo: "RCPT2024S2F", status: "paid" },
-    { _id: "hist15", date: new Date("2023-11-25T15:10:00Z"), type: "Fine", description: "Disciplinary Action", amount: 2000, method: "online", receiptNo: "RCPT2023F4", status: "paid" },
-    { _id: "hist14", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F", status: "paid" },
-    { _id: "hist13", date: new Date("2023-02-10T10:00:00Z"), type: "Semester Fee", description: "Partial payment for Semester 2", amount: 30000, method: "online", receiptNo: "RCPT2023S2P2", status: "failed" },
-    { _id: "hist12", date: new Date("2023-01-20T11:00:00Z"), type: "Semester Fee", description: "Partial payment for Semester 2", amount: 33500, method: "cash", receiptNo: "RCPT2023S2P1", status: "paid" },
-    { _id: "hist11", date: new Date("2022-09-01T15:00:00Z"), type: "Fine", description: "Late submission of documents", amount: 100, method: "cash", receiptNo: "RCPT2022F1", status: "paid" },
-    { _id: "hist10", date: new Date("2022-08-15T12:30:00Z"), type: "Semester Fee", description: "Partial payment for Semester 1", amount: 40000, method: "online", receiptNo: "RCPT2022S1P2", status: "paid" },
-    { _id: "hist09", date: new Date("2022-08-01T09:00:00Z"), type: "Semester Fee", description: "Admission Fee (Part of Sem 1)", amount: 23500, method: "online", receiptNo: "RCPT2022S1P1", status: "paid" },
-    { _id: "hist08", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP1", status: "paid" },
-    { _id: "hist07", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP2", status: "paid" },
-    { _id: "hist06", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP3", status: "paid" },
-    { _id: "hist05", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP4", status: "paid" },
-    { _id: "hist04", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP5", status: "paid" },
-    { _id: "hist03", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP6", status: "paid" },
-    { _id: "hist02", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP7", status: "paid" },
-    { _id: "hist01", date: new Date("2023-08-05T14:00:00Z"), type: "Semester Fee", description: "Full payment for Semester 1", amount: 63500, method: "cash", receiptNo: "RCPT2023S1F-DUP8", status: "paid" },
-  ],
-  stats: {
-    totalFine: 6300, fineCollected: 4050, finePending: 2250, totalSemester: 580000,
-    semesterCollected: 177000, semesterPending: 403000, overallCollected: 181050, overallPending: 405250,
-  }
-};
+import {useUser} from '../../../context/UserContext'
 
 const FinanceFeeCollection = () => {
+  const {user}  = useUser();
   const [searchTerm, setSearchTerm] = useState('');
   const [studentData, setStudentData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -110,6 +55,7 @@ const FinanceFeeCollection = () => {
 
       const data = await response.json();
       setStudentData(data);
+      console.log("Fetched student data:", data);
 
     } catch (error) {
       console.error("Failed to fetch payment details:", error);
@@ -172,16 +118,16 @@ const FinanceFeeCollection = () => {
     try {
       // In a real app, you'd get this from user context/auth state
       const currentUserInfo = {
-        finedBy: 'Admin Office',
-        role: 'Administrator'
+        finedBy: user?.name,
+        role: user?.role
       };
 
       const payload = {
         ...newFineData,
         ...currentUserInfo,
-        studentId: studentData.studentId,
+        studentId: studentData._id,
       };
-
+      console.log(payload)
       // Replace with your actual API endpoint. Using a placeholder for now.
       const response = await fetch(`/api/students/${studentData.registrationNumber}/fines`, {
         method: 'POST',
