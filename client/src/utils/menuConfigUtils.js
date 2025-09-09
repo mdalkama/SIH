@@ -420,7 +420,7 @@ const menuConfig = {
         },
         {
             id: "semester-policy",
-            label: "Approve Semester Exam Rules",
+            label: "Conduct Semester Exam",
             icon: FileCheck,
             path: "/university-exam-body/semester-policy",
             component: ExamBodySemesterPolicy,
