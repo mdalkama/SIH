@@ -390,7 +390,6 @@ export const getStudentBooks = async (req, res) => {
         const bookDetails = libraryDoc.books.id(act.bookId);
         return {
           ...act,
-          bookTitle: bookDetails?.title || act.bookTitle || "Unknown Book",
         };
       })
       .sort((a, b) => new Date(b.issuedAt) - new Date(a.issuedAt));
