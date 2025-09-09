@@ -1,0 +1,252 @@
+[
+  {
+    "district": "Ajmer",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Ajmer"
+  },
+  {
+    "district": "Ajmer",
+    "college_type": "Girls",
+    "college_name": "Government Women Polytechnic College, Ajmer"
+  },
+  {
+    "district": "Alwar",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Alwar"
+  },
+  {
+    "district": "Alwar",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College Neemrana (Kotputli Behror)-Rajasthan"
+  },
+  {
+    "district": "Banswara",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College Bagidora, Banswara"
+  },
+  {
+    "district": "Banswara",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Banswara"
+  },
+  {
+    "district": "Baran",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Kelwara"
+  },
+  {
+    "district": "Barmer",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Barmer"
+  },
+  {
+    "district": "Bharatpur",
+    "college_type": "Girls",
+    "college_name": "Government Women Polytechnic College Bharatpur"
+  },
+  {
+    "district": "Bharatpur",
+    "college_type": "CoEd",
+    "college_name": "Shri Gokul Verma Government Polytechnic College Bharatpur"
+  },
+  {
+    "district": "Bharatpur",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College Uchchain"
+  },
+  {
+    "district": "Bhilwara",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College Bhilwara"
+  },
+  {
+    "district": "Bikaner",
+    "college_type": "Girls",
+    "college_name": "Government Women Polytechnic College, Bikaner"
+  },
+  {
+    "district": "Bikaner",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Bikaner"
+  },
+  {
+    "district": "Bundi",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College Bundi"
+  },
+  {
+    "district": "Chittorgarh",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College Chittorgarh"
+  },
+  {
+    "district": "Churu",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Churu"
+  },
+  {
+    "district": "Dausa",
+    "college_type": "CoEd",
+    "college_name": "Rajesh Pilot Government Polytechnic College, Dausa"
+  },
+  {
+    "district": "Dholpur",
+    "college_type": "CoEd",
+    "college_name": "Govt. Polytechnic College Dholpur"
+  },
+  {
+    "district": "Dungarpur",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College Dungarpur"
+  },
+  {
+    "district": "Hanumangarh",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College Hanumangarh"
+  },
+  {
+    "district": "Jaipur",
+    "college_type": "Girls",
+    "college_name": "Government Women Polytechnic College, Sanganer"
+  },
+  {
+    "district": "Jaipur",
+    "college_type": "CoEd",
+    "college_name": "Government Ram Chandra Khaitan Polytechnic College Jaipur"
+  },
+  {
+    "district": "Jaipur",
+    "college_type": "Girls",
+    "college_name": "Government Women Polytechnic College Jaipur"
+  },
+  {
+    "district": "Jaipur",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College Nawa"
+  },
+  {
+    "district": "Jaipur",
+    "college_type": "CoEd",
+    "college_name": "Government Engineering College Jaipur"
+  },
+  {
+    "district": "Jaisalmer",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Jaisalmer"
+  },
+  {
+    "district": "Jhalawar",
+    "college_type": "CoEd",
+    "college_name": "राजकीय पॉलिटेक्निक महाविद्यालय रीको औद्योगिक क्षेत्र झालावाड़"
+  },
+  {
+    "district": "Jhunjhunu",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Jhunjhunu"
+  },
+  {
+    "district": "Jhunjhunu",
+    "college_type": "CoEd",
+    "college_name": "Govt. Polytechnic College Pilani"
+  },
+  {
+    "district": "Jodhpur",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Jodhpur"
+  },
+  {
+    "district": "Jodhpur",
+    "college_type": "Girls",
+    "college_name": "Government Residential Women Polytechnic College, Jodhpur"
+  },
+  {
+    "district": "Jodhpur",
+    "college_type": "CoEd",
+    "college_name": "Teachers Training Center and Learning Resource Development Center"
+  },
+  {
+    "district": "Jodhpur",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College Mandore"
+  },
+  {
+    "district": "Karauli",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Karauli"
+  },
+  {
+    "district": "Kota",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Baran"
+  },
+  {
+    "district": "Kota",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Kota (Rajasthan)"
+  },
+  {
+    "district": "Kota",
+    "college_type": "Girls",
+    "college_name": "Government Women Polytechnic College, Kota"
+  },
+  {
+    "district": "Nagaur",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Nagaur"
+  },
+  {
+    "district": "Pali",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College Pali"
+  },
+  {
+    "district": "Pali",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Jalore"
+  },
+  {
+    "district": "Pratapgarh",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College Pratapgarh"
+  },
+  {
+    "district": "Rajsamand",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Rajsamand"
+  },
+  {
+    "district": "Sawai Madhopur",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College Sawai Madhopur"
+  },
+  {
+    "district": "Sikar",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Sikar"
+  },
+  {
+    "district": "Sirohi",
+    "college_type": "CoEd",
+    "college_name": "SGBB Government Polytechnic College Sirohi (Raj.)"
+  },
+  {
+    "district": "Sri Ganganagar",
+    "college_type": "CoEd",
+    "college_name": "C.M.R.B. Government Polytechnic College, Sri Ganganagar"
+  },
+  {
+    "district": "Tonk",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Tonk"
+  },
+  {
+    "district": "Udaipur",
+    "college_type": "Girls",
+    "college_name": "Government Women Polytechnic College Udaipur"
+  },
+  {
+    "district": "Udaipur",
+    "college_type": "CoEd",
+    "college_name": "Government Polytechnic College, Udaipur"
+  }
+]
