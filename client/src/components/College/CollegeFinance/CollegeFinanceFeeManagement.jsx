@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { Search, IndianRupee, Landmark, X, Download, Loader2, Book, ChevronLeft, ChevronRight, Edit, PlusCircle } from 'lucide-react';
-import {useUser} from '../../../context/UserContext'
+import { useUser } from '../../../context/UserContext'
+import Loading from '../../Loading';
 
 const FinanceFeeCollection = () => {
-  const {user}  = useUser();
+  const { user } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
   const [studentData, setStudentData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -39,8 +40,17 @@ const FinanceFeeCollection = () => {
     setStudentData(null);
 
     try {
-      // The API endpoint as specified
-      const response = await fetch(`http://localhost:8000/api/v1/payment/${searchTerm}`);
+      const response = await fetch(
+        `https://sih-4ptm.onrender.com/api/v1/payment/${searchTerm}`,
+        {
+          method: "GET",
+          credentials: "include",  // ✅ send cookies/session
+          headers: {
+            "Content-Type": "application/json",
+            // "Authorization": `Bearer ${token}`, // (agar JWT use ho raha hai to yeh add karo)
+          },
+        }
+      );
 
       if (response.status === 404) {
         setError('No student found with that registration number.');
@@ -48,7 +58,6 @@ const FinanceFeeCollection = () => {
       }
 
       if (!response.ok) {
-        // Handle other server-side errors
         const errorResult = await response.json().catch(() => ({ message: 'An error occurred while fetching the data.' }));
         throw new Error(errorResult.message || 'An error occurred while fetching the data.');
       }
@@ -64,6 +73,7 @@ const FinanceFeeCollection = () => {
       setLoading(false);
     }
   };
+
 
   const clearStudentSearch = () => {
     setSearchTerm('');
@@ -93,11 +103,64 @@ const FinanceFeeCollection = () => {
       alert("Please enter a valid payment amount.");
       return;
     }
+    if (!paymentTarget || !studentData) {
+      alert("Cannot process payment. Target or student data is missing.");
+      return;
+    }
+
     setProcessingPayment(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    alert("Payment processed successfully (mock).");
-    setProcessingPayment(false);
-    closePaymentModal();
+
+    try {
+      const payload = {
+        type: paymentTarget.type, // 'fine' or 'semester'
+        id: paymentTarget.data._id,
+        amount: Number(paymentAmount),
+        method: paymentMethod,
+        receiptNo: `REC-${Date.now()}`, // Generate a simple unique receipt number
+        description: `Payment for ${paymentTarget.data.reason || paymentTarget.data.semester}`
+      };
+
+      const response = await fetch(
+        `https://sih-4ptm.onrender.com/api/v1/payment/${studentData.registrationNumber}/pay`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const errorResult = await response.json().catch(() => ({ message: 'An unknown error occurred while processing payment.' }));
+        throw new Error(errorResult.message || 'Failed to process payment.');
+      }
+
+      // After a successful payment, re-fetch the student data to ensure UI consistency
+      const refetchResponse = await fetch(
+        `https://sih-4ptm.onrender.com/api/v1/payment/${studentData.registrationNumber}`,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (!refetchResponse.ok) {
+        throw new Error("Payment was successful, but failed to refresh student data.");
+      }
+      const refreshedData = await refetchResponse.json();
+      setStudentData(refreshedData);
+
+      alert("Payment processed successfully!");
+      closePaymentModal();
+
+    } catch (error) {
+      console.error("Error processing payment:", error);
+      alert(`Error: ${error.message}`);
+    } finally {
+      setProcessingPayment(false);
+    }
   };
 
   // Handlers for Add Fine Modal
@@ -106,7 +169,6 @@ const FinanceFeeCollection = () => {
     if (processingAddFine) return;
     setShowAddFineModal(false);
   };
-
   const handleAddFine = async (newFineData) => { // newFineData contains { reason, amount }
     if (!studentData) {
       alert("No student selected.");
@@ -116,7 +178,6 @@ const FinanceFeeCollection = () => {
     setProcessingAddFine(true);
 
     try {
-      // In a real app, you'd get this from user context/auth state
       const currentUserInfo = {
         finedBy: user?.name,
         role: user?.role
@@ -125,35 +186,50 @@ const FinanceFeeCollection = () => {
       const payload = {
         ...newFineData,
         ...currentUserInfo,
-        studentId: studentData._id,
+        studentId: studentData?._id,
       };
-      console.log(payload)
-      // Replace with your actual API endpoint. Using a placeholder for now.
-      const response = await fetch(`/api/students/${studentData.registrationNumber}/fines`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+
+      const response = await fetch(
+        `https://sih-4ptm.onrender.com/api/v1/payment/${studentData.registrationNumber}/fines`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
         const errorResult = await response.json().catch(() => ({ message: 'An unknown error occurred.' }));
         throw new Error(errorResult.message || 'Failed to add the fine.');
       }
 
-      // Assuming the API returns the full, updated student payment document
-      const updatedData = await response.json();
-      setStudentData(updatedData); // Update the state with the fresh data from the server
+      // After adding a fine, re-fetch the student data to get the updated list and stats
+      const refetchResponse = await fetch(
+        `https://sih-4ptm.onrender.com/api/v1/payment/${studentData.registrationNumber}`,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (!refetchResponse.ok) {
+        throw new Error("Fine was added, but failed to refresh student data.");
+      }
+      const refreshedData = await refetchResponse.json();
+      setStudentData(refreshedData);
 
       closeAddFineModal();
     } catch (error) {
       console.error("Error adding fine:", error);
-      alert(`Error: ${error.message}`); // Display error to the user in a real app with a toast/notification
+      alert(`Error: ${error.message}`);
     } finally {
       setProcessingAddFine(false);
     }
   };
+
 
 
   const handleTabChange = (tab) => {
@@ -169,13 +245,13 @@ const FinanceFeeCollection = () => {
     if (!studentData) return { pagedData: [], totalCount: 0, sortedData: [] };
 
     let sourceData = [];
-    if (activeTab === 'semesters') sourceData = studentData.semesters;
-    if (activeTab === 'fines') sourceData = studentData.fines;
-    if (activeTab === 'history') sourceData = studentData.paymentHistory;
+    if (activeTab === 'semesters') sourceData = studentData?.semesters;
+    if (activeTab === 'fines') sourceData = studentData?.fines;
+    if (activeTab === 'history') sourceData = studentData?.paymentHistory;
 
     // 1. Filtering
-    const filtered = sourceData.filter(item => {
-      const query = tableFilter.toLowerCase();
+    const filtered = sourceData?.filter(item => {
+      const query = tableFilter?.toLowerCase();
       if (!query) return true;
       if (activeTab === 'semesters') return item.semester.toLowerCase().includes(query);
       if (activeTab === 'fines') return item.reason.toLowerCase().includes(query) || item.finedBy.toLowerCase().includes(query);
@@ -216,8 +292,12 @@ const FinanceFeeCollection = () => {
 
   const { pagedData, totalCount, sortedData } = processedData;
 
+  if (loading) return <Loading />;
+
+
+
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto">
 
         <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm mb-8">
@@ -246,15 +326,15 @@ const FinanceFeeCollection = () => {
           <div>
             <div className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-                <h2 className="text-xl font-bold text-gray-800">{studentData.student?.name || 'Student Details'}</h2>
-                <p className="text-sm text-gray-500">Reg No: {studentData.registrationNumber}</p>
-                <p className="text-sm text-gray-500">{studentData.student?.course || 'Course info not available'}</p>
+                <h2 className="text-xl font-bold text-gray-800">{studentData?.student?.name || 'Student Details'}</h2>
+                <p className="text-sm text-gray-500">Reg No: {studentData?.registrationNumber}</p>
+                <p className="text-sm text-gray-500">{studentData?.student?.course || 'Course info not available'}</p>
               </div>
               <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">
-                <StatCard title="Overall Collected" amount={studentData.stats.overallCollected} color="text-green-600" />
-                <StatCard title="Overall Pending" amount={studentData.stats.overallPending} color="text-red-600" />
-                <StatCard title="Semester Pending" amount={studentData.stats.semesterPending} color="text-yellow-600" />
-                <StatCard title="Fines Pending" amount={studentData.stats.finePending} color="text-orange-600" />
+                <StatCard title="Overall Collected" amount={studentData?.stats?.overallCollected || 0} color="text-green-600" />
+                <StatCard title="Overall Pending" amount={studentData?.stats?.overallPending || 0} color="text-red-600" />
+                <StatCard title="Semester Pending" amount={studentData?.stats?.semesterPending || 0} color="text-yellow-600" />
+                <StatCard title="Fines Pending" amount={studentData?.stats?.finePending || 0} color="text-orange-600" />
               </div>
             </div>
 
@@ -680,4 +760,3 @@ const AddFineModal = ({ isOpen, onClose, onConfirm, processing }) => {
 
 
 export default FinanceFeeCollection;
-

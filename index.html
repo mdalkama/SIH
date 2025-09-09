@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Form - shivangi gupta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: #f4f4f4;
+            color: #333;
+            font-size: 14px;
+            /* Reduced font size */
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 10px auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+            /* Reduced font size */
+            color: #0056b3;
+        }
+
+        .header p {
+            margin: 4px 0 0;
+            font-size: 15px;
+        }
+
+        .section {
+            margin-bottom: 15px;
+            /* Reduced margin */
+        }
+
+        .section h2 {
+            background-color: #f2f2f2;
+            color: #0056b3;
+            padding: 8px;
+            /* Reduced padding */
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            /* Reduced font size */
+            border: 1px solid #ddd;
+            border-bottom: 2px solid #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 7px;
+            /* Reduced padding */
+            border: 1px solid #ccc;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            font-weight: bold;
+            width: 20%;
+        }
+
+        td {
+            width: 30%;
+        }
+
+        .warning {
+            color: #D8000C;
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        .print-button {
+            display: block;
+            width: 150px;
+            margin: -10px auto 15px;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .declaration {
+            margin-top: 20px;
+            font-size: 13px;
+        }
+
+        .signature-box {
+            margin-top: 30px;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        @media print {
+            body {
+                background-color: #fff;
+                padding: 0;
+                margin: 0;
+                font-size: 12px;
+            }
+
+            .container {
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                padding: 0;
+                max-width: 100%;
+            }
+
+            .print-button {
+                display: none;
+            }
+
+            .section h2 {
+                background-color: #e9ecef !important;
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+
+            th,
+            td {
+                padding: 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <button class="print-button" onclick="window.print()">Print / Save as PDF</button>
+
+        <div class="header">
+            <h1>ऐप्लिकेशन फॉर्म / Application Form</h1>
+        </div>
+
+        <div class="section">
+            <h2>1. व्यक्तिगत और श्रेणी विवरण / Personal & Category Details</h2>
+            <table>
+                <tr>
+                    <th>आवेदक का नाम</th>
+                    <td>shivangi gupta / शिवांगी गुप्ता</td>
+                    <th>पिता का नाम</th>
+                    <td>Ashok prasad / अशोक प्रसाद</td>
+                </tr>
+                <tr>
+                    <th>माता का नाम</th>
+                    <td>Meena devi / मीना देवी</td>
+                    <th>लिंग (Gender)</th>
+                    <td>Male</td>
+                </tr>
+                <tr>
+                    <th>जन्म तिथि</th>
+                    <td>2016-01-05 </td>
+                    <th>राष्ट्रीयता</th>
+                    <td>Indian</td>
+                </tr>
+                <tr>
+                    <th>धर्म (Religion)</th>
+                    <td>Muslim </td>
+                    <th>वैवाहिक स्थिति</th>
+                    <td>Married</td>
+                </tr>
+                <tr>
+                    <th>ईमेल (Email)</th>
+                    <td>asdfiglu@gasf.adfs</td>
+                    <th>मोबाइल (Mobile)</th>
+                    <td>7004859727</td>
+                </tr>
+                <tr>
+                    <th>आरक्षण श्रेणी</th>
+                    <td>EWS</td>
+                    <th>कश्मीरी प्रवासी</th>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <th>पहचान पत्र</th>
+                    <td>Voter ID</td>
+                    <th>पहचान संख्या</th>
+                    <td>2465485412154</td>
+                </tr>
+                <tr>
+                    <th>अभिभावक आय</th>
+                    <td colspan="3">Less than Rs 8 lacs &nbsp;|&nbsp; <b>Amount:</b> ₹ 2044400 &nbsp;|&nbsp;
+                        <b>TFWS:</b> Yes</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>2. पता विवरण / Address Details</h2>
+            <table>
+                <tr>
+                    <th>स्थायी पता (Permanent)</th>
+                    <td>
+                        bank colony , near murari clinic mahmoodshah lane, alkama house backyard of masjid<br>
+                        <b>शहर/गाँव:</b> patna, <b>जिला:</b> nalanda , <b>राज्य:</b> Bihar - 800005
+                    </td>
+                </tr>
+                <tr>
+                    <th>पत्राचार पता (Correspondence)</th>
+                    <td>
+                        bank colony , near murari clinic mahmoodshah lane, alkama house backyard of masjid<br>
+                        <b>शहर/गाँव:</b> patna, <b>जिला:</b> nalanda , <b>राज्य:</b> Bihar - 800005
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>3. शैक्षणिक योग्यता / Academic Qualifications</h2>
+            <h4>कक्षा 10वीं / Class 10th </h4>
+            <table>
+                <tr>
+                    <th>बोर्ड</th>
+                    <td>RBSE</td>
+                    <th>उत्तीर्ण वर्ष</th>
+                    <td>1040</td>
+                    <th>रोल नंबर</th>
+                    <td>1001</td>
+                </tr>
+                <tr>
+                    <th>अधिकतम अंक</th>
+                    <td>101</td>
+                    <th>प्राप्तांक</th>
+                    <td>12444</td>
+                    <th>प्रतिशत</th>
+                    <td>124%</td>
+                </tr>
+            </table>
+            <br>
+            <h4>कक्षा 12वीं / Graduation etc.</h4>
+            <table>
+                <tr>
+                    <td>N/A</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>4. कॉलेज और शाखा के विकल्प / College & Branch Choices</h2>
+            <table>
+                <thead>
+                    <tr style="background-color:#f2f2f2;">
+                        <th style="width:10%;">प्राथमिकता</th>
+                        <th style="width:45%;">कॉलेज का नाम</th>
+                        <th style="width:30%;">शाखा</th>
+                        <th style="width:15%;">जिला</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Government Polytechnic College Uchchain</td>
+                        <td>Mechanical Engineering</td>
+                        <td>Bharatpur</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Government Polytechnic College, Bikaner</td>
+                        <td>Computer Science Engineering</td>
+                        <td>Bikaner</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="declaration">
+            <p><b>घोषणा (Declaration):</b> मैं एतद्द्वारा घोषणा करता/करती हूँ कि इस आवेदन पत्र में दी गई सभी जानकारी
+                मेरे सर्वोत्तम ज्ञान और विश्वास के अनुसार सत्य, पूर्ण और सही है। यदि कोई भी जानकारी गलत या झूठी पाई जाती
+                है, तो मेरा प्रवेश रद्द किया जा सकता है।</p>
+        </div>
+
+        <div class="signature-box">
+            <p>_________________________</p>
+            <p>(आवेदक के हस्ताक्षर)</p>
+        </div>
+    </div>
+</body>
+
+</html>

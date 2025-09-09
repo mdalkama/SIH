@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fee Receipt - Government of Rajasthan</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        #receipt-container {
+            width: 800px;
+            background-color: #fff;
+            border: 1px solid #dcdcdc;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 40px;
+            box-sizing: border-box;
+        }
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #E46D25; /* Rajasthan Theme Color */
+            padding-bottom: 15px;
+        }
+        .receipt-header img {
+            max-width: 70px; /* Adjusted logo size */
+            margin-bottom: 10px;
+        }
+        .receipt-header h1 {
+            margin: 0;
+            color: #0056b3;
+            font-size: 1.8em;
+        }
+        .receipt-header h2 {
+            margin: 5px 0;
+            color: #333;
+            font-size: 1.2em;
+            font-weight: normal;
+        }
+        .receipt-header p {
+            margin: 5px 0;
+            color: #555;
+        }
+        .receipt-title {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 25px;
+            text-decoration: underline;
+        }
+        .student-details {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+        }
+        .student-details td { padding: 8px; }
+        .student-details td:nth-child(1), .student-details td:nth-child(3) { font-weight: bold; color: #333; width: 20%; }
+        .student-details td:nth-child(2), .student-details td:nth-child(4) { color: #555; width: 30%; }
+        
+        .payment-details {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .payment-details th, .payment-details td { border: 1px solid #ccc; padding: 12px; text-align: left; }
+        .payment-details th { background-color: #f2f2f2; font-weight: bold; }
+        .payment-details tfoot th { font-size: 1.1em; }
+        .payment-details .text-right { text-align: right; }
+        
+        .summary { margin-top: 20px; }
+        .summary p { margin: 8px 0; font-size: 1.1em; font-weight: bold; }
+        
+        .receipt-footer {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .receipt-footer .created-by, .receipt-footer .signature { color: #555; }
+        .receipt-footer .signature p { margin-top: 40px; border-top: 1px solid #888; padding-top: 5px; }
+
+        .download-button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .download-button:hover { background-color: #0056b3; }
+
+        @media print {
+            body { background-color: #fff; }
+            .download-button { display: none; }
+            #receipt-container { box-shadow: none; border: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="receipt-container">
+        <div class="receipt-header">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Seal_of_Rajasthan.svg/1200px-Seal_of_Rajasthan.svg.png" alt="Govt of Rajasthan Logo">
+            <h2>तकनीकी शिक्षा निदेशालय, राजस्थान सरकार</h2>
+            <h1>राजकीय पॉलिटेक्निक महाविद्यालय, जयपुर</h1>
+            <p>गौरव पथ, झालाना, जयपुर, राजस्थान - 302004</p>
+        </div>
+
+        <div class="receipt-title">शुल्क रसीद / FEE RECEIPT</div>
+
+        <table class="student-details">
+            <tr>
+                <td>Receipt No:</td>
+                <td id="receiptNo">REC-1757399836511</td>
+                <td>Invoice/Bill No:</td>
+                <td>BILL-2025-SEM3-9821</td>
+            </tr>
+            <tr>
+                <td>Payment Date:</td>
+                <td>09 September 2025</td>
+                <td>Payment Mode:</td>
+                <td>Cash</td>
+            </tr>
+            <tr>
+                <td>Student Name:</td>
+                <td><strong>महेश चौधरी</strong></td>
+                <td>Registration No:</td>
+                <td>DTE/JP/23-045</td>
+            </tr>
+            <tr>
+                <td>Course:</td>
+                <td>Diploma</td>
+                <td>Branch:</td>
+                <td>Mechanical Engg.</td>
+            </tr>
+            <tr>
+                <td>Semester:</td>
+                <td>3rd Semester</td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+
+        <table class="payment-details">
+            <thead>
+                <tr>
+                    <th style="width:10%;">Sr. No.</th>
+                    <th style="width:60%;">Particulars (विवरण)</th>
+                    <th class="text-right">Amount (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Tuition Fee (शिक्षण शुल्क)</td>
+                    <td class="text-right">1,000.00</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Development Fee (विकास शुल्क)</td>
+                    <td class="text-right">300.00</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Examination Fee (परीक्षा शुल्क)</td>
+                    <td class="text-right">200.00</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="2" class="text-right">Total Amount (कुल योग)</th>
+                    <th class="text-right">₹1,500.00</th>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="summary">
+            <p>Amount in Words: One Thousand Five Hundred Rupees Only</p>
+        </div>
+
+        <div class="receipt-footer">
+            <div class="created-by">
+                <p><strong>Generated By:</strong> Accounts Department</p>
+                <small>This is a computer-generated receipt.</small>
+            </div>
+            <div class="signature">
+                <p>Authorized Signatory</p>
+            </div>
+        </div>
+    </div>
+
+    <button class="download-button" id="downloadBtn">Download PDF</button>
+
+    <script>
+        document.getElementById('downloadBtn').addEventListener('click', function () {
+            const receiptElement = document.getElementById('receipt-container');
+            const receiptNo = document.getElementById('receiptNo').innerText;
+            const fileName = `Receipt-${receiptNo}.pdf`;
+            
+            html2canvas(receiptElement, { scale: 2 }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const canvasWidth = canvas.width;
+                const canvasHeight = canvas.height;
+                const canvasRatio = canvasWidth / canvasHeight;
+                let imgWidth = pdfWidth - 20;
+                let imgHeight = imgWidth / canvasRatio;
+                if (imgHeight > pdfHeight - 20) {
+                    imgHeight = pdfHeight - 20;
+                    imgWidth = imgHeight * canvasRatio;
+                }
+                const x = (pdfWidth - imgWidth) / 2;
+                const y = 10;
+                pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+                pdf.save(fileName);
+            });
+        });
+    </script>
+</body>
+</html>

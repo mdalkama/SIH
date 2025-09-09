@@ -5,9 +5,6 @@ import Student from "../../models/studentModel.js";
 
 export const addFine = async (req, res) => {
     try {
-        // Log 1: See the user object as soon as the function starts.
-        console.log("Received req.user object:", req.user);
-
         const { regNo } = req.params;
         const { reason, amount, studentId } = req.body;
 
@@ -18,7 +15,6 @@ export const addFine = async (req, res) => {
 
         // Add an explicit check on the variable after destructuring
         if (typeof finedByName === 'undefined') {
-            console.error("Critical issue: 'finedByName' became undefined immediately after destructuring from req.user.");
             return res.status(500).json({ message: "Internal server error: Could not process user identity." });
         }
 
