@@ -14,6 +14,7 @@ import {
     Package,
     PenLine,
     Shield,
+    UserCog,
     Award,
     Database,
     ShieldCheck,
@@ -72,6 +73,7 @@ import ExamBodyEntrancePolicy from "../components/University/ExamBody/ExamBodyEn
 import ExamBodySemesterPolicy from "../components/University/ExamBody/ExamBodySemesterPolicy";
 import ExamBodyResultApproval from "../components/University/ExamBody/ExamBodyResultApproval";
 import ExamBodySeatAllotmentApproval from "../components/University/ExamBody/ExamBodySeatAllotmentApproval";
+import ExamBodyStaffController from "../components/University/ExamBody/ExamBodyStaffController";
 
 // University Exam Cell Staff Components
 import ExamCellDashboard from "../components/University/ExamCell/ExamCellDashboard";
@@ -399,6 +401,7 @@ const menuConfig = {
     ],
 
     UniversityExaminationBody: [
+
         {
             id: "dashboard",
             label: "Dashboard",
@@ -440,6 +443,14 @@ const menuConfig = {
             role: "UniversityExaminationBody",
         },
         {
+            id: "staff-controller",
+            label: "Staff Controller",
+            icon: UserCog,
+            path: "/university-exam-body/staff-controller",
+            component: ExamBodyStaffController,
+            role: "UniversityExaminationBody",
+        },
+        {
             id: "my-profile",
             label: "My Profile",
             icon: User,
@@ -448,6 +459,7 @@ const menuConfig = {
             role: "UniversityExaminationBody",
         },
     ],
+
 
     UniversityExamCellStaff: [
         {

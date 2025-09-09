@@ -340,6 +340,7 @@ export const getBooks = async (req, res) => {
 };
 
 // Get all books issued to a student
+
 export const getStudentBooks = async (req, res) => {
   try {
     const librarianId = req.user?.id;
@@ -347,85 +348,60 @@ export const getStudentBooks = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // 1. req.body se registrationNumber lo
-    const regRaw = req.body?.registrationNumber || "";
-    const registrationNumber = regRaw.trim().toUpperCase();
-    if (!registrationNumber) {
+    const { registrationNumber } = req.body;
+    if (!registrationNumber || !registrationNumber.trim()) {
       return res.status(400).json({ message: "Registration number required" });
     }
 
-    // 2. Librarian ka collegeCode nikaalo
+    const upperCaseRegNo = registrationNumber.trim().toUpperCase();
+
     const staff = await Staff.findById(librarianId).select("collegeCode");
     if (!staff?.collegeCode) {
-      return res
-        .status(404)
-        .json({ message: "Librarian's college code not found" });
+      return res.status(404).json({ message: "Librarian's college code not found" });
     }
 
-    // 3. College ki library load karo
-    const libraryDoc = await Library.findOne({
-      collegeCode: staff.collegeCode,
-    });
+    const libraryDoc = await Library.findOne({ collegeCode: staff.collegeCode });
     if (!libraryDoc) {
       return res.status(404).json({ message: "Library not found" });
     }
 
-    // 4. StudentLibrary find karo (ya create karo)
-    let sl = await StudentLibrary.findOne({ registrationNumber })
-      .populate(
-        "occupiedBy",
-        "name email course branch year registrationNumber"
-      )
+    const sl = await StudentLibrary.findOne({ registrationNumber: upperCaseRegNo })
+      .populate("occupiedBy", "name email course branch year registrationNumber profileImage")
       .populate("issuedBooks.issuedBy", "name")
+      .populate("activity.issuedBy", "name") // NAYA: Activity mein 'issuedBy' ko populate karein
       .lean();
 
     if (!sl) {
-      const student = await Student.findOne({ registrationNumber }).lean();
-      if (!student) {
-        return res
-          .status(404)
-          .json({ message: "No library account found for this student" });
-      }
-      const created = await StudentLibrary.create({
-        registrationNumber: student.registrationNumber.trim().toUpperCase(),
-        occupiedBy: student._id,
-      });
-      sl = await StudentLibrary.findById(created._id)
-        .populate(
-          "occupiedBy",
-          "name email course branch year registrationNumber"
-        )
-        .populate("issuedBooks.issuedBy", "name")
-        .lean();
+      return res.status(404).json({ message: "No library account found for this student" });
     }
 
-    // 5. issuedBooks ko enrich karo (title/author add karo)
     const enrichedIssuedBooks = (sl.issuedBooks || []).map((ib) => {
       const bookDetails = libraryDoc.books.id(ib.bookId);
       return {
-        bookId: ib.bookId,
-        copyId: ib.copyId,
-        issuedAt: ib.issuedAt,
-        issuedBy: ib.issuedBy,
+        ...ib,
         title: bookDetails?.title || "Unknown Book",
         author: bookDetails?.author || "N/A",
-        isbn: bookDetails?.isbn || "N/A",
       };
     });
+    
+    // NAYA: Activity Log ko bhi enrich karein
+    const enrichedActivity = (sl.activity || [])
+      .map((act) => {
+        const bookDetails = libraryDoc.books.id(act.bookId);
+        return {
+          ...act,
+        };
+      })
+      .sort((a, b) => new Date(b.issuedAt) - new Date(a.issuedAt));
 
-    // 6. Final response
+    // CHANGE: Final response ko ek 'data' key ke andar wrap karein
     return res.json({
       success: true,
-      student: sl.occupiedBy
-        ? {
-            _id: sl.occupiedBy._id,
-            regNo: sl.registrationNumber,
-            name: sl.occupiedBy.name,
-            email: sl.occupiedBy.email,
-            course: sl.occupiedBy.course,
-          }
-        : null,
-      issuedBooks: enrichedIssuedBooks,
+      data: {
+        profile: sl.occupiedBy, // 'student' ko 'profile' naam diya
+        issuedBooks: enrichedIssuedBooks,
+        activity: enrichedActivity, // Activity log bhi bhejein
+      },
     });
   } catch (err) {
     console.error(err);
