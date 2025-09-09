@@ -78,9 +78,13 @@ const AddRoomForm = ({ hostels }) => {
             setIsFetchingFloors(true);
             try {
                 const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors`, { credentials: "include" });
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.error || 'Failed to fetch floors');
+                }
                 const data = await res.json();
                 setFloors(data.success ? data.data : []);
-            } catch (error) { setMessage({ type: 'error', text: 'Could not fetch floors.' }); }
+            } catch (error) { setMessage({ type: 'error', text: error.message }); }
             finally { setIsFetchingFloors(false); }
         };
         fetchFloorsForHostel();
@@ -92,9 +96,13 @@ const AddRoomForm = ({ hostels }) => {
             setIsFetchingDetails(true);
             try {
                 const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}`, {credentials: 'include'});
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.error || 'Failed to fetch floor details');
+                }
                 const data = await res.json();
                 if(data.success) setDetailedFloorData(data.data);
-            } catch (error) { setMessage({ type: 'error', text: 'Could not fetch room details.' }); }
+            } catch (error) { setMessage({ type: 'error', text: error.message }); }
             finally { setIsFetchingDetails(false); }
         };
         fetchFloorDetails();
@@ -165,7 +173,7 @@ const AddRoomForm = ({ hostels }) => {
             });
             const data = await res.json();
             
-            if (data.success) {
+            if (res.ok) {
                 setMessage({ type: 'success', text: `Room ${roomData.roomNumber} added successfully!` });
                 setRoomData({ roomNumber: '', roomType: '', capacity: '', price: '', facilities: [] });
                 const updatedRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors`, {credentials: 'include'});
@@ -182,12 +190,12 @@ const AddRoomForm = ({ hostels }) => {
     };
 
     if (!hostels) {
-        return <div className="max-w-lg mx-auto p-6 text-center"><Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto" /><p className="mt-2 text-gray-500">Loading initial data...</p></div>;
+        return <div className="p-6 text-center"><Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto" /><p className="mt-2 text-gray-500">Loading initial data...</p></div>;
     }
 
     return (
-        // YAHAN CHANGE HUA HAI: Width wapas max-w-lg kar di gayi hai
-        <div className="max-w-lg mx-auto p-4 sm:p-6 bg-white rounded-xl shadow-lg border border-gray-200">
+        // YAHAN FIX KIYA GAYA HAI: Outer container se styling hata di gayi hai
+        <div className="">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Add a New Room</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
                 <fieldset className="space-y-2">
