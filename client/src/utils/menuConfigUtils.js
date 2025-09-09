@@ -458,7 +458,7 @@ const menuConfig = {
         component: MyProfile,
         role: "UniversityExaminationBody",
     },
-]
+],
 
 
     UniversityExamCellStaff: [
