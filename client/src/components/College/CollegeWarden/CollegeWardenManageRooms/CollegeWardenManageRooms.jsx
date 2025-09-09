@@ -16,13 +16,13 @@ const HostelManagementSystem = () => {
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    const BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/hostel';
+    const BASE_URL = 'https://sih-4ptm.onrender.com/api/v1';
 
     // Fetch hostels
     const fetchHostels = async () => {
         try {
             setLoading(true);
-            const res = await fetch("https://sih-4ptm.onrender.com/api/v1/hostel", {
+            const res = await fetch(`${BASE_URL}/hostel`, {
                 method: "GET",
                 credentials: "include", // send cookies/session
             });

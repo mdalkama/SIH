@@ -9,7 +9,8 @@ import {
     // Bed
     addBed, getBeds, getBedById, updateBed, deleteBed,
     // Occupant
-    allocateBed, vacateBed, shiftStudent
+    allocateBed, vacateBed, shiftStudent,
+    findStudentForShift
 } from "../controllers/hostelController/hostelController.js";
 
 const router = express.Router();
@@ -53,6 +54,9 @@ router.post("/:hostelId/floors/:floorId/rooms/:roomId/beds/:bedId/vacate", vacat
 
 // ---------------- Shift Student ----------------
 router.post("/shift-student", shiftStudent);   // Shift student from one bed to another
+
+// Student ko registration number se search karne ke liye
+router.get("/student/search/:regNo", findStudentForShift);
 
 
 export default router;
