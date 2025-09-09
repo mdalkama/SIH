@@ -1,5 +1,5 @@
 
-import { Application, College } from '../models/admissionModel.js';
+import { Application, College } from '../../models/admissionModel.js';
 
 /**
  * @desc    Ek specific college ke liye dashboard stats prapt karein

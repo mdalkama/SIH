@@ -1,4 +1,4 @@
-import { AdmissionSession, Course, College, Application } from '../models/admissionModel.js'; // Maan kar chal rahe hain ki models ek file mein hain
+import { AdmissionSession, Course, College, Application } from '../../models/admissionModel.js'; // Maan kar chal rahe hain ki models ek file mein hain
 
 // --- Admission Session Management ---
 

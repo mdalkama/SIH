@@ -1,5 +1,4 @@
-import express from 'express';
-const router = express.Router();
+import { Router } from "express";
 import { 
     createSession, 
     getSessions, 
@@ -9,7 +8,10 @@ import {
     verifyApplication, 
     generateMeritList, 
     startAllocationRound 
-} from '../../controllers/admissionSystem/universityController.js';
+} from '../../controllers//admissionSystem/universityController.js';
+
+const router = Router();
+
 
 // --- Admission Session Routes ---
 router.post('/sessions', createSession);

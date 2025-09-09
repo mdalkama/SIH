@@ -1,7 +1,7 @@
 // routes/adminRoutes.js
 import express from "express";
 import { role } from "../middlewares/authMiddleware.js";
-import { addStaffByRole } from "../controllers/addCollegeStaffController/addCollegeStaffController.js";
+import { addStaffByRole, getStaff, getStaffById, updateStaff, deleteStaff } from "../controllers/addCollegeStaffController/addCollegeStaffController.js";
 
 const router = express.Router();
 
@@ -52,5 +52,12 @@ router.post("/add-faculty", role(["CollegeAdmin", "CollegeDirector", "CollegeHOD
     req.role = "CollegeFaculty";
     next();
 }, addStaffByRole);
+
+router.get("/", role(["CollegeAdmin"]), getStaff);
+
+// CRUD routes for individual staff
+router.get("/:id", role(["CollegeAdmin"]), getStaffById);
+router.put("/:id", role(["CollegeAdmin"]), updateStaff);
+router.delete("/:id", role(["CollegeAdmin"]), deleteStaff);
 
 export default router;
