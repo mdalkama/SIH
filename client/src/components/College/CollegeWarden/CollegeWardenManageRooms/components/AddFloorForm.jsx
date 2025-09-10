@@ -82,6 +82,9 @@ const AddFloorForm = ({ hostels }) => {
                 const data = await response.json();
                 if (data.success) {
                     setDetailedHostelData(data.data);
+                } else {
+                    // Yeh case bhi handle karna zaroori hai
+                    throw new Error(data.error || 'Failed to process request');
                 }
             } catch (error) {
                 console.error("Failed to fetch hostel details", error);
@@ -155,34 +158,36 @@ const AddFloorForm = ({ hostels }) => {
                 credentials: 'include',
                 body: JSON.stringify({ floorNumber: Number(floorNumber) }),
             });
+            
             const data = await response.json();
 
             // YAHAN BHI FIX KIYA GAYA HAI
             if (response.ok) {
-                setMessage({ type: 'success', text: `Floor ${floorNumber} added successfully to ${selectedHostel.name}!` });
+                setMessage({ type: 'success', text: `Floor ${floorNumber} added successfully!` });
                 setFloorNumber(''); 
                 
                 const updatedResponse = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}`, { credentials: 'include' });
-                const updatedData = await updatedResponse.json();
-                if (updatedData.success) {
-                    setDetailedHostelData(updatedData.data);
+                if (updatedResponse.ok) {
+                    const updatedData = await updatedResponse.json();
+                    if (updatedData.success) {
+                        setDetailedHostelData(updatedData.data);
+                    }
                 }
             } else {
-                setMessage({ type: 'error', text: data.error || 'Failed to add floor' });
+                throw new Error(data.error || 'Failed to add floor');
             }
         } catch (error) {
-            setMessage({ type: 'error', text: 'An unexpected error occurred.' });
+            setMessage({ type: 'error', text: error.message });
         } finally {
             setIsSubmitting(false);
         }
     };
 
     if (!hostels) {
-        return <div className="max-w-md mx-auto p-6 text-center"><Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto" /><p className="mt-2 text-gray-500">Loading initial data...</p></div>;
+        return <div className="p-6 text-center"><Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto" /><p className="mt-2 text-gray-500">Loading initial data...</p></div>;
     }
 
     return (
-        // YAHAN FIX KIYA GAYA HAI: Aapka container jaisa tha, waisa hi rakha gaya hai
         <div className="">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Floor Management Panel</h2>
             
