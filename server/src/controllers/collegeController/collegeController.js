@@ -2,6 +2,7 @@ import College from '../../models/collegeModel.js';
 import University from '../../models/universityModel.js';
 import Staff from '../../models/staffModel.js'; 
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 // --- UNIVERSITY ADMIN CONTROLLERS ---
 
@@ -20,9 +21,9 @@ export const createCollege = async (req, res) => {
         if (!university) {
             return res.status(404).json({ message: "University not found." });
         }
-
+        const hashedPassword = await bcrypt.hash(adminData.password, 10);
         // 1. Create College Admin
-        const newAdmin = new Staff({ ...adminData, role: 'CollegeAdmin',collegeCode: collegeData.code, university: universityId });
+        const newAdmin = new Staff({ ...adminData, role: 'CollegeAdmin',collegeCode: collegeData.code,password:hashedPassword, university: universityId });
         const savedAdmin = await newAdmin.save({ session });
 
         // 2. Create College and link the admin
