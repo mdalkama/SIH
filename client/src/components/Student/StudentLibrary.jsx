@@ -59,12 +59,13 @@ const LibraryDashboard = () => {
                     // Step 2: Fetch the entire library catalog
                     const collegeCode = profileData.data.profile.collegeCode;
                     if (collegeCode) {
-                        const catalogRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/library/all/${collegeCode}`, { credentials: 'include' });
+                        const catalogRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/student-library/student-catalog`, { credentials: 'include' });
                         if (!catalogRes.ok) { 
                             const err = await catalogRes.json(); 
                             throw new Error(err.message || 'Failed to fetch the library catalog.'); 
                         }
                         const catalogData = await catalogRes.json();
+                        console.log(catalogData)
                         if (catalogData.success) {
                             setLibraryCatalog(catalogData.books || []);
                         }
