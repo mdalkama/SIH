@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Building, BookOpen, Users, UserCog, Calendar, Activity, PlusCircle, TrendingUp, DollarSign, University, Loader2, AlertTriangle } from 'lucide-react';
 
-// --- Mock API Fetch Function (to simulate a real API call) ---
 const fetchDashboardDataFromAPI = async () => {
-    // In a real application, this would be a fetch call to your backend API
-    // e.g., const response = await fetch('/api/v1/university/dashboard-data');
-    // const data = await response.json();
-    // return data;
 
-    // Simulating a 1.5-second network delay
+
+
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // Returning the detailed mock data as if it came from the API
     const mockApiResponse = {
         universityName: "Aryabhatta Knowledge University",
         stats: {

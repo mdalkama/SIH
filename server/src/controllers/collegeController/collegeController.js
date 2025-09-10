@@ -22,7 +22,7 @@ export const createCollege = async (req, res) => {
         }
 
         // 1. Create College Admin
-        const newAdmin = new Staff({ ...adminData, role: 'CollegeAdmin', university: universityId });
+        const newAdmin = new Staff({ ...adminData, role: 'CollegeAdmin',collegeCode: collegeData.code, university: universityId });
         const savedAdmin = await newAdmin.save({ session });
 
         // 2. Create College and link the admin

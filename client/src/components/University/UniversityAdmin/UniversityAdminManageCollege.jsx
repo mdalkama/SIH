@@ -51,17 +51,15 @@ const UniversityCollegeManager = () => {
                 }
 
                 const data = await response.json();
-                console.log("Fetched Courses:", data);
-                console.log(data)
-                // Agar API courses array deta hai
-                if (Array.isArray(data)) {
+
+                // Handle different possible API response structures for courses
+                if (Array.isArray(data.data)) {
+                    setAllCourses(data.data);
+                } else if (Array.isArray(data)) {
                     setAllCourses(data);
-                }
-                // Agar API object me courses key deta hai
-                else if (data.courses) {
+                } else if (data.courses) {
                     setAllCourses(data.courses);
-                }
-                else {
+                } else {
                     setAllCourses([]);
                 }
             } catch (err) {
@@ -103,7 +101,11 @@ const UniversityCollegeManager = () => {
             }
         };
 
-        fetchColleges();
+        const debounceFetch = setTimeout(() => {
+            fetchColleges();
+        }, 300); // Debounce search input
+
+        return () => clearTimeout(debounceFetch);
     }, [currentPage, rowsPerPage, searchTerm, statusFilter]);
 
 
@@ -137,14 +139,14 @@ const UniversityCollegeManager = () => {
         setIsLoading(true);
         try {
             let response;
-            const universityId = "YOUR_UNIVERSITY_ID"; // Replace with actual dynamic University ID from auth context
+            const universityId = "68c126f6d78ab505fb0a5143"; // Replace with actual dynamic University ID from auth context
 
             if (editingCollege) {
                 // Update College
                 response = await fetch(`${API_BASE_URL}/${editingCollege._id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(collegeData),
+                    body: JSON.stringify({ collegeData, adminData }),
                     credentials: 'include'
                 });
             } else {
@@ -163,14 +165,15 @@ const UniversityCollegeManager = () => {
             }
 
             const result = await response.json();
+            const updatedCollege = result.college || result.data;
 
             if (editingCollege) {
-                setColleges(colleges.map(c => c._id === editingCollege._id ? result.college : c));
-                addToast('success', `${result.college.name} updated successfully.`);
+                setColleges(colleges.map(c => c._id === editingCollege._id ? updatedCollege : c));
+                addToast('success', `${updatedCollege.name} updated successfully.`);
             } else {
-                setColleges([result.college, ...colleges]);
+                setColleges(prev => [updatedCollege, ...prev]);
                 setTotalColleges(prev => prev + 1);
-                addToast('success', `${result.college.name} created successfully.`);
+                addToast('success', `${updatedCollege.name} created successfully.`);
             }
 
             closeModal();
@@ -180,6 +183,7 @@ const UniversityCollegeManager = () => {
             setIsLoading(false);
         }
     };
+
 
     const handleDeleteCollege = async () => {
         setIsLoading(true);
@@ -210,15 +214,14 @@ const UniversityCollegeManager = () => {
     }, [totalColleges]);
 
     return (
-        <div className="min-h-screen font-sans">
+        <div className="min-h-screen font-sans p-4 sm:p-6 lg:p-8 bg-gray-50">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <StatCard title="Total Colleges" value={stats.total} icon={<Building />} color="blue" />
-                    {/* These stats would be more accurate from a dedicated stats API endpoint */}
-                    <StatCard title="Active" value={"..."} icon={<CheckCircle />} color="green" />
-                    <StatCard title="Pending" value={"..."} icon={<Loader2 />} color="yellow" />
-                    <StatCard title="Inactive" value={"..."} icon={<X />} color="gray" />
+                    <StatCard title="Active" value={"N/A"} icon={<CheckCircle />} color="green" />
+                    <StatCard title="Pending" value={"N/A"} icon={<Loader2 />} color="yellow" />
+                    <StatCard title="Inactive" value={"N/A"} icon={<X />} color="gray" />
                 </div>
 
                 <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -351,7 +354,7 @@ const CollegesTable = ({ colleges, onEdit, onDelete, currentPage, rowsPerPage })
                 </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 text-sm">
-                {colleges.map((college, index) => {
+                {colleges.length > 0 ? colleges.map((college, index) => {
                     const itemNumber = (currentPage - 1) * rowsPerPage + index + 1;
                     return (
                         <tr key={college._id} className="hover:bg-gray-50">
@@ -382,7 +385,11 @@ const CollegesTable = ({ colleges, onEdit, onDelete, currentPage, rowsPerPage })
                             </td>
                         </tr>
                     );
-                })}
+                }) : (
+                    <tr>
+                        <td colSpan="7" className="text-center p-8 text-gray-500">No colleges found.</td>
+                    </tr>
+                )}
             </tbody>
         </table>
     </div>
@@ -443,18 +450,60 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses
     const isEditing = !!college;
     const [activeTab, setActiveTab] = useState('details');
     const [showPassword, setShowPassword] = useState(false);
+
+    // State is now structured to match the final JSON object
     const [formData, setFormData] = useState({
-        name: college?.name || '', code: college?.code || '', type: college?.type || '', status: college?.status || 'Pending Approval',
-        location: college?.location || '', email: college?.contact?.email || '', phone: college?.contact?.phone || '', website: college?.contact?.website || '',
-        affiliationId: college?.affiliationId || '', establishmentDate: college?.establishmentDate?.split('T')[0] || '', capacity: college?.capacity || '',
+        // College Details
+        name: college?.name || '',
+        code: college?.code || '',
+        type: college?.type || '',
+        status: college?.status || 'Pending Approval',
+        affiliationId: college?.affiliationId || '',
+        establishmentDate: college?.establishmentDate?.split('T')[0] || '',
+        capacity: college?.capacity || '',
         courses: college?.courses || [],
-        adminName: '', adminEmail: '', adminStaffId: '', adminPhone: '', adminPassword: '', adminGender: '', adminSalary: '',
+
+        // --- UPDATED: Nested location state ---
+        location: {
+            address: college?.location?.address || '',
+            city: college?.location?.city || '',
+            state: college?.location?.state || '',
+            pincode: college?.location?.pincode || '',
+        },
+        // --- UPDATED: Nested contact state ---
+        contact: {
+            email: college?.contact?.email || '',
+            phone: college?.contact?.phone || '',
+            website: college?.contact?.website || '',
+        },
+
+        // Admin Details
+        adminName: '',
+        adminEmail: '',
+        adminStaffId: '',
+        adminPhone: '',
+        adminPassword: '',
+        adminGender: '',
+        adminSalary: '',
     });
     const [error, setError] = useState('');
 
+    // Handles changes for top-level fields (e.g., name, code)
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    // --- NEW: Handles changes for nested state objects (location, contact) ---
+    const handleNestedChange = (section, e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [section]: {
+                ...prev[section],
+                [name]: value,
+            },
+        }));
     };
 
     const handleCourseChange = (selectedCourseIds) => {
@@ -462,9 +511,10 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses
     };
 
     const handleSubmit = () => {
-        const { name, code, email, phone, type, affiliationId } = formData;
-        if (!name || !code || !email || !phone || !type || !affiliationId) {
-            setError('Please fill all required (*) college fields.'); return;
+        // Validation for required fields
+        const { name, code, type, affiliationId, contact, location } = formData;
+        if (!name || !code || !type || !affiliationId || !contact.email || !contact.phone || !location.city || !location.state) {
+            setError('Please fill all required (*) fields in College Details and Contact tabs.'); return;
         }
         if (!isEditing) {
             const { adminName, adminEmail, adminStaffId, adminPassword } = formData;
@@ -473,10 +523,34 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses
             }
         }
         setError('');
-        const collegeData = { name, code, type, status: formData.status, location: formData.location, contact: { email, phone, website: formData.website }, affiliationId, establishmentDate: formData.establishmentDate, capacity: formData.capacity, courses: formData.courses };
-        const adminData = isEditing ? null : { name: formData.adminName, email: formData.adminEmail, staffId: formData.adminStaffId, phone: formData.adminPhone, password: formData.adminPassword, gender: formData.adminGender, salary: formData.adminSalary };
+
+        // --- UPDATED: Assemble collegeData from the structured state ---
+        const collegeData = {
+            name: formData.name,
+            code: formData.code,
+            type: formData.type,
+            status: formData.status,
+            affiliationId: formData.affiliationId,
+            establishmentDate: formData.establishmentDate,
+            capacity: formData.capacity,
+            location: formData.location, // Already a nested object
+            contact: formData.contact,   // Already a nested object
+            courses: formData.courses,
+        };
+
+        const adminData = isEditing ? null : {
+            name: formData.adminName,
+            email: formData.adminEmail,
+            staffId: formData.adminStaffId,
+            phone: formData.adminPhone,
+            password: formData.adminPassword,
+            gender: formData.adminGender,
+            salary: formData.adminSalary
+        };
+
         onSave(collegeData, adminData);
     };
+
 
     if (!isOpen) return null;
 
@@ -500,9 +574,23 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses
                 </div>
                 <div className="p-6 space-y-6 max-h-[65vh] overflow-y-auto">
                     {activeTab === 'details' && (<div className="grid grid-cols-1 md:grid-cols-3 gap-4"> <div className="md:col-span-3"><label className="block text-sm font-medium text-gray-700 mb-1">College Name *</label><input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">College Code *</label><input type="text" name="code" value={formData.code} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">College Type *</label><input type="text" name="type" value={formData.type} onChange={handleChange} placeholder="e.g., Engineering" className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Total Capacity</label><input type="number" name="capacity" value={formData.capacity} onChange={handleChange} placeholder="e.g., 2500" className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Affiliation ID *</label><input type="text" name="affiliationId" value={formData.affiliationId} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Establishment Date</label><input type="date" name="establishmentDate" value={formData.establishmentDate} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Status</label><select name="status" value={formData.status} onChange={handleChange} className="w-full px-3 py-2 border bg-white border-gray-300 rounded-lg"><option>Active</option><option>Inactive</option><option>Pending Approval</option></select></div> </div>)}
-                    {activeTab === 'contact' && (<div className="grid grid-cols-1 md:grid-cols-2 gap-4"> <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Location / Address</label><input type="text" name="location" value={formData.location} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Contact Email *</label><input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Contact Phone *</label><input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Website</label><input type="text" name="website" value={formData.website} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> </div>)}
+
+                    {/* --- UPDATED: Contact & Location Tab --- */}
+                    {activeTab === 'contact' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Address</label><input type="text" name="address" value={formData.location.address} onChange={(e) => handleNestedChange('location', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
+                            <div><label className="block text-sm font-medium text-gray-700 mb-1">City *</label><input type="text" name="city" value={formData.location.city} onChange={(e) => handleNestedChange('location', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
+                            <div><label className="block text-sm font-medium text-gray-700 mb-1">State *</label><input type="text" name="state" value={formData.location.state} onChange={(e) => handleNestedChange('location', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
+                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Pincode</label><input type="text" name="pincode" value={formData.location.pincode} onChange={(e) => handleNestedChange('location', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
+                            <div className="md:col-span-2"><hr className="my-2" /></div>
+                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Contact Email *</label><input type="email" name="email" value={formData.contact.email} onChange={(e) => handleNestedChange('contact', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
+                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Contact Phone *</label><input type="tel" name="phone" value={formData.contact.phone} onChange={(e) => handleNestedChange('contact', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
+                            <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Website</label><input type="text" name="website" value={formData.contact.website} onChange={(e) => handleNestedChange('contact', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
+                        </div>
+                    )}
+
                     {activeTab === 'courses' && (<MultiSelectCourses allCourses={allCourses} selectedCourses={formData.courses} onChange={handleCourseChange} />)}
-                    {!isEditing && activeTab === 'admin' && (<div className="grid grid-cols-1 md:grid-cols-3 gap-4"> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Full Name *</label><input type="text" name="adminName" value={formData.adminName} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Email *</label><input type="email" name="adminEmail" value={formData.adminEmail} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Staff ID *</label><input type="text" name="adminStaffId" value={formData.adminStaffId} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Phone</label><input type="tel" name="adminPhone" value={formData.adminPhone} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Gender</label><select name="adminGender" value={formData.adminGender} onChange={handleChange} className="w-full px-3 py-2 border bg-white border-gray-300 rounded-lg"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Salary</label><input type="number" name="adminSalary" value={formData.adminSalary} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div className="md:col-span-3 relative"><label className="block text-sm font-medium text-gray-700 mb-1">Set Password *</label><input type={showPassword ? "text" : "password"} name="adminPassword" value={formData.adminPassword} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-9 text-gray-400 hover:text-gray-600">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></div> </div>)}
+                    {!isEditing && activeTab === 'admin' && (<div className="grid grid-cols-1 md:grid-cols-3 gap-4"> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Full Name *</label><input type="text" name="adminName" value={formData.adminName} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Email *</label><input type="email" name="adminEmail" value={formData.adminEmail} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Staff ID *</label><input type="text" name="adminStaffId" value={formData.adminStaffId} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Phone</label><input type="tel" name="adminPhone" value={formData.adminPhone} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Gender</label><select name="adminGender" value={formData.adminGender} onChange={handleChange} className="w-full px-3 py-2 border bg-white border-gray-300 rounded-lg"><option value="">Select</option><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Salary</label><input type="number" name="adminSalary" value={formData.adminSalary} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div className="md:col-span-3 relative"><label className="block text-sm font-medium text-gray-700 mb-1">Set Password *</label><input type={showPassword ? "text" : "password"} name="adminPassword" value={formData.adminPassword} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-9 text-gray-400 hover:text-gray-600">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></div> </div>)}
                     {error && <p className="text-red-600 text-sm pt-2">{error}</p>}
                 </div>
                 <div className="p-4 bg-gray-50 border-t flex justify-end gap-3"><button onClick={onClose} disabled={processing} className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">Cancel</button><button onClick={handleSubmit} disabled={processing} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 flex items-center min-w-[120px] justify-center">{processing ? <Loader2 size={16} className="animate-spin" /> : (isEditing ? 'Save Changes' : 'Create College')}</button></div>
@@ -565,4 +653,3 @@ const ToastContainer = ({ toasts, setToasts }) => {
 };
 
 export default UniversityCollegeManager;
-
