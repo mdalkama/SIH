@@ -65,6 +65,10 @@ const LibraryDashboard = () => {
                         const catalogData = await catalogRes.json();
                         if (catalogData.success) setLibraryCatalog(catalogData.books || []);
                     }
+                    console.log("studentProfile", profileData.data.profile);
+                    console.log("borrowedBooks", profileData.data.issuedBooks);
+                    console.log("libraryHistory", profileData.data.activity);
+                    console.log("libraryCatalog", libraryCatalog);
                 } else { throw new Error(profileData.message); }
             } catch (err) { setError(err.message); }
             finally { setIsLoading(false); }
@@ -114,11 +118,12 @@ const LibraryDashboard = () => {
     
     const renderBorrowedBooks = () => (
         <div className="space-y-4">
-            {borrowedBooks.length > 0 ? borrowedBooks.map((book) => {
+            {borrowedBooks.length > 0 ? borrowedBooks.map((book,index) => {
                 const dueDate = new Date(new Date(book.issuedAt).setDate(new Date(book.issuedAt).getDate() + 15 * (book.renewals + 1)));
                 const status = getStatusInfo(dueDate);
                 return (
-                    <div key={book.copyId} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <div key={book.copyId+index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        {console.log("Rendering book:", book, "Due Date:", dueDate, "Status:", status)}
                         <div className="flex flex-col sm:flex-row justify-between items-start mb-4">
                             <div className="flex-1 mb-3 sm:mb-0">
                                 <h4 className="text-lg font-semibold text-gray-900">{book.title}</h4>
@@ -141,17 +146,17 @@ const LibraryDashboard = () => {
 
     const renderSearchCatalog = () => (
         <div className="space-y-6">
-             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                 <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1"><div className="relative"><Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /><input type="text" placeholder="Search by title or author..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg" /></div></div>
                     <div className="md:w-56"><select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white"><option value="all">All Categories</option><option value="Computer Science">Computer Science</option><option value="Electronics">Electronics</option></select></div>
                 </div>
             </div>
             <div className="space-y-4">
-                {filteredCatalog.length > 0 ? filteredCatalog.map((book) => {
+                {filteredCatalog.length > 0 ? filteredCatalog.map((book, index) => {
                     const availableCopies = book.copies.filter(c => !c.occupiedBy).length;
                     return (
-                        <div key={book._id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div key={book._id+index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                                 <div className="flex-1">
                                     <h4 className="text-lg font-semibold text-gray-900">{book.title}</h4>
