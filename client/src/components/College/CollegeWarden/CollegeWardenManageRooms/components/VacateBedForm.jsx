@@ -5,15 +5,7 @@ import { Search, X, Building, User, Bed, Loader2, AlertTriangle, CheckCircle, Lo
 const FloorSelectorPanel = ({ floors, selectedFloorId, onSelect, isLoading }) => {
     if (isLoading) { return <div className="p-4 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-400" /></div>; }
     if (floors.length === 0) { return <p className="p-4 bg-yellow-50 text-yellow-800 text-sm rounded-lg">No floors found for this hostel.</p>; }
-    return (
-        <div className="p-2 bg-gray-100 rounded-lg">
-            <div className="flex flex-wrap gap-2">
-                {floors.map(floor => (
-                    <button type="button" key={floor._id} onClick={() => onSelect(floor)} className={`px-4 py-2 text-center rounded-md border text-sm transition-all ${selectedFloorId === floor._id ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Floor {floor.floorNumber}</button>
-                ))}
-            </div>
-        </div>
-    );
+    return (<div className="p-2 bg-gray-100 rounded-lg"><div className="flex flex-wrap gap-2">{floors.map(floor => (<button type="button" key={floor._id} onClick={() => onSelect(floor)} className={`px-4 py-2 text-center rounded-md border text-sm transition-all ${selectedFloorId === floor._id ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'}`}>Floor {floor.floorNumber}</button>))}</div></div>);
 };
 
 const OccupiedBedSelector = ({ hostelId, floorId, onBedSelect }) => {
@@ -57,8 +49,7 @@ const OccupiedBedSelector = ({ hostelId, floorId, onBedSelect }) => {
                             <div className="flex flex-wrap gap-2">
                                 {bedsByRoom[room._id] ? bedsByRoom[room._id].map(bed => (
                                     <button
-                                        key={bed._id}
-                                        type="button"
+                                        key={bed._id} type="button"
                                         onClick={() => onBedSelect({ ...bed, roomId: room._id, roomNumber: room.roomNumber })}
                                         disabled={!bed.isOccupied}
                                         className={`px-3 py-1.5 text-xs font-semibold rounded-full flex items-center gap-1.5 transition-all ${!bed.isOccupied ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-red-100 text-red-800 hover:bg-red-200'}`}
@@ -93,7 +84,7 @@ const VacateBedForm = ({ hostels }) => {
     const [message, setMessage] = useState('');
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const searchContainerRef = useRef(null);
-
+    
     // --- Data Fetching & Logic ---
     const handleStudentSearch = async () => {
         if (!studentSearchTerm) return;
@@ -114,7 +105,7 @@ const VacateBedForm = ({ hostels }) => {
             setIsFetching(false);
         }
     };
-
+    
     useEffect(() => {
         if (!selectedHostel) { setFloors([]); setSelectedFloor(null); return; }
         const fetchFloorsForHostel = async () => {
@@ -142,6 +133,7 @@ const VacateBedForm = ({ hostels }) => {
         setMessage('');
 
         let url;
+        // YAHAN FIX KIYA GAYA HAI: Ab URL vacateMode ke hisab se theek se banega
         if (vacateMode === 'student' && foundStudent) {
             const { hostelId, floorId, roomId, bedId } = foundStudent.currentIds;
             url = `https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms/${roomId}/beds/${bedId}/vacate`;
@@ -172,7 +164,7 @@ const VacateBedForm = ({ hostels }) => {
         setStudentSearchTerm(''); setFoundStudent(null);
         setMessage('');
     };
-
+    
     const handleSelectHostel = (hostel) => { setSelectedHostel(hostel); setSearchTerm(''); setIsDropdownVisible(false); };
     const filteredHostels = hostels ? hostels.filter(h => h.name.toLowerCase().includes(searchTerm.toLowerCase())) : [];
 
@@ -183,10 +175,10 @@ const VacateBedForm = ({ hostels }) => {
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Vacate a Bed</h2>
 
             <div className="flex justify-center mb-6 p-1 bg-gray-200 rounded-lg max-w-sm mx-auto">
-                <button onClick={() => { setVacateMode('location'); resetForm(); }} className={`w-1/2 py-2 rounded-md text-sm font-semibold transition-all ${vacateMode === 'location' ? 'bg-white text-blue-600 shadow-sm' : 'bg-transparent text-gray-600'}`}><MapPin size={16} className="inline-block mr-1" /> By Location</button>
-                <button onClick={() => { setVacateMode('student'); resetForm(); }} className={`w-1/2 py-2 rounded-md text-sm font-semibold transition-all ${vacateMode === 'student' ? 'bg-white text-blue-600 shadow-sm' : 'bg-transparent text-gray-600'}`}><User size={16} className="inline-block mr-1" /> By Student</button>
+                <button onClick={() => { setVacateMode('location'); resetForm(); }} className={`w-1/2 py-2 rounded-md text-sm font-semibold transition-all ${vacateMode === 'location' ? 'bg-white text-blue-600 shadow-sm' : 'bg-transparent text-gray-600'}`}><MapPin size={16} className="inline-block mr-1"/> By Location</button>
+                <button onClick={() => { setVacateMode('student'); resetForm(); }} className={`w-1/2 py-2 rounded-md text-sm font-semibold transition-all ${vacateMode === 'student' ? 'bg-white text-blue-600 shadow-sm' : 'bg-transparent text-gray-600'}`}><User size={16} className="inline-block mr-1"/> By Student</button>
             </div>
-
+            
             {vacateMode === 'location' && currentStep === 1 && (
                 <div className="space-y-6">
                     <fieldset className="space-y-2">
@@ -221,13 +213,13 @@ const VacateBedForm = ({ hostels }) => {
                         <div className="flex gap-2">
                             <input type="text" value={studentSearchTerm} onChange={(e) => setStudentSearchTerm(e.target.value)} placeholder="Enter registration number..." className="flex-grow px-3 py-2 border rounded-lg" />
                             <button type="button" onClick={handleStudentSearch} disabled={!studentSearchTerm || isFetching} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold flex items-center gap-2">
-                                {isFetching ? <Loader2 className="w-5 h-5 animate-spin" /> : <UserSearch className="w-5 h-5" />} Find
+                                {isFetching ? <Loader2 className="w-5 h-5 animate-spin"/> : <UserSearch className="w-5 h-5"/>} Find
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-
+            
             {currentStep === 2 && (
                 <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-800">Confirm Vacate</h3>
@@ -251,10 +243,10 @@ const VacateBedForm = ({ hostels }) => {
             )}
 
             {message && !isSubmitting && currentStep === 1 && (
-                <div className={`text-sm p-3 mt-4 rounded-lg flex items-center gap-2 ${message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-                    {message.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
+                 <div className={`text-sm p-3 mt-4 rounded-lg flex items-center gap-2 ${message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                    {message.type === 'success' ? <CheckCircle className="w-5 h-5"/> : <AlertTriangle className="w-5 h-5"/>}
                     {message.text}
-                </div>
+                 </div>
             )}
         </div>
     );
