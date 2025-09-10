@@ -732,23 +732,18 @@ export const findStudentForAllocation = async (req, res) => {
   try {
     const { regNo } = req.params;
     const student = await Student.findOne({ registrationNumber: regNo }).lean();
-    console.log("student", student);
 
     if (!student) {
-      return res
-        .status(404)
-        .json({ error: "Student not found with this registration number." });
+      return res.status(404).json({ error: "Student not found with this registration number." });
     }
 
-    // Check if student is already allocated
+    // Student ka hostel record dhoondho
     const alreadyAllocated = await StudentHostel.findOne({
       occupant: student._id,
     });
-    console.log("alreadyAllocated", alreadyAllocated);
-    if (alreadyAllocated) {
-      return res
-        .status(409)
-        .json({ error: "This student is already allocated to a bed." });
+    
+    if (alreadyAllocated && alreadyAllocated.currentHostel) {
+      return res.status(409).json({ error: "This student is already allocated to a bed." });
     }
 
     res.json({
@@ -760,6 +755,7 @@ export const findStudentForAllocation = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Error in findStudentForAllocation:", error);
     res.status(500).json({ error: "Server error." });
   }
 };
@@ -788,7 +784,6 @@ export const vacateBed = async (req, res) => {
     const studentHostel = await StudentHostel.findOne({ occupant: studentId });
     if (studentHostel) {
       studentHostel.currentHostel = null;
-      studentHostel.occupant = null;
       await studentHostel.save();
     }
     res.json({ success: true, message: "Bed vacated successfully" });
