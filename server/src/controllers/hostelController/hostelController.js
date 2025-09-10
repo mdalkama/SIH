@@ -723,6 +723,7 @@ export const vacateBed = async (req, res) => {
     const studentHostel = await StudentHostel.findOne({ occupant: studentId });
     if (studentHostel) {
       studentHostel.currentHostel = null;
+      studentHostel.occupant = null;
       await studentHostel.save();
     }
     res.json({ success: true, message: "Bed vacated successfully" });
