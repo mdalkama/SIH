@@ -1,60 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Edit2, BookOpen, GraduationCap, X } from 'lucide-react';
 
-// Sample data for frontend CRUD - Replace with actual API calls later
-const initialCourses = [
-    {
-        _id: '1',
-        courseId: 'CSE2024',
-        degree: 'B.Tech',
-        branch: 'Computer Science Engineering',
-        specialization: 'Artificial Intelligence',
-        totalSemester: 8,
-        semesterFees: {
-            1: 50000,
-            2: 50000,
-            3: 55000,
-            4: 55000,
-            5: 60000,
-            6: 60000,
-            7: 65000,
-            8: 65000
-        }
-    },
-    {
-        _id: '2',
-        courseId: 'ECE2024',
-        degree: 'B.Tech',
-        branch: 'Electronics and Communication Engineering',
-        specialization: '',
-        totalSemester: 8,
-        semesterFees: {
-            1: 45000,
-            2: 45000,
-            3: 50000,
-            4: 50000,
-            5: 55000,
-            6: 55000,
-            7: 60000,
-            8: 60000
-        }
-    },
-    {
-        _id: '3',
-        courseId: 'MBA2024',
-        degree: 'MBA',
-        branch: 'Business Administration',
-        specialization: 'Finance',
-        totalSemester: 4,
-        semesterFees: {
-            1: 75000,
-            2: 75000,
-            3: 80000,
-            4: 80000
-        }
-    }
-];
-
 
 
 // --- Main Parent Component ---
@@ -93,9 +39,8 @@ const CollegeAdminManageCourses = () => {
                 }
 
                 const data = await response.json();
-                console.log(data);
 
-                setCourses(data.courses || []);
+                setCourses(data.college.courses || []);
 
             } catch (error) {
                 console.error('Error fetching courses:', error);
@@ -132,6 +77,7 @@ const CollegeAdminManageCourses = () => {
 
     const handleEdit = (item) => {
         setEditingItem(item);
+        console.log(item);
         setShowEditModal(true);
     };
 
@@ -145,20 +91,14 @@ const CollegeAdminManageCourses = () => {
     }, [courses]);
 
     return (
-        <div className="min-h-screen font-sans" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        <div className="min-h-screen font-sans p-4 sm:p-6 lg:p-8 bg-gray-50" style={{ fontFamily: 'Poppins, sans-serif' }}>
             <div className="max-w-7xl mx-auto">
-                {/* Page Header */}
-                {/* <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-blue-900 mb-2">Course Fees Management</h1>
-                    <p className="text-gray-600">Manage fees for courses in your college</p>
-                </div> */}
-
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <StatCard 
-                        icon={<GraduationCap size={20} className="text-blue-600" />} 
-                        title="Total Courses" 
-                        value={stats.total} 
+                    <StatCard
+                        icon={<GraduationCap size={20} className="text-blue-600" />}
+                        title="Total Courses"
+                        value={stats.total}
                     />
                     <StatCard title="B.Tech Programs" value={stats.btech} />
                     <StatCard title="M.Tech Programs" value={stats.mtech} />
@@ -173,11 +113,11 @@ const CollegeAdminManageCourses = () => {
                         searchTerm={searchTerm}
                         onSearchChange={setSearchTerm}
                     >
-                        <CourseTable 
-                            courses={paginatedData} 
-                            onEdit={handleEdit} 
-                            currentPage={currentPage} 
-                            rowsPerPage={rowsPerPage} 
+                        <CourseTable
+                            courses={paginatedData}
+                            onEdit={handleEdit}
+                            currentPage={currentPage}
+                            rowsPerPage={rowsPerPage}
                         />
 
                         {loading && <div className="text-center py-12">Loading...</div>}
@@ -202,23 +142,23 @@ const CollegeAdminManageCourses = () => {
 
             {/* Modals */}
             {showEditModal && (
-                <EditFeesModal 
-                    setShowModal={setShowEditModal} 
+                <EditFeesModal
+                    setShowModal={setShowEditModal}
                     initialData={editingItem}
                     onUpdateSuccess={(updatedItem) => {
                         setCourses(prev => prev.map(c => c._id === updatedItem._id ? updatedItem : c));
                         showAlert('success', 'Course fees updated successfully!');
-                    }} 
-                    onUpdateError={(error) => showAlert('error', `Failed to update fees. ${error.message || ''}`)} 
+                    }}
+                    onUpdateError={(error) => showAlert('error', `Failed to update fees. ${error.message || ''}`)}
                 />
             )}
 
             {/* Alert Notification */}
-            <AlertNotification 
-                show={alert.show} 
-                type={alert.type} 
-                message={alert.message} 
-                onClose={hideAlert} 
+            <AlertNotification
+                show={alert.show}
+                type={alert.type}
+                message={alert.message}
+                onClose={hideAlert}
             />
         </div>
     );
@@ -272,11 +212,10 @@ const CourseTable = ({ courses, onEdit, currentPage, rowsPerPage }) => (
         <tbody className="divide-y divide-gray-200">
             {courses.map((course, index) => {
                 const itemNumber = (currentPage - 1) * rowsPerPage + index + 1;
-                
-                // Calculate total fees from all semesters
-                const totalFees = course.semesterFees ? 
+
+                const totalFees = course.semesterFees ?
                     Object.values(course.semesterFees).reduce((sum, fee) => sum + (fee || 0), 0) : 0;
-                
+
                 return (
                     <tr key={course._id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 text-center text-sm text-gray-500 font-mono">{String(itemNumber).padStart(2, '0')}</td>
@@ -295,8 +234,8 @@ const CourseTable = ({ courses, onEdit, currentPage, rowsPerPage }) => (
                             </div>
                         </td>
                         <td className="px-6 py-4">
-                            <button 
-                                onClick={() => onEdit(course)} 
+                            <button
+                                onClick={() => onEdit(course)}
                                 className="text-gray-500 hover:text-blue-600 transition-colors"
                                 title="Edit Semester Fees"
                             >
@@ -356,12 +295,22 @@ const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSiz
 };
 
 const AlertNotification = ({ show, type, message, onClose }) => {
-    if (!show) return null;
     const colors = {
         success: 'bg-green-100 border-green-300 text-green-800',
         error: 'bg-red-100 border-red-300 text-red-800',
         info: 'bg-blue-100 border-blue-300 text-blue-800',
     };
+    // Auto-close the alert after 4 seconds
+    useEffect(() => {
+        if (!show) return;
+        const timer = setTimeout(() => {
+            onClose();
+        }, 4000);
+        return () => clearTimeout(timer);
+    }, [show, onClose]);
+
+    if (!show) return null;
+
     return (
         <div className={`fixed top-5 right-5 p-4 rounded-lg border shadow-lg z-50 transition-transform transform ${show ? 'translate-x-0' : 'translate-x-full'} ${colors[type] || colors.info}`}>
             <div className="flex items-center justify-between">
@@ -374,7 +323,7 @@ const AlertNotification = ({ show, type, message, onClose }) => {
 
 
 
-// Modal for editing semester-wise course fees
+// --- CORRECTED COMPONENT ---
 const EditFeesModal = ({ setShowModal, initialData = null, onUpdateSuccess, onUpdateError }) => {
     const [loading, setLoading] = useState(false);
     const [semesterFees, setSemesterFees] = useState({});
@@ -382,32 +331,60 @@ const EditFeesModal = ({ setShowModal, initialData = null, onUpdateSuccess, onUp
     useEffect(() => {
         if (initialData?.semesterFees) {
             setSemesterFees(initialData.semesterFees);
+        } else {
+            setSemesterFees({});
         }
     }, [initialData]);
 
     const handleSemesterFeeChange = (semester, value) => {
         setSemesterFees(prev => ({
             ...prev,
-            [semester]: parseInt(value) || 0
+            [semester]: parseInt(value, 10) || 0
         }));
     };
-
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         setLoading(true);
+
         try {
-            const updatedItem = {
-                ...initialData,
-                semesterFees: semesterFees
-            };
-            
-            onUpdateSuccess && onUpdateSuccess(updatedItem);
+            // Convert semesterFees object -> array of { semester, fees }
+            const feesArray = Object.entries(semesterFees).map(([semester, fee]) => ({
+                semester: Number(semester),
+                fees: Number(fee),
+            }));
+
+            const response = await fetch(
+                `https://sih-4ptm.onrender.com/api/v1/courses/${initialData._id}/fees`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({ fees: feesArray }), // ✅ correct format
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Failed to update fees");
+            }
+
+            const result = await response.json();
+
+            // Update parent with latest course
+            onUpdateSuccess(result.course);
             setShowModal(false);
+
         } catch (error) {
-            onUpdateError && onUpdateError(error);
+            console.error("Error updating fees:", error);
+            onUpdateError(error);
         } finally {
             setLoading(false);
         }
     };
+
+
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -425,39 +402,39 @@ const EditFeesModal = ({ setShowModal, initialData = null, onUpdateSuccess, onUp
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-600 mb-1">Course ID</label>
-                                <input 
-                                    type="text" 
-                                    value={initialData?.courseId || ''} 
-                                    disabled 
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500" 
+                                <input
+                                    type="text"
+                                    value={initialData?.courseId || ''}
+                                    disabled
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
                                 />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-600 mb-1">Degree</label>
-                                <input 
-                                    type="text" 
-                                    value={initialData?.degree || ''} 
-                                    disabled 
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500" 
+                                <input
+                                    type="text"
+                                    value={initialData?.degree || ''}
+                                    disabled
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
                                 />
                             </div>
                             <div className="col-span-2">
                                 <label className="block text-sm font-medium text-gray-600 mb-1">Branch</label>
-                                <input 
-                                    type="text" 
-                                    value={initialData?.branch || ''} 
-                                    disabled 
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500" 
+                                <input
+                                    type="text"
+                                    value={initialData?.branch || ''}
+                                    disabled
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
                                 />
                             </div>
                             {initialData?.specialization && (
                                 <div className="col-span-2">
                                     <label className="block text-sm font-medium text-gray-600 mb-1">Specialization</label>
-                                    <input 
-                                        type="text" 
-                                        value={initialData.specialization} 
-                                        disabled 
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500" 
+                                    <input
+                                        type="text"
+                                        value={initialData.specialization}
+                                        disabled
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
                                     />
                                 </div>
                             )}
@@ -475,11 +452,11 @@ const EditFeesModal = ({ setShowModal, initialData = null, onUpdateSuccess, onUp
                                     </label>
                                     <div className="relative">
                                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">₹</span>
-                                        <input 
-                                            type="number" 
-                                            value={semesterFees[semester] || ''} 
-                                            onChange={(e) => handleSemesterFeeChange(semester, e.target.value)} 
-                                            className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center font-medium" 
+                                        <input
+                                            type="number"
+                                            value={semesterFees[semester] || ''}
+                                            onChange={(e) => handleSemesterFeeChange(semester, e.target.value)}
+                                            className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center font-medium"
                                             placeholder="0"
                                             min="0"
                                         />
@@ -491,15 +468,15 @@ const EditFeesModal = ({ setShowModal, initialData = null, onUpdateSuccess, onUp
                     </div>
                 </div>
                 <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
-                    <button 
-                        onClick={() => setShowModal(false)} 
+                    <button
+                        onClick={() => setShowModal(false)}
                         className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium"
                     >
                         Cancel
                     </button>
-                    <button 
-                        onClick={handleSubmit} 
-                        disabled={loading} 
+                    <button
+                        onClick={handleSubmit}
+                        disabled={loading}
                         className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                     >
                         {loading ? 'Updating...' : 'Update Semester Fees'}
