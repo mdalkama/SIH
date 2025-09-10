@@ -1,16 +1,16 @@
-
 import express from "express";
 import {
-    addBook,
-    deleteBook,
-    addCopies,
-    deleteCopies,
-    issueCopy,
-    returnCopy,
-    getBooks,
-    getStudentBooks,
-    getStudentByRegNo,
-    getAllIssuedBooks
+  addBook,
+  deleteBook,
+  addCopies,
+  deleteCopies,
+  issueCopy,
+  returnCopy,
+  getBooks,
+  getStudentBooks,
+  getStudentByRegNo,
+  getAllIssuedBooks,
+  getMyLibraryProfile,
 } from "../controllers/libraryController/libraryController.js";
 import { role } from "../middlewares/authMiddleware.js"; // if you have role-based auth
 
@@ -36,7 +36,6 @@ router.get("/issued-books/:collegeCode", getAllIssuedBooks);
 // Get student by registration number
 router.get("/student/search/:regNo", getStudentByRegNo);
 
-
 // ---------- COPY ROUTES ----------
 
 // Add more copies to an existing book
@@ -50,5 +49,6 @@ router.post("/copies/issue", issueCopy);
 
 // Return a copy
 router.post("/copies/return", returnCopy);
+
 
 export default router;

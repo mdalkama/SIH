@@ -340,7 +340,6 @@ export const getBooks = async (req, res) => {
 };
 
 // Get all books issued to a student
-
 export const getStudentBooks = async (req, res) => {
   try {
     const librarianId = req.user?.id;
@@ -523,5 +522,92 @@ export const getStudentByRegNo = async (req, res) => {
   } catch (err) {
     console.error("Error fetching student by regNo:", err);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+//get student library profile
+export const getMyLibraryProfile = async (req, res) => {
+  try {
+    const studentId = req.user?.id;
+  console.log(studentId)
+    if (!studentId) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: Student not logged in" });
+    }
+
+    const student = await Student.findById(studentId)
+      .select("collegeCode")
+      .lean();
+    if (!student || !student.collegeCode) {
+      return res
+        .status(404)
+        .json({ message: "Student or college code not found." });
+    }
+
+    const studentLibrary = await StudentLibrary.findOne({
+      occupiedBy: studentId,
+    })
+      .populate("occupiedBy", "name email course registrationNumber createdAt")
+      .populate("issuedBooks.issuedBy", "name")
+      .populate("activity.issuedBy", "name")
+      .lean();
+
+    if (!studentLibrary) {
+      // Agar student ka library account nahi hai, to ek khali account bana kar bhejo
+      const studentProfile = await Student.findById(studentId).lean();
+      return res.json({
+        success: true,
+        data: {
+          profile: studentProfile,
+          issuedBooks: [],
+          activity: [],
+        },
+      });
+    }
+
+    const mainLibrary = await Library.findOne({
+      collegeCode: student.collegeCode,
+    }).lean();
+    if (!mainLibrary) {
+      // Agar library hi nahi hai, to bhi student ka data bhejo
+      return res.json({
+        success: true,
+        data: {
+          profile: studentLibrary.occupiedBy,
+          issuedBooks: [],
+          activity: studentLibrary.activity,
+        },
+      });
+    }
+
+    const enrichedIssuedBooks = (studentLibrary.issuedBooks || []).map(
+      (book) => {
+        const bookDetails = mainLibrary.books.find((b) =>
+          b._id.equals(book.bookId)
+        );
+        return {
+          ...book,
+          title: bookDetails?.title || "Unknown",
+          author: bookDetails?.author || "N/A",
+        };
+      }
+    );
+
+    const sortedActivity = (studentLibrary.activity || []).sort(
+      (a, b) => new Date(b.issuedAt) - new Date(a.issuedAt)
+    );
+
+    return res.json({
+      success: true,
+      data: {
+        profile: studentLibrary.occupiedBy,
+        issuedBooks: enrichedIssuedBooks,
+        activity: sortedActivity,
+      },
+    });
+  } catch (err) {
+    console.error("Error in getMyLibraryProfile:", err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
