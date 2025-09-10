@@ -212,7 +212,6 @@ const UniversityCollegeManager = () => {
     // For accurate counts, a dedicated API endpoint is recommended.
     const stats = useMemo(() => {
         const total = colleges.length;
-
         const active = colleges.filter(c => c.status === "Active").length;
         const pending = colleges.filter(c => c.status === "Pending Approval").length;
         const inactive = colleges.filter(c => c.status === "Inactive").length;
