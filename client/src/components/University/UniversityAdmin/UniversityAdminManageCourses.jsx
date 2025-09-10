@@ -5,6 +5,7 @@ import { Plus, Search, Edit2, Trash2, BookOpen, GraduationCap, ChevronLeft, Chev
 
 const UniversityAdminManageCourses = () => {
     const [activeTab, setActiveTab] = useState('courses');
+    const [activeCourseTab, setActiveCourseTab] = useState('all'); // For course sub-tabs
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -54,7 +55,16 @@ const UniversityAdminManageCourses = () => {
     }, []);
 
     const processedData = useMemo(() => {
-        const data = activeTab === 'courses' ? courses : subjects;
+        let data = activeTab === 'courses' ? courses : subjects;
+        
+        // Filter courses based on activeCourseTab
+        if (activeTab === 'courses') {
+            if (activeCourseTab === 'diploma-engg') {
+                data = data.filter(course => course.degree === 'Diploma Engineering');
+            } else if (activeCourseTab === 'diploma-non-engg') {
+                data = data.filter(course => course.degree === 'Diploma Non-Engineering');
+            }
+        }
 
         const filtered = data.filter(item => {
             if (!item) return false;
@@ -74,15 +84,21 @@ const UniversityAdminManageCourses = () => {
 
         return { paginatedData: paginated, totalCount: filtered.length, filteredData: filtered };
 
-    }, [courses, subjects, activeTab, searchTerm, currentPage, rowsPerPage]);
+    }, [courses, subjects, activeTab, activeCourseTab, searchTerm, currentPage, rowsPerPage]);
 
     const { paginatedData, totalCount, filteredData } = processedData;
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
+        setActiveCourseTab('all'); // Reset course sub-tab when changing main tabs
         setSearchTerm('');
         setCurrentPage(1);
         setRowsPerPage(10);
+    };
+
+    const handleCourseTabChange = (tab) => {
+        setActiveCourseTab(tab);
+        setCurrentPage(1); // Reset to first page when changing course sub-tabs
     };
 
     const showAlert = (type, message) => setAlert({ show: true, type, message });
@@ -131,8 +147,14 @@ const UniversityAdminManageCourses = () => {
 
     const stats = useMemo(() => {
         if (activeTab === 'courses') {
+            const filteredCourses = activeCourseTab === 'all' 
+                ? courses 
+                : activeCourseTab === 'diploma-engg' 
+                    ? courses.filter(c => c.degree === 'Diploma Engineering')
+                    : courses.filter(c => c.degree === 'Diploma Non-Engineering');
+                    
             return {
-                total: courses.length,
+                total: filteredCourses.length,
                 // btech: courses.filter(c => c.degree === 'B.Tech').length,
                 // mtech: courses.filter(c => c.degree === 'M.Tech').length,
                 // mba: courses.filter(c => c.degree === 'MBA').length, 
@@ -147,7 +169,7 @@ const UniversityAdminManageCourses = () => {
                 lab: subjects.filter(s => s.type === 'LAB').length
             };
         }
-    }, [courses, subjects, activeTab]);
+    }, [courses, subjects, activeTab, activeCourseTab]);
 
     return (
         <div className="min-h-screen font-sans">
@@ -179,6 +201,42 @@ const UniversityAdminManageCourses = () => {
                             <button onClick={() => handleTabChange('courses')} className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === 'courses' ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`}>Manage Courses</button>
                             <button onClick={() => handleTabChange('subjects')} className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === 'subjects' ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`}>Manage Subjects</button>
                         </div>
+                        
+                        {/* Sub-tabs for courses */}
+                        {activeTab === 'courses' && (
+                            <div className="flex flex-wrap gap-1 mt-4">
+                                <button 
+                                    onClick={() => handleCourseTabChange('all')} 
+                                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                                        activeCourseTab === 'all' 
+                                            ? 'bg-blue-100 text-blue-700' 
+                                            : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                                    }`}
+                                >
+                                    All Courses
+                                </button>
+                                <button 
+                                    onClick={() => handleCourseTabChange('diploma-engg')} 
+                                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                                        activeCourseTab === 'diploma-engg' 
+                                            ? 'bg-blue-100 text-blue-700' 
+                                            : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                                    }`}
+                                >
+                                    Diploma Engineering
+                                </button>
+                                <button 
+                                    onClick={() => handleCourseTabChange('diploma-non-engg')} 
+                                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                                        activeCourseTab === 'diploma-non-engg' 
+                                            ? 'bg-blue-100 text-blue-700' 
+                                            : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                                    }`}
+                                >
+                                    Diploma Non-Engineering
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     <TableView
