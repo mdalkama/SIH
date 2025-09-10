@@ -468,7 +468,7 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses
         affiliationId: college?.affiliationId || '',
         establishmentDate: college?.establishmentDate?.split('T')[0] || '',
         capacity: college?.capacity || '',
-        courses: college?.courses || [],
+        courses: college?.courses?.courseId || [],
 
         // --- UPDATED: Nested location state ---
         location: {
@@ -638,7 +638,7 @@ const MultiSelectCourses = ({ allCourses, selectedCourses, onChange }) => {
                 <select onChange={(e) => handleAddCourse(e.target.value)} value="" className="w-full px-3 py-2 border bg-white border-gray-300 rounded-lg">
                     <option value="">-- Add a course --</option>
                     {availableCourses.map(course => (
-                        <option key={course._id} value={course._id}>{course.degree} ({course.branch})</option>
+                        <option key={course._id} value={course._id}>{` (${course.courseId}) ${course.degree} ${course.branch}`}</option>
                     ))}
                 </select>
             )}
