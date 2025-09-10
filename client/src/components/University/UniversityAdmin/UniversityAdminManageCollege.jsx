@@ -146,7 +146,7 @@ const UniversityCollegeManager = () => {
                 response = await fetch(`${API_BASE_URL}/${editingCollege._id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ collegeData, adminData }),
+                    body: JSON.stringify( collegeData ),
                     credentials: 'include'
                 });
             } else {
@@ -214,7 +214,7 @@ const UniversityCollegeManager = () => {
     }, [totalColleges]);
 
     return (
-        <div className="min-h-screen font-sans p-4 sm:p-6 lg:p-8 bg-gray-50">
+        <div className="min-h-screen font-sans">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
