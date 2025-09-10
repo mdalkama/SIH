@@ -72,8 +72,23 @@ const collegeSchema = new Schema({
         ref: 'Staff' // Reference to the College Admin in the Staff collection
     },
     courses: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Course'
+        courseId: {
+            type:mongoose.Schema.Types.ObjectId,
+            ref: 'Course'
+        },
+        fees: [
+            {
+                semester: {
+                    type: Number,
+                    required: true
+                },
+                fees: {
+                    type: Number,
+                    required: true,
+                    
+                }
+            }
+        ]
     }],
     students: [{
         type: mongoose.Schema.Types.ObjectId,
