@@ -26,7 +26,7 @@ const examSchema = new mongoose.Schema({
                 {
                     subjectCode: { type: String, required: true },
                     subjectName: { type: String, required: true },
-                    examDate: { type: Date, required: true },
+                    examDate: { type: Date},
                     session: { type: String, enum: ["FN", "AN"], required: true } // Forenoon/Afternoon
                 }
             ]

@@ -1,65 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { PlusCircle, Edit, X, Loader2, Search, ChevronLeft, ChevronRight, Trash2, AlertTriangle, CheckCircle, Info, Calendar, ArrowLeft } from 'lucide-react';
 
-const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/exams';
-
-// --- Mock Data for Courses and Semester-wise Subjects ---
-const mockCoursesWithSubjects = [
-    {
-        courseCode: 'CSE',
-        name: 'Computer Science & Engineering',
-        semesters: [
-            {
-                semester: 5,
-                subjects: [
-                    { subjectCode: 'CS501', subjectName: 'Data Structures' },
-                    { subjectCode: 'CS502', subjectName: 'Database Management Systems' },
-                    { subjectCode: 'CS503', subjectName: 'Operating Systems' },
-                    { subjectCode: 'CS504', subjectName: 'Computer Networks' },
-                ]
-            },
-            {
-                semester: 3,
-                subjects: [
-                    { subjectCode: 'CS301', subjectName: 'Digital Logic Design' },
-                    { subjectCode: 'CS302', subjectName: 'Mathematics III' },
-                ]
-            }
-        ]
-    },
-    {
-        courseCode: 'ECE',
-        name: 'Electronics & Communication',
-        semesters: [
-            {
-                semester: 5,
-                subjects: [
-                    { subjectCode: 'EC501', subjectName: 'Analog Electronics' },
-                    { subjectCode: 'EC502', subjectName: 'Digital Signal Processing' },
-                    { subjectCode: 'EC503', subjectName: 'Microprocessors' },
-                ]
-            }
-        ]
-    },
-    {
-        courseCode: 'MECH',
-        name: 'Mechanical Engineering',
-        semesters: [
-            {
-                semester: 3,
-                subjects: [
-                    { subjectCode: 'ME301', subjectName: 'Thermodynamics' },
-                    { subjectCode: 'ME302', subjectName: 'Fluid Mechanics' },
-                ]
-            }
-        ]
-    }
-];
-
+const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/semester-exam';
+const COURSES_API_URL = 'https://sih-4ptm.onrender.com/api/v1/course';
 
 // --- Main Component ---
 const UniversityExamManager = () => {
-    const [view, setView] = useState('list'); // 'list', 'details', 'form'
+    const [view, setView] = useState('list'); // 'list', 'details', 'form', 'loading'
+    const [allCourses, setAllCourses] = useState([]);
     const [selectedExam, setSelectedExam] = useState(null);
     const [editingExam, setEditingExam] = useState(null);
     const [isPageLoading, setIsPageLoading] = useState(false);
@@ -71,6 +19,24 @@ const UniversityExamManager = () => {
         setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
     };
 
+    // Fetch all courses with their subjects once when the component mounts
+    useEffect(() => {
+        const fetchAllCourses = async () => {
+            try {
+                const response = await fetch(COURSES_API_URL, { credentials: 'include' });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to fetch courses list');
+                }
+                const data = await response.json();
+                setAllCourses(Array.isArray(data) ? data : []);
+            } catch (err) {
+                addToast('error', err.message);
+            }
+        };
+        fetchAllCourses();
+    }, []);
+
     const refreshExamList = () => {
         setView('loading');
         setTimeout(() => setView('list'), 0);
@@ -79,10 +45,9 @@ const UniversityExamManager = () => {
     const handleViewDetails = async (examId) => {
         setIsPageLoading(true);
         try {
-            // const response = await fetch(`${API_BASE_URL}/${examId}`, { credentials: 'include' });
-            // if (!response.ok) throw new Error("Failed to fetch exam details.");
-            // const data = await response.json();
-            const data = mockExamDetails; // Using mock for demo
+            const response = await fetch(`${API_BASE_URL}/${examId}`, { credentials: 'include' });
+            if (!response.ok) throw new Error("Failed to fetch exam details.");
+            const data = await response.json();
             setSelectedExam(data);
             setView('details');
         } catch (err) {
@@ -103,7 +68,7 @@ const UniversityExamManager = () => {
         setView('list');
     };
 
-    if (isPageLoading) return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin" size={48} /></div>;
+    if (isPageLoading || view === 'loading') return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin" size={48} /></div>;
 
     return (
         <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8 font-sans">
@@ -111,7 +76,7 @@ const UniversityExamManager = () => {
             <div className="max-w-7xl mx-auto">
                 {view === 'list' && <ExamListView onViewDetails={handleViewDetails} onShowForm={handleShowForm} addToast={addToast} key={Date.now()} />}
                 {view === 'details' && <ExamDetailView exam={selectedExam} onBack={handleBackToList} />}
-                {view === 'form' && <ExamForm exam={editingExam} onBack={handleBackToList} addToast={addToast} onSaveSuccess={refreshExamList} allCourses={mockCoursesWithSubjects} />}
+                {view === 'form' && <ExamForm exam={editingExam} onBack={handleBackToList} addToast={addToast} onSaveSuccess={refreshExamList} allCourses={allCourses} />}
             </div>
         </div>
     );
@@ -128,20 +93,29 @@ const ExamListView = ({ onViewDetails, onShowForm, addToast }) => {
     const [deletingExam, setDeletingExam] = useState(null);
 
     useEffect(() => {
-        // Mocking API fetch
-        setIsLoading(true);
-        setTimeout(() => {
-            setExams(mockExams);
-            setPagination({ currentPage: 1, totalPages: 1, totalDocs: mockExams.length });
-            setIsLoading(false);
-        }, 1000);
+        const fetchExams = async () => {
+            setIsLoading(true);
+            const params = new URLSearchParams({ page: pagination.currentPage, limit: rowsPerPage, search: searchTerm, status: filters.status, examType: filters.examType });
+            try {
+                const response = await fetch(`${API_BASE_URL}?${params.toString()}`, { credentials: 'include' });
+                if (!response.ok) throw new Error("Failed to fetch exams.");
+                const data = await response.json();
+                setExams(data.exams);
+                setPagination({ currentPage: data.currentPage, totalPages: data.totalPages, totalDocs: data.totalDocs });
+            } catch (err) {
+                addToast('error', err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchExams();
     }, [pagination.currentPage, rowsPerPage, searchTerm, filters, addToast]);
 
     const handleDelete = async () => {
         setIsLoading(true);
         try {
-            // const response = await fetch(`${API_BASE_URL}/${deletingExam._id}`, { method: 'DELETE', credentials: 'include' });
-            // if (!response.ok) throw new Error("Failed to delete exam.");
+            const response = await fetch(`${API_BASE_URL}/${deletingExam._id}`, { method: 'DELETE', credentials: 'include' });
+            if (!response.ok) throw new Error("Failed to delete exam.");
             addToast('info', `${deletingExam.examName} has been deleted.`);
             setExams(prev => prev.filter(e => e._id !== deletingExam._id));
             setPagination(p => ({ ...p, totalDocs: p.totalDocs - 1 }));
@@ -200,20 +174,19 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
 
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-    // Auto-update timetables if semester changes after courses are added
     useEffect(() => {
         if (formData.courses.length > 0) {
             const updatedCourses = formData.courses.map(course => {
                 if (!course.courseCode) return course;
 
-                const selectedCourse = allCourses.find(c => c.courseCode === course.courseCode);
-                const semesterData = selectedCourse?.semesters.find(s => s.semester == formData.semester);
+                const selectedCourse = allCourses.find(c => c.courseId === course.courseCode);
+                const semesterData = selectedCourse?.semesters.find(s => s.semesterNumber == formData.semester);
 
                 let newTimetable = [];
                 if (semesterData) {
                     newTimetable = semesterData.subjects.map(subject => ({
-                        subjectCode: subject.subjectCode,
-                        subjectName: subject.subjectName,
+                        subjectCode: subject.code,
+                        subjectName: subject.name,
                         examDate: '',
                         session: 'FN'
                     }));
@@ -224,28 +197,28 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
         }
     }, [formData.semester, allCourses]);
 
-    const handleCourseChange = (index, courseCode) => {
+    const handleCourseChange = (index, courseId) => {
         const newCourses = [...formData.courses];
         if (!formData.semester) {
-            alert("Please select a semester for the exam first.");
+            addToast('info', "Please select a semester for the exam first.");
             return;
         }
-        const selectedCourse = allCourses.find(c => c.courseCode === courseCode);
-        const semesterData = selectedCourse?.semesters.find(s => s.semester == formData.semester);
+        const selectedCourse = allCourses.find(c => c.courseId === courseId);
+        const semesterData = selectedCourse?.semesters.find(s => s.semesterNumber == formData.semester);
 
         let newTimetable = [];
         if (semesterData) {
             newTimetable = semesterData.subjects.map(subject => ({
-                subjectCode: subject.subjectCode,
-                subjectName: subject.subjectName,
+                subjectCode: subject.code,
+                subjectName: subject.name,
                 examDate: '',
                 session: 'FN'
             }));
-        } else if (courseCode) {
-            addToast('info', `No subjects found for semester ${formData.semester} in ${courseCode}.`);
+        } else if (courseId) {
+            addToast('info', `No subjects found for semester ${formData.semester} in ${selectedCourse?.branch}.`);
         }
 
-        newCourses[index] = { courseCode: courseCode, timetable: newTimetable };
+        newCourses[index] = { courseCode: courseId, timetable: newTimetable };
         setFormData({ ...formData, courses: newCourses });
     };
 
@@ -261,11 +234,28 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        // Mocking API call
-        await new Promise(res => setTimeout(res, 1500));
-        addToast('success', `Exam ${exam ? 'updated' : 'created'} successfully!`);
-        onSaveSuccess();
-        setIsLoading(false);
+        try {
+            const url = exam ? `${API_BASE_URL}/${exam._id}` : API_BASE_URL;
+            const method = exam ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || `Failed to ${exam ? 'update' : 'create'} exam.`);
+            }
+            addToast('success', `Exam ${exam ? 'updated' : 'created'} successfully!`);
+            onSaveSuccess();
+        } catch (err) {
+            addToast('error', err.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -290,7 +280,7 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
                             <div className="flex justify-between items-center mb-2">
                                 <select value={course.courseCode} onChange={(e) => handleCourseChange(cIdx, e.target.value)} className="p-2 border rounded bg-white font-semibold">
                                     <option value="">-- Select Course --</option>
-                                    {allCourses.map(c => <option key={c.courseCode} value={c.courseCode}>{c.name}</option>)}
+                                    {allCourses.map(c => <option key={c.courseId} value={c.courseId}>{c.branch} ({c.degree})</option>)}
                                 </select>
                                 <button type="button" onClick={() => removeCourse(cIdx)}><Trash2 size={16} className="text-red-500" /></button>
                             </div>
