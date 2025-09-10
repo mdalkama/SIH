@@ -135,3 +135,52 @@ export const getMyComplaints = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+//request room change
+export const requestRoomChange = async (req, res) => {
+    try {
+        const studentId = req.user.id;
+        const { reason } = req.body;
+        if (!reason) return res.status(400).json({ message: "Reason for room change is required." });
+
+        const studentHostel = await StudentHostel.findOne({ occupant: studentId });
+        if (!studentHostel || !studentHostel.currentHostel) {
+            return res.status(404).json({ message: "You are not allocated to a room." });
+        }
+
+        // Add the request to the array
+        studentHostel.roomChangeRequests.push({
+            reason,
+            from: studentHostel.currentHostel // Store the current location
+        });
+
+        await studentHostel.save();
+        res.status(201).json({ success: true, message: "Room change request submitted successfully." });
+
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// Add a new visitor
+export const addVisitor = async (req, res) => {
+    try {
+        const studentId = req.user.id;
+        const { name, relation, purpose } = req.body;
+        if (!name) return res.status(400).json({ message: "Visitor name is required." });
+
+        const studentHostel = await StudentHostel.findOne({ occupant: studentId });
+        if (!studentHostel) {
+            return res.status(404).json({ message: "Student hostel record not found." });
+        }
+
+        // Add the visitor to the array
+        studentHostel.visitors.push({ name, relation, purpose });
+
+        await studentHostel.save();
+        res.status(201).json({ success: true, message: "Visitor pass generated successfully." });
+        
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
