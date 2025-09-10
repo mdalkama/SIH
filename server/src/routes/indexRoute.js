@@ -18,6 +18,8 @@ import universityAdmissionRoute from "./admissionRoutes/universityAdmissionRoute
 import applicationRoute from "./admissionRoutes/applicationRoute.js";
 import manageCollegeRoute from "./manageCollegeRoute.js";
 import semesterExamRoute from "./semesterExamRoute.js";
+import universityRoute from "./universityRoute.js";
+
 
 
 
@@ -31,6 +33,7 @@ router.use("/add-college-staff", collegeManageStaffRoute);
 router.use("/hostel", role(['CollegeHostelWarden']), hostelRoute)
 router.use("/course",role(['UniversityAdmin', 'UniversityExaminationBody']), courseRoute)
 router.use("/subject", role(['UniversityAdmin']), subjectRoute)
+router.use("/university", role(['UniversityAdmin']), universityRoute)
 router.use("/add-university-Staff", universityManageStaffRoute)
 router.use("/library", role(['CollegeLibrarian']), libraryRoute)
 router.use("/payment", role([...staffRoles]), studentPaymentRoute)

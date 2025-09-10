@@ -151,6 +151,7 @@ const UniversityAdminManageCourses = () => {
         <div className="min-h-screen font-sans">
             <div className="max-w-7xl mx-auto">
 
+
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     <StatCard icon={activeTab === 'courses' ? <GraduationCap size={20} className="text-blue-600" /> : <BookOpen size={20} className="text-blue-600" />} title={`Total ${activeTab === 'courses' ? 'Courses' : 'Subjects'}`} value={stats.total} />
                     {activeTab === 'courses' ? (

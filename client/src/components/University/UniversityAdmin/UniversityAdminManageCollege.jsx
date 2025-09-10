@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { PlusCircle, Edit, X, Loader2, Building, User, Search, ChevronLeft, ChevronRight, Trash2, AlertTriangle, CheckCircle, BarChart2, Info, Eye, EyeOff, BookOpen } from 'lucide-react';
 
 const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/manage-college';
-const COURSES_API_URL = 'https://sih-4ptm.onrender.com/api/v1/course';
 
 
 // --- Main Component ---
@@ -39,19 +38,40 @@ const UniversityCollegeManager = () => {
     useEffect(() => {
         const fetchAllCourses = async () => {
             try {
-                const response = await fetch(COURSES_API_URL, { credentials: 'include' });
+                const response = await fetch("https://sih-4ptm.onrender.com/api/v1/course", {
+                    method: "GET",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+
                 if (!response.ok) {
-                    throw new Error('Failed to fetch courses list');
+                    throw new Error("Failed to fetch courses list");
                 }
-                console.log(response);
+
                 const data = await response.json();
-                setAllCourses(data.courses || []);
+                console.log("Fetched Courses:", data);
+                console.log(data)
+                // Agar API courses array deta hai
+                if (Array.isArray(data)) {
+                    setAllCourses(data);
+                }
+                // Agar API object me courses key deta hai
+                else if (data.courses) {
+                    setAllCourses(data.courses);
+                }
+                else {
+                    setAllCourses([]);
+                }
             } catch (err) {
-                addToast('error', err.message);
+                addToast("error", err.message);
             }
         };
+
         fetchAllCourses();
     }, []);
+
 
     // Fetch colleges based on filters/pagination
     useEffect(() => {
@@ -190,12 +210,9 @@ const UniversityCollegeManager = () => {
     }, [totalColleges]);
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8 font-sans">
+        <div className="min-h-screen font-sans">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
             <div className="max-w-7xl mx-auto">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">College Management</h1>
-                <p className="text-gray-500 mb-6">Oversee all affiliated colleges of the university.</p>
-
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <StatCard title="Total Colleges" value={stats.total} icon={<Building />} color="blue" />
                     {/* These stats would be more accurate from a dedicated stats API endpoint */}
@@ -515,7 +532,7 @@ const MultiSelectCourses = ({ allCourses, selectedCourses, onChange }) => {
                     const course = allCourses.find(c => c._id === id);
                     return (
                         <div key={id} className="flex items-center gap-2 bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
-                            <span>{course?.name || 'Unknown Course'}</span>
+                            <span>{(course?.degree || course?.branch) ? `${course?.degree || ''} ${course?.branch || ''}`.trim() : 'Unknown Course'}</span>
                             <button onClick={() => handleRemoveCourse(id)}><X size={14} /></button>
                         </div>
                     );
@@ -526,7 +543,7 @@ const MultiSelectCourses = ({ allCourses, selectedCourses, onChange }) => {
                 <select onChange={(e) => handleAddCourse(e.target.value)} value="" className="w-full px-3 py-2 border bg-white border-gray-300 rounded-lg">
                     <option value="">-- Add a course --</option>
                     {availableCourses.map(course => (
-                        <option key={course._id} value={course._id}>{course.name} ({course.courseId})</option>
+                        <option key={course._id} value={course._id}>{course.degree} ({course.branch})</option>
                     ))}
                 </select>
             )}

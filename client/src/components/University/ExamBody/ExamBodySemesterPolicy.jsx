@@ -1,8 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { PlusCircle, Edit, X, Loader2, Search, ChevronLeft, ChevronRight, Trash2, AlertTriangle, CheckCircle, Info, Calendar, ArrowLeft } from 'lucide-react';
+import { PlusCircle, Edit, X, Loader2, Search, ChevronLeft, ChevronRight, Trash2, AlertTriangle, CheckCircle, Info, ArrowLeft, Eye } from 'lucide-react';
 
 const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/semester-exam';
 const COURSES_API_URL = 'https://sih-4ptm.onrender.com/api/v1/course';
+
+// Status Constants
+const STATUSES = ['CREATED', 'OPEN_FOR_REGISTRATION', 'CLOSED', 'RESULT_PROCESSING', 'PUBLISHED'];
 
 // --- Main Component ---
 const UniversityExamManager = () => {
@@ -10,7 +13,7 @@ const UniversityExamManager = () => {
     const [allCourses, setAllCourses] = useState([]);
     const [selectedExam, setSelectedExam] = useState(null);
     const [editingExam, setEditingExam] = useState(null);
-    const [isPageLoading, setIsPageLoading] = useState(false);
+    const [isPageLoading, setIsPageLoading] = useState(true); // Start with loading true
     const [toasts, setToasts] = useState([]);
 
     const addToast = (type, message) => {
@@ -19,7 +22,6 @@ const UniversityExamManager = () => {
         setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
     };
 
-    // Fetch all courses with their subjects once when the component mounts
     useEffect(() => {
         const fetchAllCourses = async () => {
             try {
@@ -32,14 +34,15 @@ const UniversityExamManager = () => {
                 setAllCourses(Array.isArray(data) ? data : []);
             } catch (err) {
                 addToast('error', err.message);
+            } finally {
+                setIsPageLoading(false); // Stop loading after fetch attempt
             }
         };
         fetchAllCourses();
     }, []);
 
     const refreshExamList = () => {
-        setView('loading');
-        setTimeout(() => setView('list'), 0);
+        setView('list');
     };
 
     const handleViewDetails = async (examId) => {
@@ -52,6 +55,7 @@ const UniversityExamManager = () => {
             setView('details');
         } catch (err) {
             addToast('error', err.message);
+            setView('list'); // Go back to list on error
         } finally {
             setIsPageLoading(false);
         }
@@ -68,26 +72,36 @@ const UniversityExamManager = () => {
         setView('list');
     };
 
-    if (isPageLoading || view === 'loading') return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin" size={48} /></div>;
+    if (isPageLoading) {
+        return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin text-blue-600" size={48} /></div>;
+    }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8 font-sans">
+        <div className="min-h-screen font-sans">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
             <div className="max-w-7xl mx-auto">
-                {view === 'list' && <ExamListView onViewDetails={handleViewDetails} onShowForm={handleShowForm} addToast={addToast} key={Date.now()} />}
-                {view === 'details' && <ExamDetailView exam={selectedExam} onBack={handleBackToList} />}
-                {view === 'form' && <ExamForm exam={editingExam} onBack={handleBackToList} addToast={addToast} onSaveSuccess={refreshExamList} allCourses={allCourses} />}
+                {view === 'details' ? (
+                    <ExamDetailView exam={selectedExam} onBack={handleBackToList} />
+                ) : view === 'form' ? (
+                    <ExamForm exam={editingExam} onBack={handleBackToList} addToast={addToast} onSaveSuccess={refreshExamList} allCourses={allCourses} />
+                ) : (
+                    <div className="bg-white rounded-lg border shadow-sm">
+                        <div className="p-4 border-b">
+                            <h1 className="text-lg font-semibold text-blue-600 border-b-2 border-blue-600 pb-2 inline-block">Manage Exams</h1>
+                        </div>
+                        <ExamListView onShowForm={handleShowForm} addToast={addToast} onViewDetails={handleViewDetails} />
+                    </div>
+                )}
             </div>
         </div>
     );
 };
 
 // --- List View ---
-const ExamListView = ({ onViewDetails, onShowForm, addToast }) => {
+const ExamListView = ({ onShowForm, addToast, onViewDetails }) => {
     const [exams, setExams] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filters, setFilters] = useState({ status: 'all', examType: 'all' });
     const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalDocs: 0 });
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [deletingExam, setDeletingExam] = useState(null);
@@ -95,23 +109,54 @@ const ExamListView = ({ onViewDetails, onShowForm, addToast }) => {
     useEffect(() => {
         const fetchExams = async () => {
             setIsLoading(true);
-            const params = new URLSearchParams({ page: pagination.currentPage, limit: rowsPerPage, search: searchTerm, status: filters.status, examType: filters.examType });
+            const params = new URLSearchParams({ page: pagination.currentPage, limit: rowsPerPage, search: searchTerm });
             try {
                 const response = await fetch(`${API_BASE_URL}?${params.toString()}`, { credentials: 'include' });
                 if (!response.ok) throw new Error("Failed to fetch exams.");
                 const data = await response.json();
-                setExams(data.exams);
+                setExams(data.exams || []);
                 setPagination({ currentPage: data.currentPage, totalPages: data.totalPages, totalDocs: data.totalDocs });
             } catch (err) {
                 addToast('error', err.message);
+                setExams([]); // Clear exams on error
             } finally {
                 setIsLoading(false);
             }
         };
         fetchExams();
-    }, [pagination.currentPage, rowsPerPage, searchTerm, filters, addToast]);
+    }, [pagination.currentPage, rowsPerPage, searchTerm, addToast]);
+
+    const aggregateCounts = useMemo(() => {
+        if (!exams || exams.length === 0) return {};
+        return exams.reduce((acc, exam) => {
+            const key = exam.examType;
+            acc[key] = (acc[key] || 0) + 1;
+            return acc;
+        }, {});
+    }, [exams]);
+
+    const handleStatusUpdate = async (examToUpdate, newStatus) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/${examToUpdate._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...examToUpdate, status: newStatus }),
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || "Failed to update status.");
+            }
+            const updatedExam = await response.json();
+            setExams(prevExams => prevExams.map(e => (e._id === updatedExam._id ? updatedExam : e)));
+            addToast('success', `Status for ${updatedExam.examName} updated.`);
+        } catch (err) {
+            addToast('error', err.message);
+        }
+    };
 
     const handleDelete = async () => {
+        if (!deletingExam) return;
         setIsLoading(true);
         try {
             const response = await fetch(`${API_BASE_URL}/${deletingExam._id}`, { method: 'DELETE', credentials: 'include' });
@@ -128,36 +173,68 @@ const ExamListView = ({ onViewDetails, onShowForm, addToast }) => {
     };
 
     return (
-        <>
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">Exam Management</h1>
-            <div className="bg-white rounded-lg border shadow-sm">
-                <DataTableToolbar searchTerm={searchTerm} onSearchChange={setSearchTerm} filters={filters} onFilterChange={setFilters} onAddClick={() => onShowForm(null)} />
-                {isLoading ? <div className="p-10 text-center"><Loader2 className="animate-spin" /></div> :
-                    <ExamsTable exams={exams} onViewDetails={onViewDetails} onEdit={onShowForm} onDelete={(exam) => setDeletingExam(exam)} />
-                }
-                <Pagination currentPage={pagination.currentPage} totalCount={pagination.totalDocs} pageSize={rowsPerPage} onPageChange={(page) => setPagination(p => ({ ...p, currentPage: page }))} onPageSizeChange={setRowsPerPage} />
-            </div>
+        <div>
+            <DataTableToolbar onSearchChange={setSearchTerm} onAddClick={() => onShowForm(null)} />
+            {isLoading ? <div className="p-10 text-center"><Loader2 className="animate-spin text-blue-600" /></div> :
+                (exams.length > 0 ?
+                    <ExamsTable
+                        exams={exams}
+                        onEdit={onShowForm}
+                        onDelete={setDeletingExam}
+                        onStatusUpdate={handleStatusUpdate}
+                        onViewDetails={onViewDetails}
+                        currentPage={pagination.currentPage}
+                        pageSize={rowsPerPage}
+                    /> :
+                    <div className="text-center p-16 text-gray-500">
+                        No exams found.
+                    </div>
+                )
+            }
+            <Pagination
+                currentPage={pagination.currentPage}
+                totalCount={pagination.totalDocs}
+                pageSize={rowsPerPage}
+                onPageChange={(page) => setPagination(p => ({ ...p, currentPage: page }))}
+                onPageSizeChange={setRowsPerPage}
+                aggregateData={aggregateCounts}
+            />
             {deletingExam && <ConfirmationModal isOpen={!!deletingExam} onClose={() => setDeletingExam(null)} onConfirm={handleDelete} title="Confirm Deletion" message={`Are you sure you want to delete ${deletingExam.examName}?`} confirmText="Delete" confirmColor="red" processing={isLoading} />}
-        </>
+        </div>
     );
 };
 
 // --- Detail View ---
 const ExamDetailView = ({ exam, onBack }) => (
-    <div>
-        <button onClick={onBack} className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 mb-4"><ArrowLeft size={16} /> Back to Exam List</button>
+    <div className="animate-fade-in">
+        <button onClick={onBack} className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 mb-4 transition-colors">
+            <ArrowLeft size={16} /> Back to Exam List
+        </button>
         <div className="bg-white p-6 rounded-lg border shadow-sm mb-6">
             <div className="flex justify-between items-start">
-                <div><h1 className="text-2xl font-bold text-gray-800">{exam.examName}</h1><p className="text-gray-500">{exam.examId} | Semester {exam.semester}, {exam.year}</p></div>
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-800">{exam.examName}</h1>
+                    <p className="text-gray-500 mt-1">{exam.examId} | Semester {exam.semester}, {exam.year}</p>
+                </div>
                 <StatusBadge status={exam.status} />
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm"><p><strong>Type:</strong> {exam.examType}</p><p><strong>Starts:</strong> {new Date(exam.startDate).toLocaleDateString('en-GB')}</p><p><strong>Ends:</strong> {new Date(exam.endDate).toLocaleDateString('en-GB')}</p><p><strong>Registrations:</strong> {exam.registeredStudents || 0}</p></div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 text-sm border-t pt-4">
+                <p><strong>Type:</strong> {exam.examType}</p>
+                <p><strong>Starts:</strong> {new Date(exam.startDate).toLocaleDateString('en-GB')}</p>
+                <p><strong>Ends:</strong> {new Date(exam.endDate).toLocaleDateString('en-GB')}</p>
+                <p><strong>Registrations:</strong> {exam.registeredStudents || 0}</p>
+            </div>
         </div>
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Timetable</h2>
-        <div className="space-y-6">
-            {exam.courses.map(course => (
-                <div key={course.courseCode} className="bg-white rounded-lg border shadow-sm"><div className="p-4 bg-gray-50 border-b"><h3 className="font-semibold text-gray-700">Course: {course.courseCode}</h3></div><Timetable course={course} /></div>
-            ))}
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Course Timetables</h2>
+        <div className="space-y-4">
+            {exam.courses && exam.courses.length > 0 ? exam.courses.map(course => (
+                <div key={course.courseCode || course._id} className="bg-white rounded-lg border shadow-sm overflow-hidden">
+                    <div className="p-4 bg-gray-50 border-b">
+                        <h3 className="font-semibold text-gray-700">Course: {course.courseCode}</h3>
+                    </div>
+                    <Timetable course={course} />
+                </div>
+            )) : <p className="text-gray-500 bg-white p-4 rounded-lg border">No courses or timetables available for this exam.</p>}
         </div>
     </div>
 );
@@ -175,49 +252,39 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     useEffect(() => {
-        if (formData.courses.length > 0) {
+        if (formData.courses.length > 0 && formData.semester && allCourses.length > 0) {
             const updatedCourses = formData.courses.map(course => {
                 if (!course.courseCode) return course;
-
-                const selectedCourse = allCourses.find(c => c.courseId === course.courseCode);
-                const semesterData = selectedCourse?.semesters.find(s => s.semesterNumber == formData.semester);
-
-                let newTimetable = [];
+                const selectedCourseData = allCourses.find(c => c.courseId === course.courseCode);
+                const semesterData = selectedCourseData?.semesters.find(s => s.semesterNumber == formData.semester);
+                let newTimetable = course.timetable || [];
                 if (semesterData) {
-                    newTimetable = semesterData.subjects.map(subject => ({
-                        subjectCode: subject.code,
-                        subjectName: subject.name,
-                        examDate: '',
-                        session: 'FN'
-                    }));
+                    const existingSubjects = new Set(newTimetable.map(t => t.subjectCode));
+                    const subjectsFromCourse = semesterData.subjects
+                        .filter(sub => !existingSubjects.has(sub.code))
+                        .map(subject => ({ subjectCode: subject.code, subjectName: subject.name, examDate: '', session: 'FN' }));
+                    newTimetable = [...newTimetable, ...subjectsFromCourse];
                 }
                 return { ...course, timetable: newTimetable };
             });
             setFormData(prev => ({ ...prev, courses: updatedCourses }));
         }
-    }, [formData.semester, allCourses]);
+    }, [formData.semester, allCourses, formData.courses.length]);
 
     const handleCourseChange = (index, courseId) => {
         const newCourses = [...formData.courses];
         if (!formData.semester) {
-            addToast('info', "Please select a semester for the exam first.");
+            addToast('info', "Please select a semester first.");
             return;
         }
         const selectedCourse = allCourses.find(c => c.courseId === courseId);
         const semesterData = selectedCourse?.semesters.find(s => s.semesterNumber == formData.semester);
-
         let newTimetable = [];
         if (semesterData) {
-            newTimetable = semesterData.subjects.map(subject => ({
-                subjectCode: subject.code,
-                subjectName: subject.name,
-                examDate: '',
-                session: 'FN'
-            }));
+            newTimetable = semesterData.subjects.map(subject => ({ subjectCode: subject.code, subjectName: subject.name, examDate: '', session: 'FN' }));
         } else if (courseId) {
-            addToast('info', `No subjects found for semester ${formData.semester} in ${selectedCourse?.branch}.`);
+            addToast('info', `No subjects for semester ${formData.semester} in ${selectedCourse?.branch}.`);
         }
-
         newCourses[index] = { courseCode: courseId, timetable: newTimetable };
         setFormData({ ...formData, courses: newCourses });
     };
@@ -237,14 +304,7 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
         try {
             const url = exam ? `${API_BASE_URL}/${exam._id}` : API_BASE_URL;
             const method = exam ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-                credentials: 'include'
-            });
-
+            const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData), credentials: 'include' });
             if (!response.ok) {
                 const errData = await response.json();
                 throw new Error(errData.message || `Failed to ${exam ? 'update' : 'create'} exam.`);
@@ -259,19 +319,22 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
     };
 
     return (
-        <div>
+        <div className="animate-fade-in">
             <button onClick={onBack} className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 mb-4"><ArrowLeft size={16} /> Back</button>
             <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg border shadow-sm">
                 <h1 className="text-2xl font-bold text-gray-800">{exam ? 'Edit Exam' : 'Create New Exam'}</h1>
                 <p className="text-gray-500 mt-1 mb-6">Fill in the details below.</p>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                    <input name="examName" value={formData.examName} onChange={handleChange} placeholder="Exam Name (e.g., End Sem 2025)" className="md:col-span-2 p-2 border rounded" required />
-                    <input name="examId" value={formData.examId} onChange={handleChange} placeholder="Exam ID (e.g., ENDSEM2025-SEM5)" className="p-2 border rounded" required />
+                    <input name="examName" value={formData.examName} onChange={handleChange} placeholder="Exam Name" className="md:col-span-2 p-2 border rounded" required />
+                    <input name="examId" value={formData.examId} onChange={handleChange} placeholder="Exam ID" className="p-2 border rounded" required />
                     <select name="examType" value={formData.examType} onChange={handleChange} className="p-2 border rounded bg-white"><option>MIDSEM</option><option>ENDSEM</option><option>INTERNAL</option><option>PRACTICAL</option></select>
                     <input name="semester" type="number" value={formData.semester} onChange={handleChange} placeholder="Semester" className="p-2 border rounded" required />
                     <input name="year" type="number" value={formData.year} onChange={handleChange} placeholder="Year" className="p-2 border rounded" required />
                     <input name="startDate" type="date" value={formData.startDate} onChange={handleChange} className="p-2 border rounded" />
                     <input name="endDate" type="date" value={formData.endDate} onChange={handleChange} className="p-2 border rounded" />
+                    <select name="status" value={formData.status} onChange={handleChange} className="p-2 border rounded bg-white">
+                        {STATUSES.map(s => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+                    </select>
                 </div>
                 <div className="border-t pt-4">
                     <h3 className="font-semibold mb-2">Timetable Details</h3>
@@ -284,14 +347,12 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
                                 </select>
                                 <button type="button" onClick={() => removeCourse(cIdx)}><Trash2 size={16} className="text-red-500" /></button>
                             </div>
-                            {course.courseCode && (
+                            {course.timetable && course.timetable.length > 0 && (
                                 <div className="space-y-2 mt-2">
                                     {course.timetable.map((tt, tIdx) => (
                                         <div key={tIdx} className="grid grid-cols-1 md:grid-cols-10 gap-2 items-center">
-                                            <div className="md:col-span-6 p-2 border rounded bg-white text-sm">
-                                                {tt.subjectName} ({tt.subjectCode})
-                                            </div>
-                                            <input type="date" value={tt.examDate?.split('T')[0]} onChange={e => handleTimetableChange(cIdx, tIdx, 'examDate', e.target.value)} className="md:col-span-3 p-2 border rounded" />
+                                            <div className="md:col-span-6 p-2 border rounded bg-white text-sm">{tt.subjectName} ({tt.subjectCode})</div>
+                                            <input type="date" value={tt.examDate?.split('T')[0] || ''} onChange={e => handleTimetableChange(cIdx, tIdx, 'examDate', e.target.value)} className="md:col-span-3 p-2 border rounded" />
                                             <select value={tt.session} onChange={e => handleTimetableChange(cIdx, tIdx, 'session', e.target.value)} className="md:col-span-1 p-2 border rounded bg-white"><option value="FN">FN</option><option value="AN">AN</option></select>
                                         </div>
                                     ))}
@@ -299,57 +360,157 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
                             )}
                         </div>
                     ))}
-                    <button type="button" onClick={addCourse} className="text-sm font-semibold text-green-600">+ Add Another Course</button>
+                    <button type="button" onClick={addCourse} className="text-sm font-semibold text-green-600 hover:text-green-700">+ Add Another Course</button>
                 </div>
                 <div className="flex justify-end gap-4 mt-6">
-                    <button type="button" onClick={onBack} className="px-4 py-2 bg-gray-200 rounded-lg">Cancel</button>
-                    <button type="submit" disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:bg-blue-300 flex items-center">{isLoading ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : 'Save Exam'}</button>
+                    <button type="button" onClick={onBack} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancel</button>
+                    <button type="submit" disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:bg-blue-300 flex items-center">{isLoading ? <><Loader2 size={16} className="animate-spin" />&nbsp;Saving...</> : 'Save Exam'}</button>
                 </div>
             </form>
         </div>
     );
 };
 
-
 // --- Child & Helper Components ---
-const DataTableToolbar = ({ searchTerm, onSearchChange, filters, onFilterChange, onAddClick }) => (
-    <div className="p-4 border-b flex flex-wrap justify-between items-center gap-4">
-        <div className="flex gap-4">
-            <div className="relative"><Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /><input type="text" value={searchTerm} onChange={e => onSearchChange(e.target.value)} placeholder="Search exams..." className="pl-10 pr-4 py-2 w-64 border rounded-lg" /></div>
-            <select value={filters.status} onChange={e => onFilterChange({ ...filters, status: e.target.value })} className="p-2 border rounded-lg bg-white"><option value="all">All Statuses</option><option value="CREATED">Created</option><option value="OPEN_FOR_REGISTRATION">Open</option><option value="CLOSED">Closed</option><option value="PUBLISHED">Published</option></select>
-            <select value={filters.examType} onChange={e => onFilterChange({ ...filters, examType: e.target.value })} className="p-2 border rounded-lg bg-white"><option value="all">All Types</option><option value="MIDSEM">Mid-Sem</option><option value="ENDSEM">End-Sem</option><option value="INTERNAL">Internal</option></select>
+const DataTableToolbar = ({ onSearchChange, onAddClick }) => (
+    <div className="p-4 flex justify-between items-center border-b">
+        <div className="relative">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input type="text" onChange={e => onSearchChange(e.target.value)} placeholder="Search exams..." className="pl-10 pr-4 py-2 w-80 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" />
         </div>
-        <button onClick={onAddClick} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"><PlusCircle size={18} /> Create Exam</button>
+        <button onClick={onAddClick} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <PlusCircle size={18} /> Add Exam
+        </button>
     </div>
 );
 
-const ExamsTable = ({ exams, onViewDetails, onEdit, onDelete }) => (
-    <div className="overflow-x-auto"><table className="w-full">
-        <thead className="bg-gray-50 text-left text-xs uppercase"><tr_><th className="p-3">Exam Name</th><th className="p-3">Type</th><th className="p-3">Semester/Year</th><th className="p-3 text-center">Status</th><th className="p-3 text-center">Actions</th></tr_></thead>
-        <tbody className="divide-y text-sm">
-            {exams.map((exam) => <tr key={exam._id} className="hover:bg-gray-50"><td className="p-3"><p className="font-medium text-gray-800">{exam.examName}</p><p className="text-xs text-gray-500 font-mono">{exam.examId}</p></td><td className="p-3">{exam.examType}</td><td className="p-3">Sem {exam.semester}, {exam.year}</td><td className="p-3 text-center"><StatusBadge status={exam.status} /></td><td className="p-3 text-center"><div className="flex justify-center gap-3"><button onClick={() => onViewDetails(exam._id)} className="text-blue-600 hover:underline text-xs font-semibold">View</button><button onClick={() => onEdit(exam)} className="text-gray-500 hover:text-blue-600" title="Edit"><Edit size={16} /></button><button onClick={() => onDelete(exam)} className="text-gray-500 hover:text-red-600" title="Delete"><Trash2 size={16} /></button></div></td></tr>)}
-        </tbody>
-    </table></div>
+const ExamsTable = ({ exams, onEdit, onDelete, onStatusUpdate, currentPage, pageSize, onViewDetails }) => (
+    <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+            <thead className="text-left text-xs text-gray-500 uppercase">
+                <tr className="border-b">
+                    <th className="px-6 py-4 font-medium">#</th>
+                    <th className="px-6 py-4 font-medium">Exam Name</th>
+                    <th className="px-6 py-4 font-medium">Type</th>
+                    <th className="px-6 py-4 font-medium">Semester/Year</th>
+                    <th className="px-6 py-4 font-medium text-center">Status</th>
+                    <th className="px-6 py-4 font-medium text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {exams.map((exam, index) => (
+                    <tr key={exam._id} className="border-b">
+                        <td className="px-6 py-4 text-gray-500">{String((currentPage - 1) * pageSize + index + 1).padStart(2, '0')}</td>
+                        <td className="px-6 py-4">
+                            <div className="font-medium text-gray-800">{exam.examName}</div>
+                            <div className="text-xs text-gray-500">{exam.examId}</div>
+                        </td>
+                        <td className="px-6 py-4 text-gray-600">{exam.examType}</td>
+                        <td className="px-6 py-4 text-gray-600">Sem {exam.semester}, {exam.year}</td>
+                        <td className="px-6 py-4 text-center"><StatusSelector exam={exam} onUpdate={onStatusUpdate} /></td>
+                        <td className="px-6 py-4">
+                            <div className="flex justify-center items-center gap-4">
+                                <button onClick={() => onViewDetails(exam._id)} className="text-gray-400 hover:text-green-600" title="View Details">
+                                    <Eye size={18} />
+                                </button>
+                                <button onClick={() => onEdit(exam)} className="text-gray-400 hover:text-blue-600" title="Edit"><Edit size={18} /></button>
+                                <button onClick={() => onDelete(exam)} className="text-gray-400 hover:text-red-600" title="Delete"><Trash2 size={18} /></button>
+                            </div>
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    </div>
 );
+
+const StatusSelector = ({ exam, onUpdate }) => {
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [nextStatus, setNextStatus] = useState('');
+    const styles = { 'CREATED': 'bg-gray-100 text-gray-800', 'OPEN_FOR_REGISTRATION': 'bg-blue-100 text-blue-800', 'CLOSED': 'bg-red-100 text-red-800', 'RESULT_PROCESSING': 'bg-yellow-100 text-yellow-800', 'PUBLISHED': 'bg-green-100 text-green-800' };
+    const handleChange = (e) => {
+        const newStatus = e.target.value;
+        if (newStatus !== exam.status) {
+            setNextStatus(newStatus);
+            setShowConfirm(true);
+        }
+    };
+    const handleConfirm = async () => {
+        setShowConfirm(false);
+        setIsUpdating(true);
+        await onUpdate(exam, nextStatus);
+        setIsUpdating(false);
+    };
+    if (isUpdating) return <div className="flex justify-center items-center"><Loader2 size={16} className="animate-spin" /></div>;
+    return (
+        <>
+            <select value={exam.status} onChange={handleChange} className={`px-2.5 py-1 text-xs font-semibold rounded-full border-none outline-none appearance-none cursor-pointer ${styles[exam.status]}`} style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}>
+                {STATUSES.map(s => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+            </select>
+            <ConfirmationModal isOpen={showConfirm} onClose={() => setShowConfirm(false)} onConfirm={handleConfirm} title="Confirm Status Change" message={`Change status to "${nextStatus.replace(/_/g, ' ')}"?`} confirmText="Confirm" />
+        </>
+    );
+};
 
 const Timetable = ({ course }) => (
     <div className="overflow-x-auto"><table className="w-full text-sm">
-        <thead className="text-left text-xs text-gray-500 uppercase"><tr_><th className="p-3">Date</th><th className="p-3">Session</th><th className="p-3">Subject</th></tr_></thead>
+        <thead className="text-left text-xs text-gray-500 uppercase bg-gray-50">
+            <tr>
+                <th className="px-4 py-2 font-medium">Date</th>
+                <th className="px-4 py-2 font-medium">Session</th>
+                <th className="px-4 py-2 font-medium">Subject</th>
+            </tr>
+        </thead>
         <tbody className="divide-y">
-            {course.timetable.map(slot => <tr key={slot.subjectCode}><td className="p-3 w-48">{new Date(slot.examDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</td><td className="p-3 w-32">{slot.session === 'FN' ? 'Forenoon' : 'Afternoon'}</td><td className="p-3"><p className="font-medium text-gray-800">{slot.subjectName}</p><p className="text-xs text-gray-500 font-mono">{slot.subjectCode}</p></td></tr>)}
+            {course.timetable && course.timetable.length > 0 ? course.timetable.map(slot => (
+                <tr key={slot.subjectCode || slot._id}>
+                    <td className="px-4 py-3 w-48">{slot.examDate ? new Date(slot.examDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : <span className="text-gray-400">Not set</span>}</td>
+                    <td className="px-4 py-3 w-32">{slot.session === 'FN' ? 'Forenoon' : 'Afternoon'}</td>
+                    <td className="px-4 py-3">
+                        <p className="font-medium text-gray-800">{slot.subjectName}</p>
+                        <p className="text-xs text-gray-500 font-mono">{slot.subjectCode}</p>
+                    </td>
+                </tr>
+            )) : (
+                <tr>
+                    <td colSpan="3" className="text-center p-4 text-gray-500">No timetable entries for this course.</td>
+                </tr>
+            )}
         </tbody>
     </table></div>
 );
 
-const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSizeChange }) => {
+const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSizeChange, aggregateData }) => {
     const totalPages = Math.ceil(totalCount / pageSize);
-    if (totalPages <= 1) return null;
-    return <div className="p-4 border-t flex justify-between items-center text-sm"><p>Showing {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, totalCount)} of {totalCount}</p><div className="flex gap-2"><button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="p-2 border rounded disabled:opacity-50"><ChevronLeft size={16} /></button><button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 border rounded disabled:opacity-50"><ChevronRight size={16} /></button></div></div>
+    if (totalCount === 0) return <div className="p-4 border-t text-sm text-gray-500">Showing 0-0 of 0 records</div>;
+    return (
+        <div className="p-4 flex flex-wrap justify-between items-center gap-4 text-sm text-gray-700 border-t">
+            <div className="flex items-center gap-2">
+                <span>Show:</span>
+                <select value={pageSize} onChange={e => { onPageSizeChange(Number(e.target.value)); onPageChange(1); }} className="p-1 border rounded-md bg-white">
+                    {[10, 20, 50, 100].map(size => <option key={size} value={size}>{size}</option>)}
+                </select>
+            </div>
+            <p>Showing {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, totalCount)} of {totalCount} records</p>
+            <div className="flex items-center gap-6">
+                {aggregateData && Object.keys(aggregateData).length > 0 && (
+                    <div className="flex items-center gap-4">
+                        {Object.entries(aggregateData).map(([key, value]) => <span key={key}>{key}: <b className="text-blue-600">{value}</b></span>)}
+                    </div>
+                )}
+                <div className="flex gap-2">
+                    <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="p-2 border rounded disabled:opacity-50"><ChevronLeft size={16} /></button>
+                    <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 border rounded disabled:opacity-50"><ChevronRight size={16} /></button>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 const StatusBadge = ({ status }) => {
     const styles = { 'CREATED': 'bg-gray-100 text-gray-800', 'OPEN_FOR_REGISTRATION': 'bg-blue-100 text-blue-800', 'CLOSED': 'bg-red-100 text-red-800', 'RESULT_PROCESSING': 'bg-yellow-100 text-yellow-800', 'PUBLISHED': 'bg-green-100 text-green-800' };
-    return <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${styles[status]}`}>{status.replace(/_/g, ' ')}</span>;
+    return <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${styles[status] || 'bg-gray-100'}`}>{status ? status.replace(/_/g, ' ') : 'UNKNOWN'}</span>;
 };
 
 const Toast = ({ message, type, onClose }) => {
@@ -371,21 +532,6 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirm
         </div>
     );
 };
-
-// Mock data moved to the bottom for clarity
-const mockExams = [
-    { _id: 'exam001', examId: 'ENDSEM2025-SEM5', examName: 'End Semester Exam 2025', examType: 'ENDSEM', semester: 5, year: 2025, status: 'PUBLISHED', startDate: '2025-11-20T00:00:00.000Z', endDate: '2025-12-05T00:00:00.000Z' },
-    { _id: 'exam002', examId: 'MIDSEM2025-SEM5', examName: 'Mid Semester Exam 2025', examType: 'MIDSEM', semester: 5, year: 2025, status: 'CLOSED', startDate: '2025-09-15T00:00:00.000Z', endDate: '2025-09-20T00:00:00.000Z' },
-];
-const mockExamDetails = {
-    _id: 'exam001', examId: 'ENDSEM2025-SEM5', examName: 'End Semester Exam 2025', examType: 'ENDSEM', semester: 5, year: 2025, status: 'PUBLISHED', startDate: '2025-11-20T00:00:00.000Z', endDate: '2025-12-05T00:00:00.000Z',
-    courses: [
-        { courseCode: 'CSE', timetable: [{ subjectCode: 'CS501', subjectName: 'Data Structures', examDate: '2025-11-20T00:00:00.000Z', session: 'FN' }, { subjectCode: 'CS502', subjectName: 'Database Management Systems', examDate: '2025-11-22T00:00:00.000Z', session: 'FN' }] },
-        { courseCode: 'ECE', timetable: [{ subjectCode: 'EC501', subjectName: 'Analog Electronics', examDate: '2025-11-20T00:00:00.000Z', session: 'FN' }] }
-    ],
-    registeredStudents: 250
-};
-
 
 export default UniversityExamManager;
 
