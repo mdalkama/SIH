@@ -145,10 +145,16 @@ const CollegeAdminManageCourses = () => {
                 <EditFeesModal
                     setShowModal={setShowEditModal}
                     initialData={editingItem}
-                    onUpdateSuccess={(updatedItem) => {
-                        setCourses(prev => prev.map(c => c._id === updatedItem._id ? updatedItem : c));
+                    onUpdateSuccess={(updatedFeesArray) => {
+                        const updatedCourse = {
+                            ...editingItem,
+                            semesterFees: updatedFeesArray.reduce((acc, f) => ({ ...acc, [f.semester]: f.fees }), {})
+                        };
+
+                        setCourses(prev => prev.map(c => c._id === updatedCourse._id ? updatedCourse : c));
                         showAlert('success', 'Course fees updated successfully!');
                     }}
+
                     onUpdateError={(error) => showAlert('error', `Failed to update fees. ${error.message || ''}`)}
                 />
             )}
@@ -354,7 +360,7 @@ const EditFeesModal = ({ setShowModal, initialData = null, onUpdateSuccess, onUp
             }));
 
             const response = await fetch(
-                `https://sih-4ptm.onrender.com/api/v1/courses/${initialData._id}/fees`,
+                `https://sih-4ptm.onrender.com/api/v1/college-course/courses/${initialData._id}/fees`,
                 {
                     method: "PUT",
                     headers: {
@@ -364,16 +370,16 @@ const EditFeesModal = ({ setShowModal, initialData = null, onUpdateSuccess, onUp
                     body: JSON.stringify({ fees: feesArray }), // ✅ correct format
                 }
             );
-
+console.log({ fees: feesArray })
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || "Failed to update fees");
             }
 
             const result = await response.json();
-
+            console.log(result);
             // Update parent with latest course
-            onUpdateSuccess(result.course);
+            onUpdateSuccess(result.course.fees);
             setShowModal(false);
 
         } catch (error) {
