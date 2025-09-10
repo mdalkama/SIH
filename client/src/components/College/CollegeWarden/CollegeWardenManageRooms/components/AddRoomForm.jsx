@@ -78,14 +78,20 @@ const AddRoomForm = ({ hostels }) => {
             setIsFetchingFloors(true);
             try {
                 const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors`, { credentials: "include" });
+                
+                // YAHAN FIX KIYA GAYA HAI: Server-side errors ko handle karna
                 if (!res.ok) {
                     const errorData = await res.json();
                     throw new Error(errorData.error || 'Failed to fetch floors');
                 }
+
                 const data = await res.json();
                 setFloors(data.success ? data.data : []);
-            } catch (error) { setMessage({ type: 'error', text: error.message }); }
-            finally { setIsFetchingFloors(false); }
+            } catch (error) { 
+                setMessage({ type: 'error', text: error.message });
+            } finally { 
+                setIsFetchingFloors(false); 
+            }
         };
         fetchFloorsForHostel();
     }, [selectedHostel]);
@@ -96,14 +102,20 @@ const AddRoomForm = ({ hostels }) => {
             setIsFetchingDetails(true);
             try {
                 const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}`, {credentials: 'include'});
+                
+                // YAHAN FIX KIYA GAYA HAI
                 if (!res.ok) {
                     const errorData = await res.json();
                     throw new Error(errorData.error || 'Failed to fetch floor details');
                 }
+
                 const data = await res.json();
                 if(data.success) setDetailedFloorData(data.data);
-            } catch (error) { setMessage({ type: 'error', text: error.message }); }
-            finally { setIsFetchingDetails(false); }
+            } catch (error) { 
+                setMessage({ type: 'error', text: error.message }); 
+            } finally { 
+                setIsFetchingDetails(false); 
+            }
         };
         fetchFloorDetails();
     }, [selectedFloor, selectedHostel]);
@@ -138,12 +150,10 @@ const AddRoomForm = ({ hostels }) => {
     
     const handleFacilitiesChange = (e) => {
         const { value, checked } = e.target;
-        setRoomData(prev => {
-            const facilities = checked
-                ? [...prev.facilities, value]
-                : prev.facilities.filter(facility => facility !== value);
-            return { ...prev, facilities };
-        });
+        setRoomData(prev => ({
+            ...prev,
+            facilities: checked ? [...prev.facilities, value] : prev.facilities.filter(facility => facility !== value)
+        }));
     };
 
     const filteredHostels = hostels ? hostels.filter(h => h.name.toLowerCase().includes(searchTerm.toLowerCase())) : [];
@@ -171,19 +181,25 @@ const AddRoomForm = ({ hostels }) => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
+            
             const data = await res.json();
             
+            // YAHAN FIX KIYA GAYA HAI
             if (res.ok) {
                 setMessage({ type: 'success', text: `Room ${roomData.roomNumber} added successfully!` });
                 setRoomData({ roomNumber: '', roomType: '', capacity: '', price: '', facilities: [] });
+                
+                // Refresh floor data
                 const updatedRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors`, {credentials: 'include'});
-                const updatedData = await updatedRes.json();
-                if(updatedData.success) setFloors(updatedData.data);
+                if (updatedRes.ok) {
+                    const updatedData = await updatedRes.json();
+                    if(updatedData.success) setFloors(updatedData.data);
+                }
             } else {
-                setMessage({ type: 'error', text: data.error || "Failed to add room" });
+                throw new Error(data.error || "Failed to add room");
             }
         } catch (error) {
-            setMessage({ type: 'error', text: "An unexpected error occurred." });
+            setMessage({ type: 'error', text: error.message });
         } finally {
             setIsSubmitting(false);
         }
@@ -194,7 +210,6 @@ const AddRoomForm = ({ hostels }) => {
     }
 
     return (
-        // YAHAN FIX KIYA GAYA HAI: Outer container se styling hata di gayi hai
         <div className="">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Add a New Room</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
