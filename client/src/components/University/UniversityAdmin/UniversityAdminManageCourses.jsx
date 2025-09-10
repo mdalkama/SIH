@@ -133,10 +133,11 @@ const UniversityAdminManageCourses = () => {
         if (activeTab === 'courses') {
             return {
                 total: courses.length,
-                btech: courses.filter(c => c.degree === 'B.Tech').length,
-                mtech: courses.filter(c => c.degree === 'M.Tech').length,
-                mba: courses.filter(c => c.degree === 'MBA').length, 
-                Diploma: courses.filter(c => c.degree === 'Diploma').length,
+                // btech: courses.filter(c => c.degree === 'B.Tech').length,
+                // mtech: courses.filter(c => c.degree === 'M.Tech').length,
+                // mba: courses.filter(c => c.degree === 'MBA').length, 
+                Diploma_Engg: courses.filter(c => c.degree === 'Diploma Engineering').length,
+                Diploma_Non_Engg: courses.filter(c => c.degree === 'Diploma Non-Engineering').length,
             };
         } else {
             return {
@@ -157,10 +158,11 @@ const UniversityAdminManageCourses = () => {
                     <StatCard icon={activeTab === 'courses' ? <GraduationCap size={20} className="text-blue-600" /> : <BookOpen size={20} className="text-blue-600" />} title={`Total ${activeTab === 'courses' ? 'Courses' : 'Subjects'}`} value={stats.total} />
                     {activeTab === 'courses' ? (
                         <>
-                            <StatCard title="B.Tech Programs" value={stats.btech} />
+                            {/* <StatCard title="B.Tech Programs" value={stats.btech} />
                             <StatCard title="M.Tech Programs" value={stats.mtech} />
-                            <StatCard title="MBA Programs" value={stats.mba} />
-                            <StatCard title="Diploma Programs" value={stats.Diploma} />
+                            <StatCard title="MBA Programs" value={stats.mba} /> */}
+                            <StatCard title="Diploma Engineering Programs" value={stats.Diploma_Engg} />
+                            <StatCard title="Diploma Non-Engineering Programs" value={stats.Diploma_Non_Engg} />
                         </>
                     ) : (
                         <>
@@ -589,7 +591,7 @@ const AddEditModal = ({
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div><label className="block text-sm font-semibold text-gray-700 mb-2">Course ID *</label><input type="text" value={courseId} onChange={(e) => setCourseId(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., CSE2024" required /></div>
-                                <div><label className="block text-sm font-semibold text-gray-700 mb-2">Degree *</label><select value={degree} onChange={(e) => setDegree(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required><option value="">Select degree</option><option value="B.Tech">B.Tech</option><option value="M.Tech">M.Tech</option><option value="MBA">MBA</option><option value="BBA">BBA</option><option value="MCA">MCA</option><option value="Diploma">Diploma</option></select></div>
+                                <div><label className="block text-sm font-semibold text-gray-700 mb-2">Degree *</label><select value={degree} onChange={(e) => setDegree(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required><option value="">Select degree</option><option value="Diploma Engineering">Diploma Engineering</option><option value="Diploma Non-Engineering">Diploma Non-Engineering</option></select></div>
                                 <div><label className="block text-sm font-semibold text-gray-700 mb-2">Branch *</label><input type="text" value={branch} onChange={(e) => setBranch(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Computer Science Engineering" required /></div>
                                 <div><label className="block text-sm font-semibold text-gray-700 mb-2">Total Semesters *</label><select value={totalSemester} onChange={(e) => setTotalSemester(parseInt(e.target.value))} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required><option value="">Select semesters</option>{[...Array(12)].map((_, i) => (<option key={i + 1} value={i + 1}>{i + 1}</option>))}</select></div>
                             </div>
