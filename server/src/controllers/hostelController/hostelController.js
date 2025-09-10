@@ -640,27 +640,92 @@ export const deleteBed = async (req, res) => {
 };
 
 // Allocate Bed + Update StudentHostel (Fetch studentId from Student schema)
+
 export const allocateBed = async (req, res) => {
   try {
     const { hostelId, floorId, roomId, bedId } = req.params;
     const { registrationNumber } = req.body;
-    const student = await Student.findOne({ registrationNumber });
-    if (!student) return res.status(404).json({ error: "Student not found" });
 
+    if (!registrationNumber) {
+        return res.status(400).json({ error: "Registration number is required." });
+    }
+
+    // 1. Student ko registration number se dhoondho
+    const student = await Student.findOne({ registrationNumber });
+    if (!student) {
+        return res.status(404).json({ error: "Student not found with this registration number." });
+    }
+
+    // 2. Check karo ki student pehle se hi allocated toh nahi hai
+    const existingAllocation = await StudentHostel.findOne({ 
+        occupant: student._id,
+        currentHostel: { $ne: null } // Check karo ki currentHostel null na ho
+    });
+
+    if (existingAllocation) {
+        return res.status(409).json({ error: "This student is already allocated to another bed." });
+    }
+
+    // 3. Hostel, floor, room, aur bed dhoondho
     const hostel = await Hostel.findById(hostelId);
     if (!hostel) return res.status(404).json({ error: "Hostel not found" });
 
     const floor = hostel.floors.find(f => f._id.equals(floorId));
     if (!floor) return res.status(404).json({ error: "Floor not found" });
+
     const room = floor.rooms.find(r => r._id.equals(roomId));
     if (!room) return res.status(404).json({ error: "Room not found" });
+
     const bed = room.beds.find(b => b._id.equals(bedId));
     if (!bed) return res.status(404).json({ error: "Bed not found" });
 
-    if (bed.isOccupied) return res.status(400).json({ error: "Bed is already occupied." });
+    // 4. Check karo ki bed khali hai ya nahi
+    if (bed.isOccupied) {
+        return res.status(400).json({ error: "This bed is already occupied." });
+    }
     
-    // ... (baaki ka allocate logic theek hai) ...
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    // 5. Bed ko occupied mark karo aur hostel document save karo
+    bed.isOccupied = true;
+    bed.occupant = student._id;
+    await hostel.save();
+
+    // 6. StudentHostel record ko update ya create karo
+    let studentHostel = await StudentHostel.findOne({ occupant: student._id });
+
+    if (studentHostel) {
+        // Agar record pehle se hai (vacated state me), toh use update karo
+        studentHostel.currentHostel = {
+            hostel: hostelId,
+            floor: floorId,
+            room: roomId,
+            bed: bedId,
+        };
+    } else {
+        // Agar record nahi hai, toh naya banao
+        studentHostel = new StudentHostel({
+            registrationNumber: student.registrationNumber,
+            occupant: student._id,
+            currentHostel: {
+                hostel: hostelId,
+                floor: floorId,
+                room: roomId,
+                bed: bedId,
+            },
+        });
+    }
+
+    await studentHostel.save();
+
+    // 7. Success response bhejo
+    res.status(200).json({
+      success: true,
+      message: "Bed allocated successfully!",
+    });
+
+  } catch (err) {
+    console.error("Error in allocateBed:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
 export const findStudentForAllocation = async (req, res) => {

@@ -87,6 +87,7 @@ const AllocateBedForm = ({ hostels }) => {
         if (!foundStudent || !selectedBed) return;
         setIsSubmitting(true);
         setMessage('');
+        console.log(selectedHostel._id, selectedFloor._id,selectedBed.roomId, selectedBed._id, foundStudent.registrationNumber);
         try {
             const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}/rooms/${selectedBed.roomId}/beds/${selectedBed._id}/allocate`, {
                 method: "POST", credentials: "include", headers: { "Content-Type": "application/json" },
