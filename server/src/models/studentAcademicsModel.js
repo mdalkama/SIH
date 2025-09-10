@@ -1,94 +1,78 @@
 import mongoose from "mongoose";
-const { Schema } = mongoose;
 
-//==============================================
-// STUDENT ACADEMICS SCHEMA
-// Sabse important schema, student ka poora academic record
-//==============================================
-const StudentAcademicsSchema = new Schema({
-    registrationNumber: { type: String, required: true, unique: true, index: true },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true }, // User model se link
+const subjectResultSchema = new mongoose.Schema({
+    subjectCode: { type: String, required: true },   // e.g. CS501
+    subjectName: { type: String, required: true },   // e.g. Data Structures
+    internal: { type: Number, default: 0 },
+    external: { type: Number, default: 0 },
+    practical: { type: Number, default: 0 },
+    total: { type: Number, default: 0 },
+    grade: { type: String },
+    status: { type: String, enum: ["PASS", "FAIL"], default: "PASS" }
+}, { _id: false });
+
+const previousResultSchema = new mongoose.Schema({
+    examId: { type: String, required: true },          // ENDSEM2024-SEM4
+    examName: { type: String },                        // End Semester Exam
     collegeCode: { type: String, required: true },
     courseCode: { type: String, required: true },
-    session: { type: String, required: true }, // e.g., '2022-2026'
-    currentYear: { type: Number, required: true, default: 1 },
-    currentSemester: { type: Number, required: true, default: 1 },
-    status: { type: String, enum: ['ACTIVE', 'GRADUATED', 'SUSPENDED'], default: 'ACTIVE' },
-    
-    // Student ki personal details
-    personalDetails: {
-        name: String,
-        email: String,
-        phone: String,
-        dob: Date
-    },
-
-    // Puraane semesters ka result (immutable)
-    previousSemesters: [{
-        year: Number,
-        semester: Number,
-        examId: { type: Schema.Types.ObjectId, ref: 'Exam' },
-        subjects: [{
-            subjectCode: String,
-            internal: Number,
-            external: Number,
-            practical: Number,
-            total: Number,
-            grade: String,
-            status: { type: String, enum: ['PASS', 'FAIL'] }
-        }],
-        sgpa: Number,
-        overallResult: { type: String, enum: ['PASS', 'FAIL'] },
-        publishedOn: { type: Date, default: Date.now }
-    }],
-    
-    // Current semester, jiske marks abhi enter honge
-    currentSemesterDetails: {
-        year: Number,
-        semester: Number,
-        subjects: [{
-            subjectCode: String,
-            internal: { type: Number, default: null },
-            external: { type: Number, default: null },
-            practical: { type: Number, default: null }
-        }]
-    },
-    
-    // Exam ke liye registration details
-    examRegistration: [{
-        examId: { type: Schema.Types.ObjectId, ref: 'Exam' },
-        admitCardNumber: String,
-        status: { type: String, enum: ['REGISTERED', 'CANCELLED'] }
-    }],
-
-    // Track promotions from one semester to another
-    promotions: [{
-        fromSemester: Number,
-        toSemester: Number,
-        promotedOn: { type: Date, default: Date.now },
-        notes: String
-    }]
-}, { timestamps: true });
-
-
-//==============================================
-// EXAM SCHEMA
-// Har semester ke exam ka blueprint
-//==============================================
-const ExamSchema = new Schema({
-    name: { type: String, required: true }, // e.g., "B.Tech 3rd Semester Main Exam 2025"
+    year: { type: Number, required: true },
     semester: { type: Number, required: true },
-    courses: [{ type: Schema.Types.ObjectId, ref: 'Course' }],
-    startDate: { type: Date, required: true },
-    endDate: { type: Date, required: true },
-    published: { type: Boolean, default: false },
-    publishedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+
+    subjects: [subjectResultSchema],                   // all subject results
+    sgpa: { type: Number },
+    overallResult: { type: String, enum: ["PASS", "FAIL"], default: "PASS" },
     publishedOn: { type: Date }
+}, { _id: false });
+
+const currentExamRegistrationSchema = new mongoose.Schema({
+    examId: { type: String, required: true },          // e.g. ENDSEM2025-SEM5
+    examName: { type: String, required: true },
+    semester: { type: Number, required: true },
+    year: { type: Number, required: true },
+    courseCode: { type: String, required: true },
+    collegeCode: { type: String, required: true },
+
+    registrationDate: { type: Date, default: Date.now },
+    status: {
+        type: String,
+        enum: ["REGISTERED", "CANCELLED", "BLOCKED"],
+        default: "REGISTERED"
+    },
+
+    // admit card info
+    admitCardNumber: { type: String },
+    admitCardIssuedOn: { type: Date },
+    examCenter: { type: String },
+    seatNumber: { type: String },
+    instructions: { type: String },
+
+    // attendance
+    attendance: {
+        present: { type: Boolean, default: false },
+        markedOn: { type: Date }
+    },
+
+    // result (hidden until publish)
+    result: {
+        sgpa: { type: Number },
+        overallResult: { type: String, enum: ["PASS", "FAIL"] },
+        published: { type: Boolean, default: false }
+    }
+}, { _id: false });
+
+const studentAcademicsSchema = new mongoose.Schema({
+    studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
+    registrationNumber: { type: String, required: true },
+    collegeCode: { type: String, required: true },
+    courseCode: { type: String, required: true },
+
+    // ✅ Past completed semesters
+    previousResults: [previousResultSchema],
+
+    // ✅ Current live exam registrations
+    currentExamRegistrations: [currentExamRegistrationSchema]
+
 }, { timestamps: true });
 
-
-const StudentAcademics = mongoose.model('StudentAcademics', StudentAcademicsSchema);
-const Exam = mongoose.model('Exam', ExamSchema);
-
-module.exports = { Subject, Course, StudentAcademics, Exam };
-
+export default mongoose.model("StudentAcademics", studentAcademicsSchema);

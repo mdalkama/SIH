@@ -1,11 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { PlusCircle, Edit, X, Loader2, Building, User, Search, ChevronLeft, ChevronRight, Trash2, AlertTriangle, CheckCircle, BarChart2, Info, Eye, EyeOff } from 'lucide-react';
+import { PlusCircle, Edit, X, Loader2, Building, User, Search, ChevronLeft, ChevronRight, Trash2, AlertTriangle, CheckCircle, BarChart2, Info, Eye, EyeOff, BookOpen } from 'lucide-react';
 
 const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/manage-college';
+const COURSES_API_URL = 'https://sih-4ptm.onrender.com/api/v1/course';
+
 
 // --- Main Component ---
 const UniversityCollegeManager = () => {
     const [colleges, setColleges] = useState([]);
+    const [allCourses, setAllCourses] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCollege, setEditingCollege] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -24,26 +27,55 @@ const UniversityCollegeManager = () => {
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [totalColleges, setTotalColleges] = useState(0);
 
-    // Fetch colleges on component mount and when dependencies change
+    const addToast = (type, message) => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, type, message }]);
+        setTimeout(() => {
+            setToasts(prev => prev.filter(t => t.id !== id));
+        }, 4000);
+    };
+
+    // Fetch all courses for the dropdowns, once on mount
+    useEffect(() => {
+        const fetchAllCourses = async () => {
+            try {
+                const response = await fetch(COURSES_API_URL, { credentials: 'include' });
+                if (!response.ok) {
+                    throw new Error('Failed to fetch courses list');
+                }
+                console.log(response);
+                const data = await response.json();
+                setAllCourses(data.courses || []);
+            } catch (err) {
+                addToast('error', err.message);
+            }
+        };
+        fetchAllCourses();
+    }, []);
+
+    // Fetch colleges based on filters/pagination
     useEffect(() => {
         const fetchColleges = async () => {
             setIsPageLoading(true);
             setError('');
             try {
-                // Construct query parameters
                 const params = new URLSearchParams({
                     page: currentPage,
                     limit: rowsPerPage,
                     search: searchTerm,
                     status: statusFilter,
                 });
-                const response = await fetch(`${API_BASE_URL}?${params.toString()}`);
+
+                const response = await fetch(`${API_BASE_URL}?${params.toString()}`, { credentials: 'include' });
+
                 if (!response.ok) {
-                    throw new Error('Failed to fetch colleges. Please try again later.');
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to fetch colleges.');
                 }
+
                 const data = await response.json();
                 setColleges(data.colleges || []);
-                setTotalColleges(data.totalPages * rowsPerPage); // Approximate total count
+                setTotalColleges(data.totalDocs || 0);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -54,13 +86,6 @@ const UniversityCollegeManager = () => {
         fetchColleges();
     }, [currentPage, rowsPerPage, searchTerm, statusFilter]);
 
-    const addToast = (type, message) => {
-        const id = Date.now();
-        setToasts(prev => [...prev, { id, type, message }]);
-        setTimeout(() => {
-            setToasts(prev => prev.filter(t => t.id !== id));
-        }, 4000);
-    };
 
     const openModalForCreate = () => {
         setEditingCollege(null);
@@ -92,7 +117,7 @@ const UniversityCollegeManager = () => {
         setIsLoading(true);
         try {
             let response;
-            const universityId = "YOUR_UNIVERSITY_ID"; // Replace with actual dynamic University ID
+            const universityId = "YOUR_UNIVERSITY_ID"; // Replace with actual dynamic University ID from auth context
 
             if (editingCollege) {
                 // Update College
@@ -100,6 +125,7 @@ const UniversityCollegeManager = () => {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(collegeData),
+                    credentials: 'include'
                 });
             } else {
                 // Create College
@@ -107,6 +133,7 @@ const UniversityCollegeManager = () => {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ collegeData, adminData, universityId }),
+                    credentials: 'include'
                 });
             }
 
@@ -122,6 +149,7 @@ const UniversityCollegeManager = () => {
                 addToast('success', `${result.college.name} updated successfully.`);
             } else {
                 setColleges([result.college, ...colleges]);
+                setTotalColleges(prev => prev + 1);
                 addToast('success', `${result.college.name} created successfully.`);
             }
 
@@ -138,6 +166,7 @@ const UniversityCollegeManager = () => {
         try {
             const response = await fetch(`${API_BASE_URL}/${deletingCollege._id}`, {
                 method: 'DELETE',
+                credentials: 'include'
             });
 
             if (!response.ok) {
@@ -147,6 +176,7 @@ const UniversityCollegeManager = () => {
 
             addToast('info', `${deletingCollege.name} has been deleted.`);
             setColleges(colleges.filter(c => c._id !== deletingCollege._id));
+            setTotalColleges(prev => prev - 1);
             closeDeleteModal();
         } catch (err) {
             addToast('error', err.message);
@@ -156,14 +186,8 @@ const UniversityCollegeManager = () => {
     };
 
     const stats = useMemo(() => {
-        // These stats should ideally come from a separate API endpoint for accuracy with large datasets
-        return {
-            total: totalColleges,
-            active: colleges.filter(c => c.status === 'Active').length, // This is an approximation based on current page
-            inactive: colleges.filter(c => c.status === 'Inactive').length,
-            pending: colleges.filter(c => c.status === 'Pending Approval').length,
-        };
-    }, [colleges, totalColleges]);
+        return { total: totalColleges };
+    }, [totalColleges]);
 
     return (
         <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8 font-sans">
@@ -174,9 +198,10 @@ const UniversityCollegeManager = () => {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <StatCard title="Total Colleges" value={stats.total} icon={<Building />} color="blue" />
-                    <StatCard title="Active" value={stats.active} icon={<CheckCircle />} color="green" />
-                    <StatCard title="Pending Approval" value={stats.pending} icon={<Loader2 />} color="yellow" />
-                    <StatCard title="Inactive" value={stats.inactive} icon={<X />} color="gray" />
+                    {/* These stats would be more accurate from a dedicated stats API endpoint */}
+                    <StatCard title="Active" value={"..."} icon={<CheckCircle />} color="green" />
+                    <StatCard title="Pending" value={"..."} icon={<Loader2 />} color="yellow" />
+                    <StatCard title="Inactive" value={"..."} icon={<X />} color="gray" />
                 </div>
 
                 <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -225,6 +250,7 @@ const UniversityCollegeManager = () => {
                     onSave={handleSaveCollege}
                     college={editingCollege}
                     processing={isLoading}
+                    allCourses={allCourses}
                 />
             )}
 
@@ -302,7 +328,7 @@ const CollegesTable = ({ colleges, onEdit, onDelete, currentPage, rowsPerPage })
                     <th className="p-3 font-semibold">College</th>
                     <th className="p-3 font-semibold">Contact</th>
                     <th className="p-3 font-semibold">Admin</th>
-                    <th className="p-3 font-semibold">Established On</th>
+                    <th className="p-3 font-semibold text-center">Courses</th>
                     <th className="p-3 font-semibold text-center">Status</th>
                     <th className="p-3 font-semibold text-center">Actions</th>
                 </tr>
@@ -318,8 +344,8 @@ const CollegesTable = ({ colleges, onEdit, onDelete, currentPage, rowsPerPage })
                                 <div className="text-gray-500 font-mono text-xs">Code: {college.code} | Type: {college.type}</div>
                             </td>
                             <td className="p-3">
-                                <div className="text-gray-800">{college.contact.email}</div>
-                                <div className="text-gray-500">{college.contact.phone}</div>
+                                <div className="text-gray-800">{college.contact?.email}</div>
+                                <div className="text-gray-500">{college.contact?.phone}</div>
                             </td>
                             <td className="p-3">
                                 {college.admin ? (
@@ -329,7 +355,7 @@ const CollegesTable = ({ colleges, onEdit, onDelete, currentPage, rowsPerPage })
                                     </>
                                 ) : <span className="text-gray-400">Not Assigned</span>}
                             </td>
-                            <td className="p-3 text-gray-600">{new Date(college.establishmentDate).toLocaleDateString('en-GB')}</td>
+                            <td className="p-3 text-center font-semibold text-gray-700">{college.courses?.length || 0}</td>
                             <td className="p-3 text-center"><StatusBadge status={college.status} /></td>
                             <td className="p-3 text-center">
                                 <div className="flex justify-center gap-3">
@@ -352,7 +378,7 @@ const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSiz
 
     const handlePageSizeChange = (e) => {
         onPageSizeChange(Number(e.target.value));
-        onPageChange(1);
+        onPageChange(1); // Reset to first page
     };
 
     return (
@@ -396,7 +422,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirm
     );
 };
 
-const CollegeModal = ({ isOpen, onClose, onSave, college, processing }) => {
+const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses }) => {
     const isEditing = !!college;
     const [activeTab, setActiveTab] = useState('details');
     const [showPassword, setShowPassword] = useState(false);
@@ -404,6 +430,7 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing }) => {
         name: college?.name || '', code: college?.code || '', type: college?.type || '', status: college?.status || 'Pending Approval',
         location: college?.location || '', email: college?.contact?.email || '', phone: college?.contact?.phone || '', website: college?.contact?.website || '',
         affiliationId: college?.affiliationId || '', establishmentDate: college?.establishmentDate?.split('T')[0] || '', capacity: college?.capacity || '',
+        courses: college?.courses || [],
         adminName: '', adminEmail: '', adminStaffId: '', adminPhone: '', adminPassword: '', adminGender: '', adminSalary: '',
     });
     const [error, setError] = useState('');
@@ -411,6 +438,10 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing }) => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleCourseChange = (selectedCourseIds) => {
+        setFormData(prev => ({ ...prev, courses: selectedCourseIds }));
     };
 
     const handleSubmit = () => {
@@ -425,7 +456,7 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing }) => {
             }
         }
         setError('');
-        const collegeData = { name, code, type, status: formData.status, location: formData.location, contact: { email, phone, website: formData.website }, affiliationId, establishmentDate: formData.establishmentDate, capacity: formData.capacity };
+        const collegeData = { name, code, type, status: formData.status, location: formData.location, contact: { email, phone, website: formData.website }, affiliationId, establishmentDate: formData.establishmentDate, capacity: formData.capacity, courses: formData.courses };
         const adminData = isEditing ? null : { name: formData.adminName, email: formData.adminEmail, staffId: formData.adminStaffId, phone: formData.adminPhone, password: formData.adminPassword, gender: formData.adminGender, salary: formData.adminSalary };
         onSave(collegeData, adminData);
     };
@@ -446,40 +477,15 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing }) => {
                     <div className="flex -mb-px">
                         <TabButton tabName="details" label="College Details" />
                         <TabButton tabName="contact" label="Contact & Location" />
+                        <TabButton tabName="courses" label="Manage Courses" />
                         {!isEditing && <TabButton tabName="admin" label="Create Admin" />}
                     </div>
                 </div>
                 <div className="p-6 space-y-6 max-h-[65vh] overflow-y-auto">
-                    {activeTab === 'details' && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="md:col-span-3"><label className="block text-sm font-medium text-gray-700 mb-1">College Name *</label><input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">College Code *</label><input type="text" name="code" value={formData.code} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">College Type *</label><input type="text" name="type" value={formData.type} onChange={handleChange} placeholder="e.g., Engineering" className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Total Capacity</label><input type="number" name="capacity" value={formData.capacity} onChange={handleChange} placeholder="e.g., 2500" className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Affiliation ID *</label><input type="text" name="affiliationId" value={formData.affiliationId} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Establishment Date</label><input type="date" name="establishmentDate" value={formData.establishmentDate} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Status</label><select name="status" value={formData.status} onChange={handleChange} className="w-full px-3 py-2 border bg-white border-gray-300 rounded-lg"><option>Active</option><option>Inactive</option><option>Pending Approval</option></select></div>
-                        </div>
-                    )}
-                    {activeTab === 'contact' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Location / Address</label><input type="text" name="location" value={formData.location} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Contact Email *</label><input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Contact Phone *</label><input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Website</label><input type="text" name="website" value={formData.website} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                        </div>
-                    )}
-                    {!isEditing && activeTab === 'admin' && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Full Name *</label><input type="text" name="adminName" value={formData.adminName} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Email *</label><input type="email" name="adminEmail" value={formData.adminEmail} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Staff ID *</label><input type="text" name="adminStaffId" value={formData.adminStaffId} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Phone</label><input type="tel" name="adminPhone" value={formData.adminPhone} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Gender</label><select name="adminGender" value={formData.adminGender} onChange={handleChange} className="w-full px-3 py-2 border bg-white border-gray-300 rounded-lg"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Salary</label><input type="number" name="adminSalary" value={formData.adminSalary} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div className="md:col-span-3 relative"><label className="block text-sm font-medium text-gray-700 mb-1">Set Password *</label><input type={showPassword ? "text" : "password"} name="adminPassword" value={formData.adminPassword} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-9 text-gray-400 hover:text-gray-600">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></div>
-                        </div>
-                    )}
+                    {activeTab === 'details' && (<div className="grid grid-cols-1 md:grid-cols-3 gap-4"> <div className="md:col-span-3"><label className="block text-sm font-medium text-gray-700 mb-1">College Name *</label><input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">College Code *</label><input type="text" name="code" value={formData.code} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">College Type *</label><input type="text" name="type" value={formData.type} onChange={handleChange} placeholder="e.g., Engineering" className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Total Capacity</label><input type="number" name="capacity" value={formData.capacity} onChange={handleChange} placeholder="e.g., 2500" className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Affiliation ID *</label><input type="text" name="affiliationId" value={formData.affiliationId} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Establishment Date</label><input type="date" name="establishmentDate" value={formData.establishmentDate} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Status</label><select name="status" value={formData.status} onChange={handleChange} className="w-full px-3 py-2 border bg-white border-gray-300 rounded-lg"><option>Active</option><option>Inactive</option><option>Pending Approval</option></select></div> </div>)}
+                    {activeTab === 'contact' && (<div className="grid grid-cols-1 md:grid-cols-2 gap-4"> <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Location / Address</label><input type="text" name="location" value={formData.location} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Contact Email *</label><input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Contact Phone *</label><input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Website</label><input type="text" name="website" value={formData.website} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> </div>)}
+                    {activeTab === 'courses' && (<MultiSelectCourses allCourses={allCourses} selectedCourses={formData.courses} onChange={handleCourseChange} />)}
+                    {!isEditing && activeTab === 'admin' && (<div className="grid grid-cols-1 md:grid-cols-3 gap-4"> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Full Name *</label><input type="text" name="adminName" value={formData.adminName} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Email *</label><input type="email" name="adminEmail" value={formData.adminEmail} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Staff ID *</label><input type="text" name="adminStaffId" value={formData.adminStaffId} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Phone</label><input type="tel" name="adminPhone" value={formData.adminPhone} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Gender</label><select name="adminGender" value={formData.adminGender} onChange={handleChange} className="w-full px-3 py-2 border bg-white border-gray-300 rounded-lg"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Salary</label><input type="number" name="adminSalary" value={formData.adminSalary} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div className="md:col-span-3 relative"><label className="block text-sm font-medium text-gray-700 mb-1">Set Password *</label><input type={showPassword ? "text" : "password"} name="adminPassword" value={formData.adminPassword} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-9 text-gray-400 hover:text-gray-600">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></div> </div>)}
                     {error && <p className="text-red-600 text-sm pt-2">{error}</p>}
                 </div>
                 <div className="p-4 bg-gray-50 border-t flex justify-end gap-3"><button onClick={onClose} disabled={processing} className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">Cancel</button><button onClick={handleSubmit} disabled={processing} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 flex items-center min-w-[120px] justify-center">{processing ? <Loader2 size={16} className="animate-spin" /> : (isEditing ? 'Save Changes' : 'Create College')}</button></div>
@@ -488,34 +494,57 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing }) => {
     );
 };
 
-const Toast = ({ message, type, onClose }) => {
-    const icons = {
-        success: <CheckCircle className="text-green-500" />,
-        error: <AlertTriangle className="text-red-500" />,
-        info: <Info className="text-blue-500" />,
+const MultiSelectCourses = ({ allCourses, selectedCourses, onChange }) => {
+    const availableCourses = allCourses.filter(c => !selectedCourses.includes(c._id));
+
+    const handleAddCourse = (courseId) => {
+        if (courseId) {
+            onChange([...selectedCourses, courseId]);
+        }
+    };
+
+    const handleRemoveCourse = (courseId) => {
+        onChange(selectedCourses.filter(id => id !== courseId));
     };
 
     return (
-        <div className="bg-white shadow-lg rounded-lg p-4 flex items-start gap-3 w-80 animate-fade-in-right">
-            <div className="flex-shrink-0">{icons[type]}</div>
-            <p className="flex-1 text-sm text-gray-700">{message}</p>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
+        <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Select Courses to offer</label>
+            <div className="flex flex-wrap gap-2 p-2 border rounded-lg min-h-[40px] bg-gray-50 mb-2">
+                {selectedCourses.map(id => {
+                    const course = allCourses.find(c => c._id === id);
+                    return (
+                        <div key={id} className="flex items-center gap-2 bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
+                            <span>{course?.name || 'Unknown Course'}</span>
+                            <button onClick={() => handleRemoveCourse(id)}><X size={14} /></button>
+                        </div>
+                    );
+                })}
+                {selectedCourses.length === 0 && <p className="text-sm text-gray-400 p-1">No courses selected.</p>}
+            </div>
+            {availableCourses.length > 0 && (
+                <select onChange={(e) => handleAddCourse(e.target.value)} value="" className="w-full px-3 py-2 border bg-white border-gray-300 rounded-lg">
+                    <option value="">-- Add a course --</option>
+                    {availableCourses.map(course => (
+                        <option key={course._id} value={course._id}>{course.name} ({course.courseId})</option>
+                    ))}
+                </select>
+            )}
         </div>
     );
+};
+
+
+const Toast = ({ message, type, onClose }) => {
+    const icons = { success: <CheckCircle className="text-green-500" />, error: <AlertTriangle className="text-red-500" />, info: <Info className="text-blue-500" /> };
+    return (<div className="bg-white shadow-lg rounded-lg p-4 flex items-start gap-3 w-80 animate-fade-in-right"> <div className="flex-shrink-0">{icons[type]}</div> <p className="flex-1 text-sm text-gray-700">{message}</p> <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={16} /></button> </div>);
 };
 
 const ToastContainer = ({ toasts, setToasts }) => {
     const removeToast = (id) => {
         setToasts(prev => prev.filter(t => t.id !== id));
     };
-
-    return (
-        <div className="fixed top-5 right-5 z-[100] space-y-3">
-            {toasts.map(toast => (
-                <Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />
-            ))}
-        </div>
-    );
+    return (<div className="fixed top-5 right-5 z-[100] space-y-3"> {toasts.map(toast => (<Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />))} </div>);
 };
 
 export default UniversityCollegeManager;

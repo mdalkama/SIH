@@ -1,495 +1,401 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import {
-    Book,
-    Briefcase,
-    ClipboardCheck,
-    AlertCircle,
-    Loader2,
-    Calendar,
-    ChevronRight,
-    CornerDownLeft,
-    Plus,
-    Clock,
-    Search,
-    Download,
-    X,
-    Clipboard,
-    Check
-} from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { PlusCircle, Edit, X, Loader2, Search, ChevronLeft, ChevronRight, Trash2, AlertTriangle, CheckCircle, Info, Calendar, ArrowLeft } from 'lucide-react';
 
-// This is a placeholder for your actual API base URL
-const BASE_API_URL = "https://your-api-base-url.com/api/v1";
+const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/exams';
 
-// --- Mock API Data (for demonstration) ---
-const mockCourses = [
-    { id: 'btech', name: 'B.Tech.', departments: ['Computer Science', 'Electronics', 'Mechanical', 'Civil', 'Information Technology', 'Automobile', 'Electrical'], batches: ['2023', '2024', '2025'] },
-    { id: 'mtech', name: 'M.Tech.', departments: ['Computer Science', 'Electronics'], batches: ['2024', '2025'] },
-    { id: 'bba', name: 'B.B.A.', departments: ['Commerce', 'Management'], batches: ['2023', '2024'] },
-    { id: 'mca', name: 'M.C.A.', departments: ['Computer Applications'], batches: ['2024', '2025'] },
-    { id: 'bca', name: 'B.C.A.', departments: ['Computer Applications'], batches: ['2023', '2024', '2025'] },
-    { id: 'bcom', name: 'B.Com.', departments: ['Commerce'], batches: ['2023', '2024', '2025'] },
-    { id: 'bsc', name: 'B.Sc.', departments: ['Physics', 'Chemistry', 'Mathematics'], batches: ['2023', '2024', '2025'] },
-    { id: 'msc', name: 'M.Sc.', departments: ['Physics', 'Chemistry', 'Mathematics'], batches: ['2024', '2025'] },
-    { id: 'phd', name: 'Ph.D.', departments: ['Physics'], batches: ['2023'] },
-    { id: 'ba', name: 'B.A.', departments: ['English', 'History'], batches: ['2023', '2024'] },
-    { id: 'ma', name: 'M.A.', departments: ['History'], batches: ['2024', '2025'] },
-    { id: 'mba', name: 'M.B.A.', departments: ['Management'], batches: ['2024', '2025'] },
+// --- Mock Data for Courses and Semester-wise Subjects ---
+const mockCoursesWithSubjects = [
+    {
+        courseCode: 'CSE',
+        name: 'Computer Science & Engineering',
+        semesters: [
+            {
+                semester: 5,
+                subjects: [
+                    { subjectCode: 'CS501', subjectName: 'Data Structures' },
+                    { subjectCode: 'CS502', subjectName: 'Database Management Systems' },
+                    { subjectCode: 'CS503', subjectName: 'Operating Systems' },
+                    { subjectCode: 'CS504', subjectName: 'Computer Networks' },
+                ]
+            },
+            {
+                semester: 3,
+                subjects: [
+                    { subjectCode: 'CS301', subjectName: 'Digital Logic Design' },
+                    { subjectCode: 'CS302', subjectName: 'Mathematics III' },
+                ]
+            }
+        ]
+    },
+    {
+        courseCode: 'ECE',
+        name: 'Electronics & Communication',
+        semesters: [
+            {
+                semester: 5,
+                subjects: [
+                    { subjectCode: 'EC501', subjectName: 'Analog Electronics' },
+                    { subjectCode: 'EC502', subjectName: 'Digital Signal Processing' },
+                    { subjectCode: 'EC503', subjectName: 'Microprocessors' },
+                ]
+            }
+        ]
+    },
+    {
+        courseCode: 'MECH',
+        name: 'Mechanical Engineering',
+        semesters: [
+            {
+                semester: 3,
+                subjects: [
+                    { subjectCode: 'ME301', subjectName: 'Thermodynamics' },
+                    { subjectCode: 'ME302', subjectName: 'Fluid Mechanics' },
+                ]
+            }
+        ]
+    }
 ];
 
-const mockSubjectsByBranch = {
-    'btech-Computer Science': ['Data Structures', 'Algorithms', 'Operating Systems', 'Database Management'],
-    'btech-Electronics': ['Digital Electronics', 'Analog Circuits', 'Microprocessors'],
-    'btech-Mechanical': ['Thermodynamics', 'Fluid Mechanics', 'Engineering Mechanics'],
-    'btech-Civil': ['Structural Analysis', 'Geotechnical Engineering'],
-    'btech-Information Technology': ['Computer Networks', 'Cyber Security'],
-    'btech-Automobile': ['Vehicle Dynamics', 'Engine Technology'],
-    'btech-Electrical': ['Power Systems', 'Control Systems'],
-    'mtech-Computer Science': ['Advanced Algorithms', 'Machine Learning'],
-    'mtech-Electronics': ['VLSI Design', 'Communication Systems'],
-    'bba-Commerce': ['Financial Accounting', 'Business Law'],
-    'bba-Management': ['Principles of Management', 'Organizational Behavior'],
-    'mca-Computer Applications': ['Software Engineering', 'Web Technologies'],
-    'bca-Computer Applications': ['Programming in C', 'Data Structures', 'Networking'],
-    'bcom-Commerce': ['Accounting for Managers', 'Corporate Finance'],
-    'bsc-Physics': ['Classical Mechanics', 'Electromagnetism'],
-    'msc-Physics': ['Quantum Mechanics', 'Statistical Mechanics'],
-    'bsc-Chemistry': ['Organic Chemistry', 'Inorganic Chemistry'],
-    'msc-Chemistry': ['Physical Chemistry', 'Analytical Chemistry'],
-    'bsc-Mathematics': ['Abstract Algebra', 'Real Analysis'],
-    'msc-Mathematics': ['Complex Analysis', 'Topology'],
-    'phd-Physics': ['Research Methodology', 'Quantum Field Theory'],
-    'ba-English': ['Literary Theory', 'British Literature'],
-    'ba-History': ['Ancient Indian History', 'Modern World History'],
-    'ma-History': ['Historical Methods', 'Post-Colonial Studies'],
-    'mba-Management': ['Strategic Management', 'Marketing Management'],
-};
 
-const mockStudentCounts = {
-    'btech-2023': { 'Computer Science': 65, 'Electronics': 60, 'Mechanical': 70, 'Civil': 68, 'Information Technology': 62, 'Automobile': 50, 'Electrical': 65 },
-    'btech-2024': { 'Computer Science': 70, 'Electronics': 62, 'Mechanical': 75, 'Civil': 70, 'Information Technology': 65, 'Automobile': 55, 'Electrical': 68 },
-    'btech-2025': { 'Computer Science': 72, 'Electronics': 64, 'Civil': 75 },
-    'mtech-2024': { 'Computer Science': 20, 'Electronics': 18 },
-    'mtech-2025': { 'Computer Science': 22, 'Electronics': 20 },
-    'bba-2023': { 'Commerce': 55, 'Management': 45 },
-    'bba-2024': { 'Commerce': 58, 'Management': 48 },
-    'mca-2024': { 'Computer Applications': 30 },
-    'mca-2025': { 'Computer Applications': 35 },
-    'bca-2023': { 'Computer Applications': 80 },
-    'bca-2024': { 'Computer Applications': 85 },
-    'bca-2025': { 'Computer Applications': 90 },
-    'bcom-2023': { 'Commerce': 90 },
-    'bcom-2024': { 'Commerce': 95 },
-    'bcom-2025': { 'Commerce': 100 },
-    'bsc-2023': { 'Physics': 40, 'Chemistry': 35, 'Mathematics': 45 },
-    'bsc-2024': { 'Physics': 42, 'Chemistry': 38, 'Mathematics': 48 },
-    'bsc-2025': { 'Physics': 45, 'Chemistry': 40, 'Mathematics': 50 },
-    'msc-2024': { 'Physics': 28, 'Chemistry': 25, 'Mathematics': 35 },
-    'msc-2025': { 'Physics': 30, 'Chemistry': 28, 'Mathematics': 38 },
-    'phd-2023': { 'Physics': 15 },
-    'ba-2023': { 'English': 50, 'History': 55 },
-    'ba-2024': { 'English': 52, 'History': 58 },
-    'ma-2024': { 'History': 30 },
-    'ma-2025': { 'History': 32 },
-    'mba-2024': { 'Management': 40 },
-    'mba-2025': { 'Management': 45 },
-};
+// --- Main Component ---
+const UniversityExamManager = () => {
+    const [view, setView] = useState('list'); // 'list', 'details', 'form'
+    const [selectedExam, setSelectedExam] = useState(null);
+    const [editingExam, setEditingExam] = useState(null);
+    const [isPageLoading, setIsPageLoading] = useState(false);
+    const [toasts, setToasts] = useState([]);
 
-function ExamBodySemesterPolicy() {
-    const [notification, setNotification] = useState(null);
-    const [loadingCourses, setLoadingCourses] = useState(false);
-    const [conductingExam, setConductingExam] = useState(false);
-
-    const [courses, setCourses] = useState([]);
-    const [selectedCourseId, setSelectedCourseId] = useState(null);
-    const [selectedBatches, setSelectedBatches] = useState([]);
-    const [selectedBranches, setSelectedBranches] = useState([]);
-    const [examDetails, setExamDetails] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [pagination, setPagination] = useState({ page: 1, itemsPerPage: 10 });
-    const [step, setStep] = useState(1);
-    const [masterExamDetails, setMasterExamDetails] = useState({
-        startDate: '',
-        endDate: '',
-    });
-
-    function showNotification(message, type = "success") {
-        setNotification({ message, type });
-        setTimeout(() => setNotification(null), 3000);
-    }
-
-    // --- Data Fetching Logic (Simulated) ---
-    useEffect(() => {
-        const fetchCourses = async () => {
-            setLoadingCourses(true);
-            try {
-                setTimeout(() => {
-                    setCourses(mockCourses);
-                    setLoadingCourses(false);
-                }, 1000);
-            } catch (error) {
-                setLoadingCourses(false);
-                showNotification("Courses load karne mein nakam rahe. Kripaya dobara koshish karein.", "error");
-            }
-        };
-        fetchCourses();
-    }, []);
-
-    const handleBatchToggle = (batch) => {
-        setSelectedBatches(prev =>
-            prev.includes(batch) ? prev.filter(b => b !== batch) : [...prev, batch]
-        );
+    const addToast = (type, message) => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, type, message }]);
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
     };
 
-    const handleBranchToggle = (branch) => {
-        setSelectedBranches(prev =>
-            prev.includes(branch) ? prev.filter(b => b !== branch) : [...prev, branch]
-        );
+    const refreshExamList = () => {
+        setView('loading');
+        setTimeout(() => setView('list'), 0);
     };
 
-    const handleProceedToStep2 = () => {
-        if (!selectedCourseId || selectedBatches.length === 0 || selectedBranches.length === 0) {
-            showNotification("Kripaya ek course, ek batch aur ek branch chunein.", "error");
-            return;
-        }
-        setStep(2);
-    };
-
-    const handleApplyDetailsToAll = () => {
-        if (!masterExamDetails.startDate || !masterExamDetails.endDate) {
-            showNotification("Kripaya pariksha ki shuru aur aakhri tarikh bharein.", "error");
-            return;
-        }
-
-        const selectedCourse = courses.find(c => c.id === selectedCourseId);
-        
-        const newExams = selectedBatches.flatMap(batch => {
-            return selectedBranches.flatMap(branch => {
-                const subjects = mockSubjectsByBranch[`${selectedCourseId}-${branch}`] || [];
-                const studentCount = mockStudentCounts[`${selectedCourseId}-${batch}`]?.[branch] || 0;
-                
-                return subjects.map(subject => ({
-                    id: `${selectedCourseId}-${batch}-${branch}-${subject}-${Date.now() + Math.random()}`,
-                    course: selectedCourse.name,
-                    batch: batch,
-                    branch: branch,
-                    students: studentCount,
-                    subject: subject,
-                    date: `${masterExamDetails.startDate} to ${masterExamDetails.endDate}`,
-                }));
-            });
-        });
-
-        setExamDetails(prev => [...prev, ...newExams]);
-        setStep(3);
-        setMasterExamDetails({ startDate: '', endDate: '' });
-    };
-
-    const handleFinalizeAllExams = async () => {
-        if (examDetails.length === 0) {
-            showNotification("Pariksha roster khali hai. Pehle exams add karein.", "error");
-            return;
-        }
-
-        const hasEmptyFields = examDetails.some(exam => !exam.subject || !exam.date);
-        if (hasEmptyFields) {
-            showNotification("Kripaya sabhi subject aur tarikh ke field ko bharein.", "error");
-            return;
-        }
-        
-        setConductingExam(true);
+    const handleViewDetails = async (examId) => {
+        setIsPageLoading(true);
         try {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            showNotification(`Sare exam safaltapoorvak schedule ho gaye hain.`, "success");
-            setConductingExam(false);
-            setExamDetails([]);
-            setStep(1);
-        } catch (error) {
-            showNotification("Exams schedule karne mein asafal rahe. Dobara koshish karein.", "error");
-            setConductingExam(false);
+            // const response = await fetch(`${API_BASE_URL}/${examId}`, { credentials: 'include' });
+            // if (!response.ok) throw new Error("Failed to fetch exam details.");
+            // const data = await response.json();
+            const data = mockExamDetails; // Using mock for demo
+            setSelectedExam(data);
+            setView('details');
+        } catch (err) {
+            addToast('error', err.message);
+        } finally {
+            setIsPageLoading(false);
         }
     };
 
-    const selectedCourse = useMemo(() => courses.find(c => c.id === selectedCourseId), [courses, selectedCourseId]);
+    const handleShowForm = (exam = null) => {
+        setEditingExam(exam);
+        setView('form');
+    };
 
-    const filteredExams = useMemo(() => {
-        if (!searchTerm) return examDetails;
-        const query = searchTerm.toLowerCase();
-        return examDetails.filter(exam =>
-            exam.course.toLowerCase().includes(query) ||
-            exam.batch.toLowerCase().includes(query) ||
-            exam.branch.toLowerCase().includes(query) ||
-            exam.subject.toLowerCase().includes(query)
-        );
-    }, [examDetails, searchTerm]);
+    const handleBackToList = () => {
+        setSelectedExam(null);
+        setEditingExam(null);
+        setView('list');
+    };
 
-    const totalPages = Math.ceil(filteredExams.length / pagination.itemsPerPage);
-    const paginatedExams = filteredExams.slice(
-        (pagination.page - 1) * pagination.itemsPerPage,
-        pagination.page * pagination.itemsPerPage
-    );
-    
-    // Step indicator
-    const renderStepIndicator = () => (
-        <div className="flex items-center justify-center mb-6">
-            <div className={`flex items-center gap-2 ${step >= 1 ? 'text-blue-600' : 'text-slate-400'}`}>
-                <div className={`w-8 h-8 flex items-center justify-center rounded-full font-bold ${step >= 1 ? 'bg-blue-600 text-white' : 'bg-slate-200'}`}>1</div>
-                <span className="font-semibold text-sm hidden sm:block">Choose Course, Batch & Branch</span>
-            </div>
-            <div className={`w-12 h-1 bg-slate-200 mx-2 ${step > 1 ? 'bg-blue-600' : ''}`}></div>
-            <div className={`flex items-center gap-2 ${step >= 2 ? 'text-blue-600' : 'text-slate-400'}`}>
-                <div className={`w-8 h-8 flex items-center justify-center rounded-full font-bold ${step >= 2 ? 'bg-blue-600 text-white' : 'bg-slate-200'}`}>2</div>
-                <span className="font-semibold text-sm hidden sm:block">Enter Exam Details</span>
-            </div>
-            <div className={`w-12 h-1 bg-slate-200 mx-2 ${step > 2 ? 'bg-blue-600' : ''}`}></div>
-            <div className={`flex items-center gap-2 ${step >= 3 ? 'text-blue-600' : 'text-slate-400'}`}>
-                <div className={`w-8 h-8 flex items-center justify-center rounded-full font-bold ${step >= 3 ? 'bg-blue-600 text-white' : 'bg-slate-200'}`}>3</div>
-                <span className="font-semibold text-sm hidden sm:block">Review & Finalize</span>
-            </div>
-        </div>
-    );
+    if (isPageLoading) return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin" size={48} /></div>;
 
     return (
-        <div className="min-h-screen p-6 bg-slate-50 font-sans">
-            {notification && (
-                <div className={`fixed top-5 right-5 z-[100] p-4 rounded-lg shadow-lg flex items-center gap-3 transition-all duration-300 ${notification.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
-                    {notification.type === "success" ? <ClipboardCheck size={20} /> : <AlertCircle size={20} />}
-                    <span className="text-sm font-medium">{notification.message}</span>
-                    <button onClick={() => setNotification(null)} className="ml-4 -mr-1 p-1 rounded-full hover:bg-black/10"><X size={16} /></button>
-                </div>
-            )}
-
-          
-            
-            {renderStepIndicator()}
-
-            {/* Step 1: Course, Batch & Branch Selection */}
-            {step === 1 && (
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
-                    <div className="px-6 py-4 border-b border-slate-200">
-                        <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-                            <Book size={20} className="text-slate-500" />
-                            Step 1: Choose Course, Batch & Branch
-                        </h2>
-                    </div>
-                    <div className="p-6 space-y-6">
-                        {/* Course Selection */}
-                        <div>
-                            <h3 className="text-md font-semibold text-slate-700 mb-3">Course</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {loadingCourses ? (
-                                    <div className="flex items-center gap-2 text-slate-500">
-                                        <Loader2 size={16} className="animate-spin" /> Loading courses...
-                                    </div>
-                                ) : courses.map(course => (
-                                    <button
-                                        key={course.id}
-                                        onClick={() => { setSelectedCourseId(course.id); setSelectedBatches([]); setSelectedBranches([]); }}
-                                        className={`p-4 rounded-lg border-2 text-left transition-all ${selectedCourseId === course.id ? "bg-blue-50 border-blue-600 ring-4 ring-blue-100" : "bg-white border-slate-200 hover:border-blue-300"}`}
-                                    >
-                                        <h4 className={`font-semibold text-base mb-1 ${selectedCourseId === course.id ? "text-blue-800" : "text-slate-700"}`}>{course.name}</h4>
-                                        <p className="text-sm text-slate-500">{course.departments.join(', ')}</p>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Batch Selection */}
-                        {selectedCourseId && (
-                            <div>
-                                <h3 className="text-md font-semibold text-slate-700 mb-3">Choose Batches</h3>
-                                <div className="flex flex-wrap gap-3">
-                                    {selectedCourse.batches.map(batch => (
-                                        <button
-                                            key={batch}
-                                            onClick={() => handleBatchToggle(batch)}
-                                            className={`px-4 py-2 rounded-md border-2 transition-all ${selectedBatches.includes(batch) ? "bg-green-50 border-green-600 ring-4 ring-green-100 text-green-800" : "bg-white border-slate-200 hover:border-green-300 text-slate-700"}`}
-                                        >
-                                            {batch}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                        
-                        {/* Branch Selection */}
-                        {selectedCourseId && selectedBatches.length > 0 && (
-                            <div>
-                                <h3 className="text-md font-semibold text-slate-700 mb-3">Choose Branches</h3>
-                                <div className="flex flex-wrap gap-3">
-                                    {selectedCourse.departments.map(branch => (
-                                        <button
-                                            key={branch}
-                                            onClick={() => handleBranchToggle(branch)}
-                                            className={`px-4 py-2 rounded-md border-2 transition-all ${selectedBranches.includes(branch) ? "bg-green-50 border-green-600 ring-4 ring-green-100 text-green-800" : "bg-white border-slate-200 hover:border-green-300 text-slate-700"}`}
-                                        >
-                                            {branch}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                        
-                        {/* Action Button */}
-                        {selectedCourseId && selectedBatches.length > 0 && selectedBranches.length > 0 && (
-                            <div className="pt-4 border-t border-slate-200 mt-4 flex justify-end">
-                                <button
-                                    onClick={handleProceedToStep2}
-                                    className="px-5 py-2.5 rounded-md font-semibold text-sm flex items-center gap-2 transition-colors bg-blue-600 text-white hover:bg-blue-700"
-                                >
-                                    Set Exam Details <ChevronRight size={16} />
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-            
-            {/* Step 2: Set Exam Details */}
-            {step === 2 && (
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
-                    <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-2">
-                        <button onClick={() => setStep(1)} className="p-1 rounded-full text-slate-500 hover:bg-slate-100"><CornerDownLeft size={20} /></button>
-                        <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-                            <Briefcase size={20} className="text-slate-500" />
-                            Step 2: Enter Exam Details
-                        </h2>
-                    </div>
-                    <div className="p-6">
-                        <div className="mb-6 bg-blue-50 p-4 rounded-lg">
-                            <h3 className="font-bold text-blue-800">Selected Course: <span className="font-normal">{selectedCourse.name}</span></h3>
-                            <h3 className="font-bold text-blue-800">Selected Batches: <span className="font-normal">{selectedBatches.join(', ')}</span></h3>
-                            <h3 className="font-bold text-blue-800">Selected Branches: <span className="font-normal">{selectedBranches.join(', ')}</span></h3>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-dashed border-slate-300 rounded-lg p-6">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
-                                <input
-                                    type="date"
-                                    value={masterExamDetails.startDate}
-                                    onChange={(e) => setMasterExamDetails(prev => ({ ...prev, startDate: e.target.value }))}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-md"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">End Date</label>
-                                <input
-                                    type="date"
-                                    value={masterExamDetails.endDate}
-                                    onChange={(e) => setMasterExamDetails(prev => ({ ...prev, endDate: e.target.value }))}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-md"
-                                />
-                            </div>
-                        </div>
-                        <div className="mt-6 flex justify-end">
-                             <button
-                                onClick={handleApplyDetailsToAll}
-                                className="px-5 py-2.5 rounded-md font-semibold text-sm flex items-center gap-2 transition-colors bg-blue-600 text-white hover:bg-blue-700"
-                                disabled={!masterExamDetails.startDate || !masterExamDetails.endDate}
-                            >
-                                Add to Roster <ChevronRight size={16} />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Step 3: Review & Finalize */}
-            {step === 3 && (
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-                    <div className="px-6 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
-                         <div className="flex items-center gap-2">
-                            <button onClick={() => setStep(2)} className="p-1 rounded-full text-slate-500 hover:bg-slate-100"><CornerDownLeft size={20} /></button>
-                            <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-                                <Clipboard size={20} className="text-slate-500" />
-                                Step 3: Review & Finalize
-                            </h2>
-                        </div>
-                        <div className="flex items-center gap-3">
-                             <div className="relative">
-                                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                                <input
-                                    type="text"
-                                    value={searchTerm}
-                                    onChange={(e) => {setSearchTerm(e.target.value); setPagination(prev => ({...prev, page: 1}))}}
-                                    placeholder="Search roster..."
-                                    className="w-full sm:w-48 pl-9 pr-4 py-2 text-sm border border-slate-300 rounded-md"
-                                />
-                            </div>
-                            <button
-                                onClick={handleFinalizeAllExams}
-                                disabled={conductingExam || examDetails.length === 0}
-                                className={`px-5 py-2.5 rounded-md font-semibold text-sm flex items-center gap-2 transition-colors ${conductingExam ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}
-                            >
-                                {conductingExam ? <Loader2 size={16} className="animate-spin" /> : <ClipboardCheck size={16} />}
-                                {conductingExam ? "Finalizing..." : "Finalize All Exams"}
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="w-full overflow-x-auto">
-                        <table className="min-w-full text-sm text-left">
-                            <thead className="bg-slate-50 text-slate-600 sticky top-0">
-                                <tr>
-                                    <th className="px-4 py-2 font-medium w-12">#</th>
-                                    <th className="px-4 py-2 font-medium w-48">Course</th>
-                                    <th className="px-4 py-2 font-medium w-24">Batch</th>
-                                    <th className="px-4 py-2 font-medium w-32">Branch</th>
-                                    <th className="px-4 py-2 font-medium">Subject</th>
-                                    <th className="px-4 py-2 font-medium w-32">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {paginatedExams.length > 0 ? paginatedExams.map((exam, index) => (
-                                    <tr key={exam.id} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-4 py-3 font-mono text-slate-500 text-xs">{(pagination.page - 1) * pagination.itemsPerPage + index + 1}</td>
-                                        <td className="px-4 py-3 font-semibold text-slate-800">{exam.course}</td>
-                                        <td className="px-4 py-3 text-slate-600">{exam.batch}</td>
-                                        <td className="px-4 py-3 text-slate-600">{exam.branch}</td>
-                                        <td className="px-4 py-3">
-                                            <span className="font-medium text-slate-800">{exam.subject}</span>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span className="font-medium text-slate-800">{exam.date}</span>
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr>
-                                        <td colSpan="6" className="py-12 text-center text-slate-500">
-                                            No exams in the roster. Add some above.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div className="border-t border-slate-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-slate-600">Show:</span>
-                            <select value={pagination.itemsPerPage} onChange={(e) => setPagination({ page: 1, itemsPerPage: Number(e.target.value) })} className="px-2 py-1 text-sm border border-slate-300 rounded-md bg-white">
-                                <option value={10}>10 per page</option>
-                                <option value={20}>20 per page</option>
-                                <option value={30}>30 per page</option>
-                            </select>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm text-slate-600">
-                                Page {pagination.page} of {totalPages}
-                            </span>
-                            <div className="flex gap-2">
-                                <button onClick={() => setPagination(prev => ({...prev, page: prev.page - 1}))} disabled={pagination.page === 1} className="px-3 py-1.5 rounded-md border border-slate-300 bg-white text-sm flex items-center gap-1.5 disabled:opacity-50 hover:bg-slate-50">
-                                    Previous
-                                </button>
-                                <button onClick={() => setPagination(prev => ({...prev, page: prev.page + 1}))} disabled={pagination.page === totalPages} className="px-3 py-1.5 rounded-md border border-slate-300 bg-white text-sm flex items-center gap-1.5 disabled:opacity-50 hover:bg-slate-50">
-                                    Next
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+        <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8 font-sans">
+            <ToastContainer toasts={toasts} setToasts={setToasts} />
+            <div className="max-w-7xl mx-auto">
+                {view === 'list' && <ExamListView onViewDetails={handleViewDetails} onShowForm={handleShowForm} addToast={addToast} key={Date.now()} />}
+                {view === 'details' && <ExamDetailView exam={selectedExam} onBack={handleBackToList} />}
+                {view === 'form' && <ExamForm exam={editingExam} onBack={handleBackToList} addToast={addToast} onSaveSuccess={refreshExamList} allCourses={mockCoursesWithSubjects} />}
+            </div>
         </div>
     );
-}
+};
 
-export default ExamBodySemesterPolicy;
+// --- List View ---
+const ExamListView = ({ onViewDetails, onShowForm, addToast }) => {
+    const [exams, setExams] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filters, setFilters] = useState({ status: 'all', examType: 'all' });
+    const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalDocs: 0 });
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [deletingExam, setDeletingExam] = useState(null);
+
+    useEffect(() => {
+        // Mocking API fetch
+        setIsLoading(true);
+        setTimeout(() => {
+            setExams(mockExams);
+            setPagination({ currentPage: 1, totalPages: 1, totalDocs: mockExams.length });
+            setIsLoading(false);
+        }, 1000);
+    }, [pagination.currentPage, rowsPerPage, searchTerm, filters, addToast]);
+
+    const handleDelete = async () => {
+        setIsLoading(true);
+        try {
+            // const response = await fetch(`${API_BASE_URL}/${deletingExam._id}`, { method: 'DELETE', credentials: 'include' });
+            // if (!response.ok) throw new Error("Failed to delete exam.");
+            addToast('info', `${deletingExam.examName} has been deleted.`);
+            setExams(prev => prev.filter(e => e._id !== deletingExam._id));
+            setPagination(p => ({ ...p, totalDocs: p.totalDocs - 1 }));
+        } catch (err) {
+            addToast('error', err.message);
+        } finally {
+            setIsLoading(false);
+            setDeletingExam(null);
+        }
+    };
+
+    return (
+        <>
+            <h1 className="text-3xl font-bold text-gray-800 mb-6">Exam Management</h1>
+            <div className="bg-white rounded-lg border shadow-sm">
+                <DataTableToolbar searchTerm={searchTerm} onSearchChange={setSearchTerm} filters={filters} onFilterChange={setFilters} onAddClick={() => onShowForm(null)} />
+                {isLoading ? <div className="p-10 text-center"><Loader2 className="animate-spin" /></div> :
+                    <ExamsTable exams={exams} onViewDetails={onViewDetails} onEdit={onShowForm} onDelete={(exam) => setDeletingExam(exam)} />
+                }
+                <Pagination currentPage={pagination.currentPage} totalCount={pagination.totalDocs} pageSize={rowsPerPage} onPageChange={(page) => setPagination(p => ({ ...p, currentPage: page }))} onPageSizeChange={setRowsPerPage} />
+            </div>
+            {deletingExam && <ConfirmationModal isOpen={!!deletingExam} onClose={() => setDeletingExam(null)} onConfirm={handleDelete} title="Confirm Deletion" message={`Are you sure you want to delete ${deletingExam.examName}?`} confirmText="Delete" confirmColor="red" processing={isLoading} />}
+        </>
+    );
+};
+
+// --- Detail View ---
+const ExamDetailView = ({ exam, onBack }) => (
+    <div>
+        <button onClick={onBack} className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 mb-4"><ArrowLeft size={16} /> Back to Exam List</button>
+        <div className="bg-white p-6 rounded-lg border shadow-sm mb-6">
+            <div className="flex justify-between items-start">
+                <div><h1 className="text-2xl font-bold text-gray-800">{exam.examName}</h1><p className="text-gray-500">{exam.examId} | Semester {exam.semester}, {exam.year}</p></div>
+                <StatusBadge status={exam.status} />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm"><p><strong>Type:</strong> {exam.examType}</p><p><strong>Starts:</strong> {new Date(exam.startDate).toLocaleDateString('en-GB')}</p><p><strong>Ends:</strong> {new Date(exam.endDate).toLocaleDateString('en-GB')}</p><p><strong>Registrations:</strong> {exam.registeredStudents || 0}</p></div>
+        </div>
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Timetable</h2>
+        <div className="space-y-6">
+            {exam.courses.map(course => (
+                <div key={course.courseCode} className="bg-white rounded-lg border shadow-sm"><div className="p-4 bg-gray-50 border-b"><h3 className="font-semibold text-gray-700">Course: {course.courseCode}</h3></div><Timetable course={course} /></div>
+            ))}
+        </div>
+    </div>
+);
+
+// --- Form View ---
+const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
+    const [formData, setFormData] = useState({
+        examId: exam?.examId || '', examName: exam?.examName || '', examType: exam?.examType || 'ENDSEM',
+        semester: exam?.semester || '', year: exam?.year || new Date().getFullYear(),
+        startDate: exam?.startDate?.split('T')[0] || '', endDate: exam?.endDate?.split('T')[0] || '',
+        status: exam?.status || 'CREATED', courses: exam?.courses || []
+    });
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+    // Auto-update timetables if semester changes after courses are added
+    useEffect(() => {
+        if (formData.courses.length > 0) {
+            const updatedCourses = formData.courses.map(course => {
+                if (!course.courseCode) return course;
+
+                const selectedCourse = allCourses.find(c => c.courseCode === course.courseCode);
+                const semesterData = selectedCourse?.semesters.find(s => s.semester == formData.semester);
+
+                let newTimetable = [];
+                if (semesterData) {
+                    newTimetable = semesterData.subjects.map(subject => ({
+                        subjectCode: subject.subjectCode,
+                        subjectName: subject.subjectName,
+                        examDate: '',
+                        session: 'FN'
+                    }));
+                }
+                return { ...course, timetable: newTimetable };
+            });
+            setFormData(prev => ({ ...prev, courses: updatedCourses }));
+        }
+    }, [formData.semester, allCourses]);
+
+    const handleCourseChange = (index, courseCode) => {
+        const newCourses = [...formData.courses];
+        if (!formData.semester) {
+            alert("Please select a semester for the exam first.");
+            return;
+        }
+        const selectedCourse = allCourses.find(c => c.courseCode === courseCode);
+        const semesterData = selectedCourse?.semesters.find(s => s.semester == formData.semester);
+
+        let newTimetable = [];
+        if (semesterData) {
+            newTimetable = semesterData.subjects.map(subject => ({
+                subjectCode: subject.subjectCode,
+                subjectName: subject.subjectName,
+                examDate: '',
+                session: 'FN'
+            }));
+        } else if (courseCode) {
+            addToast('info', `No subjects found for semester ${formData.semester} in ${courseCode}.`);
+        }
+
+        newCourses[index] = { courseCode: courseCode, timetable: newTimetable };
+        setFormData({ ...formData, courses: newCourses });
+    };
+
+    const handleTimetableChange = (courseIndex, ttIndex, field, value) => {
+        const newCourses = [...formData.courses];
+        newCourses[courseIndex].timetable[ttIndex][field] = value;
+        setFormData({ ...formData, courses: newCourses });
+    };
+
+    const addCourse = () => setFormData({ ...formData, courses: [...formData.courses, { courseCode: '', timetable: [] }] });
+    const removeCourse = (index) => setFormData({ ...formData, courses: formData.courses.filter((_, i) => i !== index) });
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        // Mocking API call
+        await new Promise(res => setTimeout(res, 1500));
+        addToast('success', `Exam ${exam ? 'updated' : 'created'} successfully!`);
+        onSaveSuccess();
+        setIsLoading(false);
+    };
+
+    return (
+        <div>
+            <button onClick={onBack} className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 mb-4"><ArrowLeft size={16} /> Back</button>
+            <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg border shadow-sm">
+                <h1 className="text-2xl font-bold text-gray-800">{exam ? 'Edit Exam' : 'Create New Exam'}</h1>
+                <p className="text-gray-500 mt-1 mb-6">Fill in the details below.</p>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <input name="examName" value={formData.examName} onChange={handleChange} placeholder="Exam Name (e.g., End Sem 2025)" className="md:col-span-2 p-2 border rounded" required />
+                    <input name="examId" value={formData.examId} onChange={handleChange} placeholder="Exam ID (e.g., ENDSEM2025-SEM5)" className="p-2 border rounded" required />
+                    <select name="examType" value={formData.examType} onChange={handleChange} className="p-2 border rounded bg-white"><option>MIDSEM</option><option>ENDSEM</option><option>INTERNAL</option><option>PRACTICAL</option></select>
+                    <input name="semester" type="number" value={formData.semester} onChange={handleChange} placeholder="Semester" className="p-2 border rounded" required />
+                    <input name="year" type="number" value={formData.year} onChange={handleChange} placeholder="Year" className="p-2 border rounded" required />
+                    <input name="startDate" type="date" value={formData.startDate} onChange={handleChange} className="p-2 border rounded" />
+                    <input name="endDate" type="date" value={formData.endDate} onChange={handleChange} className="p-2 border rounded" />
+                </div>
+                <div className="border-t pt-4">
+                    <h3 className="font-semibold mb-2">Timetable Details</h3>
+                    {formData.courses.map((course, cIdx) => (
+                        <div key={cIdx} className="p-4 border rounded-lg bg-gray-50 mb-4">
+                            <div className="flex justify-between items-center mb-2">
+                                <select value={course.courseCode} onChange={(e) => handleCourseChange(cIdx, e.target.value)} className="p-2 border rounded bg-white font-semibold">
+                                    <option value="">-- Select Course --</option>
+                                    {allCourses.map(c => <option key={c.courseCode} value={c.courseCode}>{c.name}</option>)}
+                                </select>
+                                <button type="button" onClick={() => removeCourse(cIdx)}><Trash2 size={16} className="text-red-500" /></button>
+                            </div>
+                            {course.courseCode && (
+                                <div className="space-y-2 mt-2">
+                                    {course.timetable.map((tt, tIdx) => (
+                                        <div key={tIdx} className="grid grid-cols-1 md:grid-cols-10 gap-2 items-center">
+                                            <div className="md:col-span-6 p-2 border rounded bg-white text-sm">
+                                                {tt.subjectName} ({tt.subjectCode})
+                                            </div>
+                                            <input type="date" value={tt.examDate?.split('T')[0]} onChange={e => handleTimetableChange(cIdx, tIdx, 'examDate', e.target.value)} className="md:col-span-3 p-2 border rounded" />
+                                            <select value={tt.session} onChange={e => handleTimetableChange(cIdx, tIdx, 'session', e.target.value)} className="md:col-span-1 p-2 border rounded bg-white"><option value="FN">FN</option><option value="AN">AN</option></select>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                    <button type="button" onClick={addCourse} className="text-sm font-semibold text-green-600">+ Add Another Course</button>
+                </div>
+                <div className="flex justify-end gap-4 mt-6">
+                    <button type="button" onClick={onBack} className="px-4 py-2 bg-gray-200 rounded-lg">Cancel</button>
+                    <button type="submit" disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:bg-blue-300 flex items-center">{isLoading ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : 'Save Exam'}</button>
+                </div>
+            </form>
+        </div>
+    );
+};
+
+
+// --- Child & Helper Components ---
+const DataTableToolbar = ({ searchTerm, onSearchChange, filters, onFilterChange, onAddClick }) => (
+    <div className="p-4 border-b flex flex-wrap justify-between items-center gap-4">
+        <div className="flex gap-4">
+            <div className="relative"><Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /><input type="text" value={searchTerm} onChange={e => onSearchChange(e.target.value)} placeholder="Search exams..." className="pl-10 pr-4 py-2 w-64 border rounded-lg" /></div>
+            <select value={filters.status} onChange={e => onFilterChange({ ...filters, status: e.target.value })} className="p-2 border rounded-lg bg-white"><option value="all">All Statuses</option><option value="CREATED">Created</option><option value="OPEN_FOR_REGISTRATION">Open</option><option value="CLOSED">Closed</option><option value="PUBLISHED">Published</option></select>
+            <select value={filters.examType} onChange={e => onFilterChange({ ...filters, examType: e.target.value })} className="p-2 border rounded-lg bg-white"><option value="all">All Types</option><option value="MIDSEM">Mid-Sem</option><option value="ENDSEM">End-Sem</option><option value="INTERNAL">Internal</option></select>
+        </div>
+        <button onClick={onAddClick} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"><PlusCircle size={18} /> Create Exam</button>
+    </div>
+);
+
+const ExamsTable = ({ exams, onViewDetails, onEdit, onDelete }) => (
+    <div className="overflow-x-auto"><table className="w-full">
+        <thead className="bg-gray-50 text-left text-xs uppercase"><tr_><th className="p-3">Exam Name</th><th className="p-3">Type</th><th className="p-3">Semester/Year</th><th className="p-3 text-center">Status</th><th className="p-3 text-center">Actions</th></tr_></thead>
+        <tbody className="divide-y text-sm">
+            {exams.map((exam) => <tr key={exam._id} className="hover:bg-gray-50"><td className="p-3"><p className="font-medium text-gray-800">{exam.examName}</p><p className="text-xs text-gray-500 font-mono">{exam.examId}</p></td><td className="p-3">{exam.examType}</td><td className="p-3">Sem {exam.semester}, {exam.year}</td><td className="p-3 text-center"><StatusBadge status={exam.status} /></td><td className="p-3 text-center"><div className="flex justify-center gap-3"><button onClick={() => onViewDetails(exam._id)} className="text-blue-600 hover:underline text-xs font-semibold">View</button><button onClick={() => onEdit(exam)} className="text-gray-500 hover:text-blue-600" title="Edit"><Edit size={16} /></button><button onClick={() => onDelete(exam)} className="text-gray-500 hover:text-red-600" title="Delete"><Trash2 size={16} /></button></div></td></tr>)}
+        </tbody>
+    </table></div>
+);
+
+const Timetable = ({ course }) => (
+    <div className="overflow-x-auto"><table className="w-full text-sm">
+        <thead className="text-left text-xs text-gray-500 uppercase"><tr_><th className="p-3">Date</th><th className="p-3">Session</th><th className="p-3">Subject</th></tr_></thead>
+        <tbody className="divide-y">
+            {course.timetable.map(slot => <tr key={slot.subjectCode}><td className="p-3 w-48">{new Date(slot.examDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</td><td className="p-3 w-32">{slot.session === 'FN' ? 'Forenoon' : 'Afternoon'}</td><td className="p-3"><p className="font-medium text-gray-800">{slot.subjectName}</p><p className="text-xs text-gray-500 font-mono">{slot.subjectCode}</p></td></tr>)}
+        </tbody>
+    </table></div>
+);
+
+const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSizeChange }) => {
+    const totalPages = Math.ceil(totalCount / pageSize);
+    if (totalPages <= 1) return null;
+    return <div className="p-4 border-t flex justify-between items-center text-sm"><p>Showing {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, totalCount)} of {totalCount}</p><div className="flex gap-2"><button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="p-2 border rounded disabled:opacity-50"><ChevronLeft size={16} /></button><button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 border rounded disabled:opacity-50"><ChevronRight size={16} /></button></div></div>
+};
+
+const StatusBadge = ({ status }) => {
+    const styles = { 'CREATED': 'bg-gray-100 text-gray-800', 'OPEN_FOR_REGISTRATION': 'bg-blue-100 text-blue-800', 'CLOSED': 'bg-red-100 text-red-800', 'RESULT_PROCESSING': 'bg-yellow-100 text-yellow-800', 'PUBLISHED': 'bg-green-100 text-green-800' };
+    return <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${styles[status]}`}>{status.replace(/_/g, ' ')}</span>;
+};
+
+const Toast = ({ message, type, onClose }) => {
+    const icons = { success: <CheckCircle className="text-green-500" />, error: <AlertTriangle className="text-red-500" />, info: <Info className="text-blue-500" /> };
+    return (<div className="bg-white shadow-lg rounded-lg p-4 flex items-start gap-3 w-80 animate-fade-in-right"> <div className="flex-shrink-0">{icons[type]}</div> <p className="flex-1 text-sm text-gray-700">{message}</p> <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={16} /></button> </div>);
+};
+
+const ToastContainer = ({ toasts, setToasts }) => {
+    const removeToast = (id) => setToasts(prev => prev.filter(t => t.id !== id));
+    return (<div className="fixed top-5 right-5 z-[100] space-y-3"> {toasts.map(toast => (<Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />))} </div>);
+};
+
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', confirmColor = 'blue', processing }) => {
+    if (!isOpen) return null;
+    const colors = { red: 'bg-red-600 hover:bg-red-700', blue: 'bg-blue-600 hover:bg-blue-700' };
+    return (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md"><div className="p-6"><div className="flex items-start gap-4"><div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${confirmColor === 'red' ? 'bg-red-100' : 'bg-blue-100'}`}><AlertTriangle className={`${confirmColor === 'red' ? 'text-red-600' : 'text-blue-600'}`} size={24} /></div><div><h3 className="text-lg font-bold text-gray-800">{title}</h3><p className="text-sm text-gray-500 mt-1">{message}</p></div></div></div><div className="p-4 bg-gray-50 border-t flex justify-end gap-3"><button onClick={onClose} disabled={processing} className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 disabled:opacity-50">Cancel</button><button onClick={onConfirm} disabled={processing} className={`px-4 py-2 text-white rounded-lg ${colors[confirmColor]} disabled:opacity-50 flex items-center justify-center min-w-[100px]`}>{processing ? <Loader2 size={16} className="animate-spin" /> : confirmText}</button></div></div>
+        </div>
+    );
+};
+
+// Mock data moved to the bottom for clarity
+const mockExams = [
+    { _id: 'exam001', examId: 'ENDSEM2025-SEM5', examName: 'End Semester Exam 2025', examType: 'ENDSEM', semester: 5, year: 2025, status: 'PUBLISHED', startDate: '2025-11-20T00:00:00.000Z', endDate: '2025-12-05T00:00:00.000Z' },
+    { _id: 'exam002', examId: 'MIDSEM2025-SEM5', examName: 'Mid Semester Exam 2025', examType: 'MIDSEM', semester: 5, year: 2025, status: 'CLOSED', startDate: '2025-09-15T00:00:00.000Z', endDate: '2025-09-20T00:00:00.000Z' },
+];
+const mockExamDetails = {
+    _id: 'exam001', examId: 'ENDSEM2025-SEM5', examName: 'End Semester Exam 2025', examType: 'ENDSEM', semester: 5, year: 2025, status: 'PUBLISHED', startDate: '2025-11-20T00:00:00.000Z', endDate: '2025-12-05T00:00:00.000Z',
+    courses: [
+        { courseCode: 'CSE', timetable: [{ subjectCode: 'CS501', subjectName: 'Data Structures', examDate: '2025-11-20T00:00:00.000Z', session: 'FN' }, { subjectCode: 'CS502', subjectName: 'Database Management Systems', examDate: '2025-11-22T00:00:00.000Z', session: 'FN' }] },
+        { courseCode: 'ECE', timetable: [{ subjectCode: 'EC501', subjectName: 'Analog Electronics', examDate: '2025-11-20T00:00:00.000Z', session: 'FN' }] }
+    ],
+    registeredStudents: 250
+};
+
+
+export default UniversityExamManager;
+

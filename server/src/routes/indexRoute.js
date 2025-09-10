@@ -17,6 +17,8 @@ import collegeAdmissionRoute from "./admissionRoutes/collegeAdmissionRoute.js";
 import universityAdmissionRoute from "./admissionRoutes/universityAdmissionRoutes.js";
 import applicationRoute from "./admissionRoutes/applicationRoute.js";
 import manageCollegeRoute from "./manageCollegeRoute.js";
+import semesterExamRoute from "./semesterExamRoute.js";
+
 
 
 const router = Router();
@@ -27,11 +29,12 @@ router.use('/staff', staffRoute)
 router.use("/student", studentRoutes);
 router.use("/add-college-staff", collegeManageStaffRoute);
 router.use("/hostel", role(['CollegeHostelWarden']), hostelRoute)
-router.use("/course",role(['UniversityAdmin']), courseRoute)
+router.use("/course",role(['UniversityAdmin', 'UniversityExaminationBody']), courseRoute)
 router.use("/subject", role(['UniversityAdmin']), subjectRoute)
 router.use("/add-university-Staff", universityManageStaffRoute)
 router.use("/library", role(['CollegeLibrarian']), libraryRoute)
 router.use("/payment", role([...staffRoles]), studentPaymentRoute)
+router.use("/semester-exam", role(['UniversityExaminationBody']), semesterExamRoute)
 router.use("/admission", applicationRoute)
 router.use("/admission-university", universityAdmissionRoute)
 router.use("/admission-college", collegeAdmissionRoute)

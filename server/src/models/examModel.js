@@ -1,38 +1,49 @@
 import mongoose from "mongoose";
 
-const resultSchema = new mongoose.Schema({
-    studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
-    registrationNumber: { type: String, required: true }, // easy lookup for student
+const examSchema = new mongoose.Schema({
+    examId: { type: String, required: true, unique: true },  
+    // e.g. ENDSEM2025-SEM5
 
-    marks: [
+    examName: { type: String, required: true },             
+    // e.g. End Semester Exam 2025
+
+    examType: { 
+        type: String, 
+        enum: ["MIDSEM", "ENDSEM", "INTERNAL", "PRACTICAL", "SUPPLEMENTARY"], 
+        required: true 
+    },
+
+    semester: { type: Number, required: true },  
+    year: { type: Number, required: true },      
+
+    // ✅ Kis-kis course ke liye exam applicable hai
+    courses: [
         {
-            subject: { type: mongoose.Schema.Types.ObjectId, ref: "Subject", required: true },
-            internal: { type: Number, default: 0 },
-            external: { type: Number, default: 0 },
-            practical: { type: Number, default: 0 },
-            total: { type: Number, default: 0 },
-            status: { type: String, enum: ["PASS", "FAIL"], default: "PASS" },
-            grade: { type: String } // e.g. A, B, C, F
+            courseCode: { type: String, required: true },   // e.g. CSE101
+
+            // 🔥 Course-specific timetable
+            timetable: [
+                {
+                    subjectCode: { type: String, required: true },
+                    subjectName: { type: String, required: true },
+                    examDate: { type: Date, required: true },
+                    session: { type: String, enum: ["FN", "AN"], required: true } // Forenoon/Afternoon
+                }
+            ]
         }
     ],
 
-    overallResult: { type: String, enum: ["PASS", "FAIL"], default: "PASS" },
-    sgpa: { type: Number },
-
-    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Staff", required: true },
-    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Staff" }
-
-}, { timestamps: true }); // each result will also have createdAt, updatedAt
-
-const examSchema = new mongoose.Schema({
-    examId: { type: String, required: true, unique: true }, // e.g. ENDSEM2025-SEM1
-    name: { type: String, required: true },                 // e.g. End Semester
-    semester: { type: Number, required: true },
-    courses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
+    // ✅ Overall scheduling info
     startDate: { type: Date },
     endDate: { type: Date },
 
-    results: [resultSchema] // store student-wise results here
+    status: {
+        type: String,
+        enum: ["CREATED", "OPEN_FOR_REGISTRATION", "CLOSED", "RESULT_PROCESSING", "PUBLISHED"],
+        default: "CREATED"
+    },
+
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Staff" } // exam board staff
 }, { timestamps: true });
 
 export default mongoose.model("Exam", examSchema);

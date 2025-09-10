@@ -246,7 +246,7 @@ const LibraryDashboard = () => {
     const renderDashboard = () => (
         <div className="space-y-6">
             {/* Library Account Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 justify-between bg-black">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 justify-between">
                 <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
                     <div className="flex items-center justify-between">
                         <div>
