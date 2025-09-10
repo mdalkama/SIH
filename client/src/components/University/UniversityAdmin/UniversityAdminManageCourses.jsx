@@ -481,7 +481,7 @@ const AddEditModal = ({
     const [degree, setDegree] = useState("");
     const [branch, setBranch] = useState("");
     const [specialization, setSpecialization] = useState("");
-    const [totalSemester, setTotalSemester] = useState(2);
+    const [totalSemester, setTotalSemester] = useState(12);
     const [semesters, setSemesters] = useState([]);
 
     // Subject Form State
@@ -492,6 +492,7 @@ const AddEditModal = ({
 
     const [allSubjects, setAllSubjects] = useState([]);
     const [subjectsLoading, setSubjectsLoading] = useState(true);
+    const [subjectSearchTerms, setSubjectSearchTerms] = useState({}); // Stores search term per semester
 
     useEffect(() => {
         const fetchSubjects = async () => {
@@ -564,6 +565,8 @@ const AddEditModal = ({
             if (!updated[semIndex].subjects.includes(subjectId)) updated[semIndex].subjects.push(subjectId);
             return updated;
         });
+        // Clear search term for this semester after adding
+        handleSearchTermChange(semIndex, '');
     };
 
     const handleRemoveSubjectFromSemester = (semIndex, subjectId) => {
@@ -576,8 +579,78 @@ const AddEditModal = ({
     };
 
     const getSubjectById = (id) => {
+        if (!id) return null;
         const key = typeof id === 'object' ? id?._id : id;
         return allSubjects.find(subject => String(subject._id) === String(key));
+    };
+
+    // Function to handle search term change for a specific semester
+    const handleSearchTermChange = (semIndex, value) => {
+        // Clear other search terms when focusing on this one
+        setSubjectSearchTerms(_prev => {
+            const newTerms = {};
+            newTerms[semIndex] = value;
+            console.log(_prev);
+            
+            return newTerms;
+        });
+    };
+
+    // Function to handle focus on search input for a specific semester
+    const handleSearchFocus = (semIndex) => {
+        // Clear other search terms when focusing on this one
+        setSubjectSearchTerms(prev => {
+            const newTerms = {};
+            newTerms[semIndex] = prev[semIndex] || '';
+            return newTerms;
+        });
+    };
+
+    // Function to get filtered subjects for a specific semester
+    const getFilteredSubjectsForSemester = (semIndex) => {
+        if (subjectsLoading) return [];
+        
+        // Create a set of all subject IDs already assigned to any semester in this course
+        const allAssignedSubjectIds = new Set();
+        semesters.forEach(semester => {
+            if (semester.subjects && Array.isArray(semester.subjects)) {
+                semester.subjects.forEach(subjectId => allAssignedSubjectIds.add(subjectId));
+            }
+        });
+        
+        const searchTerm = (subjectSearchTerms[semIndex] || '').toLowerCase();
+        if (!searchTerm) return [];
+        
+        return allSubjects.filter(subject => 
+            (subject.name?.toLowerCase().includes(searchTerm) || 
+             subject.code?.toLowerCase().includes(searchTerm)) && 
+            !allAssignedSubjectIds.has(subject._id)  // Exclude subjects already assigned to any semester
+        );
+    };
+
+    // Function to render subject search results for a specific semester
+    const renderSubjectSearchResults = (semIndex, sem) => {
+        const filteredSubjects = getFilteredSubjectsForSemester(semIndex, sem.subjects);
+        if (filteredSubjects.length > 0) {
+            return filteredSubjects.map(subject => (
+                <div 
+                    key={subject._id} 
+                    onClick={() => {
+                        handleAddSubjectToSemester(semIndex, subject._id);
+                        handleSearchTermChange(semIndex, '');
+                    }} 
+                    className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
+                >
+                    {subject.name} ({subject.code})
+                </div>
+            ));
+        }
+        
+        if (subjectSearchTerms[semIndex]) {
+            return <div className="p-2 text-gray-500">No matching subjects</div>;
+        }
+        
+        return null;
     };
 
     const handleCourseSubmit = async () => {
@@ -654,7 +727,61 @@ const AddEditModal = ({
                                 <div><label className="block text-sm font-semibold text-gray-700 mb-2">Total Semesters *</label><select value={totalSemester} onChange={(e) => setTotalSemester(parseInt(e.target.value))} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required><option value="">Select semesters</option>{[...Array(12)].map((_, i) => (<option key={i + 1} value={i + 1}>{i + 1}</option>))}</select></div>
                             </div>
                             <div><label className="block text-sm font-semibold text-gray-700 mb-2">Specialization</label><input type="text" value={specialization} onChange={(e) => setSpecialization(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Artificial Intelligence (optional)" /></div>
-                            {totalSemester > 0 && (<div className="space-y-4"><h3 className="text-lg font-semibold text-gray-800">Semester Subjects</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{semesters.map((sem, semIndex) => (<div key={sem.semesterNumber} className="border border-gray-200 rounded-lg p-4 bg-gray-50"><div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-gray-700">Semester {sem.semesterNumber}</h4><span className="text-sm text-gray-500">{sem.subjects && Array.isArray(sem.subjects) ? sem.subjects.length : 0} subjects</span></div><div className="mb-3"><select onChange={(e) => { if (e.target.value) { handleAddSubjectToSemester(semIndex, e.target.value); e.target.value = ''; } }} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled={subjectsLoading || !Array.isArray(allSubjects) || allSubjects.length === 0}><option value="">+ Add Subject</option>{subjectsLoading ? (<option disabled>Loading subjects...</option>) : Array.isArray(allSubjects) && allSubjects.length > 0 ? (allSubjects.map((subject) => { const isAlreadyAdded = sem.subjects && Array.isArray(sem.subjects) && sem.subjects.some(id => id === subject._id); return (!isAlreadyAdded && (<option key={subject._id} value={subject._id}>{subject.name} ({subject.code})</option>)); })) : (<option disabled>No subjects available</option>)}</select></div><div className="space-y-2 max-h-32 overflow-y-auto">{sem.subjects && Array.isArray(sem.subjects) && sem.subjects.length > 0 ? (sem.subjects.map((subjectId) => { const subject = getSubjectById(subjectId); return (<div key={subjectId} className="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200"><div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-900 truncate">{subject?.name || 'Unknown Subject'}</p><p className="text-xs text-gray-500">{subject?.code || 'N/A'}</p></div><button onClick={() => handleRemoveSubjectFromSemester(semIndex, subjectId)} className="ml-2 p-1 text-red-500 hover:bg-red-50 rounded-full transition-colors"><Trash2 size={14} /></button></div>); })) : (<p className="text-sm text-gray-400 text-center py-2">No subjects added yet</p>)}</div></div>))}</div></div>)}
+                            {totalSemester > 0 && (
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold text-gray-800">Semester Subjects</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {semesters.map((sem, semIndex) => (
+                                            <div key={sem.semesterNumber} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <h4 className="font-semibold text-gray-700">Semester {sem.semesterNumber}</h4>
+                                                    <span className="text-sm text-gray-500">
+                                                        {sem.subjects && Array.isArray(sem.subjects) ? sem.subjects.length : 0} subjects
+                                                    </span>
+                                                </div>
+                                                <div className="mb-3 relative">
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder="+ Add Subject (search by name or code)" 
+                                                        value={subjectSearchTerms[semIndex] || ''} 
+                                                        onChange={(e) => handleSearchTermChange(semIndex, e.target.value)} 
+                                                        onFocus={() => handleSearchFocus(semIndex)}
+                                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                                        disabled={subjectsLoading} 
+                                                    />
+                                                    <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                                                        {renderSubjectSearchResults(semIndex, sem)}
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2 max-h-32 overflow-y-auto">
+                                                    {sem.subjects && Array.isArray(sem.subjects) && sem.subjects.length > 0 ? (
+                                                        sem.subjects.map((subjectId) => {
+                                                            const subject = getSubjectById(subjectId);
+                                                            return (
+                                                                <div key={subjectId} className="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200">
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="text-sm font-medium text-gray-900 truncate">{subject?.name || 'Unknown Subject'}</p>
+                                                                        <p className="text-xs text-gray-500">{subject?.code || 'N/A'}</p>
+                                                                    </div>
+                                                                    <button 
+                                                                        onClick={() => handleRemoveSubjectFromSemester(semIndex, subjectId)} 
+                                                                        className="ml-2 p-1 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                    </button>
+                                                                </div>
+                                                            );
+                                                        })
+                                                    ) : (
+                                                        <p className="text-sm text-gray-400 text-center py-2">No subjects added yet</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                         </div>
                     ) : (
                         <div className="space-y-6">
@@ -678,23 +805,41 @@ const AddEditModal = ({
 };
 
 const AlertNotification = ({ show, type, message, onClose }) => {
+    useEffect(() => {
+        if (show) {
+            const timer = setTimeout(() => {
+                onClose();
+            }, 2000); // 2 sec ka timeout
+
+            return () => clearTimeout(timer);
+        }
+    }, [show, onClose]);
+
     if (!show) return null;
+
     const colors = {
         success: 'bg-green-100 border-green-300 text-green-800',
         error: 'bg-red-100 border-red-300 text-red-800',
         info: 'bg-blue-100 border-blue-300 text-blue-800',
     };
+
     return (
-        <div className={`fixed top-5 right-5 p-4 rounded-lg border shadow-lg z-50 transition-transform transform ${show ? 'translate-x-0' : 'translate-x-full'} ${colors[type] || colors.info}`}>
+        <div
+            className={`fixed top-5 right-5 p-4 rounded-lg border shadow-lg z-50 transition-transform transform ${
+                show ? 'translate-x-0' : 'translate-x-full'
+            } ${colors[type] || colors.info}`}
+        >
             <div className="flex items-center justify-between">
                 <p>{message}</p>
-                <button onClick={onClose} className="ml-4"><X size={18} /></button>
+                <button onClick={onClose} className="ml-4">
+                    <X size={18} />
+                </button>
             </div>
         </div>
     );
 };
 
-const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, title, description, itemName, isLoading }) => {
+const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, title, description, isLoading }) => {
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
