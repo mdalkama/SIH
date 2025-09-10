@@ -2,16 +2,11 @@ import College from "../../models/collegeModel.js";
 import Staff from "../../models/staffModel.js";
 
 export const getCoursesWithFees = async (req, res) => {
-    const { collegeCode } = req.params;
     try {
         const admin = await Staff.findById(req.user.id).select("collegeCode");
         if (!admin) return res.status(404).json({ message: "Admin not found" });
 
-        if (admin.collegeCode !== collegeCode) {
-            return res.status(403).json({ message: "Unauthorized access" });
-        }
-
-        const college = await College.findOne({ code: collegeCode })
+        const college = await College.findOne({ code: admin.collegeCode })
             .populate("courses.courseId", "courseId degree branch specialization totalSemester semesters");
         if (!college) {
             return res.status(404).json({ message: "College not found" });

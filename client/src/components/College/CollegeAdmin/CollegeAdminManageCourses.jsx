@@ -77,24 +77,38 @@ const CollegeAdminManageCourses = () => {
         const fetchCourses = async () => {
             setLoading(true);
             try {
-                // TODO: Replace with actual API call
-                // const response = await fetch('https://sih-4ptm.onrender.com/api/v1/course');
-                // const data = await response.json();
-                
-                // Simulate loading delay
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                setCourses(initialCourses);
+                const response = await fetch(
+                    'https://sih-4ptm.onrender.com/api/v1/college-course/courses',
+                    {
+                        method: "GET",
+                        credentials: "include", // ✅ cookies/session bhejega
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch courses');
+                }
+
+                const data = await response.json();
+                console.log(data);
+
+                setCourses(data.courses || []);
+
             } catch (error) {
                 console.error('Error fetching courses:', error);
                 showAlert('error', 'Failed to load courses');
-                setCourses(initialCourses); // Fallback to sample data
             } finally {
                 setLoading(false);
             }
         };
-        
+
         fetchCourses();
     }, []);
+
+
 
     const processedData = useMemo(() => {
         const filtered = courses.filter(item => {
