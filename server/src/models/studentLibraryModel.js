@@ -16,7 +16,8 @@ const issuedBookSchema = new Schema({
   bookId: { type: Schema.Types.ObjectId, ref: "Library", required: true }, // reference to specific book
   copyId: { type: String, required: true }, // which copy
   issuedAt: { type: Date, default: Date.now },
-  issuedBy: { type: Schema.Types.ObjectId, ref: "Staff", required: true } // librarian who issued
+  issuedBy: { type: Schema.Types.ObjectId, ref: "Staff", required: true } ,// librarian who issued
+  renewals: { type: Number, default: 0 } 
 }, { _id: false });
 
 // Student library account schema
