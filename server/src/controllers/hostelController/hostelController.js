@@ -8,12 +8,13 @@ import StudentHostel from "../../models/studentHostelModal.js";
 export const createHostel = async (req, res) => {
   try {
     const Id = req.user.id;
-    const warden = await Staff.findById(Id).select("collegeCode");
+    const warden = await Staff.findById(Id).select("collegeCode name phone");
     if (!warden) return res.status(404).json({ message: "warden not found" });
+
     const { name, address, totalFloors } = req.body;
 
     if (!warden.collegeCode) {
-      res.status(400).json({ message: "collegeCode is required" });
+      return res.status(400).json({ message: "collegeCode is required" });
     }
 
     // 1. Required fields check
@@ -38,13 +39,18 @@ export const createHostel = async (req, res) => {
       return res.status(400).json({ error: "Total floors cannot be negative" });
     }
 
-    // Create new hostel
+    // ✅ Create new hostel with warden info
     const hostel = new Hostel({
       name,
       address,
       totalFloors,
       collegeCode: warden.collegeCode,
+      warden: {
+        name: warden.name,
+        contact: warden.phone,
+      },
     });
+
     await hostel.save();
 
     res.status(201).json({ success: true, data: hostel });
@@ -52,6 +58,7 @@ export const createHostel = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
 
 // ✅ Get all hostels
 export const getHostels = async (req, res) => {
@@ -66,7 +73,7 @@ export const getHostels = async (req, res) => {
       collegeCode: userCollegeCode.collegeCode,
     })
       .sort({ createdAt: -1 })
-      .select("_id name address totalFloors collegeCode floors");
+      .select("_id name address totalFloors collegeCode floors warden");
 
     const data = hostels.map((hostel) => {
       let totalRooms = 0;
@@ -89,6 +96,7 @@ export const getHostels = async (req, res) => {
         _id: hostel._id,
         name: hostel.name,
         address: hostel.address,
+        warden: hostel.warden,
         totalFloors: hostel.totalFloors,
         totalRooms,
         totalBeds,
