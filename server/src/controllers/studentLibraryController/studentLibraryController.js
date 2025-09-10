@@ -21,13 +21,11 @@ export const getMyLibraryProfile = async (req, res) => {
 
     // Student ka library account dhoondho
     const studentLibrary = await StudentLibrary.findOne({ occupiedBy: studentId })
-      .populate("occupiedBy", "name email course registrationNumber createdAt")
+      .populate("occupiedBy", "name email course registrationNumber createdAt collegeCode")
       .populate("issuedBooks.issuedBy", "name")
       .populate("activity.issuedBy", "name")
       .lean();
 
-    // Agar student ka library account abhi tak nahi bana hai,
-    // toh ek khali (empty) profile bhejo taaki dashboard error na de.
     if (!studentLibrary) {
       const studentProfile = await Student.findById(studentId).select("name email course registrationNumber createdAt collegeCode").lean();
       return res.json({
