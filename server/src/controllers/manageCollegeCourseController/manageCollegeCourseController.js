@@ -13,11 +13,9 @@ export const getCoursesWithFees = async (req, res) => {
 
         const college = await College.findOne({ code: collegeCode })
             .populate("courses.courseId", "courseId degree branch specialization totalSemester semesters");
-
         if (!college) {
             return res.status(404).json({ message: "College not found" });
         }
-console.log(college.courses)
         const courseDetails = college.courses.map(c => {
             const courseInfo = c.courseId;
             return {
