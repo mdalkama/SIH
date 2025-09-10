@@ -39,16 +39,13 @@ const AddBedForm = ({ hostels }) => {
     const [selectedFloor, setSelectedFloor] = useState(null);
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-
     const [floors, setFloors] = useState([]);
     const [rooms, setRooms] = useState([]);
     const [detailedRoomData, setDetailedRoomData] = useState(null);
-    
     const [isFetchingFloors, setIsFetchingFloors] = useState(false);
     const [isFetchingRooms, setIsFetchingRooms] = useState(false);
     const [isFetchingDetails, setIsFetchingDetails] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
     const [bedNumber, setBedNumber] = useState('');
     const [inlineError, setInlineError] = useState('');
     const [message, setMessage] = useState('');
@@ -60,8 +57,11 @@ const AddBedForm = ({ hostels }) => {
         const fetchFloorsForHostel = async () => {
             setIsFetchingFloors(true);
             try {
-                const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors`, { credentials: "include" });
-                if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to fetch'); }
+                const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors`, { 
+                    method: "GET", // YAHAN FIX KIYA GAYA HAI
+                    credentials: "include" 
+                });
+                if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to fetch floors'); }
                 const data = await res.json(); 
                 setFloors(data.success ? data.data : []);
             } catch (e) { setMessage({ type: 'error', text: e.message }); }
@@ -75,8 +75,11 @@ const AddBedForm = ({ hostels }) => {
         const fetchRoomsForFloor = async () => {
             setIsFetchingRooms(true);
             try {
-                const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}/rooms`, { credentials: "include" });
-                if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to fetch'); }
+                const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}/rooms`, { 
+                    method: "GET", // YAHAN FIX KIYA GAYA HAI
+                    credentials: "include" 
+                });
+                if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to fetch rooms'); }
                 const data = await res.json(); 
                 setRooms(data.success ? data.data : []);
             } catch (e) { setMessage({ type: 'error', text: e.message }); }
@@ -90,8 +93,11 @@ const AddBedForm = ({ hostels }) => {
         const fetchRoomDetails = async () => {
             setIsFetchingDetails(true);
             try {
-                const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}/rooms/${selectedRoom._id}`, { credentials: "include" });
-                if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to fetch'); }
+                const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}/rooms/${selectedRoom._id}`, { 
+                    method: "GET", // YAHAN FIX KIYA GAYA HAI
+                    credentials: "include" 
+                });
+                if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to fetch room details'); }
                 const data = await res.json(); 
                 if(data.success) setDetailedRoomData(data.data);
             } catch (e) { setMessage({ type: 'error', text: e.message }); }
@@ -119,9 +125,9 @@ const AddBedForm = ({ hostels }) => {
     }, []);
 
     // --- UI & Form Handlers ---
-    const resetSelections = () => {
-        setSelectedHostel(null); setSelectedFloor(null); setSelectedRoom(null); setSearchTerm(''); setMessage('');
-    };
+    const handleSelectHostel = (hostel) => { setSelectedHostel(hostel); setSearchTerm(''); setIsDropdownVisible(false); };
+    const resetSelections = () => { setSelectedHostel(null); setSelectedFloor(null); setSelectedRoom(null); setSearchTerm(''); setMessage(''); };
+    const filteredHostels = hostels ? hostels.filter(h => h.name.toLowerCase().includes(searchTerm.toLowerCase())) : [];
     
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -136,7 +142,10 @@ const AddBedForm = ({ hostels }) => {
             if (res.ok) {
                 setMessage({ type: 'success', text: `Bed ${bedNumber} added successfully!` });
                 setBedNumber('');
-                const updatedRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}/rooms/${selectedRoom._id}`, { credentials: "include" });
+                const updatedRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}/rooms/${selectedRoom._id}`, {
+                    method: "GET", // YAHAN FIX KIYA GAYA HAI
+                    credentials: "include"
+                });
                 const updatedData = await updatedRes.json(); if(updatedData.success) setDetailedRoomData(updatedData.data);
             } else {
                 setMessage({ type: 'error', text: data.error || "Failed to add bed" });
@@ -148,7 +157,6 @@ const AddBedForm = ({ hostels }) => {
     if (!hostels) { return <div className="text-center"><Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto" /><p className="mt-2 text-gray-500">Loading initial data...</p></div>; }
 
     return (
-        // YAHAN FIX KIYA GAYA HAI: Outer container se styling hata di gayi hai
         <div className="">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Add a New Bed</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -156,7 +164,7 @@ const AddBedForm = ({ hostels }) => {
                     <legend className="text-lg font-semibold text-gray-800">1. Find Hostel</legend>
                     <div ref={searchContainerRef} className="relative">
                         <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onFocus={() => setIsDropdownVisible(true)} placeholder="Search for a hostel..." className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
-                        {isDropdownVisible && (<ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">{hostels.filter(h => h.name.toLowerCase().includes(searchTerm.toLowerCase())).map(h => (<li key={h._id} onClick={() => {setSelectedHostel(h); setSearchTerm(''); setIsDropdownVisible(false);}} className="px-4 py-2 cursor-pointer hover:bg-blue-50">{h.name}</li>))}</ul>)}
+                        {isDropdownVisible && (<ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">{filteredHostels.length > 0 ? (filteredHostels.map(h => (<li key={h._id} onClick={() => handleSelectHostel(h)} className="px-4 py-2 cursor-pointer hover:bg-blue-50">{h.name}</li>))) : (<li className="px-4 py-3 text-center text-gray-500">{searchTerm ? "No results found" : "No hostels available"}</li>)}</ul>)}
                     </div>
                     {selectedHostel && (<div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between"><p className="font-bold text-blue-800 flex items-center"><Building className="w-4 h-4 mr-2" />{selectedHostel.name}</p><button type="button" onClick={resetSelections} className="p-1.5 text-blue-600 hover:text-red-700 hover:bg-red-100 rounded-full" title="Change Hostel"><X className="w-4 h-4" /></button></div>)}
                 </fieldset>

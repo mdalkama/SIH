@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, X, Building, User, Bed, Loader2, AlertTriangle, CheckCircle, LogOut } from 'lucide-react';
+import { Search, X, Building, User, Bed, Loader2, AlertTriangle, CheckCircle, LogOut, MapPin, UserSearch } from 'lucide-react';
 
-// --- Helper Components for the Wizard ---
-
+// --- Helper Components ---
 const FloorSelectorPanel = ({ floors, selectedFloorId, onSelect, isLoading }) => {
     if (isLoading) { return <div className="p-4 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-400" /></div>; }
     if (floors.length === 0) { return <p className="p-4 bg-yellow-50 text-yellow-800 text-sm rounded-lg">No floors found for this hostel.</p>; }
@@ -24,16 +23,7 @@ const OccupiedBedSelector = ({ hostelId, floorId, onBedSelect }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchRooms = async () => {
-            setIsLoading(true);
-            try {
-                const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms`, { credentials: "include" });
-                if (!res.ok) throw new Error('Failed to fetch rooms');
-                const data = await res.json();
-                setRooms(data.success ? data.data : []);
-            } catch (error) { console.error(error); }
-            finally { setIsLoading(false); }
-        };
+        const fetchRooms = async () => { setIsLoading(true); try { const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms`, { credentials: "include" }); if (!res.ok) throw new Error('Failed to fetch rooms'); const data = await res.json(); setRooms(data.success ? data.data : []); } catch (error) { console.error(error); } finally { setIsLoading(false); } };
         fetchRooms();
     }, [hostelId, floorId]);
 
@@ -71,9 +61,7 @@ const OccupiedBedSelector = ({ hostelId, floorId, onBedSelect }) => {
                                         type="button"
                                         onClick={() => onBedSelect({ ...bed, roomId: room._id, roomNumber: room.roomNumber })}
                                         disabled={!bed.isOccupied}
-                                        className={`px-3 py-1.5 text-xs font-semibold rounded-full flex items-center gap-1.5 transition-all ${!bed.isOccupied ? 'bg-gray-100 text-gray-400 cursor-not-allowed' :
-                                                'bg-red-100 text-red-800 hover:bg-red-200'
-                                            }`}
+                                        className={`px-3 py-1.5 text-xs font-semibold rounded-full flex items-center gap-1.5 transition-all ${!bed.isOccupied ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-red-100 text-red-800 hover:bg-red-200'}`}
                                     >
                                         <Bed size={14} /> Bed {bed.bedNumber}
                                         {bed.student && <span className="font-normal opacity-75">({bed.student.name})</span>}
@@ -90,87 +78,132 @@ const OccupiedBedSelector = ({ hostelId, floorId, onBedSelect }) => {
 };
 
 const VacateBedForm = ({ hostels }) => {
-    // --- State Management for the Wizard ---
+    // --- State Management ---
+    const [vacateMode, setVacateMode] = useState('location');
     const [currentStep, setCurrentStep] = useState(1);
-
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedHostel, setSelectedHostel] = useState(null);
     const [selectedFloor, setSelectedFloor] = useState(null);
     const [selectedBed, setSelectedBed] = useState(null);
-
     const [floors, setFloors] = useState([]);
-
-    const [isFetchingFloors, setIsFetchingFloors] = useState(false);
+    const [studentSearchTerm, setStudentSearchTerm] = useState('');
+    const [foundStudent, setFoundStudent] = useState(null);
+    const [isFetching, setIsFetching] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-
     const [message, setMessage] = useState('');
+    const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const searchContainerRef = useRef(null);
 
     // --- Data Fetching & Logic ---
+    const handleStudentSearch = async () => {
+        if (!studentSearchTerm) return;
+        setIsFetching(true); setMessage('');
+        try {
+            const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/student/search/${studentSearchTerm}`, { credentials: "include" });
+            if (!res.ok) { const err = await res.json(); throw new Error(err.error); }
+            const data = await res.json();
+            if (data.success) {
+                setFoundStudent(data.data);
+                setCurrentStep(2);
+            } else {
+                throw new Error(data.error || "Student not found or not allocated.");
+            }
+        } catch (e) {
+            setMessage({ type: 'error', text: e.message });
+        } finally {
+            setIsFetching(false);
+        }
+    };
+
     useEffect(() => {
         if (!selectedHostel) { setFloors([]); setSelectedFloor(null); return; }
         const fetchFloorsForHostel = async () => {
-            setIsFetchingFloors(true);
+            setIsFetching(true);
             try {
                 const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors`, { credentials: "include" });
                 if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to fetch floors'); }
                 const data = await res.json();
                 setFloors(data.success ? data.data : []);
             } catch (e) { setMessage({ type: 'error', text: e.message }); }
-            finally { setIsFetchingFloors(false); }
+            finally { setIsFetching(false); }
         };
         fetchFloorsForHostel();
     }, [selectedHostel]);
 
+    useEffect(() => {
+        const handleClickOutside = (event) => { if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) setIsDropdownVisible(false); };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
     const handleSubmit = async () => {
-        if (!selectedBed) return;
+        if (!selectedBed && !foundStudent) return;
         setIsSubmitting(true);
         setMessage('');
+
+        let url;
+        if (vacateMode === 'student' && foundStudent) {
+            const { hostelId, floorId, roomId, bedId } = foundStudent.currentIds;
+            url = `https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms/${roomId}/beds/${bedId}/vacate`;
+        } else if (vacateMode === 'location' && selectedBed) {
+            url = `https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}/rooms/${selectedBed.roomId}/beds/${selectedBed._id}/vacate`;
+        } else {
+            setMessage({ type: 'error', text: 'Invalid state for vacating.' });
+            setIsSubmitting(false);
+            return;
+        }
+
         try {
-            const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${selectedHostel._id}/floors/${selectedFloor._id}/rooms/${selectedBed.roomId}/beds/${selectedBed._id}/vacate`, {
-                method: "POST",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-            });
-            const data = await res.json();
-            if (res.ok) {
-                setMessage({ type: 'success', text: `Bed vacated successfully!` });
-                setTimeout(() => resetForm(), 2000);
-            } else {
-                setMessage({ type: 'error', text: data.error || "Failed to vacate bed." });
-            }
-        } catch (e) { setMessage({ type: 'error', text: "An unexpected error occurred." }); }
-        finally { setIsSubmitting(false); }
+            const res = await fetch(url, { method: "POST", credentials: "include" });
+            if (!res.ok) { const err = await res.json(); throw new Error(err.error); }
+            setMessage({ type: 'success', text: `Bed vacated successfully!` });
+            setTimeout(() => resetForm(), 2000);
+        } catch (e) {
+            setMessage({ type: 'error', text: e.message || "An unexpected error occurred." });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const resetForm = () => {
         setCurrentStep(1);
         setSearchTerm(''); setSelectedHostel(null);
         setSelectedFloor(null); setSelectedBed(null);
+        setStudentSearchTerm(''); setFoundStudent(null);
         setMessage('');
     };
 
-    if (!hostels) { return <div className="max-w-2xl mx-auto p-6 text-center"><Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto" /><p className="mt-2 text-gray-500">Loading initial data...</p></div>; }
+    const handleSelectHostel = (hostel) => { setSelectedHostel(hostel); setSearchTerm(''); setIsDropdownVisible(false); };
+    const filteredHostels = hostels ? hostels.filter(h => h.name.toLowerCase().includes(searchTerm.toLowerCase())) : [];
+
+    if (!hostels) { return <div className="text-center p-6"><Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto" /><p className="mt-2 text-gray-500">Loading initial data...</p></div>; }
 
     return (
-        <div className="max-w-2xl mx-auto p-4 sm:p-6 bg-white rounded-xl shadow-lg border border-gray-200">
+        <div className="">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Vacate a Bed</h2>
 
-            {/* --- Step 1: Location Selection --- */}
-            {currentStep === 1 && (
+            <div className="flex justify-center mb-6 p-1 bg-gray-200 rounded-lg max-w-sm mx-auto">
+                <button onClick={() => { setVacateMode('location'); resetForm(); }} className={`w-1/2 py-2 rounded-md text-sm font-semibold transition-all ${vacateMode === 'location' ? 'bg-white text-blue-600 shadow-sm' : 'bg-transparent text-gray-600'}`}><MapPin size={16} className="inline-block mr-1" /> By Location</button>
+                <button onClick={() => { setVacateMode('student'); resetForm(); }} className={`w-1/2 py-2 rounded-md text-sm font-semibold transition-all ${vacateMode === 'student' ? 'bg-white text-blue-600 shadow-sm' : 'bg-transparent text-gray-600'}`}><User size={16} className="inline-block mr-1" /> By Student</button>
+            </div>
+
+            {vacateMode === 'location' && currentStep === 1 && (
                 <div className="space-y-6">
                     <fieldset className="space-y-2">
                         <legend className="text-lg font-semibold text-gray-800">1. Find Hostel</legend>
                         <div ref={searchContainerRef} className="relative">
-                            <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search for a hostel..." className="w-full pl-10 pr-4 py-2 border rounded-lg" /></div>
-                            {searchTerm && (<ul className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">{hostels.filter(h => h.name.toLowerCase().includes(searchTerm.toLowerCase())).map(h => (<li key={h._id} onClick={() => { setSelectedHostel(h); setSearchTerm('') }} className="px-4 py-2 cursor-pointer hover:bg-blue-50">{h.name}</li>))}</ul>)}
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onFocus={() => setIsDropdownVisible(true)} placeholder="Search for a hostel..." className="w-full pl-10 pr-4 py-2 border rounded-lg" />
+                            </div>
+                            {isDropdownVisible && (<ul className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">{filteredHostels.length > 0 ? (filteredHostels.map(h => (<li key={h._id} onClick={() => handleSelectHostel(h)} className="px-4 py-2 cursor-pointer hover:bg-blue-50">{h.name}</li>))) : (<li className="px-4 py-3 text-center text-gray-500">{searchTerm ? "No results found" : "No hostels available"}</li>)}</ul>)}
                         </div>
                         {selectedHostel && (<div className="mt-2 p-3 bg-blue-50 border rounded-lg flex items-center justify-between"><p className="font-bold text-blue-800 flex items-center"><Building className="w-4 h-4 mr-2" />{selectedHostel.name}</p><button type="button" onClick={() => { setSelectedHostel(null); setSelectedFloor(null); }} className="p-1.5 text-blue-600 hover:text-red-700 rounded-full" title="Change Hostel"><X className="w-4 h-4" /></button></div>)}
                     </fieldset>
 
                     <fieldset className="space-y-2" disabled={!selectedHostel}>
                         <legend className={`text-lg font-semibold ${selectedHostel ? 'text-gray-800' : 'text-gray-400'}`}>2. Select Floor</legend>
-                        {selectedHostel && <FloorSelectorPanel floors={floors} selectedFloorId={selectedFloor?._id} onSelect={setSelectedFloor} isLoading={isFetchingFloors} />}
+                        {selectedHostel && <FloorSelectorPanel floors={floors} selectedFloorId={selectedFloor?._id} onSelect={setSelectedFloor} isLoading={isFetching} />}
                     </fieldset>
 
                     <fieldset className="space-y-2" disabled={!selectedFloor}>
@@ -180,15 +213,29 @@ const VacateBedForm = ({ hostels }) => {
                 </div>
             )}
 
-            {/* --- Step 2: Confirmation --- */}
-            {currentStep === 2 && selectedBed && (
+            {vacateMode === 'student' && currentStep === 1 && (
                 <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-800">4. Confirm Vacate</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">Find Student to Vacate</h3>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Student Registration No. *</label>
+                        <div className="flex gap-2">
+                            <input type="text" value={studentSearchTerm} onChange={(e) => setStudentSearchTerm(e.target.value)} placeholder="Enter registration number..." className="flex-grow px-3 py-2 border rounded-lg" />
+                            <button type="button" onClick={handleStudentSearch} disabled={!studentSearchTerm || isFetching} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold flex items-center gap-2">
+                                {isFetching ? <Loader2 className="w-5 h-5 animate-spin" /> : <UserSearch className="w-5 h-5" />} Find
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {currentStep === 2 && (
+                <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-800">Confirm Vacate</h3>
                     <div className="p-4 bg-red-50 border border-red-200 rounded-lg space-y-3 text-sm">
-                        <div className="flex justify-between"><span className="text-gray-600">Student:</span><span className="font-semibold text-red-900">{selectedBed.student?.name || 'Unknown'}</span></div>
-                        <div className="flex justify-between"><span className="text-gray-600">Hostel:</span><span className="font-semibold">{selectedHostel.name}</span></div>
-                        <div className="flex justify-between"><span className="text-gray-600">Location:</span><span className="font-semibold">Floor {selectedFloor.floorNumber}, Room {selectedBed.roomNumber}</span></div>
-                        <div className="flex justify-between"><span className="text-gray-600">Bed:</span><span className="font-semibold">Bed {selectedBed.bedNumber}</span></div>
+                        <div className="flex justify-between"><span className="text-gray-600">Student:</span><span className="font-semibold text-red-900">{vacateMode === 'student' ? foundStudent.name : selectedBed.student?.name || 'Unknown'}</span></div>
+                        <div className="flex justify-between"><span className="text-gray-600">Hostel:</span><span className="font-semibold">{vacateMode === 'student' ? foundStudent.currentLocation.hostelName : selectedHostel.name}</span></div>
+                        <div className="flex justify-between"><span className="text-gray-600">Location:</span><span className="font-semibold">Floor {vacateMode === 'student' ? foundStudent.currentLocation.floorNumber : selectedFloor.floorNumber}, Room {vacateMode === 'student' ? foundStudent.currentLocation.roomNumber : selectedBed.roomNumber}</span></div>
+                        <div className="flex justify-between"><span className="text-gray-600">Bed:</span><span className="font-semibold">Bed {vacateMode === 'student' ? foundStudent.currentLocation.bedNumber : selectedBed.bedNumber}</span></div>
                     </div>
                     <div>
                         {message && (<div className={`text-sm p-3 rounded-lg mb-4 flex items-center gap-2 ${message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>{message.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}{message.text}</div>)}
@@ -200,6 +247,13 @@ const VacateBedForm = ({ hostels }) => {
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {message && !isSubmitting && currentStep === 1 && (
+                <div className={`text-sm p-3 mt-4 rounded-lg flex items-center gap-2 ${message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                    {message.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
+                    {message.text}
                 </div>
             )}
         </div>
