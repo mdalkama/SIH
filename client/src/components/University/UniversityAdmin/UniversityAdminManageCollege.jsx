@@ -52,7 +52,6 @@ const UniversityCollegeManager = () => {
 
                 const data = await response.json();
 
-                // Handle different possible API response structures for courses
                 if (Array.isArray(data.data)) {
                     setAllCourses(data.data);
                 } else if (Array.isArray(data)) {
@@ -103,7 +102,7 @@ const UniversityCollegeManager = () => {
 
         const debounceFetch = setTimeout(() => {
             fetchColleges();
-        }, 300); // Debounce search input
+        }, 300);
 
         return () => clearTimeout(debounceFetch);
     }, [currentPage, rowsPerPage, searchTerm, statusFilter]);
@@ -139,14 +138,14 @@ const UniversityCollegeManager = () => {
         setIsLoading(true);
         try {
             let response;
-            const universityId = "68c126f6d78ab505fb0a5143"; // Replace with actual dynamic University ID from auth context
+            const universityId = "68c126f6d78ab505fb0a5143";
 
             if (editingCollege) {
                 // Update College
                 response = await fetch(`${API_BASE_URL}/${editingCollege._id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify( collegeData ),
+                    body: JSON.stringify(collegeData), // API for update might only need collegeData
                     credentials: 'include'
                 });
             } else {
@@ -209,6 +208,8 @@ const UniversityCollegeManager = () => {
         }
     };
 
+    // NOTE: These stats are approximations based on the current page. 
+    // For accurate counts, a dedicated API endpoint is recommended.
     const stats = useMemo(() => {
         const total = colleges.length;
 
@@ -221,7 +222,7 @@ const UniversityCollegeManager = () => {
 
 
     return (
-        <div className="min-h-screen font-sans">
+        <div className="min-h-screen font-sans p-4 sm:p-6 lg:p-8 bg-gray-50">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -409,7 +410,7 @@ const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSiz
 
     const handlePageSizeChange = (e) => {
         onPageSizeChange(Number(e.target.value));
-        onPageChange(1); // Reset to first page
+        onPageChange(1);
     };
 
     return (
@@ -458,9 +459,7 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses
     const [activeTab, setActiveTab] = useState('details');
     const [showPassword, setShowPassword] = useState(false);
 
-    // State is now structured to match the final JSON object
     const [formData, setFormData] = useState({
-        // College Details
         name: college?.name || '',
         code: college?.code || '',
         type: college?.type || '',
@@ -468,23 +467,20 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses
         affiliationId: college?.affiliationId || '',
         establishmentDate: college?.establishmentDate?.split('T')[0] || '',
         capacity: college?.capacity || '',
-        courses: college?.courses?.courseId || [],
+        // --- FIX: Transform the complex courses array into an array of courseId strings for the form state ---
+        courses: Array.isArray(college?.courses) ? college.courses.map(c => c.courseId) : [],
 
-        // --- UPDATED: Nested location state ---
         location: {
             address: college?.location?.address || '',
             city: college?.location?.city || '',
             state: college?.location?.state || '',
             pincode: college?.location?.pincode || '',
         },
-        // --- UPDATED: Nested contact state ---
         contact: {
             email: college?.contact?.email || '',
             phone: college?.contact?.phone || '',
             website: college?.contact?.website || '',
         },
-
-        // Admin Details
         adminName: '',
         adminEmail: '',
         adminStaffId: '',
@@ -495,13 +491,11 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses
     });
     const [error, setError] = useState('');
 
-    // Handles changes for top-level fields (e.g., name, code)
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    // --- NEW: Handles changes for nested state objects (location, contact) ---
     const handleNestedChange = (section, e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -518,7 +512,6 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses
     };
 
     const handleSubmit = () => {
-        // Validation for required fields
         const { name, code, type, affiliationId, contact, location } = formData;
         if (!name || !code || !type || !affiliationId || !contact.email || !contact.phone || !location.city || !location.state) {
             setError('Please fill all required (*) fields in College Details and Contact tabs.'); return;
@@ -531,7 +524,6 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses
         }
         setError('');
 
-        // --- UPDATED: Assemble collegeData from the structured state ---
         const collegeData = {
             name: formData.name,
             code: formData.code,
@@ -540,9 +532,10 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses
             affiliationId: formData.affiliationId,
             establishmentDate: formData.establishmentDate,
             capacity: formData.capacity,
-            location: formData.location, // Already a nested object
-            contact: formData.contact,   // Already a nested object
-            courses: formData.courses,
+            location: formData.location,
+            contact: formData.contact,
+            // --- FIX: Transform the simple array of IDs back into the complex array of objects for the API ---
+            courses: formData.courses.map(courseId => ({ courseId })),
         };
 
         const adminData = isEditing ? null : {
@@ -557,7 +550,6 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses
 
         onSave(collegeData, adminData);
     };
-
 
     if (!isOpen) return null;
 
@@ -581,21 +573,7 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses
                 </div>
                 <div className="p-6 space-y-6 max-h-[65vh] overflow-y-auto">
                     {activeTab === 'details' && (<div className="grid grid-cols-1 md:grid-cols-3 gap-4"> <div className="md:col-span-3"><label className="block text-sm font-medium text-gray-700 mb-1">College Name *</label><input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">College Code *</label><input type="text" name="code" value={formData.code} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">College Type *</label><input type="text" name="type" value={formData.type} onChange={handleChange} placeholder="e.g., Engineering" className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Total Capacity</label><input type="number" name="capacity" value={formData.capacity} onChange={handleChange} placeholder="e.g., 2500" className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Affiliation ID *</label><input type="text" name="affiliationId" value={formData.affiliationId} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Establishment Date</label><input type="date" name="establishmentDate" value={formData.establishmentDate} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Status</label><select name="status" value={formData.status} onChange={handleChange} className="w-full px-3 py-2 border bg-white border-gray-300 rounded-lg"><option>Active</option><option>Inactive</option><option>Pending Approval</option></select></div> </div>)}
-
-                    {/* --- UPDATED: Contact & Location Tab --- */}
-                    {activeTab === 'contact' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Address</label><input type="text" name="address" value={formData.location.address} onChange={(e) => handleNestedChange('location', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">City *</label><input type="text" name="city" value={formData.location.city} onChange={(e) => handleNestedChange('location', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">State *</label><input type="text" name="state" value={formData.location.state} onChange={(e) => handleNestedChange('location', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Pincode</label><input type="text" name="pincode" value={formData.location.pincode} onChange={(e) => handleNestedChange('location', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div className="md:col-span-2"><hr className="my-2" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Contact Email *</label><input type="email" name="email" value={formData.contact.email} onChange={(e) => handleNestedChange('contact', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Contact Phone *</label><input type="tel" name="phone" value={formData.contact.phone} onChange={(e) => handleNestedChange('contact', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                            <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Website</label><input type="text" name="website" value={formData.contact.website} onChange={(e) => handleNestedChange('contact', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-                        </div>
-                    )}
-
+                    {activeTab === 'contact' && (<div className="grid grid-cols-1 md:grid-cols-2 gap-4"> <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Address</label><input type="text" name="address" value={formData.location.address} onChange={(e) => handleNestedChange('location', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">City *</label><input type="text" name="city" value={formData.location.city} onChange={(e) => handleNestedChange('location', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">State *</label><input type="text" name="state" value={formData.location.state} onChange={(e) => handleNestedChange('location', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Pincode</label><input type="text" name="pincode" value={formData.location.pincode} onChange={(e) => handleNestedChange('location', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div className="md:col-span-2"><hr className="my-2" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Contact Email *</label><input type="email" name="email" value={formData.contact.email} onChange={(e) => handleNestedChange('contact', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Contact Phone *</label><input type="tel" name="phone" value={formData.contact.phone} onChange={(e) => handleNestedChange('contact', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Website</label><input type="text" name="website" value={formData.contact.website} onChange={(e) => handleNestedChange('contact', e)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> </div>)}
                     {activeTab === 'courses' && (<MultiSelectCourses allCourses={allCourses} selectedCourses={formData.courses} onChange={handleCourseChange} />)}
                     {!isEditing && activeTab === 'admin' && (<div className="grid grid-cols-1 md:grid-cols-3 gap-4"> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Full Name *</label><input type="text" name="adminName" value={formData.adminName} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Email *</label><input type="email" name="adminEmail" value={formData.adminEmail} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Staff ID *</label><input type="text" name="adminStaffId" value={formData.adminStaffId} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Admin Phone</label><input type="tel" name="adminPhone" value={formData.adminPhone} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Gender</label><select name="adminGender" value={formData.adminGender} onChange={handleChange} className="w-full px-3 py-2 border bg-white border-gray-300 rounded-lg"><option value="">Select</option><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select></div> <div><label className="block text-sm font-medium text-gray-700 mb-1">Salary</label><input type="number" name="adminSalary" value={formData.adminSalary} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div> <div className="md:col-span-3 relative"><label className="block text-sm font-medium text-gray-700 mb-1">Set Password *</label><input type={showPassword ? "text" : "password"} name="adminPassword" value={formData.adminPassword} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-9 text-gray-400 hover:text-gray-600">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></div> </div>)}
                     {error && <p className="text-red-600 text-sm pt-2">{error}</p>}
@@ -627,7 +605,7 @@ const MultiSelectCourses = ({ allCourses, selectedCourses, onChange }) => {
                     const course = allCourses.find(c => c._id === id);
                     return (
                         <div key={id} className="flex items-center gap-2 bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
-                            <span>{(course?.degree || course?.branch) ? `${course?.degree || ''} ${course?.branch || ''}`.trim() : 'Unknown Course'}</span>
+                            <span>{course ? `${course.degree} (${course.branch})` : 'Unknown Course'}</span>
                             <button onClick={() => handleRemoveCourse(id)}><X size={14} /></button>
                         </div>
                     );
@@ -638,7 +616,7 @@ const MultiSelectCourses = ({ allCourses, selectedCourses, onChange }) => {
                 <select onChange={(e) => handleAddCourse(e.target.value)} value="" className="w-full px-3 py-2 border bg-white border-gray-300 rounded-lg">
                     <option value="">-- Add a course --</option>
                     {availableCourses.map(course => (
-                        <option key={course._id} value={course._id}>{` (${course.courseId}) ${course.degree} ${course.branch}`}</option>
+                        <option key={course._id} value={course._id}>{`${course.degree} (${course.branch})`}</option>
                     ))}
                 </select>
             )}

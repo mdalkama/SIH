@@ -189,3 +189,15 @@ export const getPublicColleges = async (req, res) => {
     }
 };
 
+
+
+
+export const getCourseByCollegeCode = async (req, res) => {
+    const { collegeCode } = req.params;
+    try {
+        const college = await College.findOne({ code: collegeCode }).populate('courses');
+        console.log(college)
+    }catch(error){
+        console.log(error)
+    }
+    }

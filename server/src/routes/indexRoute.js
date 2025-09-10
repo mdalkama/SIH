@@ -21,6 +21,8 @@ import semesterExamRoute from "./semesterExamRoute.js";
 import universityRoute from "./universityRoute.js";
 import studentLibraryRoute from "./studentLibraryRoutes.js";
 import studentHostelRoutes from "./studentHostelRoutes.js";
+import collegeCourseRoute from "./collegeCourseRoute.js";
+
 
 
 
