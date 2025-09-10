@@ -210,8 +210,15 @@ const UniversityCollegeManager = () => {
     };
 
     const stats = useMemo(() => {
-        return { total: totalColleges };
-    }, [totalColleges]);
+        const total = colleges.length;
+
+        const active = colleges.filter(c => c.status === "Active").length;
+        const pending = colleges.filter(c => c.status === "Pending Approval").length;
+        const inactive = colleges.filter(c => c.status === "Inactive").length;
+
+        return { total, active, pending, inactive };
+    }, [colleges]);
+
 
     return (
         <div className="min-h-screen font-sans">
@@ -219,9 +226,9 @@ const UniversityCollegeManager = () => {
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <StatCard title="Total Colleges" value={stats.total} icon={<Building />} color="blue" />
-                    <StatCard title="Active" value={"N/A"} icon={<CheckCircle />} color="green" />
-                    <StatCard title="Pending" value={"N/A"} icon={<Loader2 />} color="yellow" />
-                    <StatCard title="Inactive" value={"N/A"} icon={<X />} color="gray" />
+                    <StatCard title="Active" value={stats.active} icon={<CheckCircle />} color="green" />
+                    <StatCard title="Pending" value={stats.pending} icon={<Loader2 />} color="yellow" />
+                    <StatCard title="Inactive" value={stats.inactive} icon={<X />} color="gray" />
                 </div>
 
                 <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
