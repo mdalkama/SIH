@@ -738,11 +738,12 @@ export const findStudentForAllocation = async (req, res) => {
     }
 
     // Student ka hostel record dhoondho
-    const alreadyAllocated = await StudentHostel.findOne({
-      occupant: student._id,
+    const existingAllocation = await StudentHostel.findOne({ 
+        occupant: student._id,
+        currentHostel: { $ne: null } // Check karo ki currentHostel null na ho
     });
     
-    if (alreadyAllocated && alreadyAllocated.currentHostel) {
+    if (!existingAllocation) {
       return res.status(409).json({ error: "This student is already allocated to a bed." });
     }
 
