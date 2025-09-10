@@ -84,7 +84,6 @@ export const getStaff = async (req, res) => {
             'UniversityGoverningBody',
             'UniversityRegistrar',
             'UniversityExaminationBody',
-            'UniversityExamCellStaff',
             'CollegeAdmin'
         ];
 
