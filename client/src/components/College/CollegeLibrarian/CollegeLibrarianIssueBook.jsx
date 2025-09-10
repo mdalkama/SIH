@@ -285,7 +285,7 @@ function CollegeLibrarianIssueBook() {
         </div>
       )}
     </div>
-  );
+  ); 
 }
 
 export default CollegeLibrarianIssueBook;
