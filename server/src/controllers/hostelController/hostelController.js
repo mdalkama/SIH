@@ -1061,3 +1061,82 @@ export const updateComplaintStatus = async (req, res) => {
         res.status(500).json({ success: false, error: "Server Error" });
     }
 };
+
+export const getAllRoomChangeRequests = async (req, res) => {
+    try {
+        const collegeCode = req.user.collegeCode;
+        if (!collegeCode) {
+            return res.status(401).json({ success: false, error: "Unauthorized" });
+        }
+
+        const requests = await StudentHostel.aggregate([
+            { $match: { collegeCode: collegeCode, 'roomChangeRequests.0': { $exists: true } } }, // Only get students with requests
+            { $unwind: "$roomChangeRequests" },
+            { $sort: { "roomChangeRequests.requestedAt": -1 } },
+            {
+                $project: {
+                    _id: "$roomChangeRequests._id",
+                    studentHostelId: "$_id",
+                    registrationNumber: "$registrationNumber",
+                    reason: "$roomChangeRequests.reason",
+                    status: "$roomChangeRequests.status",
+                    from: "$currentHostel", // Student's current location
+                    requestedAt: "$roomChangeRequests.requestedAt",
+                }
+            }
+        ]);
+
+        res.status(200).json({ success: true, data: requests });
+    } catch (error) {
+        res.status(500).json({ success: false, error: "Server Error" });
+    }
+};
+
+export const updateRoomChangeRequestStatus = async (req, res) => {
+    try {
+        const { studentHostelId, requestId } = req.params;
+        const { status } = req.body;
+
+        if (!status || !["Approved", "Rejected"].includes(status)) {
+            return res.status(400).json({ success: false, error: "Invalid status" });
+        }
+
+        const studentHostel = await StudentHostel.findOneAndUpdate(
+            { "_id": studentHostelId, "roomChangeRequests._id": requestId },
+            { "$set": { "roomChangeRequests.$.status": status } },
+            { new: true }
+        );
+
+        if (!studentHostel) {
+            return res.status(404).json({ success: false, error: "Request not found." });
+        }
+
+        res.status(200).json({ success: true, message: `Request has been ${status.toLowerCase()}.` });
+    } catch (error) {
+        res.status(500).json({ success: false, error: "Server Error" });
+    }
+};
+
+export const getAllVisitorPasses = async (req, res) => {
+    try {
+        const collegeCode = req.user.collegeCode;
+        const passes = await StudentHostel.aggregate([
+            { $match: { collegeCode: collegeCode, 'visitors.0': { $exists: true } } },
+            { $unwind: "$visitors" },
+            { $sort: { "visitors.date": -1 } },
+            {
+                $project: {
+                    _id: "$visitors._id",
+                    studentRegNo: "$registrationNumber",
+                    visitorName: "$visitors.name",
+                    relation: "$visitors.relation",
+                    purpose: "$visitors.purpose",
+                    date: "$visitors.date",
+                }
+            }
+        ]);
+        res.status(200).json({ success: true, data: passes });
+    } catch (error) {
+        res.status(500).json({ success: false, error: "Server Error" });
+    }
+};
