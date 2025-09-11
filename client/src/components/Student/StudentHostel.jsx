@@ -17,10 +17,42 @@ const DetailItem = ({ icon: Icon, label, value, subValue }) => (
   </div>
 );
 
-const AllocationSkeleton = () =>
-  <div className="bg-white rounded-xl shadow-sm p-6 h-64 animate-pulse"></div>;
-const ComplaintCardSkeleton = () =>
-  <div className="border border-gray-200 rounded-lg p-4 h-32 animate-pulse bg-gray-50"></div>;
+const AllocationSkeleton = () => (
+  <div className="bg-white rounded-xl shadow-sm p-6 animate-pulse">
+    <div className="flex items-center mb-4">
+      <div className="w-8 h-8 bg-gray-200 rounded mr-2"></div>
+      <div className="h-6 w-40 bg-gray-200 rounded"></div>
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+      <div className="space-y-3">
+        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+      </div>
+      <div className="space-y-3">
+        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+      </div>
+    </div>
+  </div>
+);
+
+const ComplaintCardSkeleton = () => (
+  <div className="bg-white rounded-lg p-4 animate-pulse border">
+    <div className="flex justify-between mb-2">
+      <div className="flex items-center gap-2">
+        <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+        <div className="h-4 bg-gray-200 rounded w-28"></div>
+      </div>
+      <div className="h-4 bg-gray-200 rounded w-12"></div>
+    </div>
+    <div className="h-3 bg-gray-200 rounded w-full mb-2"></div>
+    <div className="h-3 bg-gray-200 rounded w-3/4 mb-4"></div>
+    <div className="flex justify-between text-xs">
+      <div className="h-3 w-20 bg-gray-200 rounded"></div>
+      <div className="h-3 w-16 bg-gray-200 rounded"></div>
+    </div>
+  </div>
+);
 
 // Simple Modal
 const Modal = ({ isOpen, onClose, title, children }) => {
@@ -160,7 +192,7 @@ const HostelDashboard = () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || data.error);
-    //   setMessage('Complaint raised successfully!');
+      //   setMessage('Complaint raised successfully!');
       await fetchData();
       setActiveModal(null);
       setComplaint({ issue: '', priority: 'Medium', title: '', description: '' });
@@ -206,11 +238,26 @@ const HostelDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto">
-        <div className="h-24 bg-gray-200 rounded-lg animate-pulse mb-6"></div>
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header Skeleton */}
+        <div className="h-20 bg-gray-200 rounded-lg animate-pulse"></div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6"><AllocationSkeleton /><div className="bg-white rounded-xl p-6"><ComplaintCardSkeleton /></div></div>
-          <div className="h-64 bg-gray-200 rounded-lg animate-pulse"></div>
+          <div className="lg:col-span-2 space-y-6">
+            {/* Allocation Skeleton */}
+            <AllocationSkeleton />
+            {/* Complaints Skeleton List */}
+            <div className="bg-white rounded-xl p-6 space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <ComplaintCardSkeleton key={i} />
+              ))}
+            </div>
+          </div>
+          {/* Sidebar skeleton */}
+          <div className="space-y-4">
+            <div className="h-40 bg-gray-200 rounded-lg animate-pulse"></div>
+            <div className="h-40 bg-gray-200 rounded-lg animate-pulse"></div>
+          </div>
         </div>
       </div>
     );
@@ -231,12 +278,12 @@ const HostelDashboard = () => {
                 <div className="flex items-center mb-4"><Home className="w-6 h-6 text-blue-600 mr-2" /><h2 className="text-xl font-semibold">Your Allocation Details</h2></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4"><DetailItem icon={User} label={allocationDetails.name} value={`Roll No: ${allocationDetails.rollNumber}`} /><DetailItem icon={MapPin} label={allocationDetails.hostelName} value={`Floor ${allocationDetails.floorNumber}, Room ${allocationDetails.roomNumber}`} subValue={allocationDetails.roomType} /></div>
-                  <div className="space-y-4"><DetailItem icon={Phone} label={`Warden: ${allocationDetails.warden}`} value={allocationDetails.wardenContact} /><DetailItem icon={Clock} label="Check-in Date" value={new Date(allocationDetails.checkInDate).toLocaleDateString()} /></div>
+                  <div className="space-y-4"><DetailItem icon={Phone} label={`Warden: ${allocationDetails.warden}`} value={`${allocationDetails.wardenContact}`} /><DetailItem icon={Clock} label="Check-in Date" value={new Date(allocationDetails.checkInDate).toLocaleDateString()} /></div>
                 </div>
               </div>
             ) : (
               <div className="bg-white rounded-lg shadow-sm p-8 mb-6 text-center">
-                <Home size={40} className="mx-auto text-gray-400 mb-3"/><h3 className="font-semibold text-lg">No Hostel Allocated</h3><p className="text-gray-500">You are not currently allocated to any hostel room.</p>
+                <Home size={40} className="mx-auto text-gray-400 mb-3" /><h3 className="font-semibold text-lg">No Hostel Allocated</h3><p className="text-gray-500">You are not currently allocated to any hostel room.</p>
               </div>
             )}
 
@@ -247,7 +294,7 @@ const HostelDashboard = () => {
                 {allocationDetails && (
                   <button onClick={() => setActiveModal('complaint')}
                     className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    <Plus className="w-4 h-4 mr-2"/>Raise Complaint</button>
+                    <Plus className="w-4 h-4 mr-2" />Raise Complaint</button>
                 )}
               </div>
               <ComplaintList complaints={complaints} />
@@ -315,7 +362,7 @@ const HostelDashboard = () => {
             <div className="flex gap-3 pt-4">
               <button type="submit" disabled={isSubmitting}
                 className="flex-1 flex items-center justify-center py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50">
-                <Repeat className="w-4 h-4 mr-2"/>{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin"/> : "Submit Request"}</button>
+                <Repeat className="w-4 h-4 mr-2" />{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit Request"}</button>
               <button type="button" onClick={() => setActiveModal(null)} className="py-2 border rounded-lg px-4">Cancel</button>
             </div>
           </form>
@@ -324,19 +371,19 @@ const HostelDashboard = () => {
         <Modal isOpen={activeModal === 'visitor'} onClose={() => setActiveModal(null)} title="Generate Visitor Pass">
           <form onSubmit={handleVisitorSubmit} className="space-y-4">
             <div><label className="block text-sm font-medium mb-1">Visitor's Name *</label>
-              <input type="text" value={visitor.name} onChange={(e) => setVisitor({...visitor, name: e.target.value})}
-                className="w-full border rounded-lg p-2" required/></div>
+              <input type="text" value={visitor.name} onChange={(e) => setVisitor({ ...visitor, name: e.target.value })}
+                className="w-full border rounded-lg p-2" required /></div>
             <div><label className="block text-sm font-medium mb-1">Relation</label>
-              <input type="text" value={visitor.relation} onChange={(e) => setVisitor({...visitor, relation: e.target.value})}
-                className="w-full border rounded-lg p-2"/></div>
+              <input type="text" value={visitor.relation} onChange={(e) => setVisitor({ ...visitor, relation: e.target.value })}
+                className="w-full border rounded-lg p-2" /></div>
             <div><label className="block text-sm font-medium mb-1">Purpose</label>
-              <textarea value={visitor.purpose} onChange={(e) => setVisitor({...visitor, purpose: e.target.value})}
-                rows={3} className="w-full border rounded-lg p-2"/></div>
+              <textarea value={visitor.purpose} onChange={(e) => setVisitor({ ...visitor, purpose: e.target.value })}
+                rows={3} className="w-full border rounded-lg p-2" /></div>
             {message && <p className="text-sm text-red-600">{message}</p>}
             <div className="flex gap-3 pt-4">
               <button type="submit" disabled={isSubmitting}
                 className="flex-1 flex items-center justify-center py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50">
-                <Users className="w-4 h-4 mr-2"/>{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin"/> : "Generate Pass"}</button>
+                <Users className="w-4 h-4 mr-2" />{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Generate Pass"}</button>
               <button type="button" onClick={() => setActiveModal(null)} className="py-2 border rounded-lg px-4">Cancel</button>
             </div>
           </form>

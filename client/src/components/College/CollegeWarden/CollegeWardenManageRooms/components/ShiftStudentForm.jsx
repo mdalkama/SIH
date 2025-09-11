@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { Search, X, Building, Bed, Loader2, AlertTriangle, CheckCircle, UserSearch, ArrowRight } from 'lucide-react';
 
 // --- Helper Components ---
-
 const FloorSelectorPanel = ({ floors, selectedFloorId, onSelect, isLoading }) => {
     if (isLoading) { return <div className="p-4 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-400" /></div>; }
     if (floors.length === 0) { return <p className="p-4 bg-yellow-50 text-yellow-800 text-sm rounded-lg">No floors found.</p>; }
@@ -14,43 +13,16 @@ const VacantBedSelector = ({ hostelId, floorId, onBedSelect }) => {
     const [bedsByRoom, setBedsByRoom] = useState({});
     const [expandedRoomId, setExpandedRoomId] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchRooms = async () => {
-            setIsLoading(true);
-            try {
-                const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms`, { credentials: "include" });
-                if (!res.ok) throw new Error('Failed to fetch rooms');
-                const data = await res.json();
-                setRooms(data.success ? data.data : []);
-            } catch (error) { console.error(error); } finally { setIsLoading(false); }
-        };
-        fetchRooms();
-    }, [hostelId, floorId]);
-
-    const handleRoomClick = async (roomId) => {
-        if (expandedRoomId === roomId) { setExpandedRoomId(null); return; }
-        setExpandedRoomId(roomId);
-        if (!bedsByRoom[roomId]) {
-            try {
-                const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms/${roomId}/beds`, { credentials: "include" });
-                if (!res.ok) throw new Error('Failed to fetch beds');
-                const data = await res.json();
-                setBedsByRoom(prev => ({ ...prev, [roomId]: data.data || [] }));
-            } catch (error) { console.error(error); }
-        }
-    };
-
+    useEffect(() => { const fetchRooms = async () => { setIsLoading(true); try { const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms`, { method: 'GET', credentials: "include" }); if (!res.ok) throw new Error('Failed to fetch rooms'); const data = await res.json(); setRooms(data.success ? data.data : []); } catch (error) { console.error(error); } finally { setIsLoading(false); } }; fetchRooms(); }, [hostelId, floorId]);
+    const handleRoomClick = async (roomId) => { if (expandedRoomId === roomId) { setExpandedRoomId(null); return; } setExpandedRoomId(roomId); if (!bedsByRoom[roomId]) { try { const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${hostelId}/floors/${floorId}/rooms/${roomId}/beds`, { method: 'GET', credentials: "include" }); if (!res.ok) throw new Error('Failed to fetch beds'); const data = await res.json(); setBedsByRoom(prev => ({ ...prev, [roomId]: data.data || [] })); } catch (error) { console.error(error); } } };
     if (isLoading) return <div className="p-4 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-400" /></div>;
     if (rooms.length === 0) return <p className="p-4 bg-yellow-50 text-yellow-800 text-sm rounded-lg">No rooms found.</p>;
-
     return (<div className="grid grid-cols-2 sm:grid-cols-3 gap-3">{rooms.map(room => (<div key={room._id} className={`border rounded-lg transition-all ${expandedRoomId === room._id ? 'bg-blue-50 border-blue-300 col-span-full' : 'bg-white border-gray-300'}`}><button type="button" onClick={() => handleRoomClick(room._id)} className="w-full p-3 text-center"><p className="font-bold text-lg">Room {room.roomNumber}</p><p className="text-xs text-gray-500">{room.vacantBeds} / {room.totalBeds} Vacant</p></button>{expandedRoomId === room._id && (<div className="p-3 border-t border-blue-200"><h4 className="text-sm font-semibold mb-2 text-gray-700">Available Beds:</h4><div className="flex flex-wrap gap-2">{bedsByRoom[room._id] ? bedsByRoom[room._id].map(bed => (<button key={bed._id} type="button" onClick={() => onBedSelect({ ...bed, roomId: room._id, roomNumber: room.roomNumber })} disabled={bed.isOccupied} className={`px-3 py-1.5 text-xs font-semibold rounded-full flex items-center gap-1.5 ${bed.isOccupied ? 'bg-red-100 text-red-600 cursor-not-allowed' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}><Bed size={14} /> Bed {bed.bedNumber}</button>)) : <Loader2 className="w-4 h-4 animate-spin"/>}{bedsByRoom[room._id] && bedsByRoom[room._id].filter(b => !b.isOccupied).length === 0 && <p className="text-xs text-gray-500">No vacant beds.</p>}</div></div>)}</div>))}</div>);
 };
 
 const ShiftStudentForm = ({ hostels }) => {
     // --- State Management ---
     const [studentSearchTerm, setStudentSearchTerm] = useState('');
-    console.log(studentSearchTerm)
     const [foundStudent, setFoundStudent] = useState(null);
     const [newLocation, setNewLocation] = useState({ hostel: null, floor: null, bed: null });
     const [floors, setFloors] = useState([]);
@@ -66,8 +38,8 @@ const ShiftStudentForm = ({ hostels }) => {
         setFoundStudent(null);
         setMessage('');
         try {
-            // YAHAN FIX KIYA GAYA HAI: fetch options ko original code jaisa simple kar diya hai
             const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/student/search/${studentSearchTerm}`, {
+                method: 'GET',
                 credentials: 'include'
             });
 
@@ -75,7 +47,6 @@ const ShiftStudentForm = ({ hostels }) => {
                 const errData = await res.json();
                 throw new Error(errData.error || "Student not found");
             }
-
             const data = await res.json();
             if (data.success) {
                 if (!data.data.currentLocation) {
@@ -101,8 +72,8 @@ const ShiftStudentForm = ({ hostels }) => {
         const fetchFloorsData = async () => {
             setIsFetchingFloors(true);
             try {
-                // YAHAN FIX KIYA GAYA HAI
                 const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/${newLocation.hostel._id}/floors`, {
+                    method: 'GET',
                     credentials: "include"
                 });
                 if (!res.ok) {
@@ -160,11 +131,12 @@ const ShiftStudentForm = ({ hostels }) => {
     };
 
     if (!hostels) {
-        return <div className="max-w-4xl mx-auto p-6 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" /><p className="mt-2">Loading data...</p></div>;
+        return <div className="p-6 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" /><p className="mt-2">Loading data...</p></div>;
     }
 
     return (
-        <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-white rounded-xl shadow-lg border border-gray-200">
+        // YAHAN FIX KIYA GAYA HAI: Outer container se styling hata di gayi hai
+        <div className="">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Shift a Student to a New Bed</h2>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
