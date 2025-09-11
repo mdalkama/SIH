@@ -37,7 +37,7 @@ export default function AdmissionForm() {
     twelfthBoard: '',
     twelfthYear: '',
     twelfthPercentage: '',
-    courseCode: '',
+    courseId: '',
     batch: '',
   });
 
@@ -60,21 +60,21 @@ export default function AdmissionForm() {
       // --- Auto-generate Registration Number ---
       const year = '22'; // From 2022
       const collegeCode = '140';
-      const courseCode = formData.courseCode;
+      const courseId = formData.courseId;
 
-      if (!courseCode) {
+      if (!courseId) {
         alert('Please enter a Course Code to generate a Registration Number.');
         return;
       }
 
       // Get current count for the course, default to 0 if not present
-      const currentSerial = courseCounters[courseCode] || 0;
+      const currentSerial = courseCounters[courseId] || 0;
       const newSerial = currentSerial + 1;
 
       // Format serial to 3 digits (e.g., 1 -> 001)
       const formattedSerial = String(newSerial).padStart(3, '0');
 
-      const registrationNo = `${year}${collegeCode}${courseCode}${formattedSerial}`;
+      const registrationNo = `${year}${collegeCode}${courseId}${formattedSerial}`;
 
       const finalData = {
         ...formData,
@@ -395,10 +395,10 @@ console.log(finalData)
               </div>
               {/* Course Code */}
               <div className="relative">
-                <label htmlFor="courseCode" className="block text-sm font-medium text-slate-700 mb-1">Course Code</label>
+                <label htmlFor="courseId" className="block text-sm font-medium text-slate-700 mb-1">Course Code</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 z-10"><Hash className="h-5 w-5 text-slate-400" /></span>
-                  <input id="courseCode" name="courseCode" value={formData.courseCode} onChange={handleChange} type="text" placeholder="e.g., CSE101" required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300" />
+                  <input id="courseId" name="courseId" value={formData.courseId} onChange={handleChange} type="text" placeholder="e.g., CSE101" required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300" />
                 </div>
               </div>
               {/* Admission Date */}
