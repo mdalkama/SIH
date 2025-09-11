@@ -47,6 +47,7 @@ const statsSchema = new Schema({
 const studentPaymentSchema = new Schema({
     registrationNumber: { type: String, required: true, unique: true },
     student: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
+    collegeCode: { type: String, required: true },
     fines: [fineSchema],
     semesters: [semesterSchema],
     paymentHistory: [historySchema],

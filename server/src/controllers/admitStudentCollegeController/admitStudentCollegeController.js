@@ -1,6 +1,9 @@
 import bcrypt from "bcryptjs";
 import Student from "../../models/studentModel.js";
 import StudentAcademics from "../../models/studentAcademicsModel.js";
+import StudentHostel from "../../models/studentHostelModal.js";
+import StudentLibrary from "../../models/studentLibraryModel.js";
+import StudentPayment from "../../models/studentPaymentModal.js";
 
 // 1️⃣ Add Student + Academics
 export const addStudent = async (req, res) => {
@@ -23,6 +26,34 @@ export const addStudent = async (req, res) => {
             courseCode: req.body.courseCode,
             previousResults: [],
             currentExamRegistrations: []
+        });
+
+        await StudentHostel.create({
+            occupant: student._id,
+            registrationNumber: student.registrationNumber,
+            collegeCode: req.user.collegeCode,
+            currentHostel: null,
+            complaints: [],
+            visitors: [],
+            roomChangeRequests: [],
+
+        });
+
+        await StudentLibrary.create({
+            occupiedBy: student._id,
+            registrationNumber: student.registrationNumber,
+            collegeCode: req.user.collegeCode,
+            activity: [],
+            issuedBooks: []
+        });
+
+        await StudentPayment.create({
+            student: student._id,
+            registrationNumber: student.registrationNumber,
+            collegeCode: req.user.collegeCode,
+            fines: [],
+            semesters: [],
+            paymentHistory: []
         });
 
         res.status(201).json({ message: "Student created successfully", student });

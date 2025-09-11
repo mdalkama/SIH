@@ -24,7 +24,7 @@ const issuedBookSchema = new Schema({
 const studentLibrarySchema = new Schema({
   registrationNumber: { type: String, unique: true, required: true }, // unique per student
   occupiedBy: { type: Schema.Types.ObjectId, ref: "Student", required: true }, // which student
-
+  collegeCode: { type: String, required: true },
   // Logs of all activities (issue/return/fine)
   activity: [activitySchema],
 

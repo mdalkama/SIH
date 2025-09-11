@@ -5,7 +5,7 @@ import {
   Users, X
 } from 'lucide-react';
 
-// --- Helper Components ---
+// --- Helper Components (Unchanged) ---
 const DetailItem = ({ icon: Icon, label, value, subValue }) => (
     <div className="flex items-start">
         <Icon className="w-5 h-5 text-gray-500 mt-1 mr-4 flex-shrink-0" />
@@ -43,54 +43,6 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                 <div className="flex justify-between items-center mb-4"><h3 className="text-xl font-semibold text-gray-900">{title}</h3><button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100"><X size={20} /></button></div>
                 {children}
             </div>
-        </div>
-    );
-};
-
-// --- Data List Components ---
-
-const ComplaintList = ({ complaints }) => {
-    if (complaints.length === 0) { return <p className="text-center text-gray-500 py-8">You haven't raised any complaints yet.</p>; }
-    const getStatusIcon = (status) => { switch (status) { case 'Resolved': return <CheckCircle className="w-4 h-4 text-green-500" />; case 'In Progress': return <Clock className="w-4 h-4 text-yellow-500" />; default: return <AlertTriangle className="w-4 h-4 text-blue-500" />; } };
-    const getPriorityColor = (priority) => { switch (priority) { case 'High': return 'text-red-600 bg-red-100'; case 'Medium': return 'text-yellow-600 bg-yellow-100'; default: return 'text-green-600 bg-green-100'; } };
-    return (
-        <div className="space-y-4">
-            {complaints.map((comp) => (
-                <div key={comp._id} className="border border-gray-200 p-4 rounded-lg">
-                    <div className="flex justify-between items-start mb-2"><div className="flex items-center gap-2"><div className="mr-1">{getStatusIcon(comp.status)}</div><h3 className="font-semibold text-gray-800">{comp.title}</h3></div><span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(comp.priority)}`}>{comp.priority}</span></div>
-                    <p className="text-sm text-gray-600 mb-2 pl-7">{comp.description}</p>
-                    <div className="flex justify-between items-center text-xs text-gray-500 pl-7"><span>{comp.issue} • Room {comp.hostelDetail.roomNumber}</span><span>{new Date(comp.createdAt).toLocaleDateString()} • {comp.status}</span></div>
-                </div>
-            ))}
-        </div>
-    );
-};
-
-const RoomChangeList = ({ requests }) => {
-    if (requests.length === 0) { return <p className="text-center text-gray-500 py-8">No room change requests found.</p>; }
-    const getStatusColor = (status) => { switch(status) { case 'Approved': return 'bg-green-100 text-green-800'; case 'Rejected': return 'bg-red-100 text-red-800'; default: return 'bg-yellow-100 text-yellow-800'; } };
-    return (
-        <div className="space-y-4">
-            {requests.map(req => (
-                <div key={req._id} className="border border-gray-200 p-4 rounded-lg">
-                    <div className="flex justify-between items-start"><p className="text-sm text-gray-500">Requested on: {new Date(req.requestedAt).toLocaleDateString()}</p><span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(req.status)}`}>{req.status}</span></div>
-                    <p className="mt-2 font-medium text-gray-800">Reason:</p><p className="text-sm text-gray-600 italic">"{req.reason}"</p>
-                </div>
-            ))}
-        </div>
-    );
-};
-
-const VisitorList = ({ visitors }) => {
-    if (visitors.length === 0) { return <p className="text-center text-gray-500 py-8">No visitor passes found.</p>; }
-    return (
-        <div className="space-y-3">
-            {visitors.map(visitor => (
-                <div key={visitor._id} className="border border-gray-200 p-4 rounded-lg">
-                    <div className="flex justify-between items-center"><h4 className="font-semibold text-gray-800">{visitor.name}</h4><span className="text-sm text-gray-500">{new Date(visitor.date).toLocaleDateString()}</span></div>
-                    <p className="text-sm text-gray-600">Relation: <span className="font-medium">{visitor.relation || 'N/A'}</span></p><p className="text-sm text-gray-600">Purpose: <span className="font-medium">{visitor.purpose || 'N/A'}</span></p>
-                </div>
-            ))}
         </div>
     );
 };
@@ -147,9 +99,57 @@ const HostelDashboard = () => {
 
     const renderContent = () => {
         switch (activeContentTab) {
-            case 'complaints': return <ComplaintList complaints={complaints} />;
-            case 'roomChanges': return <RoomChangeList requests={roomChangeRequests} />;
-            case 'visitors': return <VisitorList visitors={visitors} />;
+            case 'complaints':
+                const recentComplaints = complaints.slice(0, 5);
+                if (recentComplaints.length === 0) {
+                    return <p className="text-center text-gray-500 py-8">You haven't raised any complaints yet.</p>;
+                }
+                const getStatusIcon = (status) => { switch (status) { case 'Resolved': return <CheckCircle className="w-4 h-4 text-green-500" />; case 'In Progress': return <Clock className="w-4 h-4 text-yellow-500" />; default: return <AlertTriangle className="w-4 h-4 text-blue-500" />; } };
+                const getPriorityColor = (priority) => { switch (priority) { case 'High': return 'text-red-600 bg-red-100'; case 'Medium': return 'text-yellow-600 bg-yellow-100'; default: return 'text-green-600 bg-green-100'; } };
+                return (
+                    <div className="space-y-4">
+                        {recentComplaints.map((comp) => (
+                            <div key={comp._id} className="border border-gray-200 p-4 rounded-lg">
+                                <div className="flex justify-between items-start mb-2"><div className="flex items-center gap-2"><div className="mr-1">{getStatusIcon(comp.status)}</div><h3 className="font-semibold text-gray-800">{comp.title}</h3></div><span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(comp.priority)}`}>{comp.priority}</span></div>
+                                <p className="text-sm text-gray-600 mb-2 pl-7">{comp.description}</p>
+                                <div className="flex justify-between items-center text-xs text-gray-500 pl-7"><span>{comp.issue} • Room {comp.hostelDetail.roomNumber}</span><span>{new Date(comp.createdAt).toLocaleDateString()} • {comp.status}</span></div>
+                            </div>
+                        ))}
+                    </div>
+                );
+
+            case 'roomChanges':
+                const recentRoomChanges = roomChangeRequests.slice(0, 5);
+                if (recentRoomChanges.length === 0) {
+                    return <p className="text-center text-gray-500 py-8">No room change requests found.</p>;
+                }
+                const getStatusColor = (status) => { switch(status) { case 'Approved': return 'bg-green-100 text-green-800'; case 'Rejected': return 'bg-red-100 text-red-800'; default: return 'bg-yellow-100 text-yellow-800'; } };
+                return (
+                    <div className="space-y-4">
+                        {recentRoomChanges.map(req => (
+                            <div key={req._id} className="border border-gray-200 p-4 rounded-lg">
+                                <div className="flex justify-between items-start"><p className="text-sm text-gray-500">Requested on: {new Date(req.requestedAt).toLocaleDateString()}</p><span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(req.status)}`}>{req.status}</span></div>
+                                <p className="mt-2 font-medium text-gray-800">Reason:</p><p className="text-sm text-gray-600 italic">"{req.reason}"</p>
+                            </div>
+                        ))}
+                    </div>
+                );
+
+            case 'visitors':
+                const recentVisitors = visitors.slice(0, 5);
+                if (recentVisitors.length === 0) {
+                    return <p className="text-center text-gray-500 py-8">No visitor passes found.</p>;
+                }
+                return (
+                    <div className="space-y-3">
+                        {recentVisitors.map(visitor => (
+                            <div key={visitor._id} className="border border-gray-200 p-4 rounded-lg">
+                                <div className="flex justify-between items-center"><h4 className="font-semibold text-gray-800">{visitor.name}</h4><span className="text-sm text-gray-500">{new Date(visitor.date).toLocaleDateString()}</span></div>
+                                <p className="text-sm text-gray-600">Relation: <span className="font-medium">{visitor.relation || 'N/A'}</span></p><p className="text-sm text-gray-600">Purpose: <span className="font-medium">{visitor.purpose || 'N/A'}</span></p>
+                            </div>
+                        ))}
+                    </div>
+                );
             default: return null;
         }
     };
@@ -165,11 +165,12 @@ const HostelDashboard = () => {
             </div>
         );
     }
+    console.log(allocationDetails);
     
     return (
         <div className="min-h-screen">
             <div className="max-w-7xl mx-auto">
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div className="bg-white rounded-lg shadow-sm  border border-gray-300 p-6 mb-6">
                     <h1 className="text-3xl font-bold mb-2">Hostel Dashboard</h1>
                     <p className="text-gray-600">Welcome, {allocationDetails?.name || 'Student'}</p>
                 </div>
@@ -178,7 +179,7 @@ const HostelDashboard = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
                         {allocationDetails ? (
-                            <div className="bg-white rounded-lg shadow-sm p-6">
+                            <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-6">
                                 <div className="flex items-center mb-4"><Home className="w-6 h-6 text-blue-600 mr-2" /><h2 className="text-xl font-semibold">Your Allocation Details</h2></div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6"><DetailItem icon={User} label={allocationDetails.name} value={`Roll No: ${allocationDetails.rollNumber}`} /><DetailItem icon={MapPin} label={allocationDetails.hostelName} value={`Floor ${allocationDetails.floorNumber}, Room ${allocationDetails.roomNumber}`} subValue={allocationDetails.roomType} /><DetailItem icon={Phone} label={`Warden: ${allocationDetails.warden}`} value={`${allocationDetails.wardenContact}`} /><DetailItem icon={Clock} label="Check-in Date" value={new Date(allocationDetails.checkInDate).toLocaleDateString()} /></div>
                             </div>
@@ -186,12 +187,12 @@ const HostelDashboard = () => {
                             <div className="bg-white rounded-lg shadow-sm p-8 text-center"><Home size={40} className="mx-auto text-gray-400 mb-3" /><h3 className="font-semibold text-lg">No Hostel Allocated</h3><p className="text-gray-500">You are not currently allocated to any hostel room.</p></div>
                         )}
 
-                        <div className="bg-white rounded-lg shadow-sm">
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
                             <div className="border-b border-gray-200">
-                                <nav className="-mb-px flex space-x-6 px-6" aria-label="Tabs">
-                                    <button onClick={() => setActiveContentTab('complaints')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'complaints' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Complaints ({complaints.length})</button>
-                                    <button onClick={() => setActiveContentTab('roomChanges')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'roomChanges' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Room Changes ({roomChangeRequests.length})</button>
-                                    <button onClick={() => setActiveContentTab('visitors')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'visitors' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Visitors ({visitors.length})</button>
+                                <nav className="-mb-px flex space-x-6 px-6 " aria-label="Tabs">
+                                    <button onClick={() => setActiveContentTab('complaints')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'complaints' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Recent Complaints</button>
+                                    <button onClick={() => setActiveContentTab('roomChanges')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'roomChanges' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Recent Room Changes</button>
+                                    <button onClick={() => setActiveContentTab('visitors')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'visitors' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Recent Visitors</button>
                                 </nav>
                             </div>
                             <div className="p-6">{renderContent()}</div>
@@ -199,7 +200,7 @@ const HostelDashboard = () => {
                     </div>
 
                     <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-white rounded-lg shadow-sm p-6">
+                        <div className="bg-white rounded-lg  border border-gray-300 shadow-sm p-6">
                             <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
                             <div className="space-y-3">
                                 <button onClick={() => setActiveModal('complaint')} className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 flex items-center gap-3"><Send className="w-5 h-5 text-blue-600"/> <p className="font-medium">Raise Complaint</p></button>
@@ -207,42 +208,16 @@ const HostelDashboard = () => {
                                 <button onClick={() => setActiveModal('visitor')} className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 flex items-center gap-3"><Users className="w-5 h-5 text-purple-600"/> <p className="font-medium">Generate Visitor Pass</p></button>
                             </div>
                         </div>
-                        <div className="bg-white rounded-lg shadow-sm p-6">
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
                             <h3 className="text-lg font-semibold mb-4">Emergency Contacts</h3>
                             <div className="space-y-3"><div><p className="font-medium">Security</p><p className="text-sm text-gray-600">+91-9876543211</p></div><div><p className="font-medium">Maintenance</p><p className="text-sm text-gray-600">+91-9876543213</p></div></div>
                         </div>
                     </div>
                 </div>
 
-                {/* --- MODALS --- */}
-                <Modal isOpen={activeModal === 'complaint'} onClose={() => setActiveModal(null)} title="Raise a Complaint">
-                    <form onSubmit={handleComplaintSubmit} className="space-y-4">
-                        <div><label className="block text-sm font-medium mb-1">Issue Category *</label><select value={complaint.issue} onChange={(e) => setComplaint({ ...complaint, issue: e.target.value })} className="w-full border rounded-lg px-3 py-2 bg-white" required><option value="" disabled>Select category</option>{issueCategories.map(c => (<option key={c} value={c}>{c}</option>))}</select></div>
-                        <div><label className="block text-sm font-medium mb-1">Priority</label><select value={complaint.priority} onChange={(e) => setComplaint({ ...complaint, priority: e.target.value })} className="w-full border rounded-lg px-3 py-2 bg-white"><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option></select></div>
-                        <div><label className="block text-sm font-medium mb-1">Title *</label><input type="text" value={complaint.title} onChange={(e) => setComplaint({ ...complaint, title: e.target.value })} className="w-full border rounded-lg px-3 py-2" required /></div>
-                        <div><label className="block text-sm font-medium mb-1">Description *</label><textarea value={complaint.description} onChange={(e) => setComplaint({ ...complaint, description: e.target.value })} rows={4} className="w-full border rounded-lg px-3 py-2" required /></div>
-                        {message && <p className="text-sm text-red-600">{message}</p>}
-                        <div className="flex gap-3 pt-4"><button type="submit" disabled={isSubmitting} className="flex-1 flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"><Send className="w-4 h-4 mr-2" />{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit"}</button><button type="button" onClick={() => setActiveModal(null)} className="px-4 py-2 border rounded-lg">Cancel</button></div>
-                    </form>
-                </Modal>
-
-                <Modal isOpen={activeModal === 'roomChange'} onClose={() => setActiveModal(null)} title="Request Room Change">
-                    <form onSubmit={handleRoomChangeSubmit} className="space-y-4">
-                        <div><label className="block text-sm font-medium mb-1">Reason *</label><textarea value={roomChangeReason} onChange={(e) => setRoomChangeReason(e.target.value)} rows={5} className="w-full border rounded-lg p-2" required /></div>
-                        {message && <p className="text-sm text-red-600">{message}</p>}
-                        <div className="flex gap-3 pt-4"><button type="submit" disabled={isSubmitting} className="flex-1 flex items-center justify-center py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"><Repeat className="w-4 h-4 mr-2" />{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit Request"}</button><button type="button" onClick={() => setActiveModal(null)} className="py-2 border rounded-lg px-4">Cancel</button></div>
-                    </form>
-                </Modal>
-
-                <Modal isOpen={activeModal === 'visitor'} onClose={() => setActiveModal(null)} title="Generate Visitor Pass">
-                    <form onSubmit={handleVisitorSubmit} className="space-y-4">
-                        <div><label className="block text-sm font-medium mb-1">Visitor's Name *</label><input type="text" value={visitor.name} onChange={(e) => setVisitor({ ...visitor, name: e.target.value })} className="w-full border rounded-lg p-2" required/></div>
-                        <div><label className="block text-sm font-medium mb-1">Relation</label><input type="text" value={visitor.relation} onChange={(e) => setVisitor({ ...visitor, relation: e.target.value })} className="w-full border rounded-lg p-2"/></div>
-                        <div><label className="block text-sm font-medium mb-1">Purpose</label><textarea value={visitor.purpose} onChange={(e) => setVisitor({ ...visitor, purpose: e.target.value })} rows={3} className="w-full border rounded-lg p-2"/></div>
-                        {message && <p className="text-sm text-red-600">{message}</p>}
-                        <div className="flex gap-3 pt-4"><button type="submit" disabled={isSubmitting} className="flex-1 flex items-center justify-center py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"><Users className="w-4 h-4 mr-2" />{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Generate Pass"}</button><button type="button" onClick={() => setActiveModal(null)} className="py-2 border rounded-lg px-4">Cancel</button></div>
-                    </form>
-                </Modal>
+                <Modal isOpen={activeModal === 'complaint'} onClose={() => setActiveModal(null)} title="Raise a Complaint"><form onSubmit={handleComplaintSubmit} className="space-y-4"><div><label className="block text-sm font-medium mb-1">Issue Category *</label><select value={complaint.issue} onChange={(e) => setComplaint({ ...complaint, issue: e.target.value })} className="w-full border rounded-lg px-3 py-2 bg-white" required><option value="" disabled>Select category</option>{issueCategories.map(c => (<option key={c} value={c}>{c}</option>))}</select></div><div><label className="block text-sm font-medium mb-1">Priority</label><select value={complaint.priority} onChange={(e) => setComplaint({ ...complaint, priority: e.target.value })} className="w-full border rounded-lg px-3 py-2 bg-white"><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option></select></div><div><label className="block text-sm font-medium mb-1">Title *</label><input type="text" value={complaint.title} onChange={(e) => setComplaint({ ...complaint, title: e.target.value })} className="w-full border rounded-lg px-3 py-2" required /></div><div><label className="block text-sm font-medium mb-1">Description *</label><textarea value={complaint.description} onChange={(e) => setComplaint({ ...complaint, description: e.target.value })} rows={4} className="w-full border rounded-lg px-3 py-2" required /></div>{message && <p className="text-sm text-red-600">{message}</p>}<div className="flex gap-3 pt-4"><button type="submit" disabled={isSubmitting} className="flex-1 flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"><Send className="w-4 h-4 mr-2" />{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit"}</button><button type="button" onClick={() => setActiveModal(null)} className="px-4 py-2 border rounded-lg">Cancel</button></div></form></Modal>
+                <Modal isOpen={activeModal === 'roomChange'} onClose={() => setActiveModal(null)} title="Request Room Change"><form onSubmit={handleRoomChangeSubmit} className="space-y-4"><div><label className="block text-sm font-medium mb-1">Reason *</label><textarea value={roomChangeReason} onChange={(e) => setRoomChangeReason(e.target.value)} rows={5} className="w-full border rounded-lg p-2" required /></div>{message && <p className="text-sm text-red-600">{message}</p>}<div className="flex gap-3 pt-4"><button type="submit" disabled={isSubmitting} className="flex-1 flex items-center justify-center py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"><Repeat className="w-4 h-4 mr-2" />{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit Request"}</button><button type="button" onClick={() => setActiveModal(null)} className="py-2 border rounded-lg px-4">Cancel</button></div></form></Modal>
+                <Modal isOpen={activeModal === 'visitor'} onClose={() => setActiveModal(null)} title="Generate Visitor Pass"><form onSubmit={handleVisitorSubmit} className="space-y-4"><div><label className="block text-sm font-medium mb-1">Visitor's Name *</label><input type="text" value={visitor.name} onChange={(e) => setVisitor({ ...visitor, name: e.target.value })} className="w-full border rounded-lg p-2" required/></div><div><label className="block text-sm font-medium mb-1">Relation</label><input type="text" value={visitor.relation} onChange={(e) => setVisitor({ ...visitor, relation: e.target.value })} className="w-full border rounded-lg p-2"/></div><div><label className="block text-sm font-medium mb-1">Purpose</label><textarea value={visitor.purpose} onChange={(e) => setVisitor({ ...visitor, purpose: e.target.value })} rows={3} className="w-full border rounded-lg p-2"/></div>{message && <p className="text-sm text-red-600">{message}</p>}<div className="flex gap-3 pt-4"><button type="submit" disabled={isSubmitting} className="flex-1 flex items-center justify-center py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"><Users className="w-4 h-4 mr-2" />{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Generate Pass"}</button><button type="button" onClick={() => setActiveModal(null)} className="py-2 border rounded-lg px-4">Cancel</button></div></form></Modal>
             </div>
         </div>
     );
