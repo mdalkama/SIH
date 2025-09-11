@@ -10,6 +10,7 @@ const getTodayDate = () => new Date().toISOString().split('T')[0];
 
 // Main Component to be used in a router outlet
 export default function AdmissionForm() {
+  const [serial, setSerial] = useState(0);
   const [formData, setFormData] = useState({
     admissionDate: getTodayDate(),
     name: '',
@@ -41,6 +42,36 @@ export default function AdmissionForm() {
     batch: '',
   });
 
+  const getSerial = async () => {
+    try {
+      // ✅ Return if courseId or batch is missing
+      if (!formData.courseId || !formData.batch) return;
+
+      const response = await fetch(
+        `https://sih-4ptm.onrender.com/api/v1/student/get-serial/${formData.courseId}/${formData.batch}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // keep cookies/session
+        }
+      );
+      console.log(response)
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSerial(data.serial);
+      console.log('Serial fetched:', data.serial);
+    } catch (error) {
+      console.error('Error fetching serial:', error);
+    }
+  };
+
+
+
   // State to manage password visibility
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   // State to manage serial numbers for each course
@@ -57,8 +88,7 @@ export default function AdmissionForm() {
     e.preventDefault();
 
     try {
-      // --- Auto-generate Registration Number ---
-      const year = '22'; // From 2022
+      const year = String(formData.batch).split("").slice(2, 4).join("");
       const collegeCode = '140';
       const courseId = formData.courseId;
 
@@ -107,7 +137,6 @@ console.log(finalData)
   return (
     <div className=" min-h-screen font-sans flex items-center justify-center">
       <div className="bg-white rounded-lg w-full max-w-6xl mx-auto">
-
         <form onSubmit={handleSubmit} className="space-y-8">
           <section>
             <h2 className="text-lg font-bold text-slate-800 border-b-2 border-slate-200 pb-2 mb-6 flex items-center gap-3"><BookUser className="h-6 w-6 text-blue-700" />1. Personal Information</h2>

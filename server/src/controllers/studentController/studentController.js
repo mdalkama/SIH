@@ -105,4 +105,16 @@ export const getMyProfile = async (req, res) => {
     }
 };
 
-
+export const getSerial = async(req,res)=>{
+    const {batch, courseId} = req.params;
+    if(!batch || !courseId){
+        res.status(400).json({ message: "All fields are required" });
+    }
+    try {
+        const student = await Student.countDocuments({collegeCode:req.user.collegeCode, batch, courseId});
+        res.status(200).json({student});
+    }
+    catch (error) {
+    }    
+    
+}
