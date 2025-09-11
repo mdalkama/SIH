@@ -22,6 +22,8 @@ import universityRoute from "./universityRoute.js";
 import studentLibraryRoute from "./studentLibraryRoutes.js";
 import studentHostelRoutes from "./studentHostelRoutes.js";
 import collegeCourseRoute from "./collegeCourseRoute.js";
+import admitStudentCollegeRoute from "./admitStudentCollegeRoute.js";
+
 
 
 
@@ -49,6 +51,7 @@ router.use("/admission-university", universityAdmissionRoute)
 router.use("/admission-college", collegeAdmissionRoute)
 router.use("/manage-college", manageCollegeRoute)
 router.use("/college-course", role(["CollegeAdmin"]), collegeCourseRoute)
+router.use("/admit-student-college", role(["CollegeAdmissionDepartment"]), admitStudentCollegeRoute)
 router.get("/my-profile", role(['student', ...staffRoles]), (req, res) => {
     try {
         if(req.user.role === 'student'){
