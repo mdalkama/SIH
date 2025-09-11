@@ -39,7 +39,6 @@ const CollegeAdminManageCourses = () => {
                 }
 
                 const data = await response.json();
-
                 setCourses(data.college.courses || []);
 
             } catch (error) {
@@ -84,9 +83,8 @@ const CollegeAdminManageCourses = () => {
     const stats = useMemo(() => {
         return {
             total: courses.length,
-            btech: courses.filter(c => c.degree === 'B.Tech').length,
-            mtech: courses.filter(c => c.degree === 'M.Tech').length,
-            mba: courses.filter(c => c.degree === 'MBA').length
+            diplomaEngineering: courses.filter(c => c.degree === 'Diploma Engineering').length,
+            diplomaNonEngineering: courses.filter(c => c.degree === 'Diploma Non-Engineering').length,
         };
     }, [courses]);
 
@@ -100,9 +98,8 @@ const CollegeAdminManageCourses = () => {
                         title="Total Courses"
                         value={stats.total}
                     />
-                    <StatCard title="B.Tech Programs" value={stats.btech} />
-                    <StatCard title="M.Tech Programs" value={stats.mtech} />
-                    <StatCard title="MBA Programs" value={stats.mba} />
+                    <StatCard title="Diploma Engineering Programs" value={stats.diplomaEngineering} />
+                    <StatCard title="Diploma Non-Engineering Programs" value={stats.diplomaNonEngineering} />
                 </div>
 
                 {/* Main Content Card */}
@@ -219,18 +216,33 @@ const CourseTable = ({ courses, onEdit, currentPage, rowsPerPage }) => (
             {courses.map((course, index) => {
                 const itemNumber = (currentPage - 1) * rowsPerPage + index + 1;
 
-                const totalFees = course.semesterFees ?
-                    Object.values(course.semesterFees).reduce((sum, fee) => sum + (fee || 0), 0) : 0;
+                const totalFees = course.semesterFees
+                    ? Object.values(course.semesterFees).reduce((sum, fee) => sum + (fee || 0), 0)
+                    : Array.isArray(course.fees)
+                        ? course.fees.reduce((sum, f) => sum + (f.fees || 0), 0)
+                        : 0;
 
                 return (
                     <tr key={course._id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-center text-sm text-gray-500 font-mono">{String(itemNumber).padStart(2, '0')}</td>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900 font-mono">{course.courseId}</td>
-                        <td className="px-6 py-4">
-                            <div className="text-sm font-medium text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>{course.degree} - {course.branch}</div>
-                            {course.specialization && <div className="text-xs text-gray-500" style={{ fontFamily: 'Poppins, sans-serif' }}>{course.specialization}</div>}
+                        <td className="px-6 py-4 text-center text-sm text-gray-500 font-mono">
+                            {String(itemNumber).padStart(2, '0')}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-700" style={{ fontFamily: 'Poppins, sans-serif' }}>{course.totalSemester}</td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900 font-mono">
+                            {course.courseId}
+                        </td>
+                        <td className="px-6 py-4">
+                            <div className="text-sm font-medium text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                {course.degree} - {course.branch}
+                            </div>
+                            {course.specialization && (
+                                <div className="text-xs text-gray-500" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                    {course.specialization}
+                                </div>
+                            )}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            {course.totalSemester}
+                        </td>
                         <td className="px-6 py-4">
                             <div className="text-lg font-bold text-blue-900" style={{ fontFamily: 'Poppins, sans-serif' }}>
                                 ₹{totalFees.toLocaleString()}
@@ -265,9 +277,8 @@ const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSiz
     const summaryStats = useMemo(() => {
         if (!filteredData) return {};
         return {
-            btech: filteredData.filter(c => c.degree === 'B.Tech').length,
-            mtech: filteredData.filter(c => c.degree === 'M.Tech').length,
-            mba: filteredData.filter(c => c.degree === 'MBA').length,
+            diplomaEngineering: filteredData.filter(c => c.degree === 'Diploma Engineering').length,
+            diplomaNonEngineering: filteredData.filter(c => c.degree === 'Diploma Non-Engineering').length,
         }
     }, [filteredData]);
 
@@ -284,9 +295,8 @@ const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSiz
             </div>
             <div className="flex items-center gap-6">
                 <div className="font-semibold flex gap-4">
-                    <span>B.Tech: <span className="text-blue-600">{summaryStats.btech}</span></span>
-                    <span>M.Tech: <span className="text-green-600">{summaryStats.mtech}</span></span>
-                    <span>MBA: <span className="text-orange-600">{summaryStats.mba}</span></span>
+                    <span>Engineering: <span className="text-green-600">{summaryStats.diplomaEngineering}</span></span>
+                    <span>Non-Engineering: <span className="text-blue-600">{summaryStats.diplomaNonEngineering}</span></span>
                 </div>
                 {totalPages > 1 && (
                     <div className="flex items-center gap-2">
@@ -335,25 +345,36 @@ const EditFeesModal = ({ setShowModal, initialData = null, onUpdateSuccess, onUp
     const [semesterFees, setSemesterFees] = useState({});
 
     useEffect(() => {
-        if (initialData?.semesterFees) {
-            setSemesterFees(initialData.semesterFees);
-        } else {
-            setSemesterFees({});
+        if (initialData) {
+            // ✅ 1) Already saved as object
+            if (initialData.semesterFees) {
+                setSemesterFees(initialData.semesterFees);
+            }
+            // ✅ 2) Convert array of {semester, fees} -> object
+            else if (Array.isArray(initialData.fees)) {
+                const feeObj = {};
+                initialData.fees.forEach((f) => {
+                    feeObj[f.semester] = f.fees;
+                });
+                setSemesterFees(feeObj);
+            } else {
+                setSemesterFees({});
+            }
         }
     }, [initialData]);
 
     const handleSemesterFeeChange = (semester, value) => {
-        setSemesterFees(prev => ({
+        setSemesterFees((prev) => ({
             ...prev,
-            [semester]: parseInt(value, 10) || 0
+            [semester]: parseInt(value, 10) || 0,
         }));
     };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            // Convert semesterFees object -> array of { semester, fees }
             const feesArray = Object.entries(semesterFees).map(([semester, fee]) => ({
                 semester: Number(semester),
                 fees: Number(fee),
@@ -363,25 +384,20 @@ const EditFeesModal = ({ setShowModal, initialData = null, onUpdateSuccess, onUp
                 `https://sih-4ptm.onrender.com/api/v1/college-course/courses/${initialData._id}/fees`,
                 {
                     method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
+                    headers: { "Content-Type": "application/json" },
                     credentials: "include",
-                    body: JSON.stringify({ fees: feesArray }), // ✅ correct format
+                    body: JSON.stringify({ fees: feesArray }),
                 }
             );
-console.log({ fees: feesArray })
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || "Failed to update fees");
             }
 
             const result = await response.json();
-            console.log(result);
-            // Update parent with latest course
             onUpdateSuccess(result.course.fees);
             setShowModal(false);
-
         } catch (error) {
             console.error("Error updating fees:", error);
             onUpdateError(error);
@@ -390,52 +406,64 @@ console.log({ fees: feesArray })
         }
     };
 
-
-
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+                {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200">
                     <h2 className="text-2xl font-bold text-gray-900">Edit Semester Fees</h2>
-                    <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                    <button
+                        onClick={() => setShowModal(false)}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    >
                         <X size={20} className="text-gray-500" />
                     </button>
                 </div>
+
+                {/* Body */}
                 <div className="flex-1 overflow-y-auto p-6">
-                    {/* Course Details (Read-only) */}
+                    {/* Course Details */}
                     <div className="bg-gray-50 p-4 rounded-lg mb-6">
                         <h3 className="text-lg font-semibold text-gray-700 mb-4">Course Details</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-600 mb-1">Course ID</label>
+                                <label className="block text-sm font-medium text-gray-600 mb-1">
+                                    Course ID
+                                </label>
                                 <input
                                     type="text"
-                                    value={initialData?.courseId || ''}
+                                    value={initialData?.courseId || ""}
                                     disabled
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-600 mb-1">Degree</label>
+                                <label className="block text-sm font-medium text-gray-600 mb-1">
+                                    Degree
+                                </label>
                                 <input
                                     type="text"
-                                    value={initialData?.degree || ''}
+                                    value={initialData?.degree || ""}
                                     disabled
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
                                 />
                             </div>
                             <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-600 mb-1">Branch</label>
+                                <label className="block text-sm font-medium text-gray-600 mb-1">
+                                    Branch
+                                </label>
                                 <input
                                     type="text"
-                                    value={initialData?.branch || ''}
+                                    value={initialData?.branch || ""}
                                     disabled
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
                                 />
                             </div>
                             {initialData?.specialization && (
                                 <div className="col-span-2">
-                                    <label className="block text-sm font-medium text-gray-600 mb-1">Specialization</label>
+                                    <label className="block text-sm font-medium text-gray-600 mb-1">
+                                        Specialization
+                                    </label>
                                     <input
                                         type="text"
                                         value={initialData.specialization}
@@ -447,21 +475,38 @@ console.log({ fees: feesArray })
                         </div>
                     </div>
 
-                    {/* Semester-wise Fees Input (Editable) */}
+                    {/* Semester-wise Fees */}
                     <div>
-                        <h3 className="text-lg font-semibold text-gray-700 mb-4">Semester-wise Fees (₹)</h3>
-                        <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${Math.min(initialData?.totalSemester || 0, 4)}, 1fr)` }}>
-                            {Array.from({ length: initialData?.totalSemester || 0 }, (_, i) => i + 1).map(semester => (
+                        <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                            Semester-wise Fees (₹)
+                        </h3>
+                        <div
+                            className="grid gap-4"
+                            style={{
+                                gridTemplateColumns: `repeat(${Math.min(
+                                    initialData?.totalSemester || 0,
+                                    4
+                                )}, 1fr)`,
+                            }}
+                        >
+                            {Array.from(
+                                { length: initialData?.totalSemester || 0 },
+                                (_, i) => i + 1
+                            ).map((semester) => (
                                 <div key={semester} className="bg-blue-50 p-4 rounded-lg">
                                     <label className="block text-sm font-semibold text-blue-700 mb-2 text-center">
                                         Semester {semester}
                                     </label>
                                     <div className="relative">
-                                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">₹</span>
+                                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                            ₹
+                                        </span>
                                         <input
                                             type="number"
-                                            value={semesterFees[semester] || ''}
-                                            onChange={(e) => handleSemesterFeeChange(semester, e.target.value)}
+                                            value={semesterFees[semester] || ""}
+                                            onChange={(e) =>
+                                                handleSemesterFeeChange(semester, e.target.value)
+                                            }
                                             className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center font-medium"
                                             placeholder="0"
                                             min="0"
@@ -470,9 +515,13 @@ console.log({ fees: feesArray })
                                 </div>
                             ))}
                         </div>
-                        <p className="text-sm text-gray-500 mt-4 text-center">Enter the fees amount for each semester of this course</p>
+                        <p className="text-sm text-gray-500 mt-4 text-center">
+                            Enter the fees amount for each semester of this course
+                        </p>
                     </div>
                 </div>
+
+                {/* Footer */}
                 <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
                     <button
                         onClick={() => setShowModal(false)}
@@ -485,7 +534,7 @@ console.log({ fees: feesArray })
                         disabled={loading}
                         className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                     >
-                        {loading ? 'Updating...' : 'Update Semester Fees'}
+                        {loading ? "Updating..." : "Update Semester Fees"}
                     </button>
                 </div>
             </div>
