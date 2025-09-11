@@ -48,7 +48,7 @@ export const loginStudent = async (req, res) => {
 
         // JWT
         const token = jwt.sign(
-            {id: student._id, name: student.name, role: student.role, registrationNumber: student.registrationNumber },
+            {id: student._id, name: student.name, collegeCode: student.collegeCode, role: student.role, registrationNumber: student.registrationNumber },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN }
         );
@@ -63,7 +63,7 @@ export const loginStudent = async (req, res) => {
 
         res.status(200).json({
             message: "Login successful",
-            user: { id: student._id,name: student.name, role: student.role, registrationNumber: student.registrationNumber }
+            user: { id: student._id,name: student.name, collegeCode: student.collegeCode, role: student.role, registrationNumber: student.registrationNumber }
         });
     } catch (err) {
         res.status(500).json({ message: err.message });

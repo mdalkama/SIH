@@ -36,7 +36,57 @@ const collegeSchema = new Schema({
         type: Number,
         min: 0
     },
-
+    logoUrl: {
+        type: String,
+        trim: true
+    },
+    officeAddress: {
+        address: { type: String, trim: true },
+        city: { type: String, trim: true },
+        state: { type: String, trim: true },
+        pincode: { type: String, trim: true }
+    },
+    administration:[
+        {   
+            slno:{type:Number},
+            name: { type: String, trim: true },
+            phone: { type: String, trim: true },
+            email: { type: String, trim: true },
+            designation: { type: String, trim: true }
+        }
+    ],
+    placement:[
+        {
+            slno:{type:Number},
+            name: { type: String, trim: true },
+            department: {type:String,trim:true},
+            role:{type:String,trim:true},
+            company:{type:String,trim:true},
+            package:{type:String,trim:true}
+        }
+    ],
+    socialmedia:{
+        facebook:{type:String,trim:true},
+        instagram:{type:String,trim:true},
+        twitter:{type:String,trim:true},
+        linkedin:{type:String,trim:true},
+        youtube:{type:String,trim:true},
+        webiste:{type:String,trim:true},
+        gplus:{type:String,trim:true}
+    },
+    topRecruiter:[
+        {
+            name:{type:String,trim:true},
+            logoUrl:{type:String,trim:true},
+        }
+    ],
+    messageFrom:[
+        {
+            role:{type:String},
+            name: { type: String, trim: true},
+            message:{type:String}
+        }
+    ],
     // --- Contact & Location ---
     location: {
         address: { type: String, trim: true },
