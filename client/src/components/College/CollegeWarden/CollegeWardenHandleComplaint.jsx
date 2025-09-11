@@ -75,7 +75,7 @@ const CollegeWardenRequestManagement = () => {
         setUpdatingId(complaintId);
         setOpenDropdownId(null);
         try {
-            const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/college-warden/complaints/${studentHostelId}/${complaintId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ status }) });
+            const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/complaints/${studentHostelId}/${complaintId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ status }) });
             if (!res.ok) throw new Error('Failed to update status.');
             await fetchData();
         } catch (err) { alert(`Error: ${err.message}`); }

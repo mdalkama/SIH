@@ -189,7 +189,7 @@ const VacateBedForm = ({ hostels }) => {
                             </div>
                             {isDropdownVisible && (<ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">{filteredHostels.length > 0 ? (filteredHostels.map(h => (<li key={h._id} onClick={() => handleSelectHostel(h)} className="px-4 py-2 cursor-pointer hover:bg-blue-50">{h.name}</li>))) : (<li className="px-4 py-3 text-center text-gray-500">{searchTerm ? "No results found" : "No hostels available"}</li>)}</ul>)}
                         </div>
-                        {selectedHostel && (<div className="mt-2 p-3 bg-blue-50 border rounded-lg flex items-center justify-between"><p className="font-bold text-blue-800 flex items-center"><Building className="w-4 h-4 mr-2" />{selectedHostel.name}</p><button type="button" onClick={() => { setSelectedHostel(null); setSelectedFloor(null); }} className="p-1.5 text-blue-600 hover:text-red-700 rounded-full" title="Change Hostel"><X className="w-4 h-4" /></button></div>)}
+                        {selectedHostel && (<div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between"><p className="font-bold text-blue-800 flex items-center"><Building className="w-4 h-4 mr-2" />{selectedHostel.name}</p><button type="button" onClick={() => { setSelectedHostel(null); setSelectedFloor(null); }} className="p-1.5 text-blue-600 hover:text-red-700 rounded-full" title="Change Hostel"><X className="w-4 h-4" /></button></div>)}
                     </fieldset>
 
                     <fieldset className="space-y-2" disabled={!selectedHostel}>
@@ -210,7 +210,7 @@ const VacateBedForm = ({ hostels }) => {
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Student Registration No. *</label>
                         <div className="flex gap-2">
-                            <input type="text" value={studentSearchTerm} onChange={(e) => setStudentSearchTerm(e.target.value)} placeholder="Enter registration number..." className="flex-grow px-3 py-2 border rounded-lg" />
+                            <input type="text" value={studentSearchTerm} onChange={(e) => setStudentSearchTerm(e.target.value)} placeholder="Enter registration number..." className="flex-grow px-3 py-2 border border-gray-300 rounded-lg" />
                             <button type="button" onClick={handleStudentSearch} disabled={!studentSearchTerm || isFetching} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold flex items-center gap-2">
                                 {isFetching ? <Loader2 className="w-5 h-5 animate-spin"/> : <UserSearch className="w-5 h-5"/>} Find
                             </button>

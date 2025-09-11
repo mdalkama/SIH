@@ -743,7 +743,7 @@ export const allocateBed = async (req, res) => {
     await hostel.save();
 
     // 6. StudentHostel record ko update ya create karo
-    let studentHostel = await StudentHostel.findOne({ occupant: student._id })
+    let studentHostel = await StudentHostel.findOne({ occupant: student._id });
 
     if (studentHostel) {
       // Agar record pehle se hai (vacated state me), toh use update karo
@@ -957,12 +957,10 @@ export const findStudentForShift = async (req, res) => {
     const bed = room?.beds.find((b) => b._id.equals(bedId));
 
     if (!floor || !room || !bed) {
-      return res
-        .status(404)
-        .json({
-          error:
-            "Could not locate the specific floor/room/bed. Data might be inconsistent.",
-        });
+      return res.status(404).json({
+        error:
+          "Could not locate the specific floor/room/bed. Data might be inconsistent.",
+      });
     }
 
     res.json({
@@ -985,158 +983,296 @@ export const findStudentForShift = async (req, res) => {
   }
 };
 
-
 export const getAllComplaintsForWarden = async (req, res) => {
-    try {
-        const collegeCode = req.user.collegeCode;
-        console.log(req.user)
-        if (!collegeCode) {
-            return res.status(401).json({ success: false, error: "Unauthorized: College code not found for user." });
-        }
-
-        const complaints = await StudentHostel.aggregate([
-            { $match: { collegeCode: collegeCode } },
-            
-            { $unwind: "$complaints" },
-            
-            {
-                $project: {
-                    _id: "$complaints._id", // Complaint's unique ID
-                    studentHostelId: "$_id", // Parent document ID
-                    registrationNumber: "$registrationNumber",
-                    title: "$complaints.title",
-                    description: "$complaints.description",
-                    issue: "$complaints.issue",
-                    priority: "$complaints.priority",
-                    status: "$complaints.status",
-                    hostelDetail: "$complaints.hostelDetail",
-                    createdAt: "$complaints.createdAt",
-                }
-            },
-            
-            // Step 4: Sort by creation date, newest first
-            { $sort: { createdAt: -1 } }
-        ]);
-
-        res.status(200).json({ success: true, data: complaints });
-
-    } catch (error) {
-        console.error("Error fetching complaints for college:", error);
-        res.status(500).json({ success: false, error: "Server Error" });
+  try {
+    const collegeCode = req.user.collegeCode;
+    console.log(req.user);
+    if (!collegeCode) {
+      return res
+        .status(401)
+        .json({
+          success: false,
+          error: "Unauthorized: College code not found for user.",
+        });
     }
+
+    const complaints = await StudentHostel.aggregate([
+      { $match: { collegeCode: collegeCode } },
+
+      { $unwind: "$complaints" },
+
+      {
+        $project: {
+          _id: "$complaints._id", // Complaint's unique ID
+          studentHostelId: "$_id", // Parent document ID
+          registrationNumber: "$registrationNumber",
+          title: "$complaints.title",
+          description: "$complaints.description",
+          issue: "$complaints.issue",
+          priority: "$complaints.priority",
+          status: "$complaints.status",
+          hostelDetail: "$complaints.hostelDetail",
+          createdAt: "$complaints.createdAt",
+        },
+      },
+
+      // Step 4: Sort by creation date, newest first
+      { $sort: { createdAt: -1 } },
+    ]);
+
+    res.status(200).json({ success: true, data: complaints });
+  } catch (error) {
+    console.error("Error fetching complaints for college:", error);
+    res.status(500).json({ success: false, error: "Server Error" });
+  }
 };
 
-
 export const updateComplaintStatus = async (req, res) => {
-    try {
-        const { studentHostelId, complaintId } = req.params;
-        const { status } = req.body;
+  try {
+    const { studentHostelId, complaintId } = req.params;
+    const { status } = req.body;
 
-        // Basic validation
-        if (!status || !["Open", "In Progress", "Resolved"].includes(status)) {
-            return res.status(400).json({ success: false, error: "Invalid status provided." });
-        }
-        
-        // Ensure the IDs are valid
-        if (!mongoose.Types.ObjectId.isValid(studentHostelId) || !mongoose.Types.ObjectId.isValid(complaintId)) {
-            return res.status(400).json({ success: false, error: "Invalid ID format." });
-        }
-        
-        const studentHostel = await StudentHostel.findOneAndUpdate(
-            { "_id": studentHostelId, "complaints._id": complaintId },
-            { 
-                "$set": { "complaints.$.status": status }
-            },
-            { new: true } // Return the updated document
-        );
-
-        if (!studentHostel) {
-            return res.status(404).json({ success: false, error: "Complaint not found." });
-        }
-
-        res.status(200).json({ success: true, message: "Complaint status updated successfully." });
-
-    } catch (error) {
-        console.error("Error updating complaint status:", error);
-        res.status(500).json({ success: false, error: "Server Error" });
+    // Basic validation
+    if (!status || !["Open", "In Progress", "Resolved"].includes(status)) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid status provided." });
     }
+
+    // Ensure the IDs are valid
+    if (
+      !mongoose.Types.ObjectId.isValid(studentHostelId) ||
+      !mongoose.Types.ObjectId.isValid(complaintId)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid ID format." });
+    }
+
+    const studentHostel = await StudentHostel.findOneAndUpdate(
+      { _id: studentHostelId, "complaints._id": complaintId },
+      {
+        $set: { "complaints.$.status": status },
+      },
+      { new: true } // Return the updated document
+    );
+
+    if (!studentHostel) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Complaint not found." });
+    }
+
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Complaint status updated successfully.",
+      });
+  } catch (error) {
+    console.error("Error updating complaint status:", error);
+    res.status(500).json({ success: false, error: "Server Error" });
+  }
 };
 
 export const getAllRoomChangeRequests = async (req, res) => {
-    try {
-        const collegeCode = req.user.collegeCode;
-        if (!collegeCode) {
-            return res.status(401).json({ success: false, error: "Unauthorized" });
-        }
-
-        const requests = await StudentHostel.aggregate([
-            { $match: { collegeCode: collegeCode, 'roomChangeRequests.0': { $exists: true } } }, // Only get students with requests
-            { $unwind: "$roomChangeRequests" },
-            { $sort: { "roomChangeRequests.requestedAt": -1 } },
-            {
-                $project: {
-                    _id: "$roomChangeRequests._id",
-                    studentHostelId: "$_id",
-                    registrationNumber: "$registrationNumber",
-                    reason: "$roomChangeRequests.reason",
-                    status: "$roomChangeRequests.status",
-                    from: "$currentHostel", // Student's current location
-                    requestedAt: "$roomChangeRequests.requestedAt",
-                }
-            }
-        ]);
-
-        res.status(200).json({ success: true, data: requests });
-    } catch (error) {
-        res.status(500).json({ success: false, error: "Server Error" });
+  try {
+    const collegeCode = req.user.collegeCode;
+    if (!collegeCode) {
+      return res.status(401).json({ success: false, error: "Unauthorized" });
     }
+
+    const requests = await StudentHostel.aggregate([
+      {
+        $match: {
+          collegeCode: collegeCode,
+          "roomChangeRequests.0": { $exists: true },
+        },
+      }, // Only get students with requests
+      { $unwind: "$roomChangeRequests" },
+      { $sort: { "roomChangeRequests.requestedAt": -1 } },
+      {
+        $project: {
+          _id: "$roomChangeRequests._id",
+          studentHostelId: "$_id",
+          registrationNumber: "$registrationNumber",
+          reason: "$roomChangeRequests.reason",
+          status: "$roomChangeRequests.status",
+          from: "$currentHostel", // Student's current location
+          requestedAt: "$roomChangeRequests.requestedAt",
+        },
+      },
+    ]);
+
+    res.status(200).json({ success: true, data: requests });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Server Error" });
+  }
 };
 
 export const updateRoomChangeRequestStatus = async (req, res) => {
-    try {
-        const { studentHostelId, requestId } = req.params;
-        const { status } = req.body;
+  try {
+    const { studentHostelId, requestId } = req.params;
+    const { status } = req.body;
 
-        if (!status || !["Approved", "Rejected"].includes(status)) {
-            return res.status(400).json({ success: false, error: "Invalid status" });
-        }
-
-        const studentHostel = await StudentHostel.findOneAndUpdate(
-            { "_id": studentHostelId, "roomChangeRequests._id": requestId },
-            { "$set": { "roomChangeRequests.$.status": status } },
-            { new: true }
-        );
-
-        if (!studentHostel) {
-            return res.status(404).json({ success: false, error: "Request not found." });
-        }
-
-        res.status(200).json({ success: true, message: `Request has been ${status.toLowerCase()}.` });
-    } catch (error) {
-        res.status(500).json({ success: false, error: "Server Error" });
+    if (!status || !["Approved", "Rejected"].includes(status)) {
+      return res.status(400).json({ success: false, error: "Invalid status" });
     }
+
+    const studentHostel = await StudentHostel.findOneAndUpdate(
+      { _id: studentHostelId, "roomChangeRequests._id": requestId },
+      { $set: { "roomChangeRequests.$.status": status } },
+      { new: true }
+    );
+
+    if (!studentHostel) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Request not found." });
+    }
+
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: `Request has been ${status.toLowerCase()}.`,
+      });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Server Error" });
+  }
 };
 
 export const getAllVisitorPasses = async (req, res) => {
-    try {
-        const collegeCode = req.user.collegeCode;
-        const passes = await StudentHostel.aggregate([
-            { $match: { collegeCode: collegeCode, 'visitors.0': { $exists: true } } },
-            { $unwind: "$visitors" },
-            { $sort: { "visitors.date": -1 } },
-            {
-                $project: {
-                    _id: "$visitors._id",
-                    studentRegNo: "$registrationNumber",
-                    visitorName: "$visitors.name",
-                    relation: "$visitors.relation",
-                    purpose: "$visitors.purpose",
-                    date: "$visitors.date",
-                }
-            }
-        ]);
-        res.status(200).json({ success: true, data: passes });
-    } catch (error) {
-        res.status(500).json({ success: false, error: "Server Error" });
+  try {
+    const collegeCode = req.user.collegeCode;
+    const passes = await StudentHostel.aggregate([
+      { $match: { collegeCode: collegeCode, "visitors.0": { $exists: true } } },
+      { $unwind: "$visitors" },
+      { $sort: { "visitors.date": -1 } },
+      {
+        $project: {
+          _id: "$visitors._id",
+          studentRegNo: "$registrationNumber",
+          visitorName: "$visitors.name",
+          relation: "$visitors.relation",
+          purpose: "$visitors.purpose",
+          date: "$visitors.date",
+        },
+      },
+    ]);
+    res.status(200).json({ success: true, data: passes });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Server Error" });
+  }
+};
+
+export const getDashboardSummary = async (req, res) => {
+  try {
+    const collegeCode = req.user.collegeCode;
+    if (!collegeCode) {
+      return res
+        .status(401)
+        .json({
+          success: false,
+          error: "Unauthorized: College not associated with this warden.",
+        });
     }
+
+    // Fetch all hostel documents for the college
+    const hostelsInCollege = await Hostel.find({ collegeCode }).lean();
+
+    // --- CALCULATE STATS AND HOSTEL BREAKDOWN ---
+    let totalStudents = 0;
+    let totalCapacity = 0;
+
+    const hostelBreakdown = hostelsInCollege.map((hostel) => {
+      let hostelAllocatedBeds = 0;
+      let hostelTotalBeds = 0;
+
+      // Iterate through floors to calculate bed counts for this specific hostel
+      if (hostel.floors && Array.isArray(hostel.floors)) {
+        hostel.floors.forEach((floor) => {
+          if (floor.rooms && Array.isArray(floor.rooms)) {
+            floor.rooms.forEach((room) => {
+              if (room.beds && Array.isArray(room.beds)) {
+                hostelTotalBeds += room.beds.length;
+                // Count occupied beds
+                hostelAllocatedBeds += room.beds.filter(
+                  (bed) => bed.isOccupied
+                ).length;
+              }
+            });
+          }
+        });
+      }
+
+      // Add this hostel's counts to the grand total
+      totalStudents += hostelAllocatedBeds;
+      totalCapacity += hostelTotalBeds;
+
+      // Return the breakdown for this specific hostel
+      return {
+        _id: hostel._id,
+        name: hostel.name,
+        allocatedBeds: hostelAllocatedBeds,
+        totalBeds: hostelTotalBeds,
+      };
+    });
+
+    const totalHostels = hostelsInCollege.length;
+    const overallOccupancy =
+      totalCapacity > 0 ? Math.round((totalStudents / totalCapacity) * 100) : 0;
+
+    const stats = {
+      totalHostels,
+      totalStudents,
+      totalCapacity,
+      overallOccupancy,
+    };
+
+    // --- RECENT HIGH-PRIORITY COMPLAINTS ---
+    const recentComplaints = await StudentHostel.aggregate([
+      { $match: { collegeCode: collegeCode } },
+      { $unwind: "$complaints" },
+      {
+        $match: {
+          "complaints.priority": "High",
+          "complaints.status": { $ne: "Resolved" },
+        },
+      },
+      { $sort: { "complaints.createdAt": -1 } },
+      { $limit: 5 },
+      {
+        $project: {
+          _id: "$complaints._id",
+          title: "$complaints.title",
+          priority: "$complaints.priority",
+          hostelName: "$complaints.hostelDetail.hostelName",
+        },
+      },
+    ]);
+
+    // --- HOSTEL WARDENS ---
+    const hostelWardens = hostelsInCollege
+      .filter((hostel) => hostel.warden && hostel.warden.name) // Ensure warden exists
+      .map((hostel) => ({
+        _id: hostel.warden._id || new mongoose.Types.ObjectId(), // Fallback for safety
+        name: hostel.warden.name,
+        contact: hostel.warden.contact,
+        hostelName: hostel.name,
+      }));
+
+    // --- FINAL RESPONSE ---
+    const dashboardData = {
+      stats,
+      hostelBreakdown,
+      recentComplaints,
+      hostelWardens,
+    };
+
+    res.status(200).json({ success: true, data: dashboardData });
+  } catch (error) {
+    console.error("Error fetching dashboard summary:", error);
+    res.status(500).json({ success: false, error: "Server Error" });
+  }
 };
