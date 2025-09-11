@@ -74,39 +74,63 @@ export const getStaff = async (req, res) => {
     try {
         const { staffId, role, collegeCode } = req.query;
 
-        let filter = {};
+        // 1. Get logged in user from token (assume middleware ne set kiya h req.user)
+        const loggedInUser = await Staff.findById(req.user.id).select("role collegeCode");
 
-        if (role) filter.role = role;
-
-        // Only allowed university roles
-        const universityRoles = [
-            'CollegeDirector',
-            'CollegeDean',
-            'CollegeHOD',
-            'CollegeFaculty',
-            'CollegeHostelWarden',
-            'CollegeLibrarian',
-            'CollegeAdmissionDepartment',
-            'CollegeFinanceBody',
-            'CollegeExaminationBody'
-        ];
-
-        // This filter will apply only if no specific role is requested in the query
-        if (!role) {
-            filter.role = { $in: universityRoles };
+        if (!loggedInUser) {
+            return res.status(401).json({ message: "Unauthorized: User not found" });
         }
 
+        let filter = {};
+
+        // 2. StaffId filter
         if (staffId) filter.staffId = staffId;
-        if (collegeCode) filter.collegeCode = collegeCode;
 
-        const staffList = await Staff.find(filter).select("-password").sort({ createdAt: -1 });
+        // 3. Role filter
+        if (role) {
+            filter.role = role;
+        } else {
+            // Allowed university roles only
+            filter.role = {
+                $in: [
+                    "CollegeDirector",
+                    "CollegeDean",
+                    "CollegeHOD",
+                    "CollegeFaculty",
+                    "CollegeHostelWarden",
+                    "CollegeLibrarian",
+                    "CollegeAdmissionDepartment",
+                    "CollegeFinanceBody",
+                    "CollegeExaminationBody"
+                ]
+            };
+        }
 
-        res.json({ success: true, count: staffList.length, staff: staffList });
+        // 4. CollegeCode filter – loggedInUser ke hisaab se
+        if (loggedInUser.role.startsWith("College")) {
+            // agar College-level banda hai toh sirf apne college ke staff dekh sakta hai
+            filter.collegeCode = loggedInUser.collegeCode;
+        } else if (collegeCode) {
+            // agar university level hai toh query param se filter kar sakta hai
+            filter.collegeCode = collegeCode;
+        }
+
+        // 5. Query DB with filter
+        const staffList = await Staff.find(filter)
+            .select("-password")
+            .sort({ createdAt: -1 });
+
+        res.json({
+            success: true,
+            count: staffList.length,
+            staff: staffList
+        });
     } catch (error) {
         console.error("Error fetching staff:", error);
         res.status(500).json({ message: "Server error" });
     }
 };
+
 
 // Get Staff by ID
 export const getStaffById = async (req, res) => {
