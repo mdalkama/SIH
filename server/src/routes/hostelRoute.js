@@ -35,6 +35,7 @@ import {
   getAllRoomChangeRequests,
   updateRoomChangeRequestStatus,
   getAllVisitorPasses,
+  getDashboardSummary,
 } from "../controllers/hostelController/hostelController.js";
 
 const router = express.Router();
@@ -100,5 +101,7 @@ router.put('/room-changes/:studentHostelId/:requestId', updateRoomChangeRequestS
 
 // Visitor Passes
 router.get('/warden/visitors', getAllVisitorPasses);
+
+router.get('/warden/dashboard-summary', getDashboardSummary);
 
 export default router;

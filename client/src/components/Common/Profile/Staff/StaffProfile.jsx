@@ -943,7 +943,7 @@ const StaffProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.08)] border border-gray-200 p-6 mb-6">
