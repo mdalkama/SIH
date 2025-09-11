@@ -37,7 +37,7 @@ const studentSchema = new Schema({
     twelfthPercentage: { type: String, default: "" },
     registrationNumber: { type: String, unique: true, required: true },
     rollNumber: { type: String, unique: true, sparse: true },
-    courseCode: { type: String, default: "", required: true },
+    courseId: { type: String, default: "", required: true },
     semester: { type: Number, min: 1, max: 12, default: 1 },
     admissionDate: { type: Date },                       // NEW
     yearOfAdmission: { type: Number },
