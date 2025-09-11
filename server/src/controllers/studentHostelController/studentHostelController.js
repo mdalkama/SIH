@@ -184,3 +184,50 @@ export const addVisitor = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
+export const getMyRoomChangeRequests = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const studentHostel = await StudentHostel.findOne({ occupant: studentId })
+      .select("roomChangeRequests")
+      .lean();
+
+    if (!studentHostel) {
+      // If the student has no hostel record, return an empty array
+      return res.json({ success: true, data: [] });
+    }
+
+    // Sort requests by date, newest first
+    const sortedRequests = studentHostel.roomChangeRequests.sort(
+      (a, b) => new Date(b.requestedAt) - new Date(a.requestedAt)
+    );
+
+    res.json({ success: true, data: sortedRequests });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Get all visitor passes for the logged-in student
+export const getMyVisitors = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const studentHostel = await StudentHostel.findOne({ occupant: studentId })
+      .select("visitors")
+      .lean();
+
+    if (!studentHostel) {
+      // If the student has no hostel record, return an empty array
+      return res.json({ success: true, data: [] });
+    }
+
+    // Sort visitors by date, newest first
+    const sortedVisitors = studentHostel.visitors.sort(
+      (a, b) => new Date(b.date) - new Date(a.date)
+    );
+
+    res.json({ success: true, data: sortedVisitors });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
