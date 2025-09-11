@@ -15,7 +15,7 @@ export const addStudent = async (req, res) => {
 
         const student = await Student.create({
             ...req.body,
-            courseId: req.body.courseCode,
+            courseId: req.body.courseId,
             password: hashedPassword,
             collegeCode: req.user.collegeCode
         });
@@ -24,7 +24,7 @@ export const addStudent = async (req, res) => {
             studentId: student._id,
             registrationNumber: student.registrationNumber,
             collegeCode: req.user.collegeCode,
-            courseId: req.body.courseCode,
+            courseId: req.body.courseId,
             previousResults: [],
             currentExamRegistrations: []
         });
