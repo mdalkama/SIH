@@ -65,10 +65,6 @@ const LibraryDashboard = () => {
                         const catalogData = await catalogRes.json();
                         if (catalogData.success) setLibraryCatalog(catalogData.books || []);
                     }
-                    console.log("studentProfile", profileData.data.profile);
-                    console.log("borrowedBooks", profileData.data.issuedBooks);
-                    console.log("libraryHistory", profileData.data.activity);
-                    console.log("libraryCatalog", libraryCatalog);
                 } else { throw new Error(profileData.message); }
             } catch (err) { setError(err.message); }
             finally { setIsLoading(false); }
@@ -77,7 +73,7 @@ const LibraryDashboard = () => {
     }, []);
 
     // --- Utility & Filter Logic ---
-    const getDaysRemaining = (dueDate) => { const today = new Date(); const due = new Date(dueDate); return Math.ceil((due - today) / (1000 * 60 * 60 * 24)); };
+    const getDaysRemaining = (dueDate) => { const today = new Date(); return Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24)); };
     const getStatusInfo = (dueDate) => {
         const daysRemaining = getDaysRemaining(dueDate);
         if (daysRemaining < 0) return { text: `Overdue by ${Math.abs(daysRemaining)} days`, color: 'red' };
@@ -111,19 +107,22 @@ const LibraryDashboard = () => {
             </div>
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                 <h3 className="text-xl font-semibold mb-4 text-gray-800">Recent Activity</h3>
-                <div className="space-y-3">{libraryHistory.length > 0 ? libraryHistory.slice(0, 3).map((item, index) => (<div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"><div className="flex items-center gap-3">{item.returnedAt ? <div className="w-8 h-8 flex-shrink-0 bg-green-100 rounded-full flex items-center justify-center"><ArrowUp className="w-5 h-5 text-green-600" /></div> : <div className="w-8 h-8 flex-shrink-0 bg-blue-100 rounded-full flex items-center justify-center"><ArrowDown className="w-5 h-5 text-blue-600" /></div>}<div><p className="font-medium text-gray-900">{item.bookName}</p><p className="text-sm text-gray-500">{item.returnedAt ? 'Returned on' : 'Issued on'} {new Date(item.returnedAt || item.issuedAt).toLocaleDateString()}</p></div></div>{item.fine > 0 && (<span className="text-sm text-red-600 font-medium">Fine: ₹{item.fine}</span>)}</div>)) : <p className="text-sm text-gray-500 text-center py-4">No recent activity.</p>}</div>
+                <div className="space-y-2">{libraryHistory.length > 0 ? libraryHistory.slice(0, 3).map((item, index) => (<div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"><div className="flex items-center gap-3">{item.returnedAt ? <div className="w-8 h-8 flex-shrink-0 bg-green-100 rounded-full flex items-center justify-center"><ArrowUp className="w-5 h-5 text-green-600" /></div> : <div className="w-8 h-8 flex-shrink-0 bg-blue-100 rounded-full flex items-center justify-center"><ArrowDown className="w-5 h-5 text-blue-600" /></div>}<div><p className="font-medium text-gray-900">{item.bookName}</p><p className="text-sm text-gray-500">{item.returnedAt ? 'Returned on' : 'Issued on'} {new Date(item.returnedAt || item.issuedAt).toLocaleDateString()}</p></div></div>{item.fine > 0 && (<span className="text-sm text-red-600 font-medium">Fine: ₹{item.fine}</span>)}</div>)) : <p className="text-sm text-gray-500 text-center py-4">No recent activity.</p>}</div>
             </div>
         </div>
     );
     
     const renderBorrowedBooks = () => (
         <div className="space-y-4">
-            {borrowedBooks.length > 0 ? borrowedBooks.map((book,index) => {
-                const dueDate = new Date(new Date(book.issuedAt).setDate(new Date(book.issuedAt).getDate() + 15 * (book.renewals + 1)));
+            {borrowedBooks.length > 0 ? borrowedBooks.map((book, index) => {
+                const renewalsCount = book.renewals || 0;
+                const issueDate = new Date(book.issuedAt);
+                const dueDate = new Date(issueDate);
+                dueDate.setDate(issueDate.getDate() + 14 * (renewalsCount + 1));
                 const status = getStatusInfo(dueDate);
+                
                 return (
                     <div key={book.copyId+index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                        {console.log("Rendering book:", book, "Due Date:", dueDate, "Status:", status)}
                         <div className="flex flex-col sm:flex-row justify-between items-start mb-4">
                             <div className="flex-1 mb-3 sm:mb-0">
                                 <h4 className="text-lg font-semibold text-gray-900">{book.title}</h4>
@@ -131,9 +130,7 @@ const LibraryDashboard = () => {
                             </div>
                             <span className={`px-3 py-1 rounded-full text-sm font-medium bg-${status.color}-100 text-${status.color}-800`}>{status.text}</span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-1.5 mb-4">
-                            <div className={`h-1.5 rounded-full bg-${status.color}-500`} style={{width: '100%'}}></div>
-                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5 mb-4"><div className={`h-1.5 rounded-full bg-${status.color}-500`} style={{width: '100%'}}></div></div>
                         <div className="flex justify-between items-center text-sm text-gray-500">
                             <p>Issued: <span className="font-medium text-gray-700">{new Date(book.issuedAt).toLocaleDateString()}</span></p>
                             <p>Due Date: <span className="font-medium text-gray-700">{dueDate.toLocaleDateString()}</span></p>
@@ -153,10 +150,11 @@ const LibraryDashboard = () => {
                 </div>
             </div>
             <div className="space-y-4">
-                {filteredCatalog.length > 0 ? filteredCatalog.map((book, index) => {
+                {filteredCatalog.length > 0 ? filteredCatalog.map((book) => {
                     const availableCopies = book.copies.filter(c => !c.occupiedBy).length;
+                    // YAHAN FIX KIYA GAYA HAI: key ko '_id' se badal diya gaya hai
                     return (
-                        <div key={book._id+index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div key={book._id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                                 <div className="flex-1">
                                     <h4 className="text-lg font-semibold text-gray-900">{book.title}</h4>
@@ -164,9 +162,7 @@ const LibraryDashboard = () => {
                                     <p className="text-xs text-gray-500 mt-2">ISBN: {book.isbn}</p>
                                 </div>
                                 <div className="text-left sm:text-right flex-shrink-0">
-                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${availableCopies > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                        {availableCopies > 0 ? 'Available' : 'Unavailable'}
-                                    </span>
+                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${availableCopies > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{availableCopies > 0 ? 'Available' : 'Unavailable'}</span>
                                     <p className="text-sm text-gray-500 mt-1">{availableCopies} of {book.totalCopies} copies</p>
                                 </div>
                             </div>

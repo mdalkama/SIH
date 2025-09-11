@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { type } from "os";
 const { Schema } = mongoose;
 
 const complaintSchema = new Schema({
@@ -61,7 +62,7 @@ const feeSchema = new Schema({
 
 const studentHostelSchema = new Schema({
     registrationNumber: { type: String, unique: true, required: true },
-
+    collegeCode:{type: String, required: true},
     occupant: { type: Schema.Types.ObjectId, ref: "Student", required: true }, // link with student
 
     currentHostel: {
