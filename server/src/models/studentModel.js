@@ -38,12 +38,12 @@ const studentSchema = new Schema({
     registrationNumber: { type: String, unique: true, required: true },
     rollNumber: { type: String, unique: true, sparse: true },
     courseCode: { type: String, default: "", required: true },
-    courseApplied: { type: String, default: "" },        // optional
     semester: { type: Number, min: 1, max: 12, default: 1 },
     admissionDate: { type: Date },                       // NEW
     yearOfAdmission: { type: Number },
     yearOfPassing: { type: Number },
     collegeCode: { type: String, default: "", required: true },
+    batch: { type: Number, required: true },
 
 
     // documents

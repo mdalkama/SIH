@@ -38,7 +38,7 @@ export default function AdmissionForm() {
     twelfthYear: '',
     twelfthPercentage: '',
     courseCode: '',
-    courseApplied: '',
+    batch: '',
   });
 
   // State to manage password visibility
@@ -367,11 +367,29 @@ console.log(finalData)
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Course Applied For */}
               <div className="relative">
-                <label htmlFor="courseApplied" className="block text-sm font-medium text-slate-700 mb-1">Course Applied For</label>
+                <label htmlFor="batch" className="block text-sm font-medium text-slate-700 mb-1">Select Batch</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 z-10"><University className="h-5 w-5 text-slate-400" /></span>
-                  <select id="courseApplied" name="courseApplied" value={formData.courseApplied} onChange={handleChange} required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300">
-                    <option value="">-- Select Course --</option><option value="B.Tech - Computer Science">B.Tech - Computer Science</option><option value="B.Tech - Mechanical Engineering">B.Tech - Mechanical Engineering</option><option value="B.Tech - Civil Engineering">B.Tech - Civil Engineering</option><option value="Bachelor of Business Administration">BBA - Business Administration</option><option value="Bachelor of Computer Applications">BCA - Computer Applications</option>
+                  <select id="batch" name="batch" value={formData.batch} onChange={handleChange} required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300">
+                    <option value="">-- Select Batch --</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
+                    <option value="2030">2030</option>
+                    <option value="2031">2031</option>
+                    <option value="2032">2032</option>
+                    <option value="2033">2033</option>
+                    <option value="2034">2034</option>
+                    <option value="2035">2035</option>
+                    <option value="2036">2036</option>
+                    <option value="2037">2037</option>
+                    <option value="2038">2038</option>
+                    <option value="2039">2039</option>
+                    <option value="2040">2040</option>
                   </select>
                 </div>
               </div>
