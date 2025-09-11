@@ -43,7 +43,7 @@ export const getMyAllocation = async (req, res) => {
       name: studentHostel.occupant.name,
       rollNumber: studentHostel.occupant.registrationNumber,
       hostelName: hostel.name,
-	  hostelAddress: hostel.address, 
+	    hostelAddress: hostel.address, 
       roomNumber: room.roomNumber,
       roomType: room.roomType,
       floorNumber: floor.floorNumber,

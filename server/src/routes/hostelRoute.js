@@ -30,6 +30,8 @@ import {
   shiftStudent,
   findStudentForShift,
   findStudentForAllocation,
+  getAllComplaintsForWarden,
+  updateComplaintStatus,
 } from "../controllers/hostelController/hostelController.js";
 
 const router = express.Router();
@@ -83,5 +85,11 @@ router.post(
 
 // ---------------- Shift Student ----------------
 router.post("/shift-student", shiftStudent);
+
+// GET all complaints for the warden's college
+router.get('/warden/complaints', getAllComplaintsForWarden);
+
+// PUT to update a complaint's status
+router.put('/complaints/:studentHostelId/:complaintId', updateComplaintStatus);
 
 export default router;
