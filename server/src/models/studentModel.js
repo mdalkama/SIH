@@ -43,6 +43,8 @@ const studentSchema = new Schema({
     admissionDate: { type: Date },                       // NEW
     yearOfAdmission: { type: Number },
     yearOfPassing: { type: Number },
+    collegeCode: { type: String, default: "", required: true },
+
 
     // documents
     resumeLink: { type: String, default: "" },
