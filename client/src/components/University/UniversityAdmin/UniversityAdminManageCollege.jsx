@@ -6,7 +6,12 @@ const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/manage-college';
 
 // --- Main Component ---
 const UniversityCollegeManager = () => {
+    // State to hold ALL colleges fetched from the API
+    const [allColleges, setAllColleges] = useState([]);
+
+    // This state will now hold only the colleges visible on the current page
     const [colleges, setColleges] = useState([]);
+
     const [allCourses, setAllCourses] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCollege, setEditingCollege] = useState(null);
@@ -34,79 +39,79 @@ const UniversityCollegeManager = () => {
         }, 4000);
     };
 
-    // Fetch all courses for the dropdowns, once on mount
+    // Fetch ALL colleges only ONCE on component mount
     useEffect(() => {
-        const fetchAllCourses = async () => {
-            try {
-                const response = await fetch("https://sih-4ptm.onrender.com/api/v1/course", {
-                    method: "GET",
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error("Failed to fetch courses list");
-                }
-
-                const data = await response.json();
-
-                if (Array.isArray(data.data)) {
-                    setAllCourses(data.data);
-                } else if (Array.isArray(data)) {
-                    setAllCourses(data);
-                } else if (data.courses) {
-                    setAllCourses(data.courses);
-                } else {
-                    setAllCourses([]);
-                }
-            } catch (err) {
-                addToast("error", err.message);
-            }
-        };
-
-        fetchAllCourses();
-    }, []);
-
-
-    // Fetch colleges based on filters/pagination
-    useEffect(() => {
-        const fetchColleges = async () => {
+        const fetchAllData = async () => {
             setIsPageLoading(true);
             setError('');
             try {
-                const params = new URLSearchParams({
-                    page: currentPage,
-                    limit: rowsPerPage,
-                    search: searchTerm,
-                    status: statusFilter,
-                });
-
-                const response = await fetch(`${API_BASE_URL}?${params.toString()}`, { credentials: 'include' });
-
+                // Fetch the entire list without any pagination/filter parameters
+                const response = await fetch(API_BASE_URL, { credentials: 'include' });
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.message || 'Failed to fetch colleges.');
                 }
-
                 const data = await response.json();
-                setColleges(data.colleges || []);
-                setTotalColleges(data.totalDocs || 0);
+                setAllColleges(data.colleges || []);
             } catch (err) {
                 setError(err.message);
+                setAllColleges([]); // Ensure it's an empty array on error
             } finally {
                 setIsPageLoading(false);
             }
         };
 
-        const debounceFetch = setTimeout(() => {
-            fetchColleges();
-        }, 300);
+        fetchAllData();
+    }, []); // Empty dependency array ensures this runs only once
 
-        return () => clearTimeout(debounceFetch);
-    }, [currentPage, rowsPerPage, searchTerm, statusFilter]);
+    // The new useEffect hook for client-side processing
+    useEffect(() => {
+        let filteredData = allColleges;
 
+        // 1. Apply status filter
+        if (statusFilter !== 'all') {
+            filteredData = filteredData.filter(college => college.status === statusFilter);
+        }
+
+        // 2. Apply search term filter (case-insensitive)
+        if (searchTerm) {
+            const lowercasedSearch = searchTerm.toLowerCase();
+            filteredData = filteredData.filter(college =>
+                (college.name?.toLowerCase() || '').includes(lowercasedSearch) ||
+                (college.code?.toLowerCase() || '').includes(lowercasedSearch)
+            );
+        }
+
+        // 3. Set the total count for pagination based on the filtered list
+        setTotalColleges(filteredData.length);
+
+        // 4. Slice the data for the current page
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        const paginated = filteredData.slice(startIndex, startIndex + rowsPerPage);
+        setColleges(paginated);
+
+        // Reset to page 1 if current page becomes invalid after filtering
+        if (currentPage > 1 && paginated.length === 0 && filteredData.length > 0) {
+            setCurrentPage(1);
+        }
+
+    }, [allColleges, currentPage, rowsPerPage, searchTerm, statusFilter]);
+
+
+    // Fetch all courses for the dropdowns
+    useEffect(() => {
+        const fetchAllCourses = async () => {
+            try {
+                const response = await fetch("https://sih-4ptm.onrender.com/api/v1/course", { credentials: "include" });
+                if (!response.ok) throw new Error("Failed to fetch courses list");
+                const data = await response.json();
+                setAllCourses(data.data || data.courses || data || []);
+            } catch (err) {
+                addToast("error", err.message);
+            }
+        };
+        fetchAllCourses();
+    }, []);
 
     const openModalForCreate = () => {
         setEditingCollege(null);
@@ -141,15 +146,13 @@ const UniversityCollegeManager = () => {
             const universityId = "68c126f6d78ab505fb0a5143";
 
             if (editingCollege) {
-                // Update College
                 response = await fetch(`${API_BASE_URL}/${editingCollege._id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(collegeData), // API for update might only need collegeData
+                    body: JSON.stringify(collegeData),
                     credentials: 'include'
                 });
             } else {
-                // Create College
                 response = await fetch(API_BASE_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -164,15 +167,15 @@ const UniversityCollegeManager = () => {
             }
 
             const result = await response.json();
-            const updatedCollege = result.college || result.data;
+            const updatedOrNewCollege = result.college || result.data;
 
+            // Update the master 'allColleges' list
             if (editingCollege) {
-                setColleges(colleges.map(c => c._id === editingCollege._id ? updatedCollege : c));
-                addToast('success', `${updatedCollege.name} updated successfully.`);
+                setAllColleges(allColleges.map(c => c._id === editingCollege._id ? updatedOrNewCollege : c));
+                addToast('success', `${updatedOrNewCollege.name} updated successfully.`);
             } else {
-                setColleges(prev => [updatedCollege, ...prev]);
-                setTotalColleges(prev => prev + 1);
-                addToast('success', `${updatedCollege.name} created successfully.`);
+                setAllColleges(prev => [updatedOrNewCollege, ...prev]);
+                addToast('success', `${updatedOrNewCollege.name} created successfully.`);
             }
 
             closeModal();
@@ -182,7 +185,6 @@ const UniversityCollegeManager = () => {
             setIsLoading(false);
         }
     };
-
 
     const handleDeleteCollege = async () => {
         setIsLoading(true);
@@ -198,8 +200,8 @@ const UniversityCollegeManager = () => {
             }
 
             addToast('info', `${deletingCollege.name} has been deleted.`);
-            setColleges(colleges.filter(c => c._id !== deletingCollege._id));
-            setTotalColleges(prev => prev - 1);
+            // Update the master 'allColleges' list
+            setAllColleges(allColleges.filter(c => c._id !== deletingCollege._id));
             closeDeleteModal();
         } catch (err) {
             addToast('error', err.message);
@@ -208,17 +210,16 @@ const UniversityCollegeManager = () => {
         }
     };
 
-    // NOTE: These stats are approximations based on the current page. 
-    // For accurate counts, a dedicated API endpoint is recommended.
+    // The stats are now more accurate as they are calculated from the full list
     const stats = useMemo(() => {
-        const total = colleges.length;
-        const active = colleges.filter(c => c.status === "Active").length;
-        const pending = colleges.filter(c => c.status === "Pending Approval").length;
-        const inactive = colleges.filter(c => c.status === "Inactive").length;
-
-        return { total, active, pending, inactive };
-    }, [colleges]);
-
+        const dataToCount = allColleges;
+        return {
+            total: dataToCount.length,
+            active: dataToCount.filter(c => c.status === "Active").length,
+            pending: dataToCount.filter(c => c.status === "Pending Approval").length,
+            inactive: dataToCount.filter(c => c.status === "Inactive").length,
+        };
+    }, [allColleges]);
 
     return (
         <div className="min-h-screen font-sans">
@@ -270,29 +271,8 @@ const UniversityCollegeManager = () => {
                 </div>
             </div>
 
-            {isModalOpen && (
-                <CollegeModal
-                    isOpen={isModalOpen}
-                    onClose={closeModal}
-                    onSave={handleSaveCollege}
-                    college={editingCollege}
-                    processing={isLoading}
-                    allCourses={allCourses}
-                />
-            )}
-
-            {isDeleteModalOpen && (
-                <ConfirmationModal
-                    isOpen={isDeleteModalOpen}
-                    onClose={closeDeleteModal}
-                    onConfirm={handleDeleteCollege}
-                    title="Confirm Deletion"
-                    message={`Are you sure you want to delete ${deletingCollege?.name}? This action cannot be undone.`}
-                    confirmText="Yes, Delete"
-                    confirmColor="red"
-                    processing={isLoading}
-                />
-            )}
+            {isModalOpen && (<CollegeModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveCollege} college={editingCollege} processing={isLoading} allCourses={allCourses} />)}
+            {isDeleteModalOpen && (<ConfirmationModal isOpen={isDeleteModalOpen} onClose={closeDeleteModal} onConfirm={handleDeleteCollege} title="Confirm Deletion" message={`Are you sure you want to delete ${deletingCollege?.name}? This action cannot be undone.`} confirmText="Yes, Delete" confirmColor="red" processing={isLoading} />)}
         </div>
     );
 };
@@ -466,9 +446,7 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses
         affiliationId: college?.affiliationId || '',
         establishmentDate: college?.establishmentDate?.split('T')[0] || '',
         capacity: college?.capacity || '',
-        // --- FIX: Transform the complex courses array into an array of courseId strings for the form state ---
         courses: Array.isArray(college?.courses) ? college.courses.map(c => c.courseId) : [],
-
         location: {
             address: college?.location?.address || '',
             city: college?.location?.city || '',
@@ -533,7 +511,6 @@ const CollegeModal = ({ isOpen, onClose, onSave, college, processing, allCourses
             capacity: formData.capacity,
             location: formData.location,
             contact: formData.contact,
-            // --- FIX: Transform the simple array of IDs back into the complex array of objects for the API ---
             courses: formData.courses.map(courseId => ({ courseId })),
         };
 
