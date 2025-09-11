@@ -1,7 +1,8 @@
 import Student from "../../models/studentModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import Staff  from '../../models/staffModel.js'
+import Staff from '../../models/staffModel.js'
+import Course from '../../models/courseModel.js'
 
 // 🟢 Register
 export const registerStudent = async (req, res) => {
@@ -48,7 +49,7 @@ export const loginStudent = async (req, res) => {
 
         // JWT
         const token = jwt.sign(
-            {id: student._id, name: student.name, collegeCode: student.collegeCode, role: student.role, registrationNumber: student.registrationNumber },
+            { id: student._id, name: student.name, collegeCode: student.collegeCode, role: student.role, registrationNumber: student.registrationNumber },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN }
         );
@@ -63,7 +64,7 @@ export const loginStudent = async (req, res) => {
 
         res.status(200).json({
             message: "Login successful",
-            user: { id: student._id,name: student.name, collegeCode: student.collegeCode, role: student.role, registrationNumber: student.registrationNumber }
+            user: { id: student._id, name: student.name, collegeCode: student.collegeCode, role: student.role, registrationNumber: student.registrationNumber }
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -79,7 +80,6 @@ export const logoutStudent = (req, res) => {
     });
     res.json({ message: "Logged out successfully" });
 };
-
 export const getMyProfile = async (req, res) => {
     try {
         const student = await Student.findById(req.user.id);
@@ -87,13 +87,22 @@ export const getMyProfile = async (req, res) => {
         if (!student) {
             return res.status(404).json({ message: "Student not found" });
         }
+        const course = await Course.findOne({ courseId: student.courseId })
+            .select("courseId degree branch specialization totalSemester semesters")
+            .populate({
+                path: "semesters.subjects",
+                model: "Subject",
+                select: "name code credits type maxMarks"
+            });
 
         res.status(200).json({
             message: "Profile retrieved successfully",
-            user: student
+            user: student,
+            course: course
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 };
+
 
