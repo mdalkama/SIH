@@ -5,7 +5,7 @@ import StudentAcademics from "../../models/studentAcademicsModel.js";
 // 1️⃣ Add Student + Academics
 export const addStudent = async (req, res) => {
     try {
-        if(req.user.codeCode){
+        if(req.user.collegeCode){
             res.status(400).json({ message: "collegeCode is required" });
         }
         const hashedPassword = await bcrypt.hash(req.body.password, 10);

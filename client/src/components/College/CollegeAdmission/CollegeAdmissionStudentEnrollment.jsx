@@ -53,45 +53,56 @@ export default function AdmissionForm() {
   };
 
   // Handles the final form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
 
-    // --- Auto-generate Registration Number ---
-    const year = '22'; // From 2022
-    const collegeCode = '140';
-    const courseCode = formData.courseCode;
+    try {
+      // --- Auto-generate Registration Number ---
+      const year = '22'; // From 2022
+      const collegeCode = '140';
+      const courseCode = formData.courseCode;
 
-    if (!courseCode) {
-      alert('Please enter a Course Code to generate a Registration Number.');
-      return;
+      if (!courseCode) {
+        alert('Please enter a Course Code to generate a Registration Number.');
+        return;
+      }
+
+      // Get current count for the course, default to 0 if not present
+      const currentSerial = courseCounters[courseCode] || 0;
+      const newSerial = currentSerial + 1;
+
+      // Format serial to 3 digits (e.g., 1 -> 001)
+      const formattedSerial = String(newSerial).padStart(3, '0');
+
+      const registrationNo = `${year}${collegeCode}${courseCode}${formattedSerial}`;
+
+      const finalData = {
+        ...formData,
+        registrationNumber: registrationNo,
+      };
+console.log(finalData)
+      const response = await fetch('https://sih-4ptm.onrender.com/api/v1/admit-student-college', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(finalData),
+        credentials: 'include' // <-- sends cookies along with request
+      });
+      console.log(response)
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit student data');
+      }
+      const result = await response.json();
+      console.log('Student Admission Success:', result);
+      alert(`Student admitted successfully!\nRegistration No: ${result.registrationNumber || finalData.registrationNumber}`);
+    } catch (error) {
+      console.error('Error submitting student admission:', error);
+      alert(`Error: ${error.message}`);
     }
-
-    // Get current count for the course, default to 0 if not present
-    const currentSerial = courseCounters[courseCode] || 0;
-    const newSerial = currentSerial + 1;
-
-    // Format serial to 3 digits (e.g., 1 -> 001)
-    const formattedSerial = String(newSerial).padStart(3, '0');
-
-    const registrationNo = `${year}${collegeCode}${courseCode}${formattedSerial}`;
-
-    const finalData = {
-      ...formData,
-      registrationNumber: registrationNo,
-    };
-
-    console.log('DTE Rajasthan - Offline Admission Data Captured:', finalData);
-    alert(`Student data saved successfully!\nGenerated Registration No: ${registrationNo}`);
-
-    // Update the counter for the next student in the same course
-    setCourseCounters(prevCounters => ({
-      ...prevCounters,
-      [courseCode]: newSerial,
-    }));
-
-    // Optional: Reset form after successful submission
-    // setFormData({ ...initial state... });
-  };
+  }
 
   return (
     <div className=" min-h-screen font-sans flex items-center justify-center">
