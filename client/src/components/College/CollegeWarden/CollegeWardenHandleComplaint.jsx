@@ -1,56 +1,57 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Clock, CheckCircle, AlertTriangle, Loader2, Wrench, MapPin, Calendar, User, MessageSquare, ChevronDown } from 'lucide-react';
+import { Clock, CheckCircle, AlertTriangle, Loader2, Wrench, MapPin, Calendar, User, MessageSquare, Repeat, Users, Check, X, ChevronDown } from 'lucide-react';
 
-// --- Helper Components ---
-const ComplaintCardSkeleton = () => (
-    <div className="bg-white p-5 rounded-xl border border-gray-200 animate-pulse">
-        <div className="flex justify-between items-start mb-3">
-            <div className="h-6 bg-gray-200 rounded-full w-28"></div>
-            <div className="h-5 bg-gray-200 rounded-full w-24"></div>
-        </div>
-        <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded w-full mb-4"></div>
-        <div className="p-3 bg-gray-50 rounded-md space-y-3">
-            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-        </div>
-        <div className="flex justify-end mt-4">
-            <div className="h-10 bg-gray-200 rounded-lg w-36"></div>
-        </div>
+// --- Helper Components (Unchanged) ---
+
+const LoadingState = () => (
+    <div className="p-10 text-center">
+        <Loader2 className="mx-auto h-8 w-8 animate-spin text-slate-400" />
+        <p className="mt-2 text-sm text-slate-500">Loading requests...</p>
     </div>
 );
 
-const EmptyState = () => (
-    <div className="text-center py-20 col-span-full bg-gray-50 rounded-xl">
-        <MessageSquare className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-4 text-lg font-medium text-gray-900">All Clear!</h3>
-        <p className="mt-1 text-sm text-gray-500">There are currently no complaints in this category.</p>
+const EmptyState = ({ icon: Icon, title, message }) => (
+    <div className="text-center py-16 px-6 col-span-full">
+        <Icon className="mx-auto h-12 w-12 text-slate-300" />
+        <h3 className="mt-4 text-lg font-medium text-slate-800">{title}</h3>
+        <p className="mt-1 text-sm text-slate-500">{message}</p>
     </div>
 );
 
 
-const CollegeWardenHandleComplaint = () => {
+const CollegeWardenRequestManagement = () => {
+    const [activeTab, setActiveTab] = useState('complaints');
+    
+    // State for each data type
     const [complaints, setComplaints] = useState([]);
+    const [roomChangeRequests, setRoomChangeRequests] = useState([]);
+    const [visitorPasses, setVisitorPasses] = useState([]);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [filterStatus, setFilterStatus] = useState('All');
     const [updatingId, setUpdatingId] = useState(null);
-    const [openDropdownId, setOpenDropdownId] = useState(null); // For action dropdown
+    const [openDropdownId, setOpenDropdownId] = useState(null);
 
     const fetchData = async () => {
-        if(!loading) setLoading(true); // Show loader on refetch
+        if (!complaints.length) setLoading(true); 
         setError(null);
         try {
-            const res = await fetch('https://sih-4ptm.onrender.com/api/v1/hostel/warden/complaints', { credentials: 'include' });
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.error || 'Failed to fetch complaints.');
-            }
-            const data = await res.json();
-            setComplaints(data.data || []);
+            const [complaintsRes, roomChangesRes, visitorsRes] = await Promise.all([
+                fetch('https://sih-4ptm.onrender.com/api/v1/hostel/warden/complaints', { credentials: 'include' }),
+                fetch('https://sih-4ptm.onrender.com/api/v1/hostel/warden/room-changes', { credentials: 'include' }),
+                fetch('https://sih-4ptm.onrender.com/api/v1/hostel/warden/visitors', { credentials: 'include' })
+            ]);
+
+            const complaintsData = await complaintsRes.json();
+            const roomChangesData = await roomChangesRes.json();
+            const visitorsData = await visitorsRes.json();
+
+            if (complaintsData.success) setComplaints(complaintsData.data || []);
+            if (roomChangesData.success) setRoomChangeRequests(roomChangesData.data || []);
+            if (visitorsData.success) setVisitorPasses(visitorsData.data || []);
+
         } catch (err) {
-            setError(err.message);
+            setError('Failed to fetch some data. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -60,7 +61,6 @@ const CollegeWardenHandleComplaint = () => {
         fetchData();
     }, []);
 
-    // Effect to close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (openDropdownId && !event.target.closest('.action-dropdown-container')) {
@@ -68,145 +68,151 @@ const CollegeWardenHandleComplaint = () => {
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [openDropdownId]);
 
-    const handleUpdateStatus = async (studentHostelId, complaintId, status) => {
+    const handleUpdateComplaintStatus = async (studentHostelId, complaintId, status) => {
         setUpdatingId(complaintId);
-        setOpenDropdownId(null); // Close dropdown on action
+        setOpenDropdownId(null);
         try {
-            const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/college-warden/complaints/${studentHostelId}/${complaintId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ status }),
-            });
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.error || 'Failed to update status.');
-            }
-            // Optimistic UI update for faster feedback
-            setComplaints(prev => prev.map(c => c._id === complaintId ? { ...c, status } : c));
-            // Then refetch to ensure data consistency
+            const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/college-warden/complaints/${studentHostelId}/${complaintId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ status }) });
+            if (!res.ok) throw new Error('Failed to update status.');
             await fetchData();
-        } catch (err) {
-            alert(`Error: ${err.message}`);
-        } finally {
-            setUpdatingId(null);
-        }
+        } catch (err) { alert(`Error: ${err.message}`); }
+        finally { setUpdatingId(null); }
+    };
+    
+    const handleUpdateRoomChangeStatus = async (studentHostelId, requestId, status) => {
+        setUpdatingId(requestId);
+        try {
+            const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/hostel/room-changes/${studentHostelId}/${requestId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ status }) });
+            if (!res.ok) throw new Error('Failed to update status.');
+            await fetchData();
+        } catch (err) { alert(`Error: ${err.message}`); }
+        finally { setUpdatingId(null); }
     };
 
-    const filteredComplaints = useMemo(() => {
-        if (filterStatus === 'All') return complaints;
-        return complaints.filter(c => c.status === filterStatus);
-    }, [complaints, filterStatus]);
+    const tabs = [
+        { id: 'complaints', label: 'Complaints', icon: MessageSquare, count: complaints.filter(c => c.status !== 'Resolved').length },
+        { id: 'roomChanges', label: 'Room Changes', icon: Repeat, count: roomChangeRequests.filter(r => r.status === 'Pending').length },
+        { id: 'visitors', label: 'Visitor Passes', icon: Users, count: visitorPasses.length }
+    ];
 
-    const getStatusInfo = (status) => {
-        switch (status) {
-            case 'Resolved': return { icon: <CheckCircle className="w-4 h-4" />, color: 'bg-green-100 text-green-800' };
-            case 'In Progress': return { icon: <Clock className="w-4 h-4" />, color: 'bg-yellow-100 text-yellow-800' };
-            default: return { icon: <AlertTriangle className="w-4 h-4" />, color: 'bg-blue-100 text-blue-800' };
-        }
-    };
+    // --- RENDER FUNCTIONS FOR EACH TAB ---
 
-    const getPriorityColor = (priority) => {
-        switch (priority) {
-            case 'High': return 'bg-red-100 text-red-800';
-            case 'Medium': return 'bg-yellow-100 text-yellow-800';
-            default: return 'bg-green-100 text-green-800';
+    const renderContent = () => {
+        if (loading) return <LoadingState />;
+
+        switch (activeTab) {
+            case 'complaints':
+                if (complaints.length === 0) return <EmptyState icon={CheckCircle} title="All Clear!" message="No student complaints to show." />;
+                return complaints.map(c => {
+                    const statusInfo = { 'Resolved': { icon: <CheckCircle className="w-4 h-4" />, color: 'bg-green-50 text-green-700' }, 'In Progress': { icon: <Clock className="w-4 h-4" />, color: 'bg-yellow-50 text-yellow-700' }, 'Open': { icon: <AlertTriangle className="w-4 h-4" />, color: 'bg-blue-50 text-blue-700' } }[c.status];
+                    const priorityColor = { 'High': 'text-red-600', 'Medium': 'text-orange-600', 'Low': 'text-slate-500' }[c.priority];
+                    return (
+                        <div key={c._id} className="bg-white p-4 sm:p-6 rounded-lg border border-slate-200 shadow-sm">
+                            <div className="flex justify-between items-start gap-4">
+                                <div>
+                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${statusInfo.color}`}>
+                                        {statusInfo.icon}
+                                        <span className="ml-1.5">{c.status}</span>
+                                    </span>
+                                    <h3 className="text-lg font-semibold text-slate-800 mt-2">{c.title}</h3>
+                                    <p className="text-sm text-slate-600 mt-1">{c.description}</p>
+                                </div>
+                                <div className="action-dropdown-container relative flex-shrink-0">
+                                    {updatingId === c._id ? <Loader2 className="w-5 h-5 animate-spin text-slate-400" /> : c.status !== 'Resolved' && (<button onClick={() => setOpenDropdownId(openDropdownId === c._id ? null : c._id)} className="inline-flex items-center justify-center p-2 text-sm font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-md hover:bg-slate-200">Actions <ChevronDown className="w-4 h-4 ml-2" /></button>)}
+                                    {openDropdownId === c._id && (<div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"><div className="py-1">{['Open', 'In Progress', 'Resolved'].map(s => (<button key={s} onClick={() => handleUpdateComplaintStatus(c.studentHostelId, c._id, s)} className="w-full text-left block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Mark as {s}</button>))}</div></div>)}
+                                </div>
+                            </div>
+                            <div className="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
+                                <span className="font-semibold text-xs uppercase tracking-wider" style={{ color: priorityColor.replace('text-', '') }}>{c.priority} Priority</span>
+                                <span className="flex items-center"><MapPin className="w-3 h-3 mr-1.5" />{c.hostelDetail.hostelName}, Room {c.hostelDetail.roomNumber}</span>
+                                <span className="flex items-center"><Wrench className="w-3 h-3 mr-1.5" />{c.issue}</span>
+                                <span className="flex items-center"><User className="w-3 h-3 mr-1.5" />{c.registrationNumber}</span>
+                                <span className="flex items-center"><Calendar className="w-3 h-3 mr-1.5" />{new Date(c.createdAt).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                    );
+                });
+
+            case 'roomChanges':
+                const pendingRequests = roomChangeRequests.filter(r => r.status === 'Pending');
+                if (pendingRequests.length === 0) return <EmptyState icon={Repeat} title="No Pending Requests" message="There are no active room change requests." />;
+                return pendingRequests.map(req => {
+                    const isUpdating = updatingId === req._id;
+                    return (
+                        <div key={req._id} className="bg-white p-4 sm:p-6 rounded-lg border border-slate-200 shadow-sm">
+                            <div className="flex justify-between items-start gap-4">
+                                <div>
+                                    <h3 className="text-lg font-semibold text-slate-800">Room Change Request</h3>
+                                    <p className="text-sm text-slate-500">From student: {req.registrationNumber}</p>
+                                    <blockquote className="mt-2 text-sm text-slate-700 italic border-l-2 border-slate-300 pl-3">"{req.reason}"</blockquote>
+                                </div>
+                                <div className="flex-shrink-0 flex gap-2">
+                                    {isUpdating ? <Loader2 className="w-5 h-5 animate-spin text-slate-400" /> : <>
+                                        <button onClick={() => handleUpdateRoomChangeStatus(req.studentHostelId, req._id, 'Rejected')} className="px-3 py-1.5 text-xs font-medium border border-slate-300 text-slate-700 bg-white rounded-md hover:bg-slate-50"><X className="w-3 h-3 inline mr-1" />Reject</button>
+                                        <button onClick={() => handleUpdateRoomChangeStatus(req.studentHostelId, req._id, 'Approved')} className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"><Check className="w-3 h-3 inline mr-1" />Approve</button>
+                                    </>}
+                                </div>
+                            </div>
+                             <div className="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500">
+                                <span className="flex items-center"><Calendar className="w-3 h-3 mr-1.5" />Requested on {new Date(req.requestedAt).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                    );
+                });
+
+            case 'visitors':
+                if (visitorPasses.length === 0) return <EmptyState icon={Users} title="No Visitor Passes" message="No visitor passes have been generated recently." />;
+                return visitorPasses.map(pass => (
+                     <div key={pass._id} className="bg-white p-4 sm:p-6 rounded-lg border border-slate-200 shadow-sm">
+                        <div className="flex justify-between items-start gap-4">
+                            <div>
+                                <h3 className="text-lg font-semibold text-slate-800">{pass.visitorName} <span className="text-sm font-normal text-slate-500">({pass.relation || 'N/A'})</span></h3>
+                                <p className="text-sm text-slate-500">Visiting Student: {pass.studentRegNo}</p>
+                                {pass.purpose && <p className="text-sm text-slate-700 mt-2 italic border-l-2 border-slate-300 pl-3">"{pass.purpose}"</p>}
+                            </div>
+                            <div className="flex-shrink-0 text-right">
+                                 <p className="text-xs text-slate-400">{new Date(pass.date).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                    </div>
+                ));
+            default: return null;
         }
     };
 
     return (
-        <div className="max-w-7xl mx-auto">
-            {/* Header */}
-            <div className="mb-8 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
-                <h1 className="text-3xl font-bold text-gray-900">Manage Complaints</h1>
-                <p className="mt-1 text-sm text-gray-600">View and resolve student complaints from your college.</p>
-                {/* Filter Buttons */}
-                <div className="mt-4 border-t border-gray-200 pt-4">
-                    <div className="flex space-x-2">
-                        {['All', 'Open', 'In Progress', 'Resolved'].map(status => (
-                            <button
-                                key={status}
-                                onClick={() => setFilterStatus(status)}
-                                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${filterStatus === status ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                            >
-                                {status}
-                            </button>
-                        ))}
+        <div className="min-h-screen">
+            <div className="">
+                
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm mb-6">
+                    <div className="p-6">
+                        <h1 className="text-2xl font-bold text-slate-900">Warden Dashboard</h1>
+                        <p className="mt-1 text-sm text-slate-600">Manage all student requests and issues from one place.</p>
+                    </div>
+                    <div className="border-t border-slate-200 px-2 sm:px-4">
+                        <nav className="flex space-x-1" aria-label="Tabs">
+                            {tabs.map(tab => (
+                                <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`group inline-flex items-center py-3 px-4 rounded-lg font-medium text-sm transition-colors ${activeTab === tab.id ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'}`}>
+                                    <tab.icon className={`w-5 h-5 mr-2 ${activeTab === tab.id ? 'text-blue-500' : 'text-slate-400 group-hover:text-slate-500'}`} />
+                                    {tab.label}
+                                    {tab.count > 0 && <span className={`ml-2 py-0.5 px-2 rounded-full text-xs ${activeTab === tab.id ? 'bg-blue-200 text-blue-700' : 'bg-slate-200 text-slate-600'}`}>{tab.count}</span>}
+                                </button>
+                            ))}
+                        </nav>
                     </div>
                 </div>
-            </div>
 
-            {error && <div className="p-4 mb-6 bg-red-50 text-red-700 rounded-md">{error}</div>}
+                {error && <div className="p-4 bg-red-50 text-red-700 rounded-lg mb-6">{error}</div>}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {loading ? (
-                    [...Array(6)].map((_, i) => <ComplaintCardSkeleton key={i} />)
-                ) : filteredComplaints.length > 0 ? (
-                    filteredComplaints.map(complaint => {
-                        const statusInfo = getStatusInfo(complaint.status);
-                        return (
-                            <div key={complaint._id} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                                <div>
-                                    <div className="flex justify-between items-start mb-3">
-                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${statusInfo.color}`}>{statusInfo.icon}<span className="ml-1.5">{complaint.status}</span></span>
-                                        <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${getPriorityColor(complaint.priority)}`}>{complaint.priority}</span>
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-gray-900">{complaint.title}</h3>
-                                    <p className="text-sm text-gray-600 mt-1 line-clamp-3">{complaint.description}</p>
-                                    
-                                    <div className="mt-4 text-xs text-gray-700 p-3 bg-gray-50 rounded-md border border-gray-200 space-y-2">
-                                        <div className="flex items-center"><MapPin className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0"/><p>{complaint.hostelDetail.hostelName}, Room {complaint.hostelDetail.roomNumber}</p></div>
-                                        <div className="flex items-center"><Wrench className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0"/><p>{complaint.issue}</p></div>
-                                        <div className="flex items-center"><Calendar className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0"/><p>{new Date(complaint.createdAt).toLocaleDateString()}</p></div>
-                                        <div className="flex items-center"><User className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0"/><p>{complaint.registrationNumber}</p></div>
-                                    </div>
-                                </div>
-                                
-                                <div className="mt-5 text-right action-dropdown-container relative">
-                                    {updatingId === complaint._id ? (
-                                        <div className="flex justify-end items-center text-sm text-gray-500 p-2"><Loader2 className="w-4 h-4 animate-spin mr-2" />Updating...</div>
-                                    ) : (
-                                        complaint.status !== 'Resolved' && (
-                                            <button 
-                                                onClick={() => setOpenDropdownId(openDropdownId === complaint._id ? null : complaint._id)}
-                                                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50"
-                                            >
-                                                Change Status <ChevronDown className="w-4 h-4 ml-2" />
-                                            </button>
-                                        )
-                                    )}
-
-                                    {openDropdownId === complaint._id && (
-                                        <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                                            <div className="py-1" role="menu" aria-orientation="vertical">
-                                                {['Open', 'In Progress', 'Resolved'].map(statusOption => (
-                                                     <button
-                                                        key={statusOption}
-                                                        onClick={() => handleUpdateStatus(complaint.studentHostelId, complaint._id, statusOption)}
-                                                        className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                        role="menuitem"
-                                                     >
-                                                        Mark as {statusOption}
-                                                     </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })
-                ) : (
-                    <EmptyState />
-                )}
+                <div className="space-y-4">
+                    {renderContent()}
+                </div>
             </div>
         </div>
     );
 };
 
-export default CollegeWardenHandleComplaint;
+export default CollegeWardenRequestManagement;
