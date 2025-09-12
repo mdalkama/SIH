@@ -4,12 +4,14 @@ import {
   Building2, ClipboardList, Hash, University, FolderKanban, BadgeCheck,
   Banknote, ShieldCheck, HeartHandshake, ScrollText, KeySquare, KeyRound, Eye, EyeOff
 } from 'lucide-react';
+import { useUser } from '../../../context/UserContext';
 
 // Helper to get today's date in YYYY-MM-DD format
 const getTodayDate = () => new Date().toISOString().split('T')[0];
 
 // Main Component to be used in a router outlet
 export default function AdmissionForm() {
+  const {user, loading} = useUser()
   const [serial, setSerial] = useState(0);
   const [formData, setFormData] = useState({
     admissionDate: getTodayDate(),
@@ -42,36 +44,6 @@ export default function AdmissionForm() {
     batch: '',
   });
 
-  const getSerial = async () => {
-    try {
-      // ✅ Return if courseId or batch is missing
-      if (!formData.courseId || !formData.batch) return;
-
-      const response = await fetch(
-        `https://sih-4ptm.onrender.com/api/v1/student/get-serial/${formData.courseId}/${formData.batch}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include', // keep cookies/session
-        }
-      );
-      console.log(response)
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setSerial(data.serial);
-      console.log('Serial fetched:', data.serial);
-    } catch (error) {
-      console.error('Error fetching serial:', error);
-    }
-  };
-
-
-
   // State to manage password visibility
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   // State to manage serial numbers for each course
@@ -84,55 +56,78 @@ export default function AdmissionForm() {
   };
 
   // Handles the final form submission
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const year = String(formData.batch).split("").slice(2, 4).join("");
-      const collegeCode = '140';
-      const courseId = formData.courseId;
-
-      if (!courseId) {
-        alert('Please enter a Course Code to generate a Registration Number.');
+      if (!formData.courseId || !formData.batch) {
+        alert('Course and Batch are required');
         return;
       }
 
-      // Get current count for the course, default to 0 if not present
-      const currentSerial = courseCounters[courseId] || 0;
-      const newSerial = currentSerial + 1;
+      // Extract last 2 digits of the batch year (e.g., 2025 -> 25)
+      const year = String(formData.batch).slice(2, 4);
 
-      // Format serial to 3 digits (e.g., 1 -> 001)
+      // 👇 get the collegeCode from your JWT-decoded user
+      const collegeCode = user?.collegeCode; // <-- ensure user is available
+      // 1️⃣ Fetch current serial from DB
+      const serialRes = await fetch(
+        `https://sih-4ptm.onrender.com/api/v1/student/getserial/${formData.batch}/${formData.courseId}`,
+        {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        }
+      );
+
+      if (!serialRes.ok) {
+        throw new Error(`Failed to fetch serial: ${serialRes.status}`);
+      }
+      const sl = await serialRes.json()
+      const currentSerial = sl?.student || 0;
+      const newSerial = currentSerial + 1;
       const formattedSerial = String(newSerial).padStart(3, '0');
 
-      const registrationNo = `${year}${collegeCode}${courseId}${formattedSerial}`;
+      // 2️⃣ Generate Registration Number
+      const registrationNo = `${year}${collegeCode}${formData.courseId}${formattedSerial}`;
 
+      // 3️⃣ Prepare final payload
       const finalData = {
         ...formData,
         registrationNumber: registrationNo,
       };
-console.log(finalData)
-      const response = await fetch('https://sih-4ptm.onrender.com/api/v1/admit-student-college', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(finalData),
-        credentials: 'include' // <-- sends cookies along with request
-      });
-      console.log(response)
+
+      // 4️⃣ Submit to admit-student-college
+      const response = await fetch(
+        'https://sih-4ptm.onrender.com/api/v1/admit-student-college',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(finalData),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to submit student data');
       }
+
       const result = await response.json();
       console.log('Student Admission Success:', result);
-      alert(`Student admitted successfully!\nRegistration No: ${result.registrationNumber || finalData.registrationNumber}`);
+
+      alert(
+        `Student admitted successfully!\nRegistration No: ${result.registrationNumber || registrationNo
+        }`
+      );
     } catch (error) {
       console.error('Error submitting student admission:', error);
       alert(`Error: ${error.message}`);
     }
-  }
+  };
+
+
+
 
   return (
     <div className=" min-h-screen font-sans flex items-center justify-center">

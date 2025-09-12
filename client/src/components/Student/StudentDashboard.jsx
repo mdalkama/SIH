@@ -25,6 +25,7 @@ import Loading from '../Loading'
 const StudentDashboard = () => {
 
     const [user, setUser] = useState(null);
+    const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
 
 useEffect(() => {
@@ -40,6 +41,7 @@ useEffect(() => {
                 const data = await res.json();
                 if (data) {
                     setUser(data.user);
+                    setCourses(data.course);
                     console.log(data);
                     setLoading(false);
                 }
@@ -218,14 +220,15 @@ useEffect(() => {
                             </div>
 
                             {/* Current Subjects */}
-                            {user?.course &&
+                            {courses &&
                                 <div className="bg-white rounded-lg border border-gray-200">
                                     <div className="p-6 border-b border-gray-200">
                                         <h3 className="text-lg font-semibold text-gray-900">Current Subjects</h3>
                                     </div>
                                     <div className="p-6">
                                         <div className="space-y-4">
-                                            {user?.course?.semesters[0]?.subjects?.map((data, index) => (
+                                            {console.log(courses)}
+                                            {courses?.semesters[user?.semester - 1]?.subjects?.map((data, index) => (
                                                 <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                                     <div>
                                                         <h4 className="font-medium text-gray-900">{data.name}</h4>
@@ -267,7 +270,7 @@ useEffect(() => {
                                         user?.address &&
                                         <div className="flex items-center space-x-3">
                                             <MapPin className="h-4 w-4 text-gray-400" />
-                                            <span className="text-sm text-gray-600">{user?.address?.city || ""}, {user?.address?.state || ""}</span>
+                                            <span className="text-sm text-gray-600">{user.address}</span>
                                         </div>
                                     }
 
@@ -466,22 +469,12 @@ useEffect(() => {
                                         <label className="text-sm font-medium text-gray-700">Phone</label>
                                         <p className="mt-1 text-gray-900">{user?.phone}</p>
                                     </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-700">Alternate Phone</label>
-                                        <p className="mt-1 text-gray-900">{user?.alternatePhone}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-700">Parents Number</label>
-                                        <p className="mt-1 text-gray-900">{user?.parentsNumber}</p>
-                                    </div>
                                 </div>
                                 <div className="space-y-4">
                                     <div>
                                         <label className="text-sm font-medium text-gray-700">Address</label>
                                         <p className="mt-1 text-gray-900">
-                                            {user?.address?.street}<br />
-                                            {user?.address?.city}, {user?.address?.state}<br />
-                                            {user?.address?.zipCode}, {user?.address?.country}
+                                            {user?.address}
                                         </p>
                                     </div>
                                 </div>
