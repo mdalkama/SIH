@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import Student from "../../models/studentModel.js";
 import Razorpay from "razorpay";
 import dotenv from 'dotenv';
+import crypto from 'crypto';
 
 // Configure dotenv right at the top of this file
 dotenv.config();
