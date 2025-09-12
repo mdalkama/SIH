@@ -105,6 +105,96 @@ export const getMyProfile = async (req, res) => {
     }
 };
 
+export const updateProfile = async (req, res) => {
+  try {
+      console.log(req.user)
+    const studentId = req.user.id;
+
+    // 2. Find the student in the database
+    const student = await Student.findById(studentId);
+    if (!student) {
+      return res.status(404).json({ success: false, message: "Student not found." });
+    }
+
+    // 3. Define which fields are editable by the student
+    const editableFields = [
+      'phone',
+      'alternatePhone',
+      'resumeLink',
+      'profilePictureLink',
+    ];
+
+    const editableAddressFields = [
+        'street',
+        'city',
+        'state',
+        'zipCode',
+        'country'
+    ];
+    
+    const editablePersonalFields = [
+        'fatherName',
+        'motherName',
+        'guardianName',
+        'parentsNumber',
+    ];
+
+    const editableEmergencyContactFields = [
+        'name',
+        'phone',
+        'relation'
+    ];
+    
+    // Update top-level fields
+    editableFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        student[field] = req.body[field];
+      }
+    });
+    
+    // Update nested address fields
+    if (req.body.address) {
+      editableAddressFields.forEach(field => {
+        if (req.body.address[field] !== undefined) {
+          student.address[field] = req.body.address[field];
+        }
+      });
+    }
+
+    // Update nested personal details
+    if (req.body.personalDetails) {
+        editablePersonalFields.forEach(field => {
+            if (req.body.personalDetails[field] !== undefined) {
+                student.personalDetails[field] = req.body.personalDetails[field];
+            }
+        });
+    }
+    
+    // Update nested emergency contact
+    if (req.body.emergencyContact) {
+        editableEmergencyContactFields.forEach(field => {
+            if (req.body.emergencyContact[field] !== undefined) {
+                student.emergencyContact[field] = req.body.emergencyContact[field];
+            }
+        });
+    }
+
+    // 5. Save the updated student document
+    const updatedStudent = await student.save();
+
+    // 6. Send a success response with the updated student data
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully.",
+      user: updatedStudent, 
+    });
+
+  } catch (error) {
+    console.error("Error updating student profile:", error);
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
 export const getSerial = async(req,res)=>{
     const {batch, courseId} = req.params;
     if(!batch || !courseId){
