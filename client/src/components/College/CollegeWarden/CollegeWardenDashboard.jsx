@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building, Users, PieChart, AlertTriangle, ShieldCheck, Phone, Mail } from 'lucide-react';
+import { Building, Users, PieChart, AlertTriangle, ShieldCheck, Phone, CreditCard } from 'lucide-react';
 
 // --- Helper Components ---
 
@@ -56,8 +56,8 @@ const CollegeWardenDashboard = () => {
             setLoading(true);
             setError(null);
             try {
-                // This is a hypothetical endpoint. You'll need to create it in your backend.
-                const res = await fetch('https://sih-4ptm.onrender.com/api/v1/hostel/warden/dashboard-summary', {
+                // This is the endpoint your backend controller serves
+                const res = await fetch('https://sih-4ptm.onrender.com/api/v1/college-warden/dashboard-summary', {
                     credentials: 'include'
                 });
                 if (!res.ok) {
@@ -107,8 +107,13 @@ const CollegeWardenDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard title="Total Hostels" value={stats?.totalHostels || 0} icon={Building} color="blue" />
                 <StatCard title="Student Occupants" value={stats?.totalStudents || 0} icon={Users} color="purple" />
-                <StatCard title="Total Capacity" value={stats?.totalCapacity || 0} icon={PieChart} color="green" />
-                <StatCard title="Overall Occupancy" value={`${stats?.overallOccupancy || 0}%`} icon={AlertTriangle} color="orange" />
+                <StatCard 
+                    title="Total Dues" 
+                    value={`₹${(stats?.totalDues || 0).toLocaleString('en-IN')}`} 
+                    icon={CreditCard} 
+                    color="red" 
+                />
+                <StatCard title="Overall Occupancy" value={`${stats?.overallOccupancy || 0}%`} icon={PieChart} color="green" />
             </div>
 
             {/* Main Content Grid */}

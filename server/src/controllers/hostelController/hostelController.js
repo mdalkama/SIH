@@ -1167,112 +1167,117 @@ export const getAllVisitorPasses = async (req, res) => {
 };
 
 export const getDashboardSummary = async (req, res) => {
-  try {
-    const collegeCode = req.user.collegeCode;
-    if (!collegeCode) {
-      return res
-        .status(401)
-        .json({
-          success: false,
-          error: "Unauthorized: College not associated with this warden.",
+    try {
+        // Step 1: Get the college code from the authenticated warden user
+        const collegeCode = req.user.collegeCode;
+        if (!collegeCode) {
+            return res.status(401).json({ success: false, error: "Unauthorized: College not associated with this warden." });
+        }
+
+        // Fetch all hostel documents for the college. Using .lean() for faster read-only operations.
+        const hostelsInCollege = await Hostel.find({ collegeCode }).lean();
+        
+        // --- STEP 2: CALCULATE STATS AND HOSTEL BREAKDOWN ---
+        let totalStudents = 0;
+        let totalCapacity = 0;
+
+        const hostelBreakdown = hostelsInCollege.map(hostel => {
+            let hostelAllocatedBeds = 0;
+            let hostelTotalBeds = 0;
+
+            // Iterate through nested arrays to get the actual bed counts
+            if (hostel.floors && Array.isArray(hostel.floors)) {
+                hostel.floors.forEach(floor => {
+                    if (floor.rooms && Array.isArray(floor.rooms)) {
+                        floor.rooms.forEach(room => {
+                            if (room.beds && Array.isArray(room.beds)) {
+                                hostelTotalBeds += room.beds.length;
+                                hostelAllocatedBeds += room.beds.filter(bed => bed.isOccupied).length;
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // Add this hostel's counts to the grand total
+            totalStudents += hostelAllocatedBeds;
+            totalCapacity += hostelTotalBeds;
+
+            return {
+                _id: hostel._id,
+                name: hostel.name,
+                allocatedBeds: hostelAllocatedBeds,
+                totalBeds: hostelTotalBeds,
+            };
         });
+
+        // --- STEP 3: CALCULATE TOTAL PENDING FEES ---
+        const feeAggregation = await StudentHostel.aggregate([
+            { $match: { collegeCode: collegeCode } },
+            { $unwind: "$fees" },
+            { $match: { "fees.status": { $in: ["Unpaid", "Partial"] } } },
+            { 
+                $group: {
+                    _id: null,
+                    totalDue: { $sum: "$fees.dueAmount" }
+                }
+            }
+        ]);
+
+        const totalDues = feeAggregation.length > 0 ? feeAggregation[0].totalDue : 0;
+        
+        // --- STEP 4: ASSEMBLE STATS OBJECT ---
+        const totalHostels = hostelsInCollege.length;
+        const overallOccupancy = totalCapacity > 0 ? Math.round((totalStudents / totalCapacity) * 100) : 0;
+
+        const stats = {
+            totalHostels,
+            totalStudents,
+            totalCapacity,
+            overallOccupancy,
+            totalDues 
+        };
+        
+        // --- STEP 5: FETCH RECENT HIGH-PRIORITY COMPLAINTS ---
+        const recentComplaints = await StudentHostel.aggregate([
+            { $match: { collegeCode: collegeCode } },
+            { $unwind: "$complaints" },
+            { $match: { "complaints.priority": "High", "complaints.status": { $ne: "Resolved" } } },
+            { $sort: { "complaints.createdAt": -1 } },
+            { $limit: 5 },
+            {
+                $project: {
+                    _id: "$complaints._id",
+                    title: "$complaints.title",
+                    priority: "$complaints.priority",
+                    hostelName: "$complaints.hostelDetail.hostelName",
+                }
+            }
+        ]);
+        
+        // --- STEP 6: GET HOSTEL WARDENS ---
+        const hostelWardens = hostelsInCollege
+            .filter(hostel => hostel.warden && hostel.warden.name) // Ensure warden data exists
+            .map(hostel => ({
+                _id: new mongoose.Types.ObjectId(), // Generate a temp ID for React key prop
+                name: hostel.warden.name,
+                contact: hostel.warden.contact,
+                hostelName: hostel.name
+            }));
+
+
+        // --- STEP 7: FINAL RESPONSE ---
+        const dashboardData = {
+            stats,
+            hostelBreakdown,
+            recentComplaints,
+            hostelWardens,
+        };
+
+        res.status(200).json({ success: true, data: dashboardData });
+
+    } catch (error) {
+        console.error("Error fetching dashboard summary:", error);
+        res.status(500).json({ success: false, error: "Server Error" });
     }
-
-    // Fetch all hostel documents for the college
-    const hostelsInCollege = await Hostel.find({ collegeCode }).lean();
-
-    // --- CALCULATE STATS AND HOSTEL BREAKDOWN ---
-    let totalStudents = 0;
-    let totalCapacity = 0;
-
-    const hostelBreakdown = hostelsInCollege.map((hostel) => {
-      let hostelAllocatedBeds = 0;
-      let hostelTotalBeds = 0;
-
-      // Iterate through floors to calculate bed counts for this specific hostel
-      if (hostel.floors && Array.isArray(hostel.floors)) {
-        hostel.floors.forEach((floor) => {
-          if (floor.rooms && Array.isArray(floor.rooms)) {
-            floor.rooms.forEach((room) => {
-              if (room.beds && Array.isArray(room.beds)) {
-                hostelTotalBeds += room.beds.length;
-                // Count occupied beds
-                hostelAllocatedBeds += room.beds.filter(
-                  (bed) => bed.isOccupied
-                ).length;
-              }
-            });
-          }
-        });
-      }
-
-      // Add this hostel's counts to the grand total
-      totalStudents += hostelAllocatedBeds;
-      totalCapacity += hostelTotalBeds;
-
-      // Return the breakdown for this specific hostel
-      return {
-        _id: hostel._id,
-        name: hostel.name,
-        allocatedBeds: hostelAllocatedBeds,
-        totalBeds: hostelTotalBeds,
-      };
-    });
-
-    const totalHostels = hostelsInCollege.length;
-    const overallOccupancy =
-      totalCapacity > 0 ? Math.round((totalStudents / totalCapacity) * 100) : 0;
-
-    const stats = {
-      totalHostels,
-      totalStudents,
-      totalCapacity,
-      overallOccupancy,
-    };
-
-    // --- RECENT HIGH-PRIORITY COMPLAINTS ---
-    const recentComplaints = await StudentHostel.aggregate([
-      { $match: { collegeCode: collegeCode } },
-      { $unwind: "$complaints" },
-      {
-        $match: {
-          "complaints.priority": "High",
-          "complaints.status": { $ne: "Resolved" },
-        },
-      },
-      { $sort: { "complaints.createdAt": -1 } },
-      { $limit: 5 },
-      {
-        $project: {
-          _id: "$complaints._id",
-          title: "$complaints.title",
-          priority: "$complaints.priority",
-          hostelName: "$complaints.hostelDetail.hostelName",
-        },
-      },
-    ]);
-
-    // --- HOSTEL WARDENS ---
-    const hostelWardens = hostelsInCollege
-      .filter((hostel) => hostel.warden && hostel.warden.name) // Ensure warden exists
-      .map((hostel) => ({
-        _id: hostel.warden._id || new mongoose.Types.ObjectId(), // Fallback for safety
-        name: hostel.warden.name,
-        contact: hostel.warden.contact,
-        hostelName: hostel.name,
-      }));
-
-    // --- FINAL RESPONSE ---
-    const dashboardData = {
-      stats,
-      hostelBreakdown,
-      recentComplaints,
-      hostelWardens,
-    };
-
-    res.status(200).json({ success: true, data: dashboardData });
-  } catch (error) {
-    console.error("Error fetching dashboard summary:", error);
-    res.status(500).json({ success: false, error: "Server Error" });
-  }
 };
