@@ -107,7 +107,6 @@ export const getMyProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-      console.log(req.user)
     const studentId = req.user.id;
 
     // 2. Find the student in the database
