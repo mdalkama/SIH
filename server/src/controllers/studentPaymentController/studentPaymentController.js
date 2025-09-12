@@ -65,9 +65,6 @@ export const addFine = async (req, res) => {
 };
 
 
-
-
-
 // 🔹 Pay Fee (Fine or Semester)
 export const payFee = async (req, res) => {
     try {

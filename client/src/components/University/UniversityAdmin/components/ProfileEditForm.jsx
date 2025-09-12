@@ -96,10 +96,10 @@ const ProfileEditForm = ({ initialData, onCancel, setUniversityData, addToast, s
     };
 
     return (
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg border shadow-sm animate-fade-in space-y-8">
+        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg border shadow-sm border-gray-200 animate-fade-in space-y-8">
 
             {/* Basic Info */}
-            <div className="border-b pb-6">
+            <div className="border-b border-gray-300 pb-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Basic Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField label="University Name" name="name" value={basicInfo.name} onChange={(e) => setBasicInfo(prev => ({ ...prev, [e.target.name]: e.target.value }))} required />
@@ -109,7 +109,7 @@ const ProfileEditForm = ({ initialData, onCancel, setUniversityData, addToast, s
             </div>
 
             {/* Leadership */}
-            <div className="border-b pb-6">
+            <div className="border-b border-gray-300 pb-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Leadership</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField label="Chancellor" name="chancellorName" value={leadership.chancellorName} onChange={(e) => setLeadership(prev => ({ ...prev, [e.target.name]: e.target.value }))} />
@@ -119,7 +119,7 @@ const ProfileEditForm = ({ initialData, onCancel, setUniversityData, addToast, s
             </div>
 
             {/* Contact */}
-            <div className="border-b pb-6">
+            <div className="border-b border-gray-300 pb-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Contact</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField label="Email" name="email" value={contact.email} onChange={(e) => setContact(prev => ({ ...prev, [e.target.name]: e.target.value }))} required />
@@ -129,7 +129,7 @@ const ProfileEditForm = ({ initialData, onCancel, setUniversityData, addToast, s
             </div>
 
             {/* Location */}
-            <div className="border-b pb-6">
+            <div className="border-b border-gray-300 pb-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Location</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField label="Address" name="address" value={location.address} onChange={(e) => setLocation(prev => ({ ...prev, [e.target.name]: e.target.value }))} />
@@ -152,7 +152,7 @@ const ProfileEditForm = ({ initialData, onCancel, setUniversityData, addToast, s
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-4 mt-6 border-t pt-6">
+            <div className="flex justify-end gap-4 border-gray-300 mt-6 border-t pt-6">
                 <button type="button" onClick={onCancel} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancel</button>
                 <button type="submit" disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:bg-blue-300 flex items-center">
                     {isLoading ? <><Loader2 size={16} className="animate-spin" />&nbsp;Saving...</> : <><Save size={16} />&nbsp;Save Changes</>}

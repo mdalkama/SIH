@@ -92,10 +92,10 @@ const ProfileView = ({ data }) => {
     );
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            <div className="bg-white p-6 rounded-lg border shadow-sm">
+        <div className="space-y-6 animate-fade-in border-gray-200">
+            <div className="bg-white p-6 rounded-lg border-gray-300 border shadow-sm">
                 <div className="flex items-center gap-6">
-                    <img src={data.logoUrl || 'https://placehold.co/100x100/E2E8F0/4A5568?text=Logo'} alt="University Logo" className="w-24 h-24 rounded-full object-cover border" />
+                    <img src={data.logoUrl || 'https://placehold.co/100x100/E2E8F0/4A5568?text=Logo'} alt="University Logo" className="w-24 h-24 rounded-full object-cover border-gray-300 border" />
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900">{data.name}</h2>
                         <p className="text-md text-gray-600 font-mono">{data.universityId}</p>
@@ -103,8 +103,8 @@ const ProfileView = ({ data }) => {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg border shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-800 border-b pb-3 mb-4">Leadership</h3>
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-800 border-gray-300 border-b pb-3 mb-4">Leadership</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <InfoField label="Chancellor" value={data.chancellorAndVC?.chancellorName} />
                     <InfoField label="Vice Chancellor" value={data.chancellorAndVC?.viceChancellorName} />
@@ -112,8 +112,8 @@ const ProfileView = ({ data }) => {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg border shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-800 border-b pb-3 mb-4">Contact & Location</h3>
+            <div className="bg-white p-6 rounded-lg border-gray-200 border shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-800 border-gray-300 border-b pb-3 mb-4">Contact & Location</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <InfoField label="Email" value={data.contact?.email} />
                     <InfoField label="Phone" value={data.contact?.phone} />
@@ -122,8 +122,8 @@ const ProfileView = ({ data }) => {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg border shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-800 border-b pb-3 mb-4">Financial & Legal</h3>
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-800  border-gray-300 border-b pb-3 mb-4">Financial & Legal</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <InfoField label="Bank Name" value={data.financials?.bankName} />
                     <InfoField label="Account Number" value={data.financials?.accountNumber} />
