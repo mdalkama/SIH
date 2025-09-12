@@ -37,7 +37,7 @@ const Footer = () => {
                   <h4 className="text-lg font-semibold theme-blue-text mb-4">
                     Government of Rajasthan - Department of Technical Education
                   </h4>
-                  <p className="theme-text-secondary leading-relaxed">
+                  <p className="mix-blend-color leading-relaxed">
                     Empowering technical education across Rajasthan through innovative learning, 
                     industry partnerships, and skill development programs for a brighter future.
                   </p>
@@ -48,11 +48,11 @@ const Footer = () => {
               <div>
                 <h5 className="text-lg font-semibold theme-text mb-4">Quick Links</h5>
                 <ul className="space-y-2">
-                  <li><a href="#" className="theme-text-secondary hover:text-blue-600 dark:hover:text-blue-400 transition-colors">About DTE</a></li>
-                  <li><a href="#" className="theme-text-secondary hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Admissions</a></li>
-                  <li><a href="#" className="theme-text-secondary hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Colleges</a></li>
-                  <li><a href="#" className="theme-text-secondary hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Results</a></li>
-                  <li><a href="#" className="theme-text-secondary hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Tenders</a></li>
+                  <li><a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 transition-colors">About DTE</a></li>
+                  <li><a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Admissions</a></li>
+                  <li><a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Colleges</a></li>
+                  <li><a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Results</a></li>
+                  <li><a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Tenders</a></li>
                 </ul>
               </div>
               
@@ -62,17 +62,17 @@ const Footer = () => {
                 <ul className="space-y-3">
                   <li className="flex items-center space-x-3">
                     <Phone className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                    <span className="theme-text-secondary text-sm">0291-2434395</span>
+                    <span className="mix-blend-color text-sm">0291-2434395</span>
                   </li>
                   <li className="flex items-start space-x-3">
                     <Phone className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0" />
-                    <span className="theme-text-secondary text-sm">Fax : 0291-2430398</span>
+                    <span className="mix-blend-color text-sm">Fax : 0291-2430398</span>
                   </li>
                   <li className="flex items-center space-x-3">
                     <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                    <span className="theme-text-secondary text-sm">dte_raj@rajasthan.gov.in</span>
+                    <span className="mix-blend-color text-sm">dte_raj@rajasthan.gov.in</span>
                   </li>
-                  <li className="theme-text-secondary text-sm mt-3">
+                  <li className="mix-blend-color text-sm mt-3">
                     <strong>Nodal Officer :</strong> Ajay Agarwal, ADTE
                   </li>
                 </ul>
@@ -83,7 +83,7 @@ const Footer = () => {
                 <h5 className="text-lg font-semibold theme-text mb-4">Address</h5>
                 <div className="flex items-start space-x-3">
                   <MapPin className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0" />
-                  <span className="theme-text-secondary text-sm leading-relaxed">
+                  <span className="mix-blend-color text-sm leading-relaxed">
                     Directorate of Technical Education<br />
                     W-6, Gaurav Path, Residency Road,<br />
                     Jodhpur (Rajasthan) - 342032
@@ -97,30 +97,30 @@ const Footer = () => {
               <div className="flex flex-col space-y-4">
                 {/* Website Design & Updated by */}
                 <div className="text-center">
-                  <p className="theme-text-secondary text-sm">
+                  <p className="mix-blend-color text-sm">
                     <strong>Website Design & Updated by :</strong> Team X ERROR
                   </p>
-                  <p className="theme-text-secondary text-sm">
+                  <p className="mix-blend-color text-sm">
                     Directorate of Technical Education, Jodhpur
                   </p>
                 </div>
                 
                 {/* Copyright and Last Updated */}
                 <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
-                  <p className="theme-text-secondary text-sm">
+                  <p className="mix-blend-color text-sm">
                     Copyright ©2019 Directorate Of Technical Education, Rajasthan
                   </p>
-                  <p className="theme-text-secondary text-sm">
+                  <p className="mix-blend-color text-sm">
                     <strong>Last Updated :</strong> 12/9/2025, 1:59:45 am
                   </p>
                 </div>
                 
                 {/* Links */}
                 <div className="flex flex-wrap justify-center space-x-6">
-                  <a href="#" className="theme-text-secondary hover:text-blue-600 dark:hover:text-blue-400 text-sm transition-colors">Privacy Policy</a>
-                  <a href="#" className="theme-text-secondary hover:text-blue-600 dark:hover:text-blue-400 text-sm transition-colors">Terms of Service</a>
-                  <a href="#" className="theme-text-secondary hover:text-blue-600 dark:hover:text-blue-400 text-sm transition-colors">RTI</a>
-                  <a href="#" className="theme-text-secondary hover:text-blue-600 dark:hover:text-blue-400 text-sm transition-colors">Sitemap</a>
+                  <a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 text-sm transition-colors">Privacy Policy</a>
+                  <a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 text-sm transition-colors">Terms of Service</a>
+                  <a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 text-sm transition-colors">RTI</a>
+                  <a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 text-sm transition-colors">Sitemap</a>
                 </div>
               </div>
             </div>
