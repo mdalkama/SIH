@@ -1,5 +1,5 @@
 export const staffRoles = [
-    'UniversityAdmin', //done
+    'UniversityAdmin', //final
     'UniversityGoverningBody', //done
     'UniversityRegistrar', //done 
     'UniversityExaminationBody', //done

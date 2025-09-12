@@ -241,6 +241,14 @@ const menuConfig = {
             role: "UniversityAdmin",
         },
         {
+            id: "manage-courses",
+            label: "Manage Courses",
+            icon: BookOpen,
+            path: "/university-admin/manage-courses",
+            component: UniversityAdminManageCourses,
+            role: "UniversityAdmin",
+        },
+        {
             id: "manage-college",
             label: "Manage College",
             icon: Folder,
@@ -254,14 +262,6 @@ const menuConfig = {
             icon: Shield,
             path: "/university-admin/manage-university",
             component: UniversityAdminManageUniversity,
-            role: "UniversityAdmin",
-        },
-        {
-            id: "manage-courses",
-            label: "Manage Courses",
-            icon: BookOpen,
-            path: "/university-admin/manage-courses",
-            component: UniversityAdminManageCourses,
             role: "UniversityAdmin",
         },
         {
