@@ -9,7 +9,7 @@ import courseRoute from "../routes/courseRoute.js";
 import subjectRoute from "../routes/subjectRoute.js";
 import universityManageStaffRoute from "../routes/universityManageStaffRoute.js";
 import {getMyProfile, updateProfile} from "../controllers/studentController/studentController.js";
-import {getStaffProfile} from "../controllers/staffController/staffController.js";
+import {getStaffProfile, updateStaffProfile} from "../controllers/staffController/staffController.js";
 import hostelRoute from "../routes/hostelRoute.js";
 import libraryRoute from "../routes/libraryRoutes.js";
 import studentPaymentRoute from "../routes/studentPaymentRoute.js";
@@ -74,7 +74,7 @@ router.put("/update-profile", role(['student', ...staffRoles]), (req, res) => {
             return updateProfile(req, res);
         } else {
             // staff profile controller
-            return "";
+            return updateStaffProfile(req, res);
         }
     } catch (error) {
         console.error("Error fetching profile:", error);
