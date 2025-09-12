@@ -74,6 +74,7 @@ const FeesDashboard = () => {
     const [selectedFee, setSelectedFee] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('online');
     const [paymentProcessing, setPaymentProcessing] = useState(false);
+    console.log("paymentData:", paymentData);
 
     const addToast = (type, message) => {
         const id = Date.now();
