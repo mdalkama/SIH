@@ -7,11 +7,16 @@ import {
     getSemesterFees,
     getPending,
     getPaid,
-    getPaymentHistory
+    getPaymentHistory,
+    createRazorpayOrder,
+    verifyPayment
 } from "../controllers/studentPaymentController/studentPaymentController.js";
 
 
 const router = express.Router();
+
+router.post("/:regNo/create-order", createRazorpayOrder);
+router.post("/verify-payment", verifyPayment);
 
 // ✅ Add fine to student
 router.post("/:regNo/fines", addFine);
