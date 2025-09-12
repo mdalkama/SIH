@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { role } from "../middlewares/authMiddleware.js";
-import {loginStudent, registerStudent, logoutStudent, getSerial} from "../controllers/studentController/studentController.js";
+import {loginStudent, registerStudent, logoutStudent, getSerial, getMyProfile, updateProfile} from "../controllers/studentController/studentController.js";
 
 
 const router = Router();
