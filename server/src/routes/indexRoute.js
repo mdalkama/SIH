@@ -8,7 +8,7 @@ import collegeManageStaffRoute from "../routes/collegeManageStaffRoute.js";
 import courseRoute from "../routes/courseRoute.js";
 import subjectRoute from "../routes/subjectRoute.js";
 import universityManageStaffRoute from "../routes/universityManageStaffRoute.js";
-import {getMyProfile} from "../controllers/studentController/studentController.js";
+import {getMyProfile, updateProfile} from "../controllers/studentController/studentController.js";
 import {getStaffProfile} from "../controllers/staffController/staffController.js";
 import hostelRoute from "../routes/hostelRoute.js";
 import libraryRoute from "../routes/libraryRoutes.js";
@@ -33,7 +33,7 @@ const router = Router();
 
 router.get("/", (req, res) => { res.status(200).send("API is running"); });
 router.get("/me", role(['student', ...staffRoles]), getRole);
-router.use('/staff', staffRoute)
+router.use('/staff', staffRoute)   
 router.use("/student", studentRoutes);
 router.use("/add-college-staff", collegeManageStaffRoute);
 router.use("/hostel", role(['CollegeHostelWarden']), hostelRoute)
@@ -60,6 +60,21 @@ router.get("/my-profile", role(['student', ...staffRoles]), (req, res) => {
         } else {
             // staff profile controller
             return getStaffProfile(req, res);
+        }
+    } catch (error) {
+        console.error("Error fetching profile:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+router.put("/update-profile", role(['student', ...staffRoles]), (req, res) => {
+    try {
+        if(req.user.role === 'student'){
+            // student profile controller
+            return updateProfile(req, res);
+        } else {
+            // staff profile controller
+            return "";
         }
     } catch (error) {
         console.error("Error fetching profile:", error);

@@ -57,7 +57,7 @@ const CollegeWardenDashboard = () => {
             setError(null);
             try {
                 // This is the endpoint your backend controller serves
-                const res = await fetch('https://sih-4ptm.onrender.com/api/v1/college-warden/dashboard-summary', {
+                const res = await fetch('https://sih-4ptm.onrender.com/api/v1/hostel/warden/dashboard-summary', {
                     credentials: 'include'
                 });
                 if (!res.ok) {
