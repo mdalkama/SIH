@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { ChevronDown, Menu, X, Search, Globe, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useLocation, Link } from 'react-router-dom'
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -7,14 +8,13 @@ const Header = () => {
   const [activeDropdown, setActiveDropdown] = useState(null)
   const [isScrolled, setIsScrolled] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState('हिंदी')
+  const location = useLocation()
+  
+  // Check if we're on the home page
+  const isHomePage = location.pathname === '/'
 
   // Carousel images with working URLs
   const carouselImages = [
-    // {
-    //   url: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1920&h=600&fit=crop',
-    //   title: 'Excellence in Technical Education',
-    //   subtitle: 'Shaping Future Engineers and Technologists'
-    // },
     {
       url: 'https://images.unsplash.com/photo-1562774053-701939374585?w=1920&h=600&fit=crop',
       title: 'Innovation & Research',
@@ -30,11 +30,6 @@ const Header = () => {
       title: 'Industry Partnerships',
       subtitle: 'Bridging Academia and Industry'
     },
-    // {
-    //   url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1920&h=600&fit=crop',
-    //   title: 'Student Success Stories',
-    //   subtitle: 'Empowering Students to Achieve Excellence'
-    // },
     {
       url: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1920&h=600&fit=crop',
       title: 'Digital Innovation',
@@ -69,20 +64,12 @@ const Header = () => {
       name: 'Admissions',
       items: [
         { 
-          name: 'Undergraduate', 
-          subitems: ['B.Tech Programs', 'Diploma Programs', 'Eligibility Criteria', 'Application Process'] 
+          name: 'Diploma First Year Admissions (Engineering Courses)', 
+          path: '/admission/engineering'
         },
         { 
-          name: 'Postgraduate', 
-          subitems: ['M.Tech Programs', 'MBA Programs', 'MCA Programs'] 
-        },
-        { 
-          name: 'Admission Process', 
-          subitems: ['Online Application', 'Document Verification', 'Counseling Process', 'Seat Allotment'] 
-        },
-        { 
-          name: 'Important Dates', 
-          subitems: ['Application Dates', 'Exam Dates', 'Result Dates', 'Counseling Dates'] 
+          name: 'Diploma First Year Admissions (Non-Engineering Courses)', 
+          path: '/admission/non-engineering'
         }
       ]
     },
@@ -393,67 +380,187 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Carousel with Dark Navigation Bar */}
-        <div className="relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden">
-          {/* Carousel Images Container with Enhanced Sliding Effects */}
-          <div 
-            className="flex h-full transition-all duration-700 ease-in-out transform"
-            style={{
-              transform: `translateX(-${currentSlide * 100}%)`,
-              filter: 'brightness(1.05)'
-            }}
-          >
-            {carouselImages.map((image, index) => (
-              <div
-                key={index}
-                className="min-w-full h-full relative"
-                style={{
-                  backgroundImage: `linear-gradient(var(--theme-carousel-overlay), var(--theme-carousel-overlay)), url(${image.url})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              >
-                {/* Content Overlay */}
-                <div className="absolute inset-0 flex items-center justify-center mt-8 md:mt-16">
-                  <div className="text-center text-white max-w-4xl px-4 md:px-6">
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold mb-2 md:mb-4 transform transition-all duration-1000 delay-300" 
-                        style={{ 
-                          opacity: index === currentSlide ? 1 : 0,
-                          transform: index === currentSlide ? 'translateY(0)' : 'translateY(30px)'
-                        }}>
-                      {image.title}
-                    </h2>
-                    <p className="text-sm sm:text-base md:text-xl lg:text-2xl transform transition-all duration-1000 delay-500" 
-                       style={{ 
-                         opacity: index === currentSlide ? 1 : 0,
-                         transform: index === currentSlide ? 'translateY(0)' : 'translateY(30px)'
-                       }}>
-                      {image.subtitle}
-                    </p>
+        {/* Carousel with Dark Navigation Bar - Only show on home page */}
+        {isHomePage && (
+          <div className="relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden">
+            {/* Carousel Images Container with Enhanced Sliding Effects */}
+            <div 
+              className="flex h-full transition-all duration-700 ease-in-out transform"
+              style={{
+                transform: `translateX(-${currentSlide * 100}%)`,
+                filter: 'brightness(1.05)'
+              }}
+            >
+              {carouselImages.map((image, index) => (
+                <div
+                  key={index}
+                  className="min-w-full h-full relative"
+                  style={{
+                    backgroundImage: `linear-gradient(var(--theme-carousel-overlay), var(--theme-carousel-overlay)), url(${image.url})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                >
+                  {/* Content Overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center mt-8 md:mt-16">
+                    <div className="text-center text-white max-w-4xl px-4 md:px-6">
+                      <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold mb-2 md:mb-4 transform transition-all duration-1000 delay-300" 
+                          style={{ 
+                            opacity: index === currentSlide ? 1 : 0,
+                            transform: index === currentSlide ? 'translateY(0)' : 'translateY(30px)'
+                          }}>
+                        {image.title}
+                      </h2>
+                      <p className="text-sm sm:text-base md:text-xl lg:text-2xl transform transition-all duration-1000 delay-500" 
+                         style={{ 
+                           opacity: index === currentSlide ? 1 : 0,
+                           transform: index === currentSlide ? 'translateY(0)' : 'translateY(30px)'
+                         }}>
+                        {image.subtitle}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Navigation Buttons */}
+            <button
+              onClick={prevSlide}
+              className="absolute left-2 md:left-6 top-1/2 transform -translate-y-1/2 z-30 bg-white/20 backdrop-blur-md border border-white/30 rounded-full p-2 md:p-4 text-white hover:bg-white/40 transition-all duration-500 hover:scale-110 hover:shadow-xl group"
+            >
+              <ChevronLeft className="w-4 h-4 md:w-6 md:h-6 transition-transform duration-300 group-hover:-translate-x-1" />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="absolute right-2 md:right-6 top-1/2 transform -translate-y-1/2 z-30 bg-white/20 backdrop-blur-md border border-white/30 rounded-full p-2 md:p-4 text-white hover:bg-white/40 transition-all duration-500 hover:scale-110 hover:shadow-xl group"
+            >
+              <ChevronRight className="w-4 h-4 md:w-6 md:h-6 transition-transform duration-300 group-hover:translate-x-1" />
+            </button>
+
+            {/* Dark Navigation Bar - Positioned at top of carousel like IIT Bombay with glass effects */}
+            <nav className={`absolute top-0 left-0 right-0 z-50 transition-all duration-300 ${
+              isScrolled ? 'fixed top-0 shadow-lg backdrop-blur-xl bg-black/40 dark:bg-black/60 border-b border-white/10' : 'backdrop-blur-none'
+            }`}>
+              <div className="max-w-7xl mx-auto px-4 md:px-6">
+                <div className="flex items-center justify-between">
+                  {/* Desktop Navigation Only */}
+                  <div className="hidden lg:flex items-center mx-auto">
+                    {navigationItems.map((item, index) => (
+                      <div 
+                        key={index} 
+                        className="relative group"
+                        onMouseEnter={() => setActiveDropdown(index)}
+                        onMouseLeave={() => setActiveDropdown(null)}
+                      >
+                        <button
+                          className="px-2 xl:px-3 py-3 text-white font-medium text-xs hover:bg-blue-500/20 transition-all duration-300 flex items-center space-x-1 border-b-2 border-transparent hover:border-blue-400 hover:text-blue-300"
+                        >
+                          <span>{item.name}</span>
+                          {item.items.length > 0 && (
+                            <ChevronDown className="w-3 h-3 transition-transform duration-300 group-hover:rotate-180" />
+                          )}
+                        </button>
+
+                        {/* Enhanced Glass Morphism Dropdown - ONLY on home page */}
+                        {item.items.length > 0 && activeDropdown === index && (
+                          <div className={`absolute top-full mt-0 w-96 z-[80] ${
+                            index > navigationItems.length / 2 ? 'right-0' : 'left-0'
+                          }`}>
+                            <div className="glass-dropdown rounded-2xl shadow-2xl overflow-visible animate-fade-in-up">
+                              <div className="backdrop-blur-xl p-6 space-y-2">
+                                <h3 className="text-lg font-bold mb-4 border-b border-blue-400 pb-2 flex items-center">
+                                  <span className="w-1 h-6 bg-blue-500 rounded-full mr-3"></span>
+                                  {item.name}
+                                </h3>
+                                {item.items.map((subItem, subIndex) => (
+                                  <div key={subIndex} className="group/sub relative">
+                                    {subItem.path ? (
+                                      <Link
+                                        to={subItem.path}
+                                        className="flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 font-medium text-sm border border-transparent hover:border-blue-200 hover:shadow-md backdrop-blur-sm"
+                                      >
+                                        <span className="flex items-center">
+                                          <span className="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover/sub:opacity-100 transition-opacity"></span>
+                                          {subItem.name}
+                                        </span>
+                                        {subItem.subitems && subItem.subitems.length > 0 && (
+                                          <ChevronDown className="w-3 h-3 rotate-[-90deg] transition-transform duration-300 group-hover/sub:rotate-[-45deg]" />
+                                        )}
+                                      </Link>
+                                    ) : (
+                                      <a
+                                        href="#"
+                                        className="flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 font-medium text-sm border border-transparent hover:border-blue-200 hover:shadow-md backdrop-blur-sm"
+                                      >
+                                        <span className="flex items-center">
+                                          <span className="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover/sub:opacity-100 transition-opacity"></span>
+                                          {subItem.name}
+                                        </span>
+                                        {subItem.subitems && subItem.subitems.length > 0 && (
+                                          <ChevronDown className="w-3 h-3 rotate-[-90deg] transition-transform duration-300 group-hover/sub:rotate-[-45deg]" />
+                                        )}
+                                      </a>
+                                    )}
+                                    
+                                    {/* Second Level Dropdown */}
+                                    {subItem.subitems && subItem.subitems.length > 0 && (
+                                      <div className={`absolute top-0 w-80 glass-dropdown rounded-xl shadow-2xl overflow-hidden opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-500 transform z-[90] ${
+                                        index > navigationItems.length / 2 
+                                          ? 'right-full mr-3 translate-x-2 group-hover/sub:translate-x-0' 
+                                          : 'left-full ml-3 translate-x-4 group-hover/sub:translate-x-0'
+                                      }`}>
+                                        <div className="backdrop-blur-xl h-full p-5 space-y-1">
+                                          <h4 className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-3 border-b border-blue-400/50 pb-2 flex items-center">
+                                            <span className="w-1 h-4 bg-blue-500 rounded-full mr-2"></span>
+                                            {subItem.name}
+                                          </h4>
+                                          {subItem.subitems.map((subSubItem, subSubIndex) => (
+                                            <a
+                                              key={subSubIndex}
+                                              href="#"
+                                              className="flex items-center px-3 py-2 text-sm rounded-lg transition-all duration-200 border border-transparent hover:border-blue-200 hover:translate-x-1 backdrop-blur-sm group/subsub"
+                                            >
+                                              <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3 opacity-60 group-hover/subsub:opacity-100 transition-opacity"></span>
+                                              {subSubItem}
+                                            </a>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
-            ))}
+            </nav>
+
+            {/* Carousel Indicators */}
+            <div className="absolute bottom-3 md:bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 md:space-x-3 z-20">
+              {carouselImages.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all duration-500 ${
+                    index === currentSlide
+                      ? 'bg-white scale-125 shadow-lg ring-1 md:ring-2 ring-white/50'
+                      : 'bg-white/50 hover:bg-white/75 hover:scale-110'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
-
-          {/* Navigation Buttons */}
-          <button
-            onClick={prevSlide}
-            className="absolute left-2 md:left-6 top-1/2 transform -translate-y-1/2 z-30 bg-white/20 backdrop-blur-md border border-white/30 rounded-full p-2 md:p-4 text-white hover:bg-white/40 transition-all duration-500 hover:scale-110 hover:shadow-xl group"
-          >
-            <ChevronLeft className="w-4 h-4 md:w-6 md:h-6 transition-transform duration-300 group-hover:-translate-x-1" />
-          </button>
-          <button
-            onClick={nextSlide}
-            className="absolute right-2 md:right-6 top-1/2 transform -translate-y-1/2 z-30 bg-white/20 backdrop-blur-md border border-white/30 rounded-full p-2 md:p-4 text-white hover:bg-white/40 transition-all duration-500 hover:scale-110 hover:shadow-xl group"
-          >
-            <ChevronRight className="w-4 h-4 md:w-6 md:h-6 transition-transform duration-300 group-hover:translate-x-1" />
-          </button>
-
-          {/* Dark Navigation Bar - Positioned at top of carousel like IIT Bombay */}
-          <nav className={`absolute top-0 left-0 right-0 z-50 transition-all duration-300 ${
-            isScrolled ? 'fixed top-0 shadow-lg backdrop-blur-xl bg-black/40 dark:bg-black/60 border-b border-white/10' : 'backdrop-blur-none'
-          }`}>
+        )}
+        
+        {/* Navigation Bar - Always show on non-home pages with solid colors, no glass effects */}
+        {!isHomePage && (
+          <nav className="bg-black border-b border-gray-800 top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 md:px-6">
               <div className="flex items-center justify-between">
                 {/* Desktop Navigation Only */}
@@ -466,7 +573,7 @@ const Header = () => {
                       onMouseLeave={() => setActiveDropdown(null)}
                     >
                       <button
-                        className="px-2 xl:px-3 py-3 text-white font-medium text-xs hover:bg-blue-500/20 transition-all duration-300 flex items-center space-x-1 border-b-2 border-transparent hover:border-blue-400 hover:text-blue-300"
+                        className="px-2 xl:px-3 py-3 text-white font-medium text-xs hover:bg-gray-800 transition-all duration-300 flex items-center space-x-1 border-b-2 border-transparent hover:border-blue-400 hover:text-blue-300"
                       >
                         <span>{item.name}</span>
                         {item.items.length > 0 && (
@@ -474,56 +581,38 @@ const Header = () => {
                         )}
                       </button>
 
-                      {/* Enhanced Glass Morphism Dropdown */}
+                      {/* Solid Dropdown - NO glass effects on non-home pages */}
                       {item.items.length > 0 && activeDropdown === index && (
                         <div className={`absolute top-full mt-0 w-96 z-[80] ${
                           index > navigationItems.length / 2 ? 'right-0' : 'left-0'
                         }`}>
-                          <div className="glass-dropdown rounded-2xl shadow-2xl overflow-visible animate-fade-in-up">
-                            <div className="backdrop-blur-xl p-6 space-y-2">
-                              <h3 className="text-lg font-bold mb-4 border-b border-blue-400 pb-2 flex items-center">
-                                <span className="w-1 h-6 bg-blue-500 rounded-full mr-3"></span>
+                          <div className="bg-white rounded-lg shadow-2xl overflow-visible animate-fade-in-up border border-gray-200">
+                            <div className="p-4 space-y-1">
+                              <h3 className="text-lg font-bold mb-3 border-b border-gray-200 pb-2 text-gray-800">
                                 {item.name}
                               </h3>
                               {item.items.map((subItem, subIndex) => (
                                 <div key={subIndex} className="group/sub relative">
-                                  <a
-                                    href="#"
-                                    className="flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 font-medium text-sm border border-transparent hover:border-blue-200 hover:shadow-md backdrop-blur-sm"
-                                  >
-                                    <span className="flex items-center">
-                                      <span className="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover/sub:opacity-100 transition-opacity"></span>
-                                      {subItem.name}
-                                    </span>
-                                    {subItem.subitems && subItem.subitems.length > 0 && (
-                                      <ChevronDown className="w-3 h-3 rotate-[-90deg] transition-transform duration-300 group-hover/sub:rotate-[-45deg]" />
-                                    )}
-                                  </a>
-                                  
-                                  {/* Second Level Dropdown */}
-                                  {subItem.subitems && subItem.subitems.length > 0 && (
-                                    <div className={`absolute top-0 w-80 glass-dropdown rounded-xl shadow-2xl overflow-hidden opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-500 transform z-[90] ${
-                                      index > navigationItems.length / 2 
-                                        ? 'right-full mr-3 translate-x-2 group-hover/sub:translate-x-0' 
-                                        : 'left-full ml-3 translate-x-4 group-hover/sub:translate-x-0'
-                                    }`}>
-                                      <div className="backdrop-blur-xl h-full p-5 space-y-1">
-                                        <h4 className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-3 border-b border-blue-400/50 pb-2 flex items-center">
-                                          <span className="w-1 h-4 bg-blue-500 rounded-full mr-2"></span>
-                                          {subItem.name}
-                                        </h4>
-                                        {subItem.subitems.map((subSubItem, subSubIndex) => (
-                                          <a
-                                            key={subSubIndex}
-                                            href="#"
-                                            className="flex items-center px-3 py-2 text-sm rounded-lg transition-all duration-200 border border-transparent hover:border-blue-200 hover:translate-x-1 backdrop-blur-sm group/subsub"
-                                          >
-                                            <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3 opacity-60 group-hover/subsub:opacity-100 transition-opacity"></span>
-                                            {subSubItem}
-                                          </a>
-                                        ))}
-                                      </div>
-                                    </div>
+                                  {subItem.path ? (
+                                    <Link
+                                      to={subItem.path}
+                                      className="flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-300 font-medium text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                    >
+                                      <span className="flex items-center">
+                                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+                                        {subItem.name}
+                                      </span>
+                                    </Link>
+                                  ) : (
+                                    <a
+                                      href="#"
+                                      className="flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-300 font-medium text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                    >
+                                      <span className="flex items-center">
+                                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+                                        {subItem.name}
+                                      </span>
+                                    </a>
                                   )}
                                 </div>
                               ))}
@@ -537,22 +626,7 @@ const Header = () => {
               </div>
             </div>
           </nav>
-
-          {/* Carousel Indicators */}
-          <div className="absolute bottom-3 md:bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 md:space-x-3 z-20">
-            {carouselImages.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all duration-500 ${
-                  index === currentSlide
-                    ? 'bg-white scale-125 shadow-lg ring-1 md:ring-2 ring-white/50'
-                    : 'bg-white/50 hover:bg-white/75 hover:scale-110'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
+        )}
       </header>
 
       {/* Mobile Menu */}
@@ -581,12 +655,22 @@ const Header = () => {
                     <div className="ml-2 mt-2 space-y-1">
                       {item.items.map((subItem, subIndex) => (
                         <div key={subIndex}>
-                          <a
-                            href="#"
-                            className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors backdrop-blur-sm border-l-2 border-transparent hover:border-blue-400"
-                          >
-                            {subItem.name}
-                          </a>
+                          {subItem.path ? (
+                            <Link
+                              to={subItem.path}
+                              className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors backdrop-blur-sm border-l-2 border-transparent hover:border-blue-400"
+                              onClick={() => setIsMenuOpen(false)}
+                            >
+                              {subItem.name}
+                            </Link>
+                          ) : (
+                            <a
+                              href="#"
+                              className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors backdrop-blur-sm border-l-2 border-transparent hover:border-blue-400"
+                            >
+                              {subItem.name}
+                            </a>
+                          )}
                           {subItem.subitems && subItem.subitems.length > 0 && (
                             <div className="ml-4 mt-1 space-y-1">
                               {subItem.subitems.map((subSubItem, subSubIndex) => (

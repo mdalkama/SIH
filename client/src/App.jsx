@@ -11,8 +11,7 @@ import Application from "./components/Application/Application.jsx";
 import Dummy from "./pages/Dummy/Dummy.jsx"; 
 import Main from "./pages/DTE_home/content/content.jsx";
 import DTE from "./pages/DTE_home/dte.jsx";
-
-
+import Admission from "./pages/DTE_home/addmission/addmission.jsx";
 
 function App() {
   return (
@@ -22,6 +21,11 @@ function App() {
           {/* Home route - DTE page for normal users */}
           <Route path="/" element={<DTE />} />
           
+          {/* Admission routes */}
+          <Route path="/admission/engineering" element={<Admission admissionType="engineering" />} />
+          <Route path="/admission/non-engineering" element={<Admission admissionType="non-engineering" />} />
+          
+          {/* Other routes */}
           {/* Login route protected */}
           <Route
             path="/login"

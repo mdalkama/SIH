@@ -20,11 +20,10 @@ const Footer = () => {
         {/* Footer Content */}
         <div className="relative z-10 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Main Footer Content */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-              
+            {/* Main Footer Content - Department Info Full Width */}
+            <div className="mb-12">
               {/* Department Info */}
-              <div className="col-span-1 lg:col-span-2">
+              <div className="">
                 <div className="mb-6">
                   <img 
                     src="https://svumshow.com/assets/images/department-logo/pngwing.png" 
@@ -43,21 +42,13 @@ const Footer = () => {
                   </p>
                 </div>
               </div>
+            </div>
+            
+            {/* Bottom Section - Professional Government Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-12">
               
-              {/* Quick Links */}
-              <div>
-                <h5 className="text-lg font-semibold theme-text mb-4">Quick Links</h5>
-                <ul className="space-y-2">
-                  <li><a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 transition-colors">About DTE</a></li>
-                  <li><a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Admissions</a></li>
-                  <li><a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Colleges</a></li>
-                  <li><a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Results</a></li>
-                  <li><a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Tenders</a></li>
-                </ul>
-              </div>
-              
-              {/* Contact Info */}
-              <div>
+              {/* Contact Info - Column 1-2 */}
+              <div className="md:col-span-1 lg:col-span-2">
                 <h5 className="text-lg font-semibold theme-text mb-4">Contact No. & Email :</h5>
                 <ul className="space-y-3">
                   <li className="flex items-center space-x-3">
@@ -78,8 +69,8 @@ const Footer = () => {
                 </ul>
               </div>
               
-              {/* Address */}
-              <div>
+              {/* Address - Column 3-4 */}
+              <div className="md:col-span-1 lg:col-span-2">
                 <h5 className="text-lg font-semibold theme-text mb-4">Address</h5>
                 <div className="flex items-start space-x-3">
                   <MapPin className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0" />
@@ -89,6 +80,18 @@ const Footer = () => {
                     Jodhpur (Rajasthan) - 342032
                   </span>
                 </div>
+              </div>
+              
+              {/* Quick Links - Far Right Column 5-6 */}
+              <div className="md:col-span-1 lg:col-span-2">
+                <h5 className="text-lg font-semibold theme-text mb-4">Quick Links</h5>
+                <ul className="space-y-2">
+                  <li><a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">About DTE</a></li>
+                  <li><a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">Admissions</a></li>
+                  <li><a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">Colleges</a></li>
+                  <li><a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">Results</a></li>
+                  <li><a href="#" className="mix-blend-color hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm">Tenders</a></li>
+                </ul>
               </div>
             </div>
             
