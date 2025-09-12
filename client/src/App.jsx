@@ -25,6 +25,13 @@ function App() {
           <Route path="/admission/engineering" element={<Admission admissionType="engineering" />} />
           <Route path="/admission/non-engineering" element={<Admission admissionType="non-engineering" />} />
           
+          {/* New nested admission routes */}
+          <Route path="/admission/diploma-engineering-first-year" element={<Admission admissionType="diploma-engineering-first-year" />} />
+          <Route path="/admission/diploma-engineering-lateral-entry" element={<Admission admissionType="diploma-engineering-lateral-entry" />} />
+          <Route path="/admission/diploma-non-engineering-first-year" element={<Admission admissionType="diploma-non-engineering-first-year" />} />
+          <Route path="/admission/diploma-non-engineering-second-year-graduate" element={<Admission admissionType="diploma-non-engineering-second-year-graduate" />} />
+          <Route path="/admission/diploma-non-engineering-first-year-degree" element={<Admission admissionType="diploma-non-engineering-first-year-degree" />} />
+          
           {/* Other routes */}
           {/* Login route protected */}
           <Route
