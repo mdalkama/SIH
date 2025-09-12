@@ -19,7 +19,10 @@ const StatCard = ({ title, value, icon: Icon, color }) => (
 
 const DashboardSkeleton = () => (
     <div className="animate-pulse">
-        <div className="h-10 bg-slate-200 rounded-lg w-1/3 mb-8"></div>
+        <div className="space-y-2 mb-8">
+            <div className="h-8 bg-slate-200 rounded-lg w-1/2"></div>
+            <div className="h-4 bg-slate-200 rounded-lg w-1/3"></div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="h-28 bg-slate-200 rounded-xl"></div>
             <div className="h-28 bg-slate-200 rounded-xl"></div>
@@ -48,15 +51,14 @@ const ProgressBar = ({ value }) => (
 
 const CollegeWardenDashboard = () => {
     const [dashboardData, setDashboardData] = useState(null);
+    const [wardenProfile, setWardenProfile] = useState(null); // State for warden's own profile
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    console.log(wardenProfile)
 
     useEffect(() => {
         const fetchDashboardData = async () => {
-            setLoading(true);
-            setError(null);
             try {
-                // This is the endpoint your backend controller serves
                 const res = await fetch('https://sih-4ptm.onrender.com/api/v1/hostel/warden/dashboard-summary', {
                     credentials: 'include'
                 });
@@ -71,20 +73,52 @@ const CollegeWardenDashboard = () => {
                     throw new Error(data.message || "An error occurred.");
                 }
             } catch (err) {
+                // If this fails, we can still try to load the profile
                 setError(err.message);
-            } finally {
-                setLoading(false);
+                console.error("Dashboard Summary Error:", err);
             }
         };
 
-        fetchDashboardData();
+        const fetchWardenProfile = async () => {
+            try {
+                const res = await fetch('https://sih-4ptm.onrender.com/api/v1/my-profile', {
+                    credentials: 'include'
+                });
+                 if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.message || "Failed to fetch warden profile.");
+                }
+                const data = await res.json();
+                if (data.user) {
+                    setWardenProfile(data.user);
+                } else {
+                    throw new Error(data.message || "An error occurred fetching profile.");
+                }
+            } catch (err) {
+                 setError(err.message);
+                 console.error("Warden Profile Error:", err);
+            }
+        };
+
+        const loadAllData = async () => {
+            setLoading(true);
+            setError(null);
+            
+            // Call APIs sequentially, not with Promise.all
+            await fetchDashboardData();
+            await fetchWardenProfile();
+
+            setLoading(false);
+        };
+        
+        loadAllData();
     }, []);
 
     if (loading) {
         return <DashboardSkeleton />;
     }
 
-    if (error) {
+    if (error && !dashboardData && !wardenProfile) {
         return (
             <div className="text-center py-20 bg-red-50 rounded-xl">
                 <AlertTriangle className="mx-auto h-12 w-12 text-red-500" />
@@ -94,13 +128,16 @@ const CollegeWardenDashboard = () => {
         );
     }
     
+    // Use dashboardData, but it can be null if its specific fetch failed
     const { stats, hostelBreakdown, recentComplaints, hostelWardens } = dashboardData || {};
 
     return (
         <div className="space-y-8">
             <header>
-                <h1 className="text-3xl font-bold text-slate-900">College Warden Dashboard</h1>
-                <p className="mt-1 text-sm text-slate-600">A high-level overview of all hostel activities and statistics.</p>
+                <h1 className="text-3xl font-bold text-slate-900">Welcome, {wardenProfile?.name || 'Warden'}!</h1>
+                <p className="mt-1 text-sm text-slate-600">
+                    A high-level overview of all hostel activities for College Code: {wardenProfile?.collegeCode || 'N/A'}.
+                </p>
             </header>
 
             {/* Stat Cards */}
@@ -142,7 +179,7 @@ const CollegeWardenDashboard = () => {
                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                         <h2 className="text-xl font-semibold text-slate-800 mb-4">Recent High-Priority Issues</h2>
                         <div className="space-y-3">
-                            {recentComplaints?.length > 0 ? recentComplaints.map(complaint => (
+                            {recentComplaints?.length > 0 ? recentComplaints.slice(0,5).map(complaint => (
                                 <div key={complaint._id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                                     <div>
                                         <p className="font-medium text-slate-800">{complaint.title}</p>

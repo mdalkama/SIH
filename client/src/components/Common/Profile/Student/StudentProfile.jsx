@@ -40,16 +40,13 @@ const InfoField = ({ label, value, icon: Icon, isEditing, onChange, type = 'text
                 className="w-full p-3 border border-slate-300 rounded-lg bg-slate-50 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition"
             />
         ) : (
-            <p className={`p-3 bg-slate-100 rounded-lg text-slate-800 ${className}`}>
+            <p className={`p-3 bg-slate-100 rounded-lg text-slate-800 capitalize ${className}`}>
                 {type === 'date' && value ? new Date(value).toLocaleDateString('en-GB') : value || 'N/A'}
             </p>
         )}
     </div>
 );
 
-// ==================================================================================
-// MAIN COMPONENT: StudentProfile
-// ==================================================================================
 const StudentProfile = () => {
   const [activeTab, setActiveTab] = useState('basic-info');
   const [studentData, setStudentData] = useState(null);
@@ -58,11 +55,8 @@ const StudentProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
-  console.log(studentData);
 
-  const showToast = (message, type = 'success') => {
-      setToast({ message, type });
-  };
+  const showToast = (message, type = 'success') => setToast({ message, type });
 
   useEffect(() => {
     const fetchStudentData = async () => {
@@ -75,27 +69,25 @@ const StudentProfile = () => {
         });
         
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || "Failed to fetch student profile.");
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to fetch student profile.");
         }
         
         const data = await response.json();
         
         if (data.user) {
-            setStudentData(data.user);
-            setEditedData(data.user); // Initialize editable data from the API response
+          setStudentData(data.user);
+          setEditedData(data.user);
         } else {
-            throw new Error("No student data found in the API response.");
+          throw new Error("No student data found in the API response.");
         }
       } catch (error) {
-        console.error('Error fetching student data:', error);
-        setStudentData(null); // Set to null on error
+        setStudentData(null);
         setError(error.message);
       } finally {
         setLoading(false);
       }
     };
-
     fetchStudentData();
   }, []);
 
@@ -139,25 +131,9 @@ const StudentProfile = () => {
       return { ...prev, [field]: value };
     });
   };
-  
-  const handleFileUpload = async (file) => {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const imageUrl = e.target.result;
-      setStudentData(prev => ({ ...prev, profilePictureLink: imageUrl }));
-      setEditedData(prev => ({ ...prev, profilePictureLink: imageUrl }));
-      showToast("Profile picture preview updated. Press 'Save' to make it permanent.", 'success');
-    };
-    reader.readAsDataURL(file);
-  };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50">
-        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
-      </div>
-    );
+    return <div className="flex items-center justify-center min-h-screen bg-slate-50"><Loader2 className="w-12 h-12 animate-spin text-blue-600" /></div>;
   }
 
   if (error || !studentData) {
@@ -177,46 +153,29 @@ const StudentProfile = () => {
 
   const renderBasicInfo = () => (
     <div className="space-y-6">
-      {/* Personal Information */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-slate-800">Personal Information</h3>
-          {!isEditing ? (
-            <button onClick={handleEdit} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"><Edit3 size={16} /> Edit Profile</button>
-          ) : (
-            <div className="flex gap-2"><button onClick={handleSave} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"><Save size={16} /> Save Changes</button><button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-slate-500 text-white rounded-lg hover:bg-slate-600">Cancel</button></div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <InfoField label="Full Name" value={studentData.name} icon={User} isEditing={false} />
-            <InfoField label="Registration No." value={studentData.registrationNumber} icon={FileText} isEditing={false} className="font-mono text-blue-600"/>
-            <InfoField label="Roll Number" value={studentData.rollNumber} icon={FileText} isEditing={false} />
-            <InfoField label="Email" value={studentData.email} icon={Mail} isEditing={false} />
+        <h3 className="text-xl font-semibold text-slate-800 mb-4">Personal & Contact</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <InfoField label="Phone" value={isEditing ? editedData.phone : studentData.phone} icon={Phone} isEditing={isEditing} onChange={(e) => handleInputChange('phone', e.target.value)} />
             <InfoField label="Alternate Phone" value={isEditing ? editedData.alternatePhone : studentData.alternatePhone} icon={Phone} isEditing={isEditing} onChange={(e) => handleInputChange('alternatePhone', e.target.value)} />
-            <InfoField label="Date of Birth" value={studentData?.dob} icon={Calendar} isEditing={false} type="date" />
-            <InfoField label="Gender" value={studentData?.gender} icon={Users} isEditing={false} className="capitalize" />
-            <InfoField label="Blood Group" value={studentData?.bloodGroup} icon={AlertCircle} isEditing={false} />
+            <InfoField label="Email" value={studentData.email} icon={Mail} isEditing={false} />
+            <InfoField label="Date of Birth" value={studentData.dob} icon={Calendar} isEditing={false} type="date"/>
+            <InfoField label="Gender" value={studentData.gender} icon={Users} isEditing={false} />
+            <InfoField label="Blood Group" value={studentData.bloodGroup} icon={AlertCircle} isEditing={false} />
         </div>
       </div>
-      
-      {/* Parent/Guardian & Address */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <h3 className="text-xl font-semibold text-slate-800 mb-4">Family Information</h3>
-            <div className="space-y-4">
-                <InfoField label="Father's Name" value={isEditing ? editedData?.fatherName : studentData?.fatherName} icon={User} isEditing={isEditing} onChange={(e) => handleInputChange('fatherName', e.target.value, 'personalDetails')} />
-                <InfoField label="Mother's Name" value={isEditing ? editedData?.motherName : studentData?.motherName} icon={User} isEditing={isEditing} onChange={(e) => handleInputChange('motherName', e.target.value, 'personalDetails')} />
-                <InfoField label="Parent's Contact" value={isEditing ? editedData?.parentsNumber : studentData?.parentsNumber} icon={Phone} isEditing={isEditing} onChange={(e) => handleInputChange('parentsNumber', e.target.value, 'personalDetails')} />
-            </div>
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h3 className="text-xl font-semibold text-slate-800 mb-4">Family Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <InfoField label="Father's Name" value={studentData.fatherName} icon={User} isEditing={false} onChange={(e) => handleInputChange('fatherName', e.target.value)} />
+            <InfoField label="Mother's Name" value={studentData.motherName} icon={User} isEditing={false} onChange={(e) => handleInputChange('motherName', e.target.value)} />
+            <InfoField label="Parent's Contact" value={isEditing ? editedData.parentsNumber : studentData.parentsNumber} icon={Phone} isEditing={isEditing} onChange={(e) => handleInputChange('parentsNumber', e.target.value)} />
+            <InfoField label="Guardian Name" value={isEditing ? editedData.guardianName : studentData.guardianName} icon={User} isEditing={isEditing} onChange={(e) => handleInputChange('guardianName', e.target.value)} />
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <h3 className="text-xl font-semibold text-slate-800 mb-4">Address Information</h3>
-            <div className="space-y-4">
-                <InfoField label="Street Address" value={isEditing ? editedData?.address : studentData?.address} icon={MapPin} isEditing={isEditing} onChange={(e) => handleInputChange('street', e.target.value, 'address')} />
-            </div>
-        </div>
+      </div>
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h3 className="text-xl font-semibold text-slate-800 mb-4">Address Information</h3>
+        <InfoField label="Address" value={isEditing ? editedData.address : studentData.address} icon={MapPin} isEditing={isEditing} onChange={(e) => handleInputChange('address', e.target.value)} />
       </div>
     </div>
   );
@@ -226,29 +185,14 @@ const StudentProfile = () => {
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <h3 className="text-xl font-semibold text-slate-800 mb-6">Academic Summary</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center p-4 bg-blue-50 rounded-xl"><Award className="mx-auto mb-2 text-blue-600" size={28} /><p className="text-3xl font-bold text-blue-800">{studentData.academicDetails?.currentCGPA || 'N/A'}</p><p className="text-sm text-slate-600">Current CGPA</p></div>
-          <div className="text-center p-4 bg-green-50 rounded-xl"><UserCheck className="mx-auto mb-2 text-green-600" size={28} /><p className="text-3xl font-bold text-green-800">{studentData.academicDetails?.attendance || 'N/A'}</p><p className="text-sm text-slate-600">Attendance</p></div>
+          <div className="text-center p-4 bg-blue-50 rounded-xl"><Award className="mx-auto mb-2 text-blue-600" size={28} /><p className="text-3xl font-bold text-blue-800">{studentData.courseId || 'N/A'}</p><p className="text-sm text-slate-600">Course ID</p></div>
+          <div className="text-center p-4 bg-green-50 rounded-xl"><UserCheck className="mx-auto mb-2 text-green-600" size={28} /><p className="text-3xl font-bold text-green-800">{studentData.batch || 'N/A'}</p><p className="text-sm text-slate-600">Batch</p></div>
           <div className="text-center p-4 bg-purple-50 rounded-xl"><Clock className="mx-auto mb-2 text-purple-600" size={28} /><p className="text-3xl font-bold text-purple-800">{studentData.semester || 'N/A'}</p><p className="text-sm text-slate-600">Current Semester</p></div>
-        </div>
-      </div>
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h3 className="text-xl font-semibold text-slate-800 mb-6">Current Semester Subjects</h3>
-        <div className="space-y-3">
-          {(studentData.academicDetails?.currentSubjects || []).length > 0 ? (
-              studentData.academicDetails.currentSubjects.map((subject, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                    <div className="flex items-center gap-4"><Book className="text-blue-500" size={20} /><div><p className="font-semibold text-slate-800">{subject.name}</p><p className="text-sm text-slate-500">Code: {subject.code}</p></div></div>
-                    <div className="text-right"><p className="font-semibold text-blue-800">{subject.credits} Credits</p></div>
-                </div>
-              ))
-          ) : (
-            <p className="text-center text-slate-500 py-4">No subjects found for the current semester.</p>
-          )}
         </div>
       </div>
     </div>
   );
-  
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'basic-info': return renderBasicInfo();
@@ -258,25 +202,27 @@ const StudentProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       {toast && <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-      <div className="max-w-7xl mx-auto py-8">
+      <div className="">
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-5">
-              <div className="relative">
-                <img src={studentData.profilePictureLink || `https://ui-avatars.com/api/?name=${studentData.name}&background=random`} alt="Profile" className="w-24 h-24 rounded-full object-cover border-4 border-blue-500" />
-                {isEditing && (<label className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700"><Camera size={16} /><input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e.target.files[0])} /></label>)}
-              </div>
+              <img src={studentData.profilePictureLink || `https://ui-avatars.com/api/?name=${studentData.name}&background=random`} alt="Profile" className="w-24 h-24 rounded-full object-cover border-4 border-blue-500" />
               <div>
                 <h1 className="text-3xl font-bold text-slate-800">{studentData.name}</h1>
-                <p className="text-slate-600">{studentData?.course || 'N/A'}</p>
+                <p className="text-slate-600">{studentData.courseId || 'Course Not Assigned'}</p>
                 <p className="text-sm text-blue-600 font-mono mt-1">{studentData.registrationNumber}</p>
               </div>
             </div>
-            <div className="text-right">
-                <div className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full mb-2"><div className="w-2 h-2 bg-green-500 rounded-full"></div><span className="font-medium text-sm">Active Student</span></div>
-            </div>
+            {!isEditing ? (
+              <button onClick={handleEdit} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"><Edit3 size={16} /> Edit Profile</button>
+            ) : (
+              <div className="flex gap-2">
+                <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300">Cancel</button>
+                <button onClick={handleSave} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"><Save size={16} /> Save Changes</button>
+              </div>
+            )}
           </div>
         </div>
 
