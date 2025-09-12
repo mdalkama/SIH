@@ -114,7 +114,7 @@ const News = () => {
         </div>
 
         {/* News Carousel Container */}
-        <div className="relative">
+        <div className="relative ">
           {/* Navigation Buttons */}
           <button
             onClick={prevSlide}
@@ -135,13 +135,13 @@ const News = () => {
           </button>
 
           {/* News Cards Container */}
-          <div className="overflow-hidden mx-12">
+          <div className="overflow-hidden  p-[20px] mx-12">
             <div 
               className="flex transition-transform duration-500 ease-in-out"
               style={{ transform: `translateX(-${currentSlide * 100}%)` }}
             >
               {Array.from({ length: totalSlides }).map((_, slideIndex) => (
-                <div key={slideIndex} className="w-full flex-shrink-0">
+                <div key={slideIndex} className="w-full flex flex-shrink-0">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {newsData.slice(slideIndex * itemsPerSlide, (slideIndex + 1) * itemsPerSlide).map((news) => (
                       <div

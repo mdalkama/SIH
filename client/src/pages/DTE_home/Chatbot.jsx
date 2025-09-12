@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { MessageCircle, X, Send, Bot, User } from 'lucide-react'
+import { X, Send, Bot, BotMessageSquare , User } from 'lucide-react'
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -95,7 +95,7 @@ const Chatbot = () => {
             onClick={() => setIsOpen(!isOpen)}
             className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full backdrop-blur-xl border transition-all duration-300 hover:scale-110 shadow-lg flex items-center justify-center group"
             style={{
-              background: 'transparent',
+              "background-color": "white",
               borderColor: `var(--theme-glass-border)`,
               color: `var(--theme-text)`
             }}
@@ -103,7 +103,7 @@ const Chatbot = () => {
             {isOpen ? (
               <X className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-transform duration-300 group-hover:rotate-90" />
             ) : (
-              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-transform duration-300 group-hover:bounce" />
+                <BotMessageSquare className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-transform duration-300 group-hover:bounce" />
             )}
           </button>
 
@@ -112,7 +112,7 @@ const Chatbot = () => {
             <div 
               className="absolute bottom-12 sm:bottom-16 right-0 w-80 sm:w-96 h-96 sm:h-[500px] backdrop-blur-xl rounded-2xl border shadow-2xl overflow-hidden animate-fade-in-up"
               style={{
-                background: 'transparent',
+                background: 'white',
                 borderColor: `var(--theme-glass-border)`
               }}
             >

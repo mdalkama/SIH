@@ -43,7 +43,7 @@ const ThemeSwitcher = () => {
   const applyTheme = (themeName) => {
     const theme = themes[themeName]
     const root = document.documentElement
-    
+
     // Set CSS custom properties
     root.style.setProperty('--theme-primary', theme.primary)
     root.style.setProperty('--theme-background', theme.background)
@@ -56,10 +56,10 @@ const ThemeSwitcher = () => {
     root.style.setProperty('--theme-navbar-background', theme.navbarBackground)
     root.style.setProperty('--theme-carousel-overlay', theme.carouselOverlay)
     root.style.setProperty('--theme-logo-filter', theme.logoFilter)
-    
+
     // Add theme class to body
     document.body.className = `theme-${themeName}`
-    
+
     // Store in localStorage
     localStorage.setItem('dte-theme', themeName)
   }
@@ -90,7 +90,7 @@ const ThemeSwitcher = () => {
             onClick={() => setIsOpen(!isOpen)}
             className="w-14 h-14 rounded-full backdrop-blur-xl border transition-all duration-300 hover:scale-110 shadow-lg flex items-center justify-center group"
             style={{
-              background: `var(--theme-glass-gradient)`,
+              background: "white",
               borderColor: `var(--theme-glass-border)`,
               color: `var(--theme-text)`
             }}
@@ -100,7 +100,7 @@ const ThemeSwitcher = () => {
 
           {/* Theme Options Popup */}
           {isOpen && (
-            <div 
+            <div
               className="absolute bottom-16 left-0 w-64 backdrop-blur-xl rounded-2xl border shadow-2xl overflow-hidden animate-fade-in-up"
               style={{
                 background: `var(--theme-glass-gradient)`,
@@ -108,44 +108,43 @@ const ThemeSwitcher = () => {
               }}
             >
               <div className="p-4">
-                <h3 
+                <h3
                   className="text-sm font-semibold mb-3 flex items-center"
                   style={{ color: `var(--theme-text)` }}
                 >
                   <Palette className="w-4 h-4 mr-2" />
                   Choose Theme
                 </h3>
-                
+
                 <div className="space-y-2">
                   {Object.entries(themes).map(([themeKey, theme]) => {
                     const ThemeIcon = theme.icon
                     const isActive = currentTheme === themeKey
-                    
+
                     return (
                       <button
                         key={themeKey}
                         onClick={() => handleThemeChange(themeKey)}
-                        className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 border ${
-                          isActive 
-                            ? 'border-blue-400 shadow-md' 
+                        className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 border ${isActive
+                            ? 'border-blue-400 shadow-md'
                             : 'border-transparent hover:border-blue-300'
-                        }`}
+                          }`}
                         style={{
-                          background: isActive 
-                            ? 'rgba(59, 130, 246, 0.1)' 
+                          background: isActive
+                            ? 'rgba(59, 130, 246, 0.1)'
                             : 'rgba(255, 255, 255, 0.05)',
                           color: `var(--theme-text)`
                         }}
                       >
-                        <div 
+                        <div
                           className="w-8 h-8 rounded-full flex items-center justify-center"
-                          style={{ 
+                          style={{
                             background: theme.background,
                             border: `1px solid ${theme.glassBorder}`
                           }}
                         >
-                          <ThemeIcon 
-                            className="w-4 h-4" 
+                          <ThemeIcon
+                            className="w-4 h-4"
                             style={{ color: theme.text }}
                           />
                         </div>
@@ -165,8 +164,8 @@ const ThemeSwitcher = () => {
 
       {/* Click outside to close */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 z-[90]" 
+        <div
+          className="fixed inset-0 z-[90]"
           onClick={() => setIsOpen(false)}
         />
       )}
