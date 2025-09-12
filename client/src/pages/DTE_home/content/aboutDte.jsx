@@ -65,7 +65,7 @@ const AboutDte = () => {
     }
   }, [hasAnimated])
   return (
-    <div className="theme-bg py-12">
+    <div id="about-dte-section" className="theme-bg py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* About DTE Hero Section */}
         <div className="relative h-96 md:h-[500px] lg:h-[600px] rounded-2xl overflow-hidden shadow-2xl">
@@ -89,6 +89,11 @@ const AboutDte = () => {
                     Department of Technical Education, Rajasthan
                   </span>
                 </p>
+                <div className="mt-8 bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
+                  <p className="text-sm sm:text-base md:text-lg leading-relaxed">
+                    The Directorate of Technical Education (DTE), Rajasthan was established in August 1956 under the recommendation of the All India Council for Technical Education (AICTE). Its headquarters are located in Jodhpur.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -103,7 +108,7 @@ const AboutDte = () => {
         {/* About Content Section */}
         <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Left Content */}
-          <div className="theme-surface rounded-lg shadow-lg p-8">
+          <div id="mission-section" className="theme-surface rounded-lg shadow-lg p-8">
             <h2 className="text-3xl font-bold theme-text mb-6">
               Our Mission
             </h2>
@@ -128,10 +133,15 @@ const AboutDte = () => {
           </div>
 
           {/* Right Content */}
-          <div className="theme-surface rounded-lg shadow-lg p-8">
+          <div id="vision-section" className="theme-surface rounded-lg shadow-lg p-8">
             <h2 className="text-3xl font-bold theme-text mb-6">
               Our Vision
             </h2>
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 mb-6 border-l-4 border-blue-500">
+              <p className="text-lg font-medium text-blue-800 dark:text-blue-200 leading-relaxed italic">
+                "To enhance the competitiveness of State's technical manpower to global standards by imparting high quality & state of art Technical Education and Training to all sections of the society."
+              </p>
+            </div>
             <p className="text-lg theme-text-secondary leading-relaxed mb-6">
               To be a premier institution in technical education, creating skilled professionals who contribute 
               to the technological advancement and economic development of Rajasthan and the nation.

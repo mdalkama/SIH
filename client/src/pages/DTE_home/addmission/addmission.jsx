@@ -5,30 +5,66 @@ import Footer from '../footer';
 const Admission = ({ admissionType }) => {
   // Determine content based on admission type
   const getTitle = () => {
-    if (admissionType === 'engineering') {
-      return 'Diploma First Year Admissions (Engineering Courses)';
-    } else if (admissionType === 'non-engineering') {
-      return 'Diploma First Year Admissions (Non-Engineering Courses)';
+    switch (admissionType) {
+      case 'engineering':
+        return 'Diploma First Year Admissions (Engineering Courses)';
+      case 'non-engineering':
+        return 'Diploma First Year Admissions (Non-Engineering Courses)';
+      case 'diploma-engineering-first-year':
+        return 'First Year Diploma Engineering Admissions';
+      case 'diploma-engineering-lateral-entry':
+        return 'Lateral Entry Diploma Engineering Admissions';
+      case 'diploma-non-engineering-first-year':
+        return 'First Year Diploma Non-Engineering Admissions';
+      case 'diploma-non-engineering-second-year-graduate':
+        return 'Second Year Graduate Non-Engineering Courses Admissions';
+      case 'diploma-non-engineering-first-year-degree':
+        return 'First Year Degree Non-Engineering Admissions';
+      default:
+        return 'Select Admission Type';
     }
-    return 'Select Admission Type';
   };
 
   const getDescription = () => {
-    if (admissionType === 'engineering') {
-      return 'Welcome to the admission portal for Diploma First Year Engineering Courses. Please fill out the application form below to begin your admission process.';
-    } else if (admissionType === 'non-engineering') {
-      return 'Welcome to the admission portal for Diploma First Year Non-Engineering Courses. Please fill out the application form below to begin your admission process.';
+    switch (admissionType) {
+      case 'engineering':
+        return 'Welcome to the admission portal for Diploma First Year Engineering Courses. Please fill out the application form below to begin your admission process.';
+      case 'non-engineering':
+        return 'Welcome to the admission portal for Diploma First Year Non-Engineering Courses. Please fill out the application form below to begin your admission process.';
+      case 'diploma-engineering-first-year':
+        return 'Welcome to the admission portal for First Year Diploma Engineering Courses. Please fill out the application form below to begin your admission process.';
+      case 'diploma-engineering-lateral-entry':
+        return 'Welcome to the admission portal for Lateral Entry Diploma Engineering Courses. Please fill out the application form below to begin your admission process.';
+      case 'diploma-non-engineering-first-year':
+        return 'Welcome to the admission portal for First Year Diploma Non-Engineering Courses. Please fill out the application form below to begin your admission process.';
+      case 'diploma-non-engineering-second-year-graduate':
+        return 'Welcome to the admission portal for Second Year Graduate Non-Engineering Courses. Please fill out the application form below to begin your admission process.';
+      case 'diploma-non-engineering-first-year-degree':
+        return 'Welcome to the admission portal for First Year Degree Non-Engineering Courses. Please fill out the application form below to begin your admission process.';
+      default:
+        return 'Please select the type of admission you are interested in.';
     }
-    return 'Please select the type of admission you are interested in.';
   };
 
   const getFormText = () => {
-    if (admissionType === 'engineering') {
-      return 'Admission Form for Engineering Courses will be available here';
-    } else if (admissionType === 'non-engineering') {
-      return 'Admission Form for Non-Engineering Courses will be available here';
+    switch (admissionType) {
+      case 'engineering':
+        return 'Admission Form for Engineering Courses will be available here';
+      case 'non-engineering':
+        return 'Admission Form for Non-Engineering Courses will be available here';
+      case 'diploma-engineering-first-year':
+        return 'Admission Form for First Year Diploma Engineering will be available here';
+      case 'diploma-engineering-lateral-entry':
+        return 'Admission Form for Lateral Entry Diploma Engineering will be available here';
+      case 'diploma-non-engineering-first-year':
+        return 'Admission Form for First Year Diploma Non-Engineering will be available here';
+      case 'diploma-non-engineering-second-year-graduate':
+        return 'Admission Form for Second Year Graduate Non-Engineering will be available here';
+      case 'diploma-non-engineering-first-year-degree':
+        return 'Admission Form for First Year Degree Non-Engineering will be available here';
+      default:
+        return 'Admission Form will be available here';
     }
-    return 'Admission Form will be available here';
   };
 
   return (

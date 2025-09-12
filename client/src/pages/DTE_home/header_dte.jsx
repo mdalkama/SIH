@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { ChevronDown, Menu, X, Search, Globe, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronRight, ChevronLeft, Globe, Menu, X, Phone, Mail, MapPin } from 'lucide-react'
 import { useLocation, Link } from 'react-router-dom'
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [activeDropdown, setActiveDropdown] = useState(null)
+  const [hoverTimeout, setHoverTimeout] = useState(null)
   const [isScrolled, setIsScrolled] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState('हिंदी')
   const location = useLocation()
@@ -37,39 +38,57 @@ const Header = () => {
     }
   ]
 
+  // Scroll to About Us section
+  const scrollToAboutUs = () => {
+    const aboutSection = document.getElementById('about-dte-section');
+    if (aboutSection) {
+      aboutSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Scroll to Mission section
+  const scrollToMission = () => {
+    const missionSection = document.getElementById('mission-section');
+    if (missionSection) {
+      missionSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Scroll to Vision section
+  const scrollToVision = () => {
+    const visionSection = document.getElementById('vision-section');
+    if (visionSection) {
+      visionSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   // Navigation structure with multi-level dropdowns for Government of Rajasthan
   const navigationItems = [
     {
       name: 'About Us',
       items: [
-        { 
-          name: 'Organization', 
-          subitems: ['About DTE', 'Vision & Mission', 'History', 'Organizational Chart'] 
-        },
-        { 
-          name: 'Administration', 
-          subitems: ['Director Message', 'Joint Director', 'Deputy Director', 'Assistant Director'] 
-        },
-        { 
-          name: 'Policies', 
-          subitems: ['Education Policy', 'Admission Policy', 'Assessment Policy'] 
-        },
-        { 
-          name: 'Achievements', 
-          subitems: ['Awards', 'Recognition', 'Success Stories'] 
-        }
+        { name: 'About Us', action: scrollToAboutUs },
+        { name: 'Mission', action: scrollToMission },
+        { name: 'Vision', action: scrollToVision }
       ]
     },
     {
       name: 'Admissions',
       items: [
         { 
-          name: 'Diploma First Year Admissions (Engineering Courses)', 
-          path: '/admission/engineering'
+          name: 'Diploma Engineering', 
+          subitems: [
+            { name: 'First Year Diploma Engineering', path: '/admission/diploma-engineering-first-year' },
+            { name: 'Lateral Entry Diploma Engineering', path: '/admission/diploma-engineering-lateral-entry' }
+          ]
         },
         { 
-          name: 'Diploma First Year Admissions (Non-Engineering Courses)', 
-          path: '/admission/non-engineering'
+          name: 'Diploma Non-Engineering', 
+          subitems: [
+            { name: 'First Year Diploma Non-Engineering', path: '/admission/diploma-non-engineering-first-year' },
+            { name: 'Second Year Graduate Non-Engineering Courses', path: '/admission/diploma-non-engineering-second-year-graduate' },
+            { name: 'First Year Degree Non-Engineering', path: '/admission/diploma-non-engineering-first-year-degree' }
+          ]
         }
       ]
     },
@@ -223,12 +242,33 @@ const Header = () => {
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY
-      setIsScrolled(scrollPosition > 300) // Trigger when scrolled past carousel
+      setIsScrolled(window.scrollY > 50)
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Handle dropdown hover with delay
+  const handleDropdownEnter = (index) => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout)
+    }
+    setActiveDropdown(index)
+  }
+
+  const handleDropdownLeave = () => {
+    const timeout = setTimeout(() => {
+      setActiveDropdown(null)
+    }, 1500) // 1500ms delay before closing (increased for better stability)
+    setHoverTimeout(timeout)
+  }
+
+  const handleDropdownStay = () => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout)
+      setHoverTimeout(null)
+    }
+  }
 
   // Add body padding when navbar is sticky
   useEffect(() => {
@@ -450,8 +490,8 @@ const Header = () => {
                       <div 
                         key={index} 
                         className="relative group"
-                        onMouseEnter={() => setActiveDropdown(index)}
-                        onMouseLeave={() => setActiveDropdown(null)}
+                        onMouseEnter={() => handleDropdownEnter(index)}
+                        onMouseLeave={handleDropdownLeave}
                       >
                         <button
                           className="px-2 xl:px-3 py-3 text-white font-medium text-xs hover:bg-blue-500/20 transition-all duration-300 flex items-center space-x-1 border-b-2 border-transparent hover:border-blue-400 hover:text-blue-300"
@@ -464,9 +504,13 @@ const Header = () => {
 
                         {/* Enhanced Glass Morphism Dropdown - ONLY on home page */}
                         {item.items.length > 0 && activeDropdown === index && (
-                          <div className={`absolute top-full mt-0 w-96 z-[80] ${
-                            index > navigationItems.length / 2 ? 'right-0' : 'left-0'
-                          }`}>
+                          <div 
+                            className={`absolute top-full mt-0 w-96 z-[80] ${
+                              index > navigationItems.length / 2 ? 'right-0' : 'left-0'
+                            }`}
+                            onMouseEnter={handleDropdownStay}
+                            onMouseLeave={handleDropdownLeave}
+                          >
                             <div className="glass-dropdown rounded-2xl shadow-2xl overflow-visible animate-fade-in-up">
                               <div className="backdrop-blur-xl p-6 space-y-2">
                                 <h3 className="text-lg font-bold mb-4 border-b border-blue-400 pb-2 flex items-center">
@@ -484,10 +528,61 @@ const Header = () => {
                                           <span className="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover/sub:opacity-100 transition-opacity"></span>
                                           {subItem.name}
                                         </span>
-                                        {subItem.subitems && subItem.subitems.length > 0 && (
-                                          <ChevronDown className="w-3 h-3 rotate-[-90deg] transition-transform duration-300 group-hover/sub:rotate-[-45deg]" />
-                                        )}
                                       </Link>
+                                    ) : subItem.action ? (
+                                      <button
+                                        onClick={subItem.action}
+                                        className="flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 font-medium text-sm border border-transparent hover:border-blue-200 hover:shadow-md backdrop-blur-sm w-full text-left"
+                                      >
+                                        <span className="flex items-center">
+                                          <span className="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover/sub:opacity-100 transition-opacity"></span>
+                                          {subItem.name}
+                                        </span>
+                                      </button>
+                                    ) : subItem.subitems ? (
+                                      <div className="group/nested relative">
+                                        <div 
+                                          className="flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 font-medium text-sm border border-transparent hover:border-blue-200 hover:shadow-md backdrop-blur-sm cursor-pointer"
+                                          style={{ paddingRight: '50px' }}
+                                        >
+                                          <span className="flex items-center">
+                                            <span className="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover/sub:opacity-100 transition-opacity"></span>
+                                            {subItem.name}
+                                          </span>
+                                          <ChevronRight className="w-4 h-4 text-blue-400" />
+                                        </div>
+                                        {/* Nested Dropdown */}
+                                        <div 
+                                          className="absolute left-full top-0 ml-0 w-80 opacity-0 invisible group-hover/nested:opacity-100 group-hover/nested:visible transition-all duration-700 z-[90]"
+                                          onMouseEnter={handleDropdownStay}
+                                          onMouseLeave={handleDropdownLeave}
+                                          style={{
+                                            left: '95%',
+                                            top: '-10px',
+                                            paddingLeft: '10px'
+                                          }}
+                                        >
+                                          <div className="glass-dropdown rounded-2xl shadow-2xl overflow-visible animate-fade-in-up">
+                                            <div className="backdrop-blur-xl p-4 space-y-1">
+                                              <h4 className="text-sm font-bold mb-3 border-b border-blue-400 pb-2 flex items-center">
+                                                <span className="w-1 h-4 bg-blue-500 rounded-full mr-2"></span>
+                                                {subItem.name}
+                                              </h4>
+                                              {subItem.subitems.map((nestedItem, nestedIndex) => (
+                                                <Link
+                                                  key={nestedIndex}
+                                                  to={nestedItem.path}
+                                                  className="flex items-center px-3 py-2 rounded-lg transition-all duration-300 font-medium text-xs border border-transparent hover:border-blue-200 hover:shadow-md backdrop-blur-sm group/nested-item"
+                                                  onClick={() => setActiveDropdown(null)}
+                                                >
+                                                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2 opacity-0 group-hover/nested-item:opacity-100 transition-opacity"></span>
+                                                  {nestedItem.name}
+                                                </Link>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
                                     ) : (
                                       <a
                                         href="#"
@@ -497,36 +592,7 @@ const Header = () => {
                                           <span className="w-2 h-2 bg-blue-400 rounded-full mr-3 opacity-0 group-hover/sub:opacity-100 transition-opacity"></span>
                                           {subItem.name}
                                         </span>
-                                        {subItem.subitems && subItem.subitems.length > 0 && (
-                                          <ChevronDown className="w-3 h-3 rotate-[-90deg] transition-transform duration-300 group-hover/sub:rotate-[-45deg]" />
-                                        )}
                                       </a>
-                                    )}
-                                    
-                                    {/* Second Level Dropdown */}
-                                    {subItem.subitems && subItem.subitems.length > 0 && (
-                                      <div className={`absolute top-0 w-80 glass-dropdown rounded-xl shadow-2xl overflow-hidden opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-500 transform z-[90] ${
-                                        index > navigationItems.length / 2 
-                                          ? 'right-full mr-3 translate-x-2 group-hover/sub:translate-x-0' 
-                                          : 'left-full ml-3 translate-x-4 group-hover/sub:translate-x-0'
-                                      }`}>
-                                        <div className="backdrop-blur-xl h-full p-5 space-y-1">
-                                          <h4 className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-3 border-b border-blue-400/50 pb-2 flex items-center">
-                                            <span className="w-1 h-4 bg-blue-500 rounded-full mr-2"></span>
-                                            {subItem.name}
-                                          </h4>
-                                          {subItem.subitems.map((subSubItem, subSubIndex) => (
-                                            <a
-                                              key={subSubIndex}
-                                              href="#"
-                                              className="flex items-center px-3 py-2 text-sm rounded-lg transition-all duration-200 border border-transparent hover:border-blue-200 hover:translate-x-1 backdrop-blur-sm group/subsub"
-                                            >
-                                              <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3 opacity-60 group-hover/subsub:opacity-100 transition-opacity"></span>
-                                              {subSubItem}
-                                            </a>
-                                          ))}
-                                        </div>
-                                      </div>
                                     )}
                                   </div>
                                 ))}
@@ -569,8 +635,8 @@ const Header = () => {
                     <div 
                       key={index} 
                       className="relative group"
-                      onMouseEnter={() => setActiveDropdown(index)}
-                      onMouseLeave={() => setActiveDropdown(null)}
+                      onMouseEnter={() => handleDropdownEnter(index)}
+                      onMouseLeave={handleDropdownLeave}
                     >
                       <button
                         className="px-2 xl:px-3 py-3 text-white font-medium text-xs hover:bg-gray-800 transition-all duration-300 flex items-center space-x-1 border-b-2 border-transparent hover:border-blue-400 hover:text-blue-300"
@@ -583,9 +649,13 @@ const Header = () => {
 
                       {/* Solid Dropdown - NO glass effects on non-home pages */}
                       {item.items.length > 0 && activeDropdown === index && (
-                        <div className={`absolute top-full mt-0 w-96 z-[80] ${
-                          index > navigationItems.length / 2 ? 'right-0' : 'left-0'
-                        }`}>
+                        <div 
+                          className={`absolute top-full mt-0 w-96 z-[80] ${
+                            index > navigationItems.length / 2 ? 'right-0' : 'left-0'
+                          }`}
+                          onMouseEnter={handleDropdownStay}
+                          onMouseLeave={handleDropdownLeave}
+                        >
                           <div className="bg-white rounded-lg shadow-2xl overflow-visible animate-fade-in-up border border-gray-200">
                             <div className="p-4 space-y-1">
                               <h3 className="text-lg font-bold mb-3 border-b border-gray-200 pb-2 text-gray-800">
@@ -603,6 +673,59 @@ const Header = () => {
                                         {subItem.name}
                                       </span>
                                     </Link>
+                                  ) : subItem.action ? (
+                                    <button
+                                      onClick={subItem.action}
+                                      className="flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-300 font-medium text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left"
+                                    >
+                                      <span className="flex items-center">
+                                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+                                        {subItem.name}
+                                      </span>
+                                    </button>
+                                  ) : subItem.subitems ? (
+                                    <div className="group/nested relative">
+                                      <div 
+                                        className="flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-300 font-medium text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
+                                        style={{ paddingRight: '50px' }}
+                                      >
+                                        <span className="flex items-center">
+                                          <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+                                          {subItem.name}
+                                        </span>
+                                        <ChevronRight className="w-4 h-4 text-gray-500" />
+                                      </div>
+                                      {/* Nested Dropdown for non-home pages */}
+                                      <div 
+                                        className="absolute left-full top-0 ml-0 w-80 opacity-0 invisible group-hover/nested:opacity-100 group-hover/nested:visible transition-all duration-700 z-[90]"
+                                        onMouseEnter={handleDropdownStay}
+                                        onMouseLeave={handleDropdownLeave}
+                                        style={{
+                                          left: '95%',
+                                          top: '-10px',
+                                          paddingLeft: '10px'
+                                        }}
+                                      >
+                                        <div className="bg-white rounded-lg shadow-2xl overflow-visible animate-fade-in-up border border-gray-200">
+                                          <div className="p-4 space-y-1">
+                                            <h4 className="text-sm font-bold mb-3 border-b border-gray-200 pb-2 text-gray-800">
+                                              {subItem.name}
+                                            </h4>
+                                            {subItem.subitems.map((nestedItem, nestedIndex) => (
+                                              <Link
+                                                key={nestedIndex}
+                                                to={nestedItem.path}
+                                                className="flex items-center px-3 py-2 rounded-lg transition-all duration-300 font-medium text-xs text-gray-600 hover:bg-gray-100 hover:text-gray-800 group/nested-item"
+                                                onClick={() => setActiveDropdown(null)}
+                                              >
+                                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
+                                                {nestedItem.name}
+                                              </Link>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
                                   ) : (
                                     <a
                                       href="#"
@@ -663,6 +786,34 @@ const Header = () => {
                             >
                               {subItem.name}
                             </Link>
+                          ) : subItem.action ? (
+                            <button
+                              onClick={() => {
+                                subItem.action();
+                                setIsMenuOpen(false);
+                              }}
+                              className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors backdrop-blur-sm border-l-2 border-transparent hover:border-blue-400 w-full text-left"
+                            >
+                              {subItem.name}
+                            </button>
+                          ) : subItem.subitems ? (
+                            <div className="space-y-1">
+                              <div className="px-3 py-2 text-sm text-gray-300 font-medium border-l-2 border-blue-400">
+                                {subItem.name}
+                              </div>
+                              <div className="ml-4 space-y-1">
+                                {subItem.subitems.map((nestedItem, nestedIndex) => (
+                                  <Link
+                                    key={nestedIndex}
+                                    to={nestedItem.path}
+                                    className="block px-3 py-2 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors backdrop-blur-sm border-l-2 border-transparent hover:border-green-400"
+                                    onClick={() => setIsMenuOpen(false)}
+                                  >
+                                    {nestedItem.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
                           ) : (
                             <a
                               href="#"
@@ -670,19 +821,6 @@ const Header = () => {
                             >
                               {subItem.name}
                             </a>
-                          )}
-                          {subItem.subitems && subItem.subitems.length > 0 && (
-                            <div className="ml-4 mt-1 space-y-1">
-                              {subItem.subitems.map((subSubItem, subSubIndex) => (
-                                <a
-                                  key={subSubIndex}
-                                  href="#"
-                                  className="block px-2 py-1 text-xs text-gray-500 hover:text-gray-300 transition-colors backdrop-blur-sm hover:translate-x-1"
-                                >
-                                  • {subSubItem}
-                                </a>
-                              ))}
-                            </div>
                           )}
                         </div>
                       ))}
