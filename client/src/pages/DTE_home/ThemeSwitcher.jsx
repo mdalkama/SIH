@@ -292,7 +292,7 @@ const ThemeSwitcher = () => {
           color: #f1f5f9 !important;
         }
 
-        .theme-dark .hover\:text-blue-600:hover {
+        .theme-dark .hover:text-blue-600:hover {
           color: #60a5fa !important;
         }
 
@@ -451,7 +451,7 @@ const ThemeSwitcher = () => {
 
         /* Enhanced glassmorphism multi-level dropdown enhancements */
         .glass-dropdown .group\\/sub:hover > div {
-          transform: translateX(0) scale(1.02);
+erro          transform: translateX(0) scale(1.02);
           opacity: 1;
           visibility: visible;
           backdrop-filter: blur(30px) saturate(200%) brightness(110%) !important;
