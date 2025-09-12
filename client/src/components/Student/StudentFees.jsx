@@ -284,9 +284,9 @@ const FeesDashboard = () => {
     );
 
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
-            <div className="max-w-6xl mx-auto p-4 sm:p-6">
+            <div className="">
                 {paymentData && (
                     <>
                         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
