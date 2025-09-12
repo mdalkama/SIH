@@ -231,3 +231,27 @@ export const getMyVisitors = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+export const getMyFees = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const studentHostel = await StudentHostel.findOne({ occupant: studentId })
+      .select("fees")
+      .lean();
+
+    if (!studentHostel) {
+      return res.json({ success: true, data: [] });
+    }
+
+    // Sort fees by month in descending order (newest first)
+    const sortedFees = studentHostel.fees.sort((a, b) => {
+      if (a.month < b.month) return 1;
+      if (a.month > b.month) return -1;
+      return 0;
+    });
+
+    res.json({ success: true, data: sortedFees });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
