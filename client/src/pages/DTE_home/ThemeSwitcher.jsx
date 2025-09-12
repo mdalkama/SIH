@@ -69,7 +69,7 @@ const ThemeSwitcher = () => {
     const savedTheme = localStorage.getItem('dte-theme') || 'light'
     setCurrentTheme(savedTheme)
     applyTheme(savedTheme)
-  }, [])
+  }, [applyTheme])
 
   // Handle theme change
   const handleThemeChange = (themeName) => {
@@ -330,15 +330,15 @@ const ThemeSwitcher = () => {
           border-color: rgba(255, 255, 255, 0.1) !important;
         }
 
-        .theme-dark .hover\:text-blue-800:hover {
+        .theme-dark .hover\\:text-blue-800:hover {
           color: #60a5fa !important;
         }
 
-        .theme-dark .hover\:text-red-700:hover {
+        .theme-dark .hover\\:text-red-700:hover {
           color: #f87171 !important;
         }
 
-        .theme-dark .hover\:text-purple-700:hover {
+        .theme-dark .hover\\:text-purple-700:hover {
           color: #c084fc !important;
         }
 
@@ -375,8 +375,8 @@ const ThemeSwitcher = () => {
           color: #ffffff !important;
         }
 
-        .theme-dark .hover\:text-blue-600:hover,
-        .theme-dark .hover\:text-blue-500:hover {
+        .theme-dark .hover\\:text-blue-600:hover,
+        .theme-dark .hover\\:text-blue-500:hover {
           color: #f1f5f9 !important;
         }
 
@@ -406,12 +406,12 @@ const ThemeSwitcher = () => {
         }
 
         /* Keep hover effects blue in dark mode */
-        .theme-dark .hover\:bg-blue-500\/20:hover {
+        .theme-dark .hover\\:bg-blue-500\\/20:hover {
           background-color: rgba(59, 130, 246, 0.2) !important; /* blue hover background */
         }
 
-        .theme-dark .hover\:border-blue-400:hover,
-        .theme-dark .hover\:border-blue-200:hover {
+        .theme-dark .hover\\:border-blue-400:hover,
+        .theme-dark .hover\\:border-blue-200:hover {
           border-color: #3b82f6 !important; /* blue hover border */
         }
 
@@ -421,8 +421,8 @@ const ThemeSwitcher = () => {
           border-color: rgba(148, 163, 184, 0.3) !important;
         }
 
-        .theme-dark .hover\:border-blue-400:hover,
-        .theme-dark .hover\:border-blue-200:hover {
+        .theme-dark .hover\\:border-blue-400:hover,
+        .theme-dark .hover\\:border-blue-200:hover {
           border-color: rgba(148, 163, 184, 0.6) !important;
         }
 
@@ -432,7 +432,7 @@ const ThemeSwitcher = () => {
           background-color: rgba(148, 163, 184, 0.8) !important;
         }
 
-        .theme-dark .hover\:bg-blue-500\/20:hover {
+        .theme-dark .hover\\:bg-blue-500\\/20:hover {
           background-color: rgba(255, 255, 255, 0.1) !important;
         }
 
@@ -450,7 +450,7 @@ const ThemeSwitcher = () => {
         }
 
         /* Enhanced glassmorphism multi-level dropdown enhancements */
-        .glass-dropdown .group\/sub:hover > div {
+        .glass-dropdown .group\\/sub:hover > div {
           transform: translateX(0) scale(1.02);
           opacity: 1;
           visibility: visible;
