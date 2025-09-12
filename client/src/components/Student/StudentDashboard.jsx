@@ -221,13 +221,12 @@ useEffect(() => {
 
                             {/* Current Subjects */}
                             {courses &&
-                                <div className="bg-white rounded-lg border border-gray-200">
-                                    <div className="p-6 border-b border-gray-200">
+                                <div className="bg-white rounded-lg border border-gray-200 max-h-[450px]">
+                                    <div className="p-6 border-b border-gray-200 h-[70px]">
                                         <h3 className="text-lg font-semibold text-gray-900">Current Subjects</h3>
                                     </div>
-                                    <div className="p-6">
+                                    <div className="p-6 overflow-y-auto max-h-[380px]">
                                         <div className="space-y-4">
-                                            {console.log(courses)}
                                             {courses?.semesters[user?.semester - 1]?.subjects?.map((data, index) => (
                                                 <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                                     <div>
