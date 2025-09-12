@@ -65,7 +65,7 @@ const studentAcademicsSchema = new mongoose.Schema({
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
     registrationNumber: { type: String, required: true },
     collegeCode: { type: String, required: true },
-    courseCode: { type: String, required: true },
+    courseId: { type: String, required: true },
 
     // ✅ Past completed semesters
     previousResults: [previousResultSchema],

@@ -32,6 +32,10 @@ import {
   findStudentForAllocation,
   getAllComplaintsForWarden,
   updateComplaintStatus,
+  getAllRoomChangeRequests,
+  updateRoomChangeRequestStatus,
+  getAllVisitorPasses,
+  getDashboardSummary,
 } from "../controllers/hostelController/hostelController.js";
 
 const router = express.Router();
@@ -91,5 +95,13 @@ router.get('/warden/complaints', getAllComplaintsForWarden);
 
 // PUT to update a complaint's status
 router.put('/complaints/:studentHostelId/:complaintId', updateComplaintStatus);
+
+router.get('/warden/room-changes', getAllRoomChangeRequests);
+router.put('/room-changes/:studentHostelId/:requestId', updateRoomChangeRequestStatus);
+
+// Visitor Passes
+router.get('/warden/visitors', getAllVisitorPasses);
+
+router.get('/warden/dashboard-summary', getDashboardSummary);
 
 export default router;

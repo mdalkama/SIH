@@ -5,392 +5,222 @@ import {
   Users, X
 } from 'lucide-react';
 
-// --- Helper Components ---
+// --- Helper Components (Unchanged) ---
 const DetailItem = ({ icon: Icon, label, value, subValue }) => (
-  <div className="flex items-start">
-    <Icon className="w-5 h-5 text-gray-500 mt-1 mr-4 flex-shrink-0" />
-    <div>
-      <p className="font-medium text-gray-900">{label}</p>
-      <p className="text-sm text-gray-600">{value}</p>
-      {subValue && <p className="text-sm text-gray-600">{subValue}</p>}
+    <div className="flex items-start">
+        <Icon className="w-5 h-5 text-gray-500 mt-1 mr-4 flex-shrink-0" />
+        <div>
+            <p className="font-medium text-gray-900">{label}</p>
+            <p className="text-sm text-gray-600">{value}</p>
+            {subValue && <p className="text-sm text-gray-600">{subValue}</p>}
+        </div>
     </div>
-  </div>
 );
 
 const AllocationSkeleton = () => (
-  <div className="bg-white rounded-xl shadow-sm p-6 animate-pulse">
-    <div className="flex items-center mb-4">
-      <div className="w-8 h-8 bg-gray-200 rounded mr-2"></div>
-      <div className="h-6 w-40 bg-gray-200 rounded"></div>
+    <div className="bg-white rounded-xl shadow-sm p-6 animate-pulse">
+        <div className="flex items-center mb-4"><div className="w-8 h-8 bg-gray-200 rounded mr-2"></div><div className="h-6 w-40 bg-gray-200 rounded"></div></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4"><div className="space-y-3"><div className="h-4 bg-gray-200 rounded w-3/4"></div><div className="h-4 bg-gray-200 rounded w-1/2"></div></div><div className="space-y-3"><div className="h-4 bg-gray-200 rounded w-3/4"></div><div className="h-4 bg-gray-200 rounded w-2/3"></div></div></div>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-      <div className="space-y-3">
-        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-      </div>
-      <div className="space-y-3">
-        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-      </div>
-    </div>
-  </div>
 );
 
-const ComplaintCardSkeleton = () => (
-  <div className="bg-white rounded-lg p-4 animate-pulse border">
-    <div className="flex justify-between mb-2">
-      <div className="flex items-center gap-2">
-        <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
-        <div className="h-4 bg-gray-200 rounded w-28"></div>
-      </div>
-      <div className="h-4 bg-gray-200 rounded w-12"></div>
+const CardListSkeleton = () => (
+    <div className="bg-white rounded-lg p-6 animate-pulse border">
+        <div className="h-8 bg-gray-200 rounded-md w-full mb-4"></div>
+        <div className="space-y-4">
+            <div className="h-16 bg-gray-100 rounded-lg"></div>
+            <div className="h-16 bg-gray-100 rounded-lg"></div>
+            <div className="h-16 bg-gray-100 rounded-lg"></div>
+        </div>
     </div>
-    <div className="h-3 bg-gray-200 rounded w-full mb-2"></div>
-    <div className="h-3 bg-gray-200 rounded w-3/4 mb-4"></div>
-    <div className="flex justify-between text-xs">
-      <div className="h-3 w-20 bg-gray-200 rounded"></div>
-      <div className="h-3 w-16 bg-gray-200 rounded"></div>
-    </div>
-  </div>
 );
 
-// Simple Modal
 const Modal = ({ isOpen, onClose, title, children }) => {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-lg w-full p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100"><X size={20} /></button>
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-lg w-full p-6">
+                <div className="flex justify-between items-center mb-4"><h3 className="text-xl font-semibold text-gray-900">{title}</h3><button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100"><X size={20} /></button></div>
+                {children}
+            </div>
         </div>
-        {children}
-      </div>
-    </div>
-  );
+    );
 };
 
-// --- Complaint List with Pagination ---
-const ComplaintList = ({ complaints }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
-
-  const totalPages = Math.ceil(complaints.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentComplaints = complaints.slice(startIndex, startIndex + itemsPerPage);
-
-  const handlePrev = () => { if (currentPage > 1) setCurrentPage(p => p - 1); };
-  const handleNext = () => { if (currentPage < totalPages) setCurrentPage(p => p + 1); };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'Resolved': return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'In Progress': return <Clock className="w-4 h-4 text-yellow-500" />;
-      default: return <AlertTriangle className="w-4 h-4 text-blue-500" />;
-    }
-  };
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'High': return 'text-red-600 bg-red-100';
-      case 'Medium': return 'text-yellow-600 bg-yellow-100';
-      default: return 'text-green-600 bg-green-100';
-    }
-  };
-
-  return (
-    <div>
-      <div className="space-y-4">
-        {currentComplaints.length > 0 ? currentComplaints.map((comp) => (
-          <div key={comp._id} className="border border-blue-200 p-4 rounded-lg">
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex items-center">
-                <div className="mr-2">{getStatusIcon(comp.status)}</div>
-                <h3 className="font-medium">{comp.title}</h3>
-              </div>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(comp.priority)}`}>{comp.priority}</span>
-            </div>
-            <p className="text-sm text-gray-600 mb-2 pl-6">{comp.description}</p>
-            <div className="flex justify-between items-center text-xs text-gray-500 pl-6">
-              <span>{comp.issue} • Room {comp.hostelDetail.roomNumber}</span>
-              <span>{new Date(comp.createdAt).toLocaleDateString()} • {comp.status}</span>
-            </div>
-          </div>
-        )) : <p className="text-center py-4 text-gray-500">No complaints yet.</p>}
-      </div>
-
-      {complaints.length > itemsPerPage && (
-        <div className="flex justify-between items-center mt-4">
-          <div className="flex items-center gap-2">
-            <button onClick={handlePrev} disabled={currentPage === 1}
-              className="px-3 py-1 border border-gray-500  rounded disabled:opacity-50">Prev</button>
-            <span>Page {currentPage} of {totalPages}</span>
-            <button onClick={handleNext} disabled={currentPage === totalPages}
-              className="px-3 py-1 border border-gray-500  rounded disabled:opacity-50">Next</button>
-          </div>
-          <div>
-            <label className="mr-2 text-sm">Per page:</label>
-            <select value={itemsPerPage}
-              onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-              className="border border-gray-500 rounded px-2 py-1">
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={15}>15</option>
-            </select>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const HostelDashboard = () => {
-  const [activeModal, setActiveModal] = useState(null);
-  const [complaint, setComplaint] = useState({ issue: '', priority: 'Medium', title: '', description: '' });
-  const [roomChangeReason, setRoomChangeReason] = useState('');
-  const [visitor, setVisitor] = useState({ name: '', relation: '', purpose: '' });
-  const [allocationDetails, setAllocationDetails] = useState(null);
-  const [complaints, setComplaints] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState('');
+    const [activeModal, setActiveModal] = useState(null);
+    const [complaint, setComplaint] = useState({ issue: '', priority: 'Medium', title: '', description: '' });
+    const [roomChangeReason, setRoomChangeReason] = useState('');
+    const [visitor, setVisitor] = useState({ name: '', relation: '', purpose: '' });
+    
+    const [allocationDetails, setAllocationDetails] = useState(null);
+    const [complaints, setComplaints] = useState([]);
+    const [roomChangeRequests, setRoomChangeRequests] = useState([]);
+    const [visitors, setVisitors] = useState([]);
+    
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [message, setMessage] = useState('');
 
-  const issueCategories = ['Maintenance', 'Electrical', 'Plumbing', 'Cleaning', 'Internet/WiFi', 'Other'];
+    const [activeContentTab, setActiveContentTab] = useState('complaints');
 
-  // --- Data Fetching ---
-  const fetchData = async () => {
-    if (!isLoading) setIsLoading(true);
-    setError(null);
-    try {
-      const [allocationRes, complaintsRes] = await Promise.all([
-        fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/my-allocation', { credentials: 'include' }),
-        fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/complaints', { credentials: 'include' })
-      ]);
-      if (allocationRes.status === 404) { setAllocationDetails(null); }
-      else if (!allocationRes.ok) { const err = await allocationRes.json(); throw new Error(err.message || 'Failed allocation.'); }
-      else { const d = await allocationRes.json(); if (d.success) setAllocationDetails(d.data); }
+    const issueCategories = ['Maintenance', 'Electrical', 'Plumbing', 'Cleaning', 'Internet/WiFi', 'Other'];
 
-      if (!complaintsRes.ok) { const err = await complaintsRes.json(); throw new Error(err.message || 'Failed complaints.'); }
-      const complaintsData = await complaintsRes.json();
-      if (complaintsData.success) setComplaints(complaintsData.data);
+    const fetchData = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const [allocRes, compRes, roomChangeRes, visitorRes] = await Promise.all([
+                fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/my-allocation', { credentials: 'include' }),
+                fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/complaints', { credentials: 'include' }),
+                fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/room-change-requests', { credentials: 'include' }),
+                fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/visitors', { credentials: 'include' })
+            ]);
 
-    } catch (err) { setError(err.message); }
-    finally { setIsLoading(false); }
-  };
+            if (allocRes.status === 404) setAllocationDetails(null);
+            else if (allocRes.ok) { const d = await allocRes.json(); if (d.success) setAllocationDetails(d.data); }
+            else { const e = await allocRes.json(); throw new Error(e.message || 'Failed to fetch allocation'); }
+            
+            if(compRes.ok) { const d = await compRes.json(); if(d.success) setComplaints(d.data); }
+            if(roomChangeRes.ok) { const d = await roomChangeRes.json(); if(d.success) setRoomChangeRequests(d.data); }
+            if(visitorRes.ok) { const d = await visitorRes.json(); if(d.success) setVisitors(d.data); }
 
-  useEffect(() => { fetchData(); }, []);
+        } catch (err) { setError(err.message); }
+        finally { setIsLoading(false); }
+    };
 
-  // --- API handlers ---
-  const handleComplaintSubmit = async (e) => {
-    e.preventDefault(); setIsSubmitting(true); setMessage('');
-    try {
-      const res = await fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/complaints/raise', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(complaint),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || data.error);
-      //   setMessage('Complaint raised successfully!');
-      await fetchData();
-      setActiveModal(null);
-      setComplaint({ issue: '', priority: 'Medium', title: '', description: '' });
-    } catch (err) { setMessage(err.message); }
-    finally { setIsSubmitting(false); }
-  };
+    useEffect(() => { fetchData(); }, []);
 
-  const handleRoomChangeSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true); setMessage('');
-    try {
-      const res = await fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/room-change-request', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-        body: JSON.stringify({ reason: roomChangeReason }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to submit request.');
-      setMessage(data.message);
-      await fetchData();
-      setActiveModal(null);
-      setRoomChangeReason('');
-    } catch (err) { setMessage(err.message); }
-    finally { setIsSubmitting(false); }
-  };
+    const handleComplaintSubmit = async (e) => { e.preventDefault(); setIsSubmitting(true); try { const res = await fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/complaints/raise', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(complaint) }); const data = await res.json(); if (!res.ok) throw new Error(data.message || data.error); await fetchData(); setActiveModal(null); setComplaint({ issue: '', priority: 'Medium', title: '', description: '' }); } catch (err) { setMessage(err.message); } finally { setIsSubmitting(false); } };
+    const handleRoomChangeSubmit = async (e) => { e.preventDefault(); setIsSubmitting(true); try { const res = await fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/room-change-request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ reason: roomChangeReason }) }); const data = await res.json(); if (!res.ok) throw new Error(data.message); await fetchData(); setActiveModal(null); setRoomChangeReason(''); } catch (err) { setMessage(err.message); } finally { setIsSubmitting(false); } };
+    const handleVisitorSubmit = async (e) => { e.preventDefault(); setIsSubmitting(true); try { const res = await fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/visitor-pass', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(visitor) }); const data = await res.json(); if (!res.ok) throw new Error(data.message); await fetchData(); setActiveModal(null); setVisitor({ name: '', relation: '', purpose: '' }); } catch (err) { setMessage(err.message); } finally { setIsSubmitting(false); } };
 
-  const handleVisitorSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true); setMessage('');
-    try {
-      const res = await fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/visitor-pass', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-        body: JSON.stringify(visitor),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to submit request.');
-      setMessage(data.message);
-      await fetchData();
-      setActiveModal(null);
-      setVisitor({ name: '', relation: '', purpose: '' });
-    } catch (err) { setMessage(err.message); }
-    finally { setIsSubmitting(false); }
-  };
+    const renderContent = () => {
+        switch (activeContentTab) {
+            case 'complaints':
+                const recentComplaints = complaints.slice(0, 5);
+                if (recentComplaints.length === 0) {
+                    return <p className="text-center text-gray-500 py-8">You haven't raised any complaints yet.</p>;
+                }
+                const getStatusIcon = (status) => { switch (status) { case 'Resolved': return <CheckCircle className="w-4 h-4 text-green-500" />; case 'In Progress': return <Clock className="w-4 h-4 text-yellow-500" />; default: return <AlertTriangle className="w-4 h-4 text-blue-500" />; } };
+                const getPriorityColor = (priority) => { switch (priority) { case 'High': return 'text-red-600 bg-red-100'; case 'Medium': return 'text-yellow-600 bg-yellow-100'; default: return 'text-green-600 bg-green-100'; } };
+                return (
+                    <div className="space-y-4">
+                        {recentComplaints.map((comp) => (
+                            <div key={comp._id} className="border border-gray-200 p-4 rounded-lg">
+                                <div className="flex justify-between items-start mb-2"><div className="flex items-center gap-2"><div className="mr-1">{getStatusIcon(comp.status)}</div><h3 className="font-semibold text-gray-800">{comp.title}</h3></div><span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(comp.priority)}`}>{comp.priority}</span></div>
+                                <p className="text-sm text-gray-600 mb-2 pl-7">{comp.description}</p>
+                                <div className="flex justify-between items-center text-xs text-gray-500 pl-7"><span>{comp.issue} • Room {comp.hostelDetail.roomNumber}</span><span>{new Date(comp.createdAt).toLocaleDateString()} • {comp.status}</span></div>
+                            </div>
+                        ))}
+                    </div>
+                );
 
-  if (isLoading) {
-    return (
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header Skeleton */}
-        <div className="h-20 bg-gray-200 rounded-lg animate-pulse"></div>
+            case 'roomChanges':
+                const recentRoomChanges = roomChangeRequests.slice(0, 5);
+                if (recentRoomChanges.length === 0) {
+                    return <p className="text-center text-gray-500 py-8">No room change requests found.</p>;
+                }
+                const getStatusColor = (status) => { switch(status) { case 'Approved': return 'bg-green-100 text-green-800'; case 'Rejected': return 'bg-red-100 text-red-800'; default: return 'bg-yellow-100 text-yellow-800'; } };
+                return (
+                    <div className="space-y-4">
+                        {recentRoomChanges.map(req => (
+                            <div key={req._id} className="border border-gray-200 p-4 rounded-lg">
+                                <div className="flex justify-between items-start"><p className="text-sm text-gray-500">Requested on: {new Date(req.requestedAt).toLocaleDateString()}</p><span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(req.status)}`}>{req.status}</span></div>
+                                <p className="mt-2 font-medium text-gray-800">Reason:</p><p className="text-sm text-gray-600 italic">"{req.reason}"</p>
+                            </div>
+                        ))}
+                    </div>
+                );
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            {/* Allocation Skeleton */}
-            <AllocationSkeleton />
-            {/* Complaints Skeleton List */}
-            <div className="bg-white rounded-xl p-6 space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <ComplaintCardSkeleton key={i} />
-              ))}
-            </div>
-          </div>
-          {/* Sidebar skeleton */}
-          <div className="space-y-4">
-            <div className="h-40 bg-gray-200 rounded-lg animate-pulse"></div>
-            <div className="h-40 bg-gray-200 rounded-lg animate-pulse"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+            case 'visitors':
+                const recentVisitors = visitors.slice(0, 5);
+                if (recentVisitors.length === 0) {
+                    return <p className="text-center text-gray-500 py-8">No visitor passes found.</p>;
+                }
+                return (
+                    <div className="space-y-3">
+                        {recentVisitors.map(visitor => (
+                            <div key={visitor._id} className="border border-gray-200 p-4 rounded-lg">
+                                <div className="flex justify-between items-center"><h4 className="font-semibold text-gray-800">{visitor.name}</h4><span className="text-sm text-gray-500">{new Date(visitor.date).toLocaleDateString()}</span></div>
+                                <p className="text-sm text-gray-600">Relation: <span className="font-medium">{visitor.relation || 'N/A'}</span></p><p className="text-sm text-gray-600">Purpose: <span className="font-medium">{visitor.purpose || 'N/A'}</span></p>
+                            </div>
+                        ))}
+                    </div>
+                );
+            default: return null;
+        }
+    };
 
-  return (
-    <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h1 className="text-3xl font-bold mb-2">Hostel Dashboard</h1>
-          <p className="text-gray-600">Welcome, {allocationDetails?.name || 'Student'}</p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            {allocationDetails ? (
-              <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                <div className="flex items-center mb-4"><Home className="w-6 h-6 text-blue-600 mr-2" /><h2 className="text-xl font-semibold">Your Allocation Details</h2></div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4"><DetailItem icon={User} label={allocationDetails.name} value={`Roll No: ${allocationDetails.rollNumber}`} /><DetailItem icon={MapPin} label={allocationDetails.hostelName} value={`Floor ${allocationDetails.floorNumber}, Room ${allocationDetails.roomNumber}`} subValue={allocationDetails.roomType} /></div>
-                  <div className="space-y-4"><DetailItem icon={Phone} label={`Warden: ${allocationDetails.warden}`} value={`${allocationDetails.wardenContact}`} /><DetailItem icon={Clock} label="Check-in Date" value={new Date(allocationDetails.checkInDate).toLocaleDateString()} /></div>
+    if (isLoading) {
+        return (
+            <div className="max-w-7xl mx-auto space-y-6 p-4">
+                <div className="h-24 bg-gray-200 rounded-lg animate-pulse"></div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2 space-y-6"><AllocationSkeleton /><CardListSkeleton /></div>
+                    <div className="h-64 bg-gray-200 rounded-lg animate-pulse"></div>
                 </div>
-              </div>
-            ) : (
-              <div className="bg-white rounded-lg shadow-sm p-8 mb-6 text-center">
-                <Home size={40} className="mx-auto text-gray-400 mb-3" /><h3 className="font-semibold text-lg">No Hostel Allocated</h3><p className="text-gray-500">You are not currently allocated to any hostel room.</p>
-              </div>
-            )}
+            </div>
+        );
+    }
+    console.log(allocationDetails);
+    
+    return (
+        <div className="min-h-screen">
+            <div className="max-w-7xl mx-auto">
+                <div className="bg-white rounded-lg shadow-sm  border border-gray-300 p-6 mb-6">
+                    <h1 className="text-3xl font-bold mb-2">Hostel Dashboard</h1>
+                    <p className="text-gray-600">Welcome, {allocationDetails?.name || 'Student'}</p>
+                </div>
+                {error && <div className="p-4 mb-6 bg-red-50 text-red-700 rounded-lg">{error}</div>}
 
-            {/* Complaints section with pagination */}
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Your Complaints</h2>
-                {allocationDetails && (
-                  <button onClick={() => setActiveModal('complaint')}
-                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    <Plus className="w-4 h-4 mr-2" />Raise Complaint</button>
-                )}
-              </div>
-              <ComplaintList complaints={complaints} />
-            </div>
-          </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2 space-y-6">
+                        {allocationDetails ? (
+                            <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-6">
+                                <div className="flex items-center mb-4"><Home className="w-6 h-6 text-blue-600 mr-2" /><h2 className="text-xl font-semibold">Your Allocation Details</h2></div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6"><DetailItem icon={User} label={allocationDetails.name} value={`Roll No: ${allocationDetails.rollNumber}`} /><DetailItem icon={MapPin} label={allocationDetails.hostelName} value={`Floor ${allocationDetails.floorNumber}, Room ${allocationDetails.roomNumber}`} subValue={allocationDetails.roomType} /><DetailItem icon={Phone} label={`Warden: ${allocationDetails.warden}`} value={`${allocationDetails.wardenContact}`} /><DetailItem icon={Clock} label="Check-in Date" value={new Date(allocationDetails.checkInDate).toLocaleDateString()} /></div>
+                            </div>
+                        ) : (
+                            <div className="bg-white rounded-lg shadow-sm p-8 text-center"><Home size={40} className="mx-auto text-gray-400 mb-3" /><h3 className="font-semibold text-lg">No Hostel Allocated</h3><p className="text-gray-500">You are not currently allocated to any hostel room.</p></div>
+                        )}
 
-          {/* Sidebar quick actions & contacts */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-              <div className="space-y-3">
-                <button onClick={() => setActiveModal('roomChange')} className="w-full text-left p-3 rounded-lg border border-gray-300 hover:bg-gray-50">
-                  <p className="font-medium">Room Change Request</p><p className="text-sm text-gray-500">Apply for a room change</p></button>
-                <button onClick={() => setActiveModal('visitor')} className="w-full text-left p-3 rounded-lg border border-gray-300 hover:bg-gray-50">
-                  <p className="font-medium">Visitor Pass</p><p className="text-sm text-gray-500">Generate a pass for visitors</p></button>
-              </div>
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
+                            <div className="border-b border-gray-200">
+                                <nav className="-mb-px flex space-x-6 px-6 " aria-label="Tabs">
+                                    <button onClick={() => setActiveContentTab('complaints')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'complaints' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Recent Complaints</button>
+                                    <button onClick={() => setActiveContentTab('roomChanges')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'roomChanges' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Recent Room Changes</button>
+                                    <button onClick={() => setActiveContentTab('visitors')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'visitors' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Recent Visitors</button>
+                                </nav>
+                            </div>
+                            <div className="p-6">{renderContent()}</div>
+                        </div>
+                    </div>
+
+                    <div className="lg:col-span-1 space-y-6">
+                        <div className="bg-white rounded-lg  border border-gray-300 shadow-sm p-6">
+                            <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
+                            <div className="space-y-3">
+                                <button onClick={() => setActiveModal('complaint')} className="w-full text-left p-3 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center gap-3"><Send className="w-5 h-5 text-blue-600"/> <p className="font-medium">Raise Complaint</p></button>
+                                <button onClick={() => setActiveModal('roomChange')} className="w-full text-left p-3 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center gap-3"><Repeat className="w-5 h-5 text-orange-600"/> <p className="font-medium">Request Room Change</p></button>
+                                <button onClick={() => setActiveModal('visitor')} className="w-full text-left p-3 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center gap-3"><Users className="w-5 h-5 text-purple-600"/> <p className="font-medium">Generate Visitor Pass</p></button>
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
+                            <h3 className="text-lg font-semibold mb-4">Emergency Contacts</h3>
+                            <div className="space-y-3"><div><p className="font-medium">Security</p><p className="text-sm text-gray-600">+91-9876543211</p></div><div><p className="font-medium">Maintenance</p><p className="text-sm text-gray-600">+91-9876543213</p></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <Modal isOpen={activeModal === 'complaint'} onClose={() => setActiveModal(null)} title="Raise a Complaint"><form onSubmit={handleComplaintSubmit} className="space-y-4"><div><label className="block text-sm font-medium mb-1">Issue Category *</label><select value={complaint.issue} onChange={(e) => setComplaint({ ...complaint, issue: e.target.value })} className="w-full border border-gray-500 rounded-lg px-3 py-2 bg-white" required><option value="" disabled>Select category</option>{issueCategories.map(c => (<option key={c} value={c}>{c}</option>))}</select></div><div><label className="block text-sm font-medium mb-1">Priority</label><select value={complaint.priority} onChange={(e) => setComplaint({ ...complaint, priority: e.target.value })} className="w-full border border-gray-500 rounded-lg px-3 py-2 bg-white"><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option></select></div><div><label className="block text-sm font-medium mb-1">Title *</label><input type="text" value={complaint.title} onChange={(e) => setComplaint({ ...complaint, title: e.target.value })} className="w-full border border-gray-500 rounded-lg px-3 py-2" required /></div><div><label className="block text-sm font-medium mb-1">Description *</label><textarea value={complaint.description} onChange={(e) => setComplaint({ ...complaint, description: e.target.value })} rows={4} className="w-full border border-gray-500 rounded-lg px-3 py-2" required /></div>{message && <p className="text-sm text-red-600">{message}</p>}<div className="flex gap-3 pt-4"><button type="submit" disabled={isSubmitting} className="flex-1 flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"><Send className="w-4 h-4 mr-2" />{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit"}</button><button type="button" onClick={() => setActiveModal(null)} className="px-4 py-2 border rounded-lg">Cancel</button></div></form></Modal>
+                <Modal isOpen={activeModal === 'roomChange'} onClose={() => setActiveModal(null)} title="Request Room Change"><form onSubmit={handleRoomChangeSubmit} className="space-y-4"><div><label className="block text-sm font-medium mb-1">Reason *</label><textarea value={roomChangeReason} onChange={(e) => setRoomChangeReason(e.target.value)} rows={5} className="w-full border border-gray-500 rounded-lg p-2" required /></div>{message && <p className="text-sm text-red-600">{message}</p>}<div className="flex gap-3 pt-4"><button type="submit" disabled={isSubmitting} className="flex-1 flex items-center justify-center py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"><Repeat className="w-4 h-4 mr-2" />{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit Request"}</button><button type="button" onClick={() => setActiveModal(null)} className="py-2 border rounded-lg px-4">Cancel</button></div></form></Modal>
+                <Modal isOpen={activeModal === 'visitor'} onClose={() => setActiveModal(null)} title="Generate Visitor Pass"><form onSubmit={handleVisitorSubmit} className="space-y-4"><div><label className="block text-sm font-medium mb-1">Visitor's Name *</label><input type="text" value={visitor.name} onChange={(e) => setVisitor({ ...visitor, name: e.target.value })} className="w-full border border-gray-500 rounded-lg p-2" required/></div><div><label className="block text-sm font-medium mb-1">Relation</label><input type="text" value={visitor.relation} onChange={(e) => setVisitor({ ...visitor, relation: e.target.value })} className="w-full border border-gray-500 rounded-lg p-2"/></div><div><label className="block text-sm font-medium mb-1">Purpose</label><textarea value={visitor.purpose} onChange={(e) => setVisitor({ ...visitor, purpose: e.target.value })} rows={3} className="w-full border border-gray-500 rounded-lg p-2"/></div>{message && <p className="text-sm text-red-600">{message}</p>}<div className="flex gap-3 pt-4"><button type="submit" disabled={isSubmitting} className="flex-1 flex items-center justify-center py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"><Users className="w-4 h-4 mr-2" />{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Generate Pass"}</button><button type="button" onClick={() => setActiveModal(null)} className="py-2 border rounded-lg px-4">Cancel</button></div></form></Modal>
             </div>
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold mb-4">Emergency Contacts</h3>
-              <div className="space-y-3"><div><p className="font-medium">Security</p><p className="text-sm text-gray-600">+91-9876543211</p></div>
-                <div><p className="font-medium">Maintenance</p><p className="text-sm text-gray-600">+91-9876543213</p></div></div>
-            </div>
-          </div>
         </div>
-
-        {/* Modals */}
-        <Modal isOpen={activeModal === 'complaint'} onClose={() => setActiveModal(null)} title="Raise a Complaint">
-          <form onSubmit={handleComplaintSubmit} className="space-y-4">
-            <div><label className="block text-sm font-medium mb-1">Issue Category *</label>
-              <select value={complaint.issue}
-                onChange={(e) => setComplaint({ ...complaint, issue: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2 bg-white" required>
-                <option value="" disabled>Select category</option>
-                {issueCategories.map(c => (<option key={c} value={c}>{c}</option>))}
-              </select></div>
-            <div><label className="block text-sm font-medium mb-1">Priority</label>
-              <select value={complaint.priority}
-                onChange={(e) => setComplaint({ ...complaint, priority: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2 bg-white">
-                <option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option></select></div>
-            <div><label className="block text-sm font-medium mb-1">Title *</label>
-              <input type="text" value={complaint.title}
-                onChange={(e) => setComplaint({ ...complaint, title: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2" required /></div>
-            <div><label className="block text-sm font-medium mb-1">Description *</label>
-              <textarea value={complaint.description}
-                onChange={(e) => setComplaint({ ...complaint, description: e.target.value })}
-                rows={4} className="w-full border rounded-lg px-3 py-2" required /></div>
-            {message && <p className="text-sm text-red-600">{message}</p>}
-            <div className="flex gap-3 pt-4">
-              <button type="submit" disabled={isSubmitting}
-                className="flex-1 flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50">
-                <Send className="w-4 h-4 mr-2" />{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit"}</button>
-              <button type="button" onClick={() => setActiveModal(null)} className="px-4 py-2 border rounded-lg">Cancel</button>
-            </div>
-          </form>
-        </Modal>
-
-        <Modal isOpen={activeModal === 'roomChange'} onClose={() => setActiveModal(null)} title="Request Room Change">
-          <form onSubmit={handleRoomChangeSubmit} className="space-y-4">
-            <div><label className="block text-sm font-medium mb-1">Reason *</label>
-              <textarea value={roomChangeReason} onChange={(e) => setRoomChangeReason(e.target.value)}
-                rows={5} className="w-full border rounded-lg p-2" required /></div>
-            {message && <p className="text-sm text-red-600">{message}</p>}
-            <div className="flex gap-3 pt-4">
-              <button type="submit" disabled={isSubmitting}
-                className="flex-1 flex items-center justify-center py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50">
-                <Repeat className="w-4 h-4 mr-2" />{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit Request"}</button>
-              <button type="button" onClick={() => setActiveModal(null)} className="py-2 border rounded-lg px-4">Cancel</button>
-            </div>
-          </form>
-        </Modal>
-
-        <Modal isOpen={activeModal === 'visitor'} onClose={() => setActiveModal(null)} title="Generate Visitor Pass">
-          <form onSubmit={handleVisitorSubmit} className="space-y-4">
-            <div><label className="block text-sm font-medium mb-1">Visitor's Name *</label>
-              <input type="text" value={visitor.name} onChange={(e) => setVisitor({ ...visitor, name: e.target.value })}
-                className="w-full border rounded-lg p-2" required /></div>
-            <div><label className="block text-sm font-medium mb-1">Relation</label>
-              <input type="text" value={visitor.relation} onChange={(e) => setVisitor({ ...visitor, relation: e.target.value })}
-                className="w-full border rounded-lg p-2" /></div>
-            <div><label className="block text-sm font-medium mb-1">Purpose</label>
-              <textarea value={visitor.purpose} onChange={(e) => setVisitor({ ...visitor, purpose: e.target.value })}
-                rows={3} className="w-full border rounded-lg p-2" /></div>
-            {message && <p className="text-sm text-red-600">{message}</p>}
-            <div className="flex gap-3 pt-4">
-              <button type="submit" disabled={isSubmitting}
-                className="flex-1 flex items-center justify-center py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50">
-                <Users className="w-4 h-4 mr-2" />{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Generate Pass"}</button>
-              <button type="button" onClick={() => setActiveModal(null)} className="py-2 border rounded-lg px-4">Cancel</button>
-            </div>
-          </form>
-        </Modal>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default HostelDashboard;

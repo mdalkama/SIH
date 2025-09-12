@@ -10,16 +10,17 @@ const getTodayDate = () => new Date().toISOString().split('T')[0];
 
 // Main Component to be used in a router outlet
 export default function AdmissionForm() {
+  const [serial, setSerial] = useState(0);
   const [formData, setFormData] = useState({
     admissionDate: getTodayDate(),
-    fullName: '',
+    name: '',
     fatherName: '',
     motherName: '',
     gender: '',
     dateOfBirth: '',
     email: '',
     password: '',
-    mobileNumber: '',
+    phone: '',
     address: '',
     aadharNumber: '',
     maritalStatus: '',
@@ -37,9 +38,39 @@ export default function AdmissionForm() {
     twelfthBoard: '',
     twelfthYear: '',
     twelfthPercentage: '',
-    courseCode: '',
-    courseApplied: '',
+    courseId: '',
+    batch: '',
   });
+
+  const getSerial = async () => {
+    try {
+      // ✅ Return if courseId or batch is missing
+      if (!formData.courseId || !formData.batch) return;
+
+      const response = await fetch(
+        `https://sih-4ptm.onrender.com/api/v1/student/get-serial/${formData.courseId}/${formData.batch}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // keep cookies/session
+        }
+      );
+      console.log(response)
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSerial(data.serial);
+      console.log('Serial fetched:', data.serial);
+    } catch (error) {
+      console.error('Error fetching serial:', error);
+    }
+  };
+
+
 
   // State to manage password visibility
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -53,50 +84,59 @@ export default function AdmissionForm() {
   };
 
   // Handles the final form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
 
-    // --- Auto-generate Registration Number ---
-    const year = '22'; // From 2022
-    const collegeCode = '140';
-    const courseCode = formData.courseCode;
+    try {
+      const year = String(formData.batch).split("").slice(2, 4).join("");
+      const collegeCode = '140';
+      const courseId = formData.courseId;
 
-    if (!courseCode) {
-      alert('Please enter a Course Code to generate a Registration Number.');
-      return;
+      if (!courseId) {
+        alert('Please enter a Course Code to generate a Registration Number.');
+        return;
+      }
+
+      // Get current count for the course, default to 0 if not present
+      const currentSerial = courseCounters[courseId] || 0;
+      const newSerial = currentSerial + 1;
+
+      // Format serial to 3 digits (e.g., 1 -> 001)
+      const formattedSerial = String(newSerial).padStart(3, '0');
+
+      const registrationNo = `${year}${collegeCode}${courseId}${formattedSerial}`;
+
+      const finalData = {
+        ...formData,
+        registrationNumber: registrationNo,
+      };
+console.log(finalData)
+      const response = await fetch('https://sih-4ptm.onrender.com/api/v1/admit-student-college', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(finalData),
+        credentials: 'include' // <-- sends cookies along with request
+      });
+      console.log(response)
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit student data');
+      }
+      const result = await response.json();
+      console.log('Student Admission Success:', result);
+      alert(`Student admitted successfully!\nRegistration No: ${result.registrationNumber || finalData.registrationNumber}`);
+    } catch (error) {
+      console.error('Error submitting student admission:', error);
+      alert(`Error: ${error.message}`);
     }
-
-    // Get current count for the course, default to 0 if not present
-    const currentSerial = courseCounters[courseCode] || 0;
-    const newSerial = currentSerial + 1;
-
-    // Format serial to 3 digits (e.g., 1 -> 001)
-    const formattedSerial = String(newSerial).padStart(3, '0');
-
-    const registrationNo = `${year}${collegeCode}${courseCode}${formattedSerial}`;
-
-    const finalData = {
-      ...formData,
-      registrationNo: registrationNo,
-    };
-
-    console.log('DTE Rajasthan - Offline Admission Data Captured:', finalData);
-    alert(`Student data saved successfully!\nGenerated Registration No: ${registrationNo}`);
-
-    // Update the counter for the next student in the same course
-    setCourseCounters(prevCounters => ({
-      ...prevCounters,
-      [courseCode]: newSerial,
-    }));
-
-    // Optional: Reset form after successful submission
-    // setFormData({ ...initial state... });
-  };
+  }
 
   return (
     <div className=" min-h-screen font-sans flex items-center justify-center">
       <div className="bg-white rounded-lg w-full max-w-6xl mx-auto">
-
         <form onSubmit={handleSubmit} className="space-y-8">
           <section>
             <h2 className="text-lg font-bold text-slate-800 border-b-2 border-slate-200 pb-2 mb-6 flex items-center gap-3"><BookUser className="h-6 w-6 text-blue-700" />1. Personal Information</h2>
@@ -104,10 +144,10 @@ export default function AdmissionForm() {
               <div className="lg:col-span-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Full Name */}
                 <div className="relative">
-                  <label htmlFor="fullName" className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                  <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
                   <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 z-10"><User className="h-5 w-5 text-slate-400" /></span>
-                    <input id="fullName" name="fullName" value={formData.fullName} onChange={handleChange} type="text" placeholder="Student's full name" required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300" />
+                    <input id="name" name="name" value={formData.name} onChange={handleChange} type="text" placeholder="Student's full name" required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300" />
                   </div>
                 </div>
                 {/* Father's Name */}
@@ -141,7 +181,7 @@ export default function AdmissionForm() {
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 z-10"><User className="h-5 w-5 text-slate-400" /></span>
                   <select id="gender" name="gender" value={formData.gender} onChange={handleChange} required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300">
-                    <option value="">Select Gender</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
+                    <option value="">Select Gender</option><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option>
                   </select>
                 </div>
               </div>
@@ -166,10 +206,10 @@ export default function AdmissionForm() {
               </div>
               {/* Mobile Number */}
               <div className="relative">
-                <label htmlFor="mobileNumber" className="block text-sm font-medium text-slate-700 mb-1">Mobile Number</label>
+                <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-1">Mobile Number</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 z-10"><Phone className="h-5 w-5 text-slate-400" /></span>
-                  <input id="mobileNumber" name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} type="tel" pattern="[0-9]{10}" placeholder="10-digit mobile number" required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300" />
+                  <input id="phone" name="phone" value={formData.phone} onChange={handleChange} type="tel" pattern="[0-9]{10}" placeholder="10-digit mobile number" required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300" />
                 </div>
               </div>
               {/* Marital Status */}
@@ -356,20 +396,38 @@ export default function AdmissionForm() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Course Applied For */}
               <div className="relative">
-                <label htmlFor="courseApplied" className="block text-sm font-medium text-slate-700 mb-1">Course Applied For</label>
+                <label htmlFor="batch" className="block text-sm font-medium text-slate-700 mb-1">Select Batch</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 z-10"><University className="h-5 w-5 text-slate-400" /></span>
-                  <select id="courseApplied" name="courseApplied" value={formData.courseApplied} onChange={handleChange} required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300">
-                    <option value="">-- Select Course --</option><option value="B.Tech - Computer Science">B.Tech - Computer Science</option><option value="B.Tech - Mechanical Engineering">B.Tech - Mechanical Engineering</option><option value="B.Tech - Civil Engineering">B.Tech - Civil Engineering</option><option value="Bachelor of Business Administration">BBA - Business Administration</option><option value="Bachelor of Computer Applications">BCA - Computer Applications</option>
+                  <select id="batch" name="batch" value={formData.batch} onChange={handleChange} required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300">
+                    <option value="">-- Select Batch --</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
+                    <option value="2030">2030</option>
+                    <option value="2031">2031</option>
+                    <option value="2032">2032</option>
+                    <option value="2033">2033</option>
+                    <option value="2034">2034</option>
+                    <option value="2035">2035</option>
+                    <option value="2036">2036</option>
+                    <option value="2037">2037</option>
+                    <option value="2038">2038</option>
+                    <option value="2039">2039</option>
+                    <option value="2040">2040</option>
                   </select>
                 </div>
               </div>
               {/* Course Code */}
               <div className="relative">
-                <label htmlFor="courseCode" className="block text-sm font-medium text-slate-700 mb-1">Course Code</label>
+                <label htmlFor="courseId" className="block text-sm font-medium text-slate-700 mb-1">Course Code</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 z-10"><Hash className="h-5 w-5 text-slate-400" /></span>
-                  <input id="courseCode" name="courseCode" value={formData.courseCode} onChange={handleChange} type="text" placeholder="e.g., CSE101" required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300" />
+                  <input id="courseId" name="courseId" value={formData.courseId} onChange={handleChange} type="text" placeholder="e.g., CSE101" required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300" />
                 </div>
               </div>
               {/* Admission Date */}

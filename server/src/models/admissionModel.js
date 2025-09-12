@@ -188,6 +188,6 @@ const ApplicationSchema = new Schema({
 }, { timestamps: true });
 
 export const AdmissionSession = mongoose.model("AdmissionSession", AdmissionSessionSchema);
-export const Course = mongoose.model("AdmissionCourse", CourseSchema);
-export const College = mongoose.model("AdmissionCollege", CollegeSchema);
+export const AdmissionCourse = mongoose.model("AdmissionCourse", CourseSchema);
+export const AdmissionCollege = mongoose.model("AdmissionCollege", CollegeSchema);
 export const Application = mongoose.model("Application", ApplicationSchema);

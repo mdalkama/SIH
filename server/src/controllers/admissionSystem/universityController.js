@@ -1,4 +1,4 @@
-import { AdmissionSession, Course, College, Application } from '../../models/admissionModel.js'; // Maan kar chal rahe hain ki models ek file mein hain
+import { AdmissionSession, AdmissionCollege, AdmissionCourse, Application } from '../../models/admissionModel.js'; // Maan kar chal rahe hain ki models ek file mein hain
 
 // --- Admission Session Management ---
 
@@ -42,7 +42,7 @@ export const getSessions = async (req, res) => {
 export const addCourse = async (req, res) => {
     try {
         const { name, code, durationYears } = req.body;
-        const course = new Course({ name, code, durationYears });
+        const course = new AdmissionCourse({ name, code, durationYears });
         await course.save();
         res.status(201).json({ message: "Course safaltapoorvak joda gaya", course });
     } catch (error) {
@@ -58,7 +58,7 @@ export const addCourse = async (req, res) => {
 export const addCollege = async (req, res) => {
     try {
         const { name, address, affiliatedUniversity, courses } = req.body;
-        const college = new College({ name, address, affiliatedUniversity, courses });
+        const college = new AdmissionCollege({ name, address, affiliatedUniversity, courses });
         await college.save();
         res.status(201).json({ message: "College safaltapoorvak joda gaya", college });
     } catch (error) {
