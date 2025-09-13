@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ChevronLeft, ChevronRight, Calendar, ArrowRight, ExternalLink, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar, ExternalLink, X } from 'lucide-react'
 
 const News = () => {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -74,11 +74,6 @@ const News = () => {
     setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides)
   }
 
-  const getCurrentSlideItems = () => {
-    const startIndex = currentSlide * itemsPerSlide
-    return newsData.slice(startIndex, startIndex + itemsPerSlide)
-  }
-
   const getCategoryColor = (category) => {
     const colors = {
       Events: 'bg-blue-500',
@@ -114,35 +109,31 @@ const News = () => {
         </div>
 
         {/* News Carousel Container */}
-        <div className="relative ">
+        <div className="relative">
           {/* Navigation Buttons */}
           <button
             onClick={prevSlide}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/20 dark:bg-black/30 backdrop-blur-xl border border-white/30 dark:border-gray-600/40 rounded-full p-4 text-gray-700 dark:text-gray-300 hover:bg-blue-500/80 hover:text-white hover:border-blue-400/60 dark:hover:bg-sky-200 dark:hover:text-gray-800 dark:hover:border-sky-300 hover:backdrop-blur-2xl transition-all duration-500 hover:scale-110 shadow-lg hover:shadow-2xl group overflow-hidden"
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white text-blue-600 hover:bg-blue-600 hover:text-white rounded-full p-4 border border-blue-600"
           >
-            <ChevronLeft className="w-6 h-6 relative z-10" />
-            {/* Glass shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+            <ChevronLeft className="w-6 h-6" />
           </button>
           
           <button
             onClick={nextSlide}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/20 dark:bg-black/30 backdrop-blur-xl border border-white/30 dark:border-gray-600/40 rounded-full p-4 text-gray-700 dark:text-gray-300 hover:bg-blue-500/80 hover:text-white hover:border-blue-400/60 dark:hover:bg-sky-200 dark:hover:text-gray-800 dark:hover:border-sky-300 hover:backdrop-blur-2xl transition-all duration-500 hover:scale-110 shadow-lg hover:shadow-2xl group overflow-hidden"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white text-blue-600 hover:bg-blue-600 hover:text-white rounded-full p-4 border border-blue-600"
           >
-            <ChevronRight className="w-6 h-6 relative z-10" />
-            {/* Glass shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+            <ChevronRight className="w-6 h-6" />
           </button>
 
           {/* News Cards Container */}
-          <div className="overflow-hidden  p-[20px] mx-12">
+          <div className="overflow-hidden px-8 py-6 mx-16">
             <div 
               className="flex transition-transform duration-500 ease-in-out"
               style={{ transform: `translateX(-${currentSlide * 100}%)` }}
             >
               {Array.from({ length: totalSlides }).map((_, slideIndex) => (
                 <div key={slideIndex} className="w-full flex flex-shrink-0">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pr-8">
                     {newsData.slice(slideIndex * itemsPerSlide, (slideIndex + 1) * itemsPerSlide).map((news) => (
                       <div
                         key={news.id}
@@ -179,13 +170,13 @@ const News = () => {
                               <Calendar className="w-4 h-4" />
                               <span>{news.date}</span>
                             </div>
-                            <span className="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 px-2 py-1 rounded-full text-xs font-medium">
+                            <span className="bg-white text-blue-600 px-2 py-1 rounded-full text-xs font-medium border border-blue-600">
                               {news.readTime}
                             </span>
                           </div>
 
                           {/* Title */}
-                          <h3 className="text-xl font-bold theme-text mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                          <h3 className="text-xl font-bold theme-text mb-3 line-clamp-2 group-hover:text-blue-600">
                             {news.title}
                           </h3>
 
@@ -195,18 +186,8 @@ const News = () => {
                           </p>
 
                           {/* Read More Button */}
-                          <button className="relative inline-flex items-center space-x-2 px-8 py-4 bg-white/10 dark:bg-black/20 backdrop-blur-xl border border-white/30 dark:border-gray-600/40 text-blue-600 dark:text-blue-400 hover:bg-blue-500/80 hover:text-white hover:border-blue-400/60 dark:hover:bg-sky-200 dark:hover:text-gray-800 dark:hover:border-sky-300 font-semibold rounded-xl transform hover:scale-105 transition-all duration-500 shadow-lg hover:shadow-2xl group/btn overflow-hidden">
-                            <span className="relative z-10">Read More</span>
-                            <ArrowRight className="w-5 h-5 relative z-10 transform group-hover/btn:translate-x-1 transition-transform duration-300" />
-                            
-                            {/* Glass morphism background layer */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-blue-400/30 to-blue-600/20 dark:from-sky-200/30 dark:via-sky-100/40 dark:to-sky-300/30 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500"></div>
-                            
-                            {/* Button shine effect */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>
-                            
-                            {/* Border glow effect */}
-                            <div className="absolute inset-0 rounded-xl border border-blue-400/0 dark:border-sky-300/0 group-hover/btn:border-blue-400/50 dark:group-hover/btn:border-sky-300/60 transition-all duration-500"></div>
+                          <button className="px-6 py-3 bg-white text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg border border-blue-600">
+                            Read More
                           </button>
                         </div>
                       </div>
@@ -223,38 +204,20 @@ const News = () => {
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`relative w-4 h-4 rounded-full backdrop-blur-xl border transition-all duration-500 overflow-hidden group ${
+                className={`w-4 h-4 rounded-full border border-blue-600 ${
                   index === currentSlide
-                    ? 'bg-blue-500/80 border-blue-400/60 scale-125 shadow-lg'
-                    : 'bg-white/20 dark:bg-black/30 border-white/30 dark:border-gray-600/40 hover:bg-blue-300/60 dark:hover:bg-sky-200 hover:border-blue-400/40 dark:hover:border-sky-300 hover:scale-110'
+                    ? 'bg-blue-600'
+                    : 'bg-white hover:bg-blue-600'
                 }`}
-              >
-                {/* Glow effect for active indicator */}
-                {index === currentSlide && (
-                  <div className="absolute inset-0 bg-blue-400 rounded-full animate-pulse opacity-60"></div>
-                )}
-                
-                {/* Shine effect on hover */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-500"></div>
-              </button>
+              />
             ))}
           </div>
         </div>
 
         {/* View All News Button */}
         <div className="text-center mt-12">
-          <button className="relative inline-flex items-center space-x-3 px-10 py-5 bg-white/10 dark:bg-black/20 backdrop-blur-xl border-2 border-white/30 dark:border-gray-600/40 text-blue-600 dark:text-blue-400 hover:bg-blue-500/80 hover:text-white hover:border-blue-400/60 dark:hover:bg-sky-200 dark:hover:text-gray-800 dark:hover:border-sky-300 font-bold rounded-2xl transform hover:scale-105 transition-all duration-500 shadow-xl hover:shadow-2xl group overflow-hidden">
-            <span className="relative z-10">View All News</span>
-            <ArrowRight className="w-6 h-6 relative z-10 transform group-hover:translate-x-1 transition-transform duration-300" />
-            
-            {/* Glass morphism background layer */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-blue-400/30 to-blue-600/20 dark:from-sky-200/30 dark:via-sky-100/40 dark:to-sky-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
-            {/* Button shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-            
-            {/* Border glow effect */}
-            <div className="absolute inset-0 rounded-2xl border-2 border-blue-400/0 dark:border-sky-300/0 group-hover:border-blue-400/50 dark:group-hover:border-sky-300/60 transition-all duration-500"></div>
+          <button className="px-10 py-4 bg-white text-blue-600 hover:bg-blue-600 hover:text-white font-bold rounded-xl border border-blue-600">
+            View All News
           </button>
         </div>
       </div>
@@ -273,11 +236,9 @@ const News = () => {
             />
             <button
               onClick={closeImageModal}
-              className="absolute top-4 right-4 bg-black/30 backdrop-blur-xl border border-white/20 text-white rounded-full p-3 hover:bg-black/50 hover:border-white/40 dark:hover:bg-sky-200/90 dark:hover:text-gray-800 dark:hover:border-sky-300 transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl group overflow-hidden"
+              className="absolute top-4 right-4 bg-white text-blue-600 hover:bg-blue-600 hover:text-white rounded-full p-3 border border-blue-600"
             >
-              <X className="w-6 h-6 relative z-10" />
-              {/* Button shine effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-500"></div>
+              <X className="w-6 h-6" />
             </button>
           </div>
         </div>

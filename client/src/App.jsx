@@ -24,11 +24,13 @@ import PromotionOrdersPage from "./pages/DTE_home/employee/PromotionOrdersPage.j
 import PostingOrdersPage from "./pages/DTE_home/employee/PostingOrdersPage.jsx";
 import StudentsCornerPage from "./pages/DTE_home/students/StudentsCornerPage.jsx";
 import TendersAuctionsPage from "./pages/DTE_home/tenders/TendersAuctionsPage.jsx";
+import Chatbot from "./pages/DTE_home/Chatbot.jsx";
 
 function App() {
   return (
     <Router>
       <UserProvider>
+        <Chatbot />
         <Routes>
           {/* Home route - DTE page for normal users */}
           <Route path="/" element={<DTE />} />
