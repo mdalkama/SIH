@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { CreditCard, Download, Calendar, IndianRupee, ReceiptIndianRupee, AlertCircle, CheckCircle, Clock, FileText, Wallet, Smartphone, Loader2, X, Info, AlertTriangle, Banknote } from 'lucide-react';
+// Wallet and FileText are removed as they are no longer needed
+import { CreditCard, Download, Calendar, IndianRupee, ReceiptIndianRupee, AlertCircle, CheckCircle, Clock, Smartphone, Loader2, X, Info, AlertTriangle, Banknote, FileText, Wallet } from 'lucide-react';
 
 // --- Helper Components ---
 
@@ -75,8 +76,8 @@ const FeesDashboard = () => {
     const [toasts, setToasts] = useState([]);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedFee, setSelectedFee] = useState(null);
-    const [paymentMethod, setPaymentMethod] = useState('online');
     const [paymentProcessing, setPaymentProcessing] = useState(false);
+    // The `paymentMethod` state is no longer needed
 
     const addToast = (type, message) => {
         const id = Date.now();
@@ -84,22 +85,15 @@ const FeesDashboard = () => {
     };
 
     useEffect(() => {
-        // This check prevents adding the script multiple times if the component re-renders
         if (!document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]')) {
             const script = document.createElement('script');
             script.src = 'https://checkout.razorpay.com/v1/checkout.js';
             script.async = true;
             document.body.appendChild(script);
-            return () => {
-                if (document.body.contains(script)) {
-                    document.body.removeChild(script);
-                }
-            };
         }
     }, []);
 
     const fetchProfileAndPayments = useCallback(async () => {
-        // Only show a full-page loader on the very first fetch
         if (!paymentData) setLoading(true);
         try {
             const profileResponse = await fetch('https://sih-4ptm.onrender.com/api/v1/my-profile', { credentials: 'include' });
@@ -112,7 +106,7 @@ const FeesDashboard = () => {
             const paymentResponse = await fetch(API_BASE_URL, { credentials: 'include' });
             if (!paymentResponse.ok) {
                 const errData = await paymentResponse.json();
-                 if (paymentResponse.status === 404) {
+                if (paymentResponse.status === 404) {
                     setPaymentData({ student: profileData.user, registrationNumber, fines: [], semesters: [], paymentHistory: [], stats: {} });
                     setError(null);
                     return;
@@ -150,47 +144,57 @@ const FeesDashboard = () => {
             return;
         }
 
-        if (paymentMethod === 'online') {
-            try {
-                const orderRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/payment/${regNo}/create-order`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ type: fee._type, id: fee._id, amount: fee.pendingAmount }) });
-                const orderData = await orderRes.json();
-                if (!orderRes.ok) throw new Error(orderData.message || 'Could not create payment order.');
+        try {
+            const orderRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/payment/${regNo}/create-order`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ type: fee._type, id: fee._id, amount: fee.pendingAmount })
+            });
+            const orderData = await orderRes.json();
+            if (!orderRes.ok || !orderData.order) throw new Error(orderData.message || 'Could not create payment order.');
 
-                const options = {
-                    key: orderData.key_id, amount: orderData.order.amount,
-                    name: "Your College Name", description: `Payment for ${fee.type}`,
-                    order_id: orderData.order.id,
-                    handler: async function (response) {
-                        try {
-                            const verifyRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/payment/verify-payment`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(response) });
-                            const verifyData = await verifyRes.json();
-                            if (!verifyRes.ok) throw new Error(verifyData.message || 'Payment verification failed.');
-                            addToast('success', verifyData.message);
-                            setShowPaymentModal(false);
-                            fetchProfileAndPayments();
-                        } catch (verifyErr) { addToast('error', verifyErr.message); }
-                    },
-                    prefill: { name: paymentData.student?.name, email: paymentData.student?.email, contact: paymentData.student?.phone },
-                    theme: { color: "#3B82F6" }
-                };
-                
-                const rzp = new window.Razorpay(options);
-                rzp.open();
-                rzp.on('payment.failed', function (response){ addToast('error', `Payment failed: ${response.error.description}`); });
-            } catch (err) { addToast('error', err.message); }
-            finally { setPaymentProcessing(false); }
-        } else {
-            // Handle Cash/Cheque
-            try {
-                const API_PAY_URL = `https://sih-4ptm.onrender.com/api/v1/payment/${regNo}/pay`;
-                const response = await fetch(API_PAY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ type: fee._type, id: fee._id, amount: fee.pendingAmount, method: paymentMethod, receiptNo: `MANUAL-${Date.now()}`, description: fee.description }) });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.message || 'Payment recording failed.');
-                addToast('success', `Payment of ₹${fee.pendingAmount.toLocaleString()} recorded!`);
-                setShowPaymentModal(false);
-                fetchProfileAndPayments();
-            } catch (err) { addToast('error', err.message); }
-            finally { setPaymentProcessing(false); }
+            const options = {
+                key: orderData.key_id,
+                amount: orderData.order.amount,
+                name: "Your College Name",
+                description: `Payment for ${fee.type}`,
+                order_id: orderData.order.id,
+                handler: async function (response) {
+                    try {
+                        const verifyRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/payment/verify-payment`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify(response)
+                        });
+                        const verifyData = await verifyRes.json();
+                        if (!verifyRes.ok) throw new Error(verifyData.message || 'Payment verification failed.');
+                        
+                        addToast('success', verifyData.message);
+                        setShowPaymentModal(false);
+                        fetchProfileAndPayments();
+                    } catch (verifyErr) {
+                        addToast('error', verifyErr.message);
+                    }
+                },
+                prefill: {
+                    name: paymentData.student?.name,
+                    email: paymentData.student?.email,
+                    contact: paymentData.student?.phone
+                },
+                theme: { color: "#3B82F6" }
+            };
+            
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+            rzp.on('payment.failed', function (response){
+                addToast('error', `Payment failed: ${response.error.description}`);
+            });
+        } catch (err) {
+            addToast('error', err.message);
+        } finally {
+            setPaymentProcessing(false);
         }
     };
 
@@ -215,7 +219,6 @@ const FeesDashboard = () => {
             a.click();
             window.URL.revokeObjectURL(url);
             a.remove();
-            
         } catch (err) {
             addToast('error', err.message);
         }
@@ -269,10 +272,7 @@ const FeesDashboard = () => {
                     <div className="space-y-8">
                         {paymentData.paymentHistory.slice().reverse().map((payment, index) => (
                             <div key={payment._id} className="relative flex items-start">
-                                <div className="flex-shrink-0 w-24 text-right pr-8">
-                                    <p className="font-semibold text-slate-700">{new Date(payment.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</p>
-                                    <p className="text-sm text-slate-500">{new Date(payment.date).getFullYear()}</p>
-                                </div>
+                                <div className="flex-shrink-0 w-24 text-right pr-8"><p className="font-semibold text-slate-700">{new Date(payment.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</p><p className="text-sm text-slate-500">{new Date(payment.date).getFullYear()}</p></div>
                                 <div className="absolute left-7 top-1 w-4 h-4 rounded-full bg-blue-500 ring-4 ring-white z-10"></div>
                                 <div className="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-4">
                                     <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-3">
@@ -290,18 +290,14 @@ const FeesDashboard = () => {
                         ))}
                     </div>
                 </div>
-                : <div className="text-center p-12 text-slate-500">
-                    <ReceiptIndianRupee className="mx-auto w-16 h-16 text-slate-300" />
-                    <h4 className="mt-4 text-lg font-semibold text-slate-700">No Transactions Found</h4>
-                    <p>Your payment history will appear here once you make a payment.</p>
-                </div>}
+                : <div className="text-center p-12 text-slate-500"><ReceiptIndianRupee className="mx-auto w-16 h-16 text-slate-300" /><h4 className="mt-4 text-lg font-semibold text-slate-700">No Transactions Found</h4><p>Your payment history will appear here once you make a payment.</p></div>}
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
-            <div className="max-w-6xl mx-auto p-4 sm:p-6">
+            <div className="">
                 {paymentData && (
                     <>
                         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
@@ -324,24 +320,25 @@ const FeesDashboard = () => {
                 {showPaymentModal && selectedFee && (
                     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                         <div className="bg-white rounded-lg max-w-md w-full p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Make Payment</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Confirm Online Payment</h3>
                             <div className="mb-6">
-                                <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                                    <h4 className="font-medium text-gray-900">{selectedFee.type}</h4><p className="text-sm text-gray-600">{selectedFee.description}</p>
+                                <div className="bg-gray-50 p-4 rounded-lg">
+                                    <h4 className="font-medium text-gray-900">{selectedFee.type}</h4>
+                                    <p className="text-sm text-gray-600">{selectedFee.description}</p>
                                     <div className="mt-2"><p className="text-lg font-bold text-gray-900 mt-1">Total to Pay: ₹{selectedFee.pendingAmount.toLocaleString()}</p></div>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
-                                    <div className="space-y-2">
-                                        <label className="flex items-center"><input type="radio" name="paymentMethod" value="online" checked={paymentMethod === 'online'} onChange={(e) => setPaymentMethod(e.target.value)} className="mr-2" /><CreditCard className="w-4 h-4 mr-2" />Online (Card, UPI, NetBanking)</label>
-                                        <label className="flex items-center"><input type="radio" name="paymentMethod" value="cash" checked={paymentMethod === 'cash'} onChange={(e) => setPaymentMethod(e.target.value)} className="mr-2" /><Wallet className="w-4 h-4 mr-2" />Cash</label>
-                                        <label className="flex items-center"><input type="radio" name="paymentMethod" value="cheque" checked={paymentMethod === 'cheque'} onChange={(e) => setPaymentMethod(e.target.value)} className="mr-2" /><FileText className="w-4 h-4 mr-2" />Cheque</label>
-                                    </div>
+                                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 flex items-start gap-3">
+                                    <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                                    <p>You will be redirected to Razorpay's secure checkout to complete this payment.</p>
                                 </div>
                             </div>
                             <div className="flex gap-3">
-                                <button onClick={() => handlePayment(selectedFee)} disabled={paymentProcessing} className={`flex-1 flex items-center justify-center px-4 py-2 rounded-lg text-white font-medium ${paymentProcessing ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
-                                    {paymentProcessing ? <><Loader2 className="w-5 h-5 animate-spin mr-2" />Processing...</> : <><CreditCard className="w-4 h-4 mr-2" />Pay ₹{selectedFee.pendingAmount.toLocaleString()}</>}
+                                <button
+                                    onClick={() => handlePayment(selectedFee)}
+                                    disabled={paymentProcessing}
+                                    className={`flex-1 flex items-center justify-center px-4 py-2 rounded-lg text-white font-medium ${paymentProcessing ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                                >
+                                    {paymentProcessing ? <><Loader2 className="w-5 h-5 animate-spin mr-2" />Processing...</> : <><CreditCard className="w-4 h-4 mr-2" />Proceed to Pay ₹{selectedFee.pendingAmount.toLocaleString()}</>}
                                 </button>
                                 <button onClick={() => { setShowPaymentModal(false); setSelectedFee(null); }} disabled={paymentProcessing} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
                             </div>
