@@ -797,7 +797,7 @@ const CollegeList = () => {
         </div>
 
         {/* Footer Info */}
-        <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
+        {/* <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
           <div className="text-center">
             <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
               Directorate of Technical Education
@@ -815,7 +815,7 @@ const CollegeList = () => {
               Last Updated: 13/09/2025, 1:41:11 pm
             </p>
           </div>
-        </div>
+        </div> */}
       </div>
       
       {/* Footer Component */}
