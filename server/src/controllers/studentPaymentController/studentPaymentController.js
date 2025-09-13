@@ -5,7 +5,7 @@ import Razorpay from "razorpay";
 import dotenv from 'dotenv';
 import crypto from 'crypto';
 import html_to_pdf from 'html-pdf-node';
-import studentHostelModal from "../../models/studentHostelModal.js";
+import StudentHostel from "../../models/studentHostelModal.js";
 
 // Configure dotenv right at the top of this file
 dotenv.config();
