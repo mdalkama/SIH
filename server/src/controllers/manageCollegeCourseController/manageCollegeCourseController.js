@@ -11,6 +11,7 @@ export const getCoursesWithFees = async (req, res) => {
         if (!college) {
             return res.status(404).json({ message: "College not found" });
         }
+
         const courseDetails = college.courses.map(c => {
             const courseInfo = c.courseId;
             return {
@@ -20,16 +21,14 @@ export const getCoursesWithFees = async (req, res) => {
                 branch: courseInfo.branch,
                 specialization: courseInfo.specialization,
                 totalSemester: courseInfo.totalSemester,
-                semesters: courseInfo.semesters,
                 fees: c.fees
             };
         });
-
         res.status(200).json({
             college: {
                 name: college.name,
                 code: college.code,
-                courses: courseDetails
+                courses: courseDetails,
             }
         });
     } catch (error) {
@@ -37,6 +36,7 @@ export const getCoursesWithFees = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
 
 
 export const updateCourseFees = async (req, res) => {
