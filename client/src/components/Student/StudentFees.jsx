@@ -105,6 +105,7 @@ const FeesDashboard = () => {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedFee, setSelectedFee] = useState(null);
     const [paymentProcessing, setPaymentProcessing] = useState(false);
+    console.log(feeData)
 
     const addToast = (type, message) => { const id = Date.now(); setToasts(prev => [...prev, { id, type, message }]); };
 
@@ -134,6 +135,7 @@ const FeesDashboard = () => {
 
             const academicData = academicRes.ok ? await academicRes.json() : { semesters: [], fines: [], paymentHistory: [] };
             const hostelData = hostelRes.ok ? await hostelRes.json() : { data: [] };
+            console.log(hostelData)
             
             setFeeData({
                 semesters: academicData.semesters || [],
