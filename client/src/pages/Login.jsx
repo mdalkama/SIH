@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, User, Users, ArrowLeft, AlertCircle, Shield, Building2 } from 'lucide-react';
 
 const Mylogin = () => {
     const { setUser } = useUser();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -17,6 +18,14 @@ const Mylogin = () => {
     const [forgotEmail, setForgotEmail] = useState("");
     const [forgotLoading, setForgotLoading] = useState(false);
     const [forgotSuccess, setForgotSuccess] = useState(false);
+
+    // Set role based on URL parameter when component mounts
+    useEffect(() => {
+        const roleParam = searchParams.get('role');
+        if (roleParam && (roleParam === 'student' || roleParam === 'staff')) {
+            setRole(roleParam);
+        }
+    }, [searchParams]);
 
 
     // Handle login

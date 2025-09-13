@@ -12,6 +12,18 @@ import Dummy from "./pages/Dummy/Dummy.jsx";
 import Main from "./pages/DTE_home/content/content.jsx";
 import DTE from "./pages/DTE_home/dte.jsx";
 import Admission from "./pages/DTE_home/addmission/addmission.jsx";
+import CollegeList from "./pages/DTE_home/colleges/CollegeList.jsx";
+import NocPage from "./pages/DTE_home/noc/NocPage.jsx";
+import RosterPage from "./pages/DTE_home/roster/RosterPage.jsx";
+import RtiPage from "./pages/DTE_home/rti/RtiPage.jsx";
+import CircularsLettersPage from "./pages/DTE_home/documents/CircularsLettersPage.jsx";
+import EstablishmentPage from "./pages/DTE_home/documents/EstablishmentPage.jsx";
+import DepartmentRulesPage from "./pages/DTE_home/documents/DepartmentRulesPage.jsx";
+import TransferOrdersPage from "./pages/DTE_home/employee/TransferOrdersPage.jsx";
+import PromotionOrdersPage from "./pages/DTE_home/employee/PromotionOrdersPage.jsx";
+import PostingOrdersPage from "./pages/DTE_home/employee/PostingOrdersPage.jsx";
+import StudentsCornerPage from "./pages/DTE_home/students/StudentsCornerPage.jsx";
+import TendersAuctionsPage from "./pages/DTE_home/tenders/TendersAuctionsPage.jsx";
 
 function App() {
   return (
@@ -31,6 +43,34 @@ function App() {
           <Route path="/admission/diploma-non-engineering-first-year" element={<Admission admissionType="diploma-non-engineering-first-year" />} />
           <Route path="/admission/diploma-non-engineering-second-year-graduate" element={<Admission admissionType="diploma-non-engineering-second-year-graduate" />} />
           <Route path="/admission/diploma-non-engineering-first-year-degree" element={<Admission admissionType="diploma-non-engineering-first-year-degree" />} />
+          
+          {/* College List Route */}
+          <Route path="/colleges" element={<CollegeList />} />
+          
+          {/* NOC Route */}
+          <Route path="/noc" element={<NocPage />} />
+          
+          {/* Roster Route */}
+          <Route path="/roster" element={<RosterPage />} />
+          
+          {/* RTI Route */}
+          <Route path="/rti" element={<RtiPage />} />
+          
+          {/* Documents Routes */}
+          <Route path="/documents/circulars-letters" element={<CircularsLettersPage />} />
+          <Route path="/documents/establishment" element={<EstablishmentPage />} />
+          <Route path="/documents/department-rules" element={<DepartmentRulesPage />} />
+          
+          {/* Students Corner Route */}
+          <Route path="/students-corner" element={<StudentsCornerPage />} />
+          
+          {/* Tenders & Auctions Route */}
+          <Route path="/tenders-auctions" element={<TendersAuctionsPage />} />
+          
+          {/* Employee Corner Routes */}
+          <Route path="/employee/transfer-orders" element={<TransferOrdersPage />} />
+          <Route path="/employee/promotion-orders" element={<PromotionOrdersPage />} />
+          <Route path="/employee/posting-orders" element={<PostingOrdersPage />} />
           
           {/* Other routes */}
           {/* Login route protected */}
