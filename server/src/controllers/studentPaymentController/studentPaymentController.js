@@ -216,85 +216,112 @@ export const downloadReceipt = async (req, res) => {
         const paymentDoc = await StudentPayment.findOne({ 
             registrationNumber: regNo, 
             collegeCode 
-        }).populate('student');
+        }).populate('student', 'name course').populate('student.course', 'branch');
 
-        if (!paymentDoc) {
-            return res.status(404).json({ message: "Payment record not found." });
-        }
+        if (!paymentDoc) return res.status(404).json({ message: "Payment record not found." });
 
         const transaction = paymentDoc.paymentHistory.find(p => p.receiptNo === receiptNo);
+        if (!transaction) return res.status(404).json({ message: "Receipt not found." });
 
-        if (!transaction) {
-            return res.status(404).json({ message: "Receipt not found." });
-        }
+        // Use the helper function to get amount in words
+        const amountInWords = getAmountInWords(transaction.amount);
 
-        // Create HTML content for the PDF
         const htmlContent = `
-            <style>
-                body { font-family: sans-serif; margin: 40px; }
-                .header { text-align: center; margin-bottom: 40px; }
-                .header h1 { margin: 0; color: #333; }
-                .header p { margin: 5px 0; color: #555; }
-                .details-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
-                .details-table th, .details-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-                .details-table th { background-color: #f7f7f7; font-weight: bold; color: #333; }
-                .summary { float: right; width: 40%; }
-                .summary-table { width: 100%; border-collapse: collapse; }
-                .summary-table td { padding: 12px; }
-                .summary-table .label { font-weight: bold; color: #555; }
-                .summary-table .total { font-weight: bold; font-size: 1.2em; color: #000; }
-                .footer { text-align: center; margin-top: 60px; font-size: 0.9em; color: #888; }
-            </style>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 0; }
+                    .receipt-container { border: 2px solid #000; padding: 25px; margin: 20px; max-width: 800px; margin: auto; }
+                    .header { display: flex; align-items: center; justify-content: center; text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 15px; }
+                    .header img { width: 60px; height: 60px; margin-right: 20px; }
+                    .header-text h2 { margin: 0; font-size: 18px; color: #d32f2f; }
+                    .header-text h3 { margin: 5px 0 0 0; font-size: 16px; font-weight: normal; }
+                    .receipt-title { text-align: center; margin: 20px 0; }
+                    .receipt-title h1 { margin: 0; font-size: 24px; text-decoration: underline; }
+                    .details-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+                    .details-table th, .details-table td { border: 1px solid #ccc; padding: 8px; }
+                    .details-table th { background-color: #f8f8f8; text-align: left; width: 25%; }
+                    .particulars-table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 14px; }
+                    .particulars-table th, .particulars-table td { border: 1px solid #ccc; padding: 10px; }
+                    .particulars-table th { background-color: #f8f8f8; }
+                    .text-right { text-align: right; }
+                    .font-bold { font-weight: bold; }
+                    .amount-words { margin-top: 20px; font-size: 14px; }
+                    .signature-area { margin-top: 80px; text-align: right; }
+                    .signature-area p { margin-top: 5px; font-size: 14px; }
+                    .footer { text-align: center; margin-top: 40px; font-size: 12px; color: #777; border-top: 1px solid #ccc; padding-top: 10px; }
+                </style>
+            </head>
             <body>
-                <div class="header">
-                    <h1>Payment Receipt</h1>
-                    <p>Your College/University Name</p>
-                </div>
-                <table class="details-table">
-                    <tr>
-                        <th>Student Name</th>
-                        <td>${paymentDoc.student.name}</td>
-                        <th>Registration No.</th>
-                        <td>${paymentDoc.registrationNumber}</td>
-                    </tr>
-                    <tr>
-                        <th>Receipt No.</th>
-                        <td>${transaction.receiptNo}</td>
-                        <th>Payment Date</th>
-                        <td>${new Date(transaction.date).toLocaleDateString('en-GB')}</td>
-                    </tr>
-                </table>
-                <table class="details-table">
-                    <thead>
+                <div class="receipt-container">
+                    <div class="header">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/1200px-Emblem_of_India.svg.png" alt="Emblem">
+                        <div class="header-text">
+                            <h2>Government of Rajasthan</h2>
+                            <h3>Department of College Education</h3>
+                        </div>
+                    </div>
+                    <div class="receipt-title">
+                        <h1>FEE RECEIPT</h1>
+                    </div>
+                    <table class="details-table">
                         <tr>
-                            <th>Description</th>
-                            <th>Payment Type</th>
-                            <th>Method</th>
-                            <th style="text-align: right;">Amount</th>
+                            <th>Receipt No.</th>
+                            <td>${transaction.receiptNo}</td>
+                            <th>Payment Date</th>
+                            <td>${new Date(transaction.date).toLocaleDateString('en-GB')}</td>
                         </tr>
-                    </thead>
-                    <tbody>
                         <tr>
-                            <td>${transaction.description}</td>
-                            <td>${transaction.type}</td>
-                            <td style="text-transform: capitalize;">${transaction.method}</td>
-                            <td style="text-align: right;">₹${transaction.amount.toLocaleString('en-IN')}</td>
+                            <th>Student Name</th>
+                            <td>${paymentDoc.student.name}</td>
+                            <th>Registration No.</th>
+                            <td>${paymentDoc.registrationNumber}</td>
                         </tr>
-                    </tbody>
-                </table>
-                <div class="summary">
-                    <table class="summary-table">
-                        <tr>
-                            <td class="label">Total Paid:</td>
-                            <td class="total" style="text-align: right;">₹${transaction.amount.toLocaleString('en-IN')}</td>
+                         <tr>
+                            <th>Course</th>
+                            <td colspan="3">${paymentDoc.student.course?.branch || 'N/A'}</td>
                         </tr>
                     </table>
-                </div>
-                <div style="clear: both;"></div>
-                <div class="footer">
-                    <p>This is a computer-generated receipt and does not require a signature.</p>
+                    <table class="particulars-table">
+                        <thead>
+                            <tr>
+                                <th>Sr. No.</th>
+                                <th>Particulars</th>
+                                <th class="text-right">Amount (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="text-align: center;">1</td>
+                                <td>
+                                    <p class="font-bold">${transaction.type}</p>
+                                    <p style="font-size: 12px; color: #555;">${transaction.description}</p>
+                                </td>
+                                <td class="text-right font-bold">₹ ${transaction.amount.toLocaleString('en-IN')}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" class="text-right font-bold">Total Amount Paid</td>
+                                <td class="text-right font-bold">₹ ${transaction.amount.toLocaleString('en-IN')}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div class="amount-words">
+                        <p><span class="font-bold">Amount in Words:</span> Rupees ${amountInWords}</p>
+                    </div>
+                    <div class="signature-area">
+                        <p>_________________________</p>
+                        <p>Authorised Signatory</p>
+                    </div>
+                    <div class="footer">
+                        <p>This is a computer-generated receipt and does not require a physical signature.</p>
+                    </div>
                 </div>
             </body>
+            </html>
         `;
 
         const options = { format: 'A4' };
