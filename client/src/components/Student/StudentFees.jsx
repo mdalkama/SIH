@@ -55,6 +55,7 @@ const FeesDashboard = () => {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedFee, setSelectedFee] = useState(null);
     const [paymentProcessing, setPaymentProcessing] = useState(false);
+    console.log(paymentData)
 
     const addToast = (type, message) => { const id = Date.now(); setToasts(prev => [...prev, { id, type, message }]); };
 
@@ -310,7 +311,7 @@ const FeesDashboard = () => {
                                 <div>
                                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Fees Management</h1>
                                     <p className="text-gray-600 font-semibold">{paymentData.student?.name} • {paymentData.registrationNumber}</p>
-                                    <p className="text-sm text-gray-500">{paymentData.student?.course?.branch} • Semester {paymentData.student?.currentSemester}</p>
+                                    <p className="text-sm text-gray-500">{paymentData.student?.course?.branch} • Semester {paymentData.student?.semester}</p>
                                 </div>
                                 <div className="text-center hidden sm:block"><IndianRupee className="w-12 h-12 text-green-600 mx-auto" /></div>
                             </div>

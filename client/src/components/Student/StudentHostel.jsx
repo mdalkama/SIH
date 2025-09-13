@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import {
   Home, User, Phone, MapPin, Plus, Send, Clock,
   CheckCircle, AlertTriangle, Loader2, Repeat,
-  Users, X
+  Users, X, IndianRupee // Added IndianRupee icon for the new fees tab
 } from 'lucide-react';
 
-// --- Helper Components (Unchanged) ---
+// --- Helper Components ---
 const DetailItem = ({ icon: Icon, label, value, subValue }) => (
     <div className="flex items-start">
         <Icon className="w-5 h-5 text-gray-500 mt-1 mr-4 flex-shrink-0" />
@@ -58,13 +58,14 @@ const HostelDashboard = () => {
     const [complaints, setComplaints] = useState([]);
     const [roomChangeRequests, setRoomChangeRequests] = useState([]);
     const [visitors, setVisitors] = useState([]);
+    const [fees, setFees] = useState([]); // NEW state for fees
     
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState('');
 
-    const [activeContentTab, setActiveContentTab] = useState('complaints');
+    const [activeContentTab, setActiveContentTab] = useState('fees'); // Default to the new fees tab
 
     const issueCategories = ['Maintenance', 'Electrical', 'Plumbing', 'Cleaning', 'Internet/WiFi', 'Other'];
 
@@ -72,11 +73,12 @@ const HostelDashboard = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const [allocRes, compRes, roomChangeRes, visitorRes] = await Promise.all([
+            const [allocRes, compRes, roomChangeRes, visitorRes, feeRes] = await Promise.all([
                 fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/my-allocation', { credentials: 'include' }),
                 fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/complaints', { credentials: 'include' }),
                 fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/room-change-requests', { credentials: 'include' }),
-                fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/visitors', { credentials: 'include' })
+                fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/visitors', { credentials: 'include' }),
+                fetch('https://sih-4ptm.onrender.com/api/v1/student-hostel/fees', { credentials: 'include' }) // NEW API call for fees
             ]);
 
             if (allocRes.status === 404) setAllocationDetails(null);
@@ -86,6 +88,7 @@ const HostelDashboard = () => {
             if(compRes.ok) { const d = await compRes.json(); if(d.success) setComplaints(d.data); }
             if(roomChangeRes.ok) { const d = await roomChangeRes.json(); if(d.success) setRoomChangeRequests(d.data); }
             if(visitorRes.ok) { const d = await visitorRes.json(); if(d.success) setVisitors(d.data); }
+            if(feeRes.ok) { const d = await feeRes.json(); if(d.success) setFees(d.data); } // Set fees data
 
         } catch (err) { setError(err.message); }
         finally { setIsLoading(false); }
@@ -99,59 +102,113 @@ const HostelDashboard = () => {
 
     const renderContent = () => {
         switch (activeContentTab) {
+            case 'fees':
+                return renderFees();
             case 'complaints':
-                const recentComplaints = complaints.slice(0, 5);
-                if (recentComplaints.length === 0) {
-                    return <p className="text-center text-gray-500 py-8">You haven't raised any complaints yet.</p>;
-                }
-                const getStatusIcon = (status) => { switch (status) { case 'Resolved': return <CheckCircle className="w-4 h-4 text-green-500" />; case 'In Progress': return <Clock className="w-4 h-4 text-yellow-500" />; default: return <AlertTriangle className="w-4 h-4 text-blue-500" />; } };
-                const getPriorityColor = (priority) => { switch (priority) { case 'High': return 'text-red-600 bg-red-100'; case 'Medium': return 'text-yellow-600 bg-yellow-100'; default: return 'text-green-600 bg-green-100'; } };
-                return (
-                    <div className="space-y-4">
-                        {recentComplaints.map((comp) => (
-                            <div key={comp._id} className="border border-gray-200 p-4 rounded-lg">
-                                <div className="flex justify-between items-start mb-2"><div className="flex items-center gap-2"><div className="mr-1">{getStatusIcon(comp.status)}</div><h3 className="font-semibold text-gray-800">{comp.title}</h3></div><span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(comp.priority)}`}>{comp.priority}</span></div>
-                                <p className="text-sm text-gray-600 mb-2 pl-7">{comp.description}</p>
-                                <div className="flex justify-between items-center text-xs text-gray-500 pl-7"><span>{comp.issue} • Room {comp.hostelDetail.roomNumber}</span><span>{new Date(comp.createdAt).toLocaleDateString()} • {comp.status}</span></div>
-                            </div>
-                        ))}
-                    </div>
-                );
-
+                return renderComplaints();
             case 'roomChanges':
-                const recentRoomChanges = roomChangeRequests.slice(0, 5);
-                if (recentRoomChanges.length === 0) {
-                    return <p className="text-center text-gray-500 py-8">No room change requests found.</p>;
-                }
-                const getStatusColor = (status) => { switch(status) { case 'Approved': return 'bg-green-100 text-green-800'; case 'Rejected': return 'bg-red-100 text-red-800'; default: return 'bg-yellow-100 text-yellow-800'; } };
-                return (
-                    <div className="space-y-4">
-                        {recentRoomChanges.map(req => (
-                            <div key={req._id} className="border border-gray-200 p-4 rounded-lg">
-                                <div className="flex justify-between items-start"><p className="text-sm text-gray-500">Requested on: {new Date(req.requestedAt).toLocaleDateString()}</p><span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(req.status)}`}>{req.status}</span></div>
-                                <p className="mt-2 font-medium text-gray-800">Reason:</p><p className="text-sm text-gray-600 italic">"{req.reason}"</p>
-                            </div>
-                        ))}
-                    </div>
-                );
-
+                return renderRoomChanges();
             case 'visitors':
-                const recentVisitors = visitors.slice(0, 5);
-                if (recentVisitors.length === 0) {
-                    return <p className="text-center text-gray-500 py-8">No visitor passes found.</p>;
-                }
-                return (
-                    <div className="space-y-3">
-                        {recentVisitors.map(visitor => (
-                            <div key={visitor._id} className="border border-gray-200 p-4 rounded-lg">
-                                <div className="flex justify-between items-center"><h4 className="font-semibold text-gray-800">{visitor.name}</h4><span className="text-sm text-gray-500">{new Date(visitor.date).toLocaleDateString()}</span></div>
-                                <p className="text-sm text-gray-600">Relation: <span className="font-medium">{visitor.relation || 'N/A'}</span></p><p className="text-sm text-gray-600">Purpose: <span className="font-medium">{visitor.purpose || 'N/A'}</span></p>
-                            </div>
-                        ))}
-                    </div>
-                );
+                return renderVisitors();
             default: return null;
         }
+    };
+
+    const renderFees = () => {
+        if (fees.length === 0) {
+            return <p className="text-center text-gray-500 py-8">No hostel fee records have been assigned yet.</p>;
+        }
+        return (
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                    <thead className="bg-slate-50 text-left">
+                        <tr>
+                            <th className="p-3 font-semibold text-slate-600">Month</th>
+                            <th className="p-3 font-semibold text-slate-600 text-right">Total Amount</th>
+                            <th className="p-3 font-semibold text-slate-600 text-right">Amount Paid</th>
+                            <th className="p-3 font-semibold text-slate-600 text-right">Pending</th>
+                            <th className="p-3 font-semibold text-slate-600 text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                        {fees.map(fee => {
+                            const pending = fee.amount - fee.paidAmount;
+                            const isPaid = pending <= 0;
+                            return (
+                                <tr key={fee._id} className="hover:bg-slate-50">
+                                    <td className="p-3 font-medium text-slate-800">{fee.month}</td>
+                                    <td className="p-3 text-right font-mono text-slate-600">₹{fee.amount.toLocaleString('en-IN')}</td>
+                                    <td className="p-3 text-right font-mono text-green-600">₹{fee.paidAmount.toLocaleString('en-IN')}</td>
+                                    <td className={`p-3 text-right font-mono font-semibold ${pending > 0 ? 'text-red-600' : 'text-slate-500'}`}>₹{pending.toLocaleString('en-IN')}</td>
+                                    <td className="p-3 text-center">
+                                        {isPaid ? (
+                                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"><CheckCircle size={12} /> Paid</span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"><Clock size={12} /> {fee.status}</span>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
+
+    const renderComplaints = () => {
+        const recentComplaints = complaints.slice(0, 5);
+        if (recentComplaints.length === 0) {
+            return <p className="text-center text-gray-500 py-8">You haven't raised any complaints yet.</p>;
+        }
+        const getStatusIcon = (status) => { switch (status) { case 'Resolved': return <CheckCircle className="w-4 h-4 text-green-500" />; case 'In Progress': return <Clock className="w-4 h-4 text-yellow-500" />; default: return <AlertTriangle className="w-4 h-4 text-blue-500" />; } };
+        const getPriorityColor = (priority) => { switch (priority) { case 'High': return 'text-red-600 bg-red-100'; case 'Medium': return 'text-yellow-600 bg-yellow-100'; default: return 'text-green-600 bg-green-100'; } };
+        return (
+            <div className="space-y-4">
+                {recentComplaints.map((comp) => (
+                    <div key={comp._id} className="border border-gray-200 p-4 rounded-lg">
+                        <div className="flex justify-between items-start mb-2"><div className="flex items-center gap-2"><div className="mr-1">{getStatusIcon(comp.status)}</div><h3 className="font-semibold text-gray-800">{comp.title}</h3></div><span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(comp.priority)}`}>{comp.priority}</span></div>
+                        <p className="text-sm text-gray-600 mb-2 pl-7">{comp.description}</p>
+                        <div className="flex justify-between items-center text-xs text-gray-500 pl-7"><span>{comp.issue} • Room {comp.hostelDetail.roomNumber}</span><span>{new Date(comp.createdAt).toLocaleDateString()} • {comp.status}</span></div>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
+    const renderRoomChanges = () => {
+        const recentRoomChanges = roomChangeRequests.slice(0, 5);
+        if (recentRoomChanges.length === 0) {
+            return <p className="text-center text-gray-500 py-8">No room change requests found.</p>;
+        }
+        const getStatusColor = (status) => { switch(status) { case 'Approved': return 'bg-green-100 text-green-800'; case 'Rejected': return 'bg-red-100 text-red-800'; default: return 'bg-yellow-100 text-yellow-800'; } };
+        return (
+            <div className="space-y-4">
+                {recentRoomChanges.map(req => (
+                    <div key={req._id} className="border border-gray-200 p-4 rounded-lg">
+                        <div className="flex justify-between items-start"><p className="text-sm text-gray-500">Requested on: {new Date(req.requestedAt).toLocaleDateString()}</p><span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(req.status)}`}>{req.status}</span></div>
+                        <p className="mt-2 font-medium text-gray-800">Reason:</p><p className="text-sm text-gray-600 italic">"{req.reason}"</p>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
+    const renderVisitors = () => {
+        const recentVisitors = visitors.slice(0, 5);
+        if (recentVisitors.length === 0) {
+            return <p className="text-center text-gray-500 py-8">No visitor passes found.</p>;
+        }
+        return (
+            <div className="space-y-3">
+                {recentVisitors.map(visitor => (
+                    <div key={visitor._id} className="border border-gray-200 p-4 rounded-lg">
+                        <div className="flex justify-between items-center"><h4 className="font-semibold text-gray-800">{visitor.name}</h4><span className="text-sm text-gray-500">{new Date(visitor.date).toLocaleDateString()}</span></div>
+                        <p className="text-sm text-gray-600">Relation: <span className="font-medium">{visitor.relation || 'N/A'}</span></p><p className="text-sm text-gray-600">Purpose: <span className="font-medium">{visitor.purpose || 'N/A'}</span></p>
+                    </div>
+                ))}
+            </div>
+        );
     };
 
     if (isLoading) {
@@ -165,7 +222,6 @@ const HostelDashboard = () => {
             </div>
         );
     }
-    console.log(allocationDetails);
     
     return (
         <div className="min-h-screen">
@@ -190,9 +246,10 @@ const HostelDashboard = () => {
                         <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
                             <div className="border-b border-gray-200">
                                 <nav className="-mb-px flex space-x-6 px-6 " aria-label="Tabs">
-                                    <button onClick={() => setActiveContentTab('complaints')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'complaints' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Recent Complaints</button>
-                                    <button onClick={() => setActiveContentTab('roomChanges')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'roomChanges' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Recent Room Changes</button>
-                                    <button onClick={() => setActiveContentTab('visitors')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'visitors' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Recent Visitors</button>
+                                    <button onClick={() => setActiveContentTab('fees')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'fees' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}><IndianRupee className="inline-block mr-1 h-4 w-4" /> Hostel Fees</button>
+                                    <button onClick={() => setActiveContentTab('complaints')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'complaints' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Complaints</button>
+                                    <button onClick={() => setActiveContentTab('roomChanges')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'roomChanges' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Room Changes</button>
+                                    <button onClick={() => setActiveContentTab('visitors')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeContentTab === 'visitors' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Visitors</button>
                                 </nav>
                             </div>
                             <div className="p-6">{renderContent()}</div>
