@@ -687,93 +687,97 @@ export const allocateBed = async (req, res) => {
     const wardenId = req.user.id;
 
     const warden = await Staff.findById(wardenId).select("collegeCode");
-    if (!warden || !warden.collegeCode)
-      return res.status(403).json({ error: "warden not found" });
-
-    if (!registrationNumber) {
-      return res
-        .status(400)
-        .json({ error: "Registration number is required." });
+    if (!warden || !warden.collegeCode) {
+        return res.status(403).json({ error: "Warden not found or not associated with a college." });
     }
 
-    // 1. Student ko registration number se dhoondho
+    if (!registrationNumber) {
+        return res.status(400).json({ error: "Registration number is required." });
+    }
+
     const student = await Student.findOne({
       registrationNumber,
       collegeCode: warden.collegeCode,
     });
     if (!student) {
-      return res
-        .status(404)
-        .json({ error: "Student not found with this registration number." });
+        return res.status(404).json({ error: "Student not found with this registration number." });
     }
 
-    // 2. Check karo ki student pehle se hi allocated toh nahi hai
     const existingAllocation = await StudentHostel.findOne({
       occupant: student._id,
-      currentHostel: { $ne: null },
+      "currentHostel.bed": { $ne: null },
     });
 
     if (existingAllocation) {
-      return res
-        .status(409)
-        .json({ error: "This student is already allocated to another bed." });
+        return res.status(409).json({ error: "This student is already allocated to another bed." });
     }
 
-    // 3. Hostel, floor, room, aur bed dhoondho
     const hostel = await Hostel.findById(hostelId);
     if (!hostel) return res.status(404).json({ error: "Hostel not found" });
 
-    const floor = hostel.floors.find((f) => f._id.equals(floorId));
+    const floor = hostel.floors.id(floorId);
     if (!floor) return res.status(404).json({ error: "Floor not found" });
 
-    const room = floor.rooms.find((r) => r._id.equals(roomId));
+    const room = floor.rooms.id(roomId);
     if (!room) return res.status(404).json({ error: "Room not found" });
 
-    const bed = room.beds.find((b) => b._id.equals(bedId));
+    const bed = room.beds.id(bedId);
     if (!bed) return res.status(404).json({ error: "Bed not found" });
 
-    // 4. Check karo ki bed khali hai ya nahi
     if (bed.isOccupied) {
-      return res.status(400).json({ error: "This bed is already occupied." });
+        return res.status(400).json({ error: "This bed is already occupied." });
     }
 
-    // 5. Bed ko occupied mark karo aur hostel document save karo
+    // --- MAIN ALLOCATION LOGIC (Existing) ---
     bed.isOccupied = true;
     bed.occupant = student._id;
     await hostel.save();
 
-    // 6. StudentHostel record ko update ya create karo
     let studentHostel = await StudentHostel.findOne({ occupant: student._id });
 
     if (studentHostel) {
-      // Agar record pehle se hai (vacated state me), toh use update karo
-      studentHostel.currentHostel = {
-        hostel: hostelId,
-        floor: floorId,
-        room: roomId,
-        bed: bedId,
-      };
+      studentHostel.currentHostel = { hostel: hostelId, floor: floorId, room: roomId, bed: bedId };
     } else {
-      // Agar record nahi hai, toh naya banao
       studentHostel = new StudentHostel({
         registrationNumber: student.registrationNumber,
         occupant: student._id,
         collegeCode: student.collegeCode,
-        currentHostel: {
-          hostel: hostelId,
-          floor: floorId,
-          room: roomId,
-          bed: bedId,
-        },
+        currentHostel: { hostel: hostelId, floor: floorId, room: roomId, bed: bedId },
       });
     }
 
+    // --- NEW: AUTOMATIC FEE GENERATION LOGIC ---
+    if (room.price && room.price > 0) {
+        const now = new Date();
+        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`; // Format: YYYY-MM
+        
+        // Check if a fee for the current month already exists to avoid duplicates
+        const feeExists = studentHostel.fees.some(fee => fee.month === currentMonth);
+
+        if (!feeExists) {
+            const newFee = {
+                month: currentMonth,
+                amount: room.price,
+                paidAmount: 0,
+                status: "Unpaid",
+                roomDetail: {
+                    hostel: hostel.name,
+                    floor: floor.floorNumber,
+                    room: room.roomNumber,
+                    bed: bed.bedNumber
+                }
+            };
+            studentHostel.fees.push(newFee);
+        }
+    }
+    // --- END OF NEW LOGIC ---
+
+    // Final save for the StudentHostel document
     await studentHostel.save();
 
-    // 7. Success response bhejo
     res.status(200).json({
       success: true,
-      message: "Bed allocated successfully!",
+      message: "Bed allocated successfully and initial fee generated.",
     });
   } catch (err) {
     console.error("Error in allocateBed:", err);
@@ -1279,5 +1283,91 @@ export const getDashboardSummary = async (req, res) => {
     } catch (error) {
         console.error("Error fetching dashboard summary:", error);
         res.status(500).json({ success: false, error: "Server Error" });
+    }
+};
+
+export const generateMonthlyHostelFees = async (req, res) => {
+    try {
+        const { month } = req.body; // Expecting month in "YYYY-MM" format, e.g., "2024-10"
+        const { collegeCode } = req.user;
+
+        if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+            return res.status(400).json({ message: "A valid month in YYYY-MM format is required." });
+        }
+
+        // 1. Find all students in the college who are currently allocated a bed.
+        const allocatedStudents = await StudentHostel.find({
+            collegeCode: collegeCode,
+            "currentHostel.bed": { $ne: null }
+        }).populate('occupant', 'name');
+
+        if (allocatedStudents.length === 0) {
+            return res.status(404).json({ message: "No students are currently allocated to any hostel." });
+        }
+
+        let feeGeneratedCount = 0;
+        let alreadyExistsCount = 0;
+        const errors = [];
+
+        // 2. Loop through each allocated student
+        for (const studentHostel of allocatedStudents) {
+            // Check if fee for this month already exists
+            const feeExists = studentHostel.fees.some(fee => fee.month === month);
+            if (feeExists) {
+                alreadyExistsCount++;
+                continue; // Skip to the next student
+            }
+
+            try {
+                // 3. Find the hostel, room, and price for the student's allocated bed
+                const hostel = await Hostel.findById(studentHostel.currentHostel.hostel);
+                if (!hostel) continue;
+                
+                const floor = hostel.floors.id(studentHostel.currentHostel.floor);
+                if (!floor) continue;
+
+                const room = floor.rooms.id(studentHostel.currentHostel.room);
+                if (!room || !room.price) { // Ensure the room and its price exist
+                    errors.push(`Price not found for room ${room?.roomNumber} for student ${studentHostel.registrationNumber}`);
+                    continue;
+                }
+                const bed = room.beds.id(studentHostel.currentHostel.bed);
+                if(!bed) continue;
+
+                // 4. Create the new fee record
+                const newFee = {
+                    month: month,
+                    amount: room.price,
+                    paidAmount: 0,
+                    status: "Unpaid",
+                    roomDetail: {
+                        hostel: hostel.name,
+                        floor: floor.floorNumber,
+                        room: room.roomNumber,
+                        bed: bed.bedNumber
+                    }
+                };
+                
+                studentHostel.fees.push(newFee);
+                await studentHostel.save();
+                feeGeneratedCount++;
+
+            } catch(e) {
+                errors.push(`Failed to process fee for ${studentHostel.registrationNumber}: ${e.message}`);
+            }
+        }
+
+        res.status(200).json({
+            success: true,
+            message: `Monthly fees generated successfully.`,
+            generated: feeGeneratedCount,
+            skipped: alreadyExistsCount,
+            totalStudents: allocatedStudents.length,
+            errors: errors
+        });
+
+    } catch (err) {
+        console.error("Error generating monthly hostel fees:", err);
+        res.status(500).json({ message: "Server Error", error: err.message });
     }
 };

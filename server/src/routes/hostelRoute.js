@@ -36,6 +36,7 @@ import {
   updateRoomChangeRequestStatus,
   getAllVisitorPasses,
   getDashboardSummary,
+  generateMonthlyHostelFees,
 } from "../controllers/hostelController/hostelController.js";
 
 const router = express.Router();
@@ -103,5 +104,7 @@ router.put('/room-changes/:studentHostelId/:requestId', updateRoomChangeRequestS
 router.get('/warden/visitors', getAllVisitorPasses);
 
 router.get('/warden/dashboard-summary', getDashboardSummary);
+
+router.post('/warden/generate-monthly-fees', generateMonthlyHostelFees);
 
 export default router;
