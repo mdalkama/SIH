@@ -30,10 +30,9 @@ function App() {
   return (
     <Router>
       <UserProvider>
-        <Chatbot />
         <Routes>
           {/* Home route - DTE page for normal users */}
-          <Route path="/" element={<DTE />} />
+          <Route path="/" element={<DTE showChatbot={true} />} />
           
           {/* Admission routes */}
           <Route path="/admission/engineering" element={<Admission admissionType="engineering" />} />
@@ -84,9 +83,16 @@ function App() {
               </ProtectedLoginRoute>
             }
           />
-          <Route path="/application" element={<Application />} />
+          <Route path="/application" element={
+            <ProtectedRoute>
+              <Application />
+            </ProtectedRoute>
+          } />
           <Route path="/main" element={<Main />} />
           <Route path="/dummy" element={<Dummy />} />
+          
+          {/* Catch-all route for DTE without chatbot */}
+          <Route path="/dte" element={<DTE showChatbot={false} />} />
           
           {/* Unauthorized page */}
           <Route

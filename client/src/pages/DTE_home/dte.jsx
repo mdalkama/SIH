@@ -5,7 +5,7 @@ import Content from './content/content'
 import ThemeSwitcher from './ThemeSwitcher'
 import Chatbot from './Chatbot'
 
-const dte = () => {
+const DTE = ({ showChatbot = false }) => {
   return (
     <div className="min-h-screen flex flex-col theme-bg">
       {/* Header at the top */}
@@ -22,10 +22,10 @@ const dte = () => {
       {/* Theme Switcher - Fixed Position */}
       <ThemeSwitcher />
       
-      {/* Chatbot - Fixed Position */}
-      <Chatbot />
+      {/* Chatbot - Only on home page */}
+      {showChatbot && <Chatbot />}
     </div>
   )
 }
 
-export default dte
+export default DTE

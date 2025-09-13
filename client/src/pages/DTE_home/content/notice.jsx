@@ -8,8 +8,8 @@ const Notice = () => {
   // Auto-scroll functionality with better scroll management
   useEffect(() => {
     const scrollContainers = [
-      { ref: noticeScrollRef, speed: 1 },
-      { ref: eventsScrollRef, speed: 0.8 },
+      { ref: noticeScrollRef, speed: 1.2 },
+      { ref: eventsScrollRef, speed: 1.2 },
       { ref: academicScrollRef, speed: 1.2 }
     ]
 
