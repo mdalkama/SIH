@@ -82,7 +82,7 @@ export const addStudent = async (req, res) => {
     } catch (err) {
         console.error("Error in addStudent controller:", err);
         if (err.code === 11000) {
-             return res.status(400).json({ error: "A student with this registration number or email already exists." });
+            return res.status(400).json({ error: "A student with this registration number or email already exists." });
         }
         res.status(400).json({ error: err.message });
     }
