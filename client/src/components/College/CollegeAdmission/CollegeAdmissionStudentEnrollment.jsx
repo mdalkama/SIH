@@ -54,7 +54,7 @@ export default function AdmissionForm() {
     const fetchCourses = async () => {
       try {
         setLoadingCourses(true);
-        const response = await fetch('https://sih-4ptm.onrender.com/api/v1/course', {
+        const response = await fetch('https://sih-4ptm.onrender.com/api/v1/college-course/courses', {
           credentials: 'include',
         });
         if (!response.ok) {

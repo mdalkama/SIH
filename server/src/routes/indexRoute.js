@@ -50,7 +50,7 @@ router.use("/admission", applicationRoute)
 router.use("/admission-university", universityAdmissionRoute)
 router.use("/admission-college", collegeAdmissionRoute)
 router.use("/manage-college", manageCollegeRoute)
-router.use("/college-course", role(["CollegeAdmin"]), collegeCourseRoute)
+router.use("/college-course", role(["CollegeAdmin", "CollegeAdmissionDepartment"]), collegeCourseRoute)
 router.use("/admit-student-college", role(["CollegeAdmissionDepartment"]), admitStudentCollegeRoute)
 router.get("/my-profile", role(['student', ...staffRoles]), (req, res) => {
     try {
