@@ -4,6 +4,7 @@ import Student from "../../models/studentModel.js";
 import Razorpay from "razorpay";
 import dotenv from 'dotenv';
 import crypto from 'crypto';
+import html_to_pdf from 'html-pdf-node';
 
 // Configure dotenv right at the top of this file
 dotenv.config();
@@ -204,6 +205,110 @@ export const payFee = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
+    }
+};
+
+export const downloadReceipt = async (req, res) => {
+    try {
+        const { regNo, receiptNo } = req.params;
+        const { collegeCode } = req.user;
+
+        const paymentDoc = await StudentPayment.findOne({ 
+            registrationNumber: regNo, 
+            collegeCode 
+        }).populate('student');
+
+        if (!paymentDoc) {
+            return res.status(404).json({ message: "Payment record not found." });
+        }
+
+        const transaction = paymentDoc.paymentHistory.find(p => p.receiptNo === receiptNo);
+
+        if (!transaction) {
+            return res.status(404).json({ message: "Receipt not found." });
+        }
+
+        // Create HTML content for the PDF
+        const htmlContent = `
+            <style>
+                body { font-family: sans-serif; margin: 40px; }
+                .header { text-align: center; margin-bottom: 40px; }
+                .header h1 { margin: 0; color: #333; }
+                .header p { margin: 5px 0; color: #555; }
+                .details-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+                .details-table th, .details-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                .details-table th { background-color: #f7f7f7; font-weight: bold; color: #333; }
+                .summary { float: right; width: 40%; }
+                .summary-table { width: 100%; border-collapse: collapse; }
+                .summary-table td { padding: 12px; }
+                .summary-table .label { font-weight: bold; color: #555; }
+                .summary-table .total { font-weight: bold; font-size: 1.2em; color: #000; }
+                .footer { text-align: center; margin-top: 60px; font-size: 0.9em; color: #888; }
+            </style>
+            <body>
+                <div class="header">
+                    <h1>Payment Receipt</h1>
+                    <p>Your College/University Name</p>
+                </div>
+                <table class="details-table">
+                    <tr>
+                        <th>Student Name</th>
+                        <td>${paymentDoc.student.name}</td>
+                        <th>Registration No.</th>
+                        <td>${paymentDoc.registrationNumber}</td>
+                    </tr>
+                    <tr>
+                        <th>Receipt No.</th>
+                        <td>${transaction.receiptNo}</td>
+                        <th>Payment Date</th>
+                        <td>${new Date(transaction.date).toLocaleDateString('en-GB')}</td>
+                    </tr>
+                </table>
+                <table class="details-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Payment Type</th>
+                            <th>Method</th>
+                            <th style="text-align: right;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>${transaction.description}</td>
+                            <td>${transaction.type}</td>
+                            <td style="text-transform: capitalize;">${transaction.method}</td>
+                            <td style="text-align: right;">₹${transaction.amount.toLocaleString('en-IN')}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="summary">
+                    <table class="summary-table">
+                        <tr>
+                            <td class="label">Total Paid:</td>
+                            <td class="total" style="text-align: right;">₹${transaction.amount.toLocaleString('en-IN')}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div style="clear: both;"></div>
+                <div class="footer">
+                    <p>This is a computer-generated receipt and does not require a signature.</p>
+                </div>
+            </body>
+        `;
+
+        const options = { format: 'A4' };
+        const file = { content: htmlContent };
+
+        const pdfBuffer = await html_to_pdf.generatePdf(file, options);
+        
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=receipt-${receiptNo}.pdf`);
+        res.send(pdfBuffer);
+
+    } catch (err) {
+        console.error("Error generating PDF receipt:", err);
+        res.status(500).json({ message: "Failed to generate receipt." });
     }
 };
 

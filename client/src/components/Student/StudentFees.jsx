@@ -32,7 +32,8 @@ const getStatusColor = (status) => {
     switch (status) {
         case 'overdue': return 'text-red-600 bg-red-50 border-red-200';
         case 'pending': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-        default: return 'text-green-600 bg-green-50 border-green-200';
+        case 'completed': case 'paid': return 'text-green-600 bg-green-50 border-green-200';
+        default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
 };
 
@@ -40,7 +41,8 @@ const getStatusIcon = (status) => {
     switch (status) {
         case 'overdue': return <AlertCircle className="w-4 h-4 text-red-500" />;
         case 'pending': return <Clock className="w-4 h-4 text-yellow-500" />;
-        default: return <CheckCircle className="w-4 h-4 text-green-500" />;
+        case 'completed': case 'paid': return <CheckCircle className="w-4 h-4 text-green-500" />;
+        default: return <Clock className="w-4 h-4 text-gray-500" />;
     }
 };
 
@@ -64,6 +66,7 @@ const getPaymentMethodIcon = (method) => {
 };
 
 
+// --- MAIN COMPONENT ---
 const FeesDashboard = () => {
     const [activeTab, setActiveTab] = useState('overview');
     const [paymentData, setPaymentData] = useState(null);
@@ -95,9 +98,6 @@ const FeesDashboard = () => {
         }
     }, []);
 
-    // --- THIS IS THE FIX ---
-    // The dependency array for useCallback is corrected to prevent the infinite loop.
-    // It no longer depends on `loading`, which it was also setting.
     const fetchProfileAndPayments = useCallback(async () => {
         // Only show a full-page loader on the very first fetch
         if (!paymentData) setLoading(true);
@@ -112,6 +112,11 @@ const FeesDashboard = () => {
             const paymentResponse = await fetch(API_BASE_URL, { credentials: 'include' });
             if (!paymentResponse.ok) {
                 const errData = await paymentResponse.json();
+                 if (paymentResponse.status === 404) {
+                    setPaymentData({ student: profileData.user, registrationNumber, fines: [], semesters: [], paymentHistory: [], stats: {} });
+                    setError(null);
+                    return;
+                }
                 throw new Error(errData.message || "Failed to fetch payment details.");
             }
             const paymentResult = await paymentResponse.json();
@@ -123,11 +128,11 @@ const FeesDashboard = () => {
         } finally {
             setLoading(false);
         }
-    }, [paymentData]); // Depends on `paymentData` to know if it's the first fetch
+    }, [paymentData]);
 
     useEffect(() => {
         fetchProfileAndPayments();
-    }, [fetchProfileAndPayments]); // This now correctly runs only once on mount
+    }, [fetchProfileAndPayments]);
 
     const pendingFees = useMemo(() => {
         if (!paymentData) return [];
@@ -189,7 +194,32 @@ const FeesDashboard = () => {
         }
     };
 
-    const downloadReceipt = (receiptNo) => addToast('info', `Downloading receipt ${receiptNo}...`);
+    const downloadReceipt = async (receiptNo) => {
+        addToast('info', `Preparing receipt ${receiptNo}...`);
+        try {
+            const API_DOWNLOAD_URL = `https://sih-4ptm.onrender.com/api/v1/payment/${paymentData.registrationNumber}/receipt/${receiptNo}`;
+            const response = await fetch(API_DOWNLOAD_URL, { credentials: 'include' });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || 'Could not download receipt.');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `receipt-${receiptNo}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+            
+        } catch (err) {
+            addToast('error', err.message);
+        }
+    };
 
     if (loading) return <div className="flex items-center justify-center h-screen"><Loader2 className="w-12 h-12 animate-spin text-blue-600" /></div>;
     if (error && !paymentData) return <div className="max-w-6xl mx-auto p-4"><div className="text-center p-10 bg-red-50 rounded-lg border border-red-200"><AlertCircle className="mx-auto w-12 h-12 text-red-500" /><h3 className="mt-4 text-lg font-semibold text-red-800">An Error Occurred</h3><p className="text-red-600 mt-1">{error}</p></div></div>;
@@ -234,19 +264,37 @@ const FeesDashboard = () => {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <h3 className="text-xl font-semibold mb-6 text-slate-800">Transaction History</h3>
             {paymentData?.paymentHistory && paymentData.paymentHistory.length > 0 ?
-                <div className="space-y-6">
-                    {paymentData.paymentHistory.slice().reverse().map((payment) => (
-                        <div key={payment._id} className="flex gap-4">
-                            <div className="flex flex-col items-center"><div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center ring-4 ring-white"><CheckCircle className="w-5 h-5 text-green-600" /></div><div className="flex-grow w-0.5 bg-slate-200"></div></div>
-                            <div className="flex-1 pb-8 border-b border-slate-200 last:border-b-0">
-                                <div className="flex flex-col sm:flex-row justify-between sm:items-center"><div><p className="font-semibold text-slate-900">{payment.type}</p><p className="text-sm text-slate-500">{payment.description}</p></div><p className="text-xl font-bold text-slate-900 mt-2 sm:mt-0">₹{payment.amount.toLocaleString()}</p></div>
-                                <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-600"><div className="flex items-center gap-2"><Calendar size={14} /><span>{new Date(payment.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</span></div><div className="flex items-center gap-2">{getPaymentMethodIcon(payment.method)}<span className="capitalize">{payment.method}</span></div><div className="flex items-center gap-2"><FileText size={14} /><span>{payment.receiptNo}</span></div></div>
-                                <div className="flex justify-end mt-4"><button onClick={() => downloadReceipt(payment.receiptNo)} className="flex items-center px-3 py-1.5 text-blue-600 border border-blue-200 bg-blue-50 rounded-lg hover:bg-blue-100 text-sm font-medium transition-colors"><Download className="w-4 h-4 mr-2" />Download Receipt</button></div>
+                <div className="relative">
+                    <div className="absolute left-9 top-2 h-full w-0.5 bg-slate-200" aria-hidden="true"></div>
+                    <div className="space-y-8">
+                        {paymentData.paymentHistory.slice().reverse().map((payment, index) => (
+                            <div key={payment._id} className="relative flex items-start">
+                                <div className="flex-shrink-0 w-24 text-right pr-8">
+                                    <p className="font-semibold text-slate-700">{new Date(payment.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</p>
+                                    <p className="text-sm text-slate-500">{new Date(payment.date).getFullYear()}</p>
+                                </div>
+                                <div className="absolute left-7 top-1 w-4 h-4 rounded-full bg-blue-500 ring-4 ring-white z-10"></div>
+                                <div className="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-4">
+                                    <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-3">
+                                        <div><p className="font-semibold text-slate-900">{payment.type}</p><p className="text-sm text-slate-500">{payment.description}</p></div>
+                                        <div className="text-left sm:text-right mt-2 sm:mt-0"><p className="text-xl font-bold text-slate-900">₹{payment.amount.toLocaleString()}</p></div>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-600">
+                                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(payment.status)} capitalize`}>{getStatusIcon(payment.status)}{payment.status}</span>
+                                        <div className="flex items-center gap-2">{getPaymentMethodIcon(payment.method)}<span className="capitalize">{payment.method}</span></div>
+                                        <div className="flex items-center gap-2"><FileText size={14} /><span>{payment.receiptNo}</span></div>
+                                    </div>
+                                    <div className="flex justify-end mt-4"><button onClick={() => downloadReceipt(payment.receiptNo)} className="flex items-center px-3 py-1.5 text-blue-600 border border-blue-200 bg-blue-50 rounded-lg hover:bg-blue-100 text-sm font-medium transition-colors"><Download className="w-4 h-4 mr-2" />Download Receipt</button></div>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
-                : <p className="text-center text-slate-500 p-12">No payment history found.</p>}
+                : <div className="text-center p-12 text-slate-500">
+                    <ReceiptIndianRupee className="mx-auto w-16 h-16 text-slate-300" />
+                    <h4 className="mt-4 text-lg font-semibold text-slate-700">No Transactions Found</h4>
+                    <p>Your payment history will appear here once you make a payment.</p>
+                </div>}
         </div>
     );
 
