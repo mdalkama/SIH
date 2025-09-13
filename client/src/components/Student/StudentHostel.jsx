@@ -52,16 +52,19 @@ const PaginatedContent = ({ data, renderItem, itemsPerPageOptions = [5, 10, 20],
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(itemsPerPageOptions[0]);
 
-    const totalPages = Math.ceil(data.length / itemsPerPage);
+    // This ensures data is always an array before further processing
+    const safeData = Array.isArray(data) ? data : [];
+
+    const totalPages = Math.ceil(safeData.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const currentItems = data.slice(startIndex, endIndex);
+    const currentItems = safeData.slice(startIndex, endIndex);
 
     useEffect(() => {
         setCurrentPage(1);
     }, [data, itemsPerPage]);
 
-    if (data.length === 0) {
+    if (safeData.length === 0) {
         return <p className="text-center text-gray-500 py-8">{emptyStateMessage}</p>;
     }
 
@@ -90,7 +93,7 @@ const PaginatedContent = ({ data, renderItem, itemsPerPageOptions = [5, 10, 20],
                         {itemsPerPageOptions.map(size => <option key={size} value={size}>{size}</option>)}
                     </select>
                 </div>
-                <div>Showing {startIndex + 1} to {Math.min(endIndex, data.length)} of {data.length} results</div>
+                <div>Showing {startIndex + 1} to {Math.min(endIndex, safeData.length)} of {safeData.length} results</div>
                 <div className="flex items-center gap-2">
                     <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="p-1.5 border rounded-md disabled:opacity-50"><ChevronLeft size={16} /></button>
                     <span>Page {currentPage} of {totalPages}</span>
@@ -101,7 +104,7 @@ const PaginatedContent = ({ data, renderItem, itemsPerPageOptions = [5, 10, 20],
     );
 };
 
-// --- CORRECTED: HELPER FUNCTIONS MOVED OUTSIDE THE COMPONENT ---
+// --- HELPER FUNCTIONS ---
 const getComplaintStatusIcon = (status) => {
     switch (status) {
         case 'Resolved': return <CheckCircle className="w-4 h-4 text-green-500" />;
@@ -127,6 +130,7 @@ const getRoomChangeStatusColor = (status) => {
 };
 
 
+// --- MAIN COMPONENT ---
 const HostelDashboard = () => {
     const [activeModal, setActiveModal] = useState(null);
     const [complaint, setComplaint] = useState({ issue: '', priority: 'Medium', title: '', description: '' });
@@ -138,6 +142,7 @@ const HostelDashboard = () => {
     const [roomChangeRequests, setRoomChangeRequests] = useState([]);
     const [visitors, setVisitors] = useState([]);
     const [fees, setFees] = useState([]);
+    console.log(fees)
     
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -163,10 +168,10 @@ const HostelDashboard = () => {
             else if (allocRes.ok) { const d = await allocRes.json(); if (d.success) setAllocationDetails(d.data); }
             else { const e = await allocRes.json(); throw new Error(e.message || 'Failed to fetch allocation'); }
             
-            if(compRes.ok) { const d = await compRes.json(); if(d.success) setComplaints(d.data); }
-            if(roomChangeRes.ok) { const d = await roomChangeRes.json(); if(d.success) setRoomChangeRequests(d.data); }
-            if(visitorRes.ok) { const d = await visitorRes.json(); if(d.success) setVisitors(d.data); }
-            if(feeRes.ok) { const d = await feeRes.json(); if(d.success) setFees(d.data); }
+            if(compRes.ok) { const d = await compRes.json(); if(d.success) setComplaints(d.data || []); }
+            if(roomChangeRes.ok) { const d = await roomChangeRes.json(); if(d.success) setRoomChangeRequests(d.data || []); }
+            if(visitorRes.ok) { const d = await visitorRes.json(); if(d.success) setVisitors(d.data || []); }
+            if(feeRes.ok) { const d = await feeRes.json(); if(d.success) setFees(d.data.hostelFees || []); }
 
         } catch (err) { setError(err.message); }
         finally { setIsLoading(false); }
@@ -198,7 +203,7 @@ const HostelDashboard = () => {
         ];
         return (
             <PaginatedContent
-                data={fees.slice().reverse()} // Show newest fees first
+                data={fees.slice().reverse()}
                 tableHeaders={headers}
                 emptyStateMessage="No hostel fee records have been assigned yet."
                 renderItem={(fee) => {
@@ -226,18 +231,9 @@ const HostelDashboard = () => {
             emptyStateMessage="You haven't raised any complaints yet."
             renderItem={(comp) => (
                 <div key={comp._id} className="border border-gray-200 p-4 rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center gap-2">
-                            <div className="mr-1">{getComplaintStatusIcon(comp.status)}</div>
-                            <h3 className="font-semibold text-gray-800">{comp.title}</h3>
-                        </div>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(comp.priority)}`}>{comp.priority}</span>
-                    </div>
+                    <div className="flex justify-between items-start mb-2"><div className="flex items-center gap-2"><div className="mr-1">{getComplaintStatusIcon(comp.status)}</div><h3 className="font-semibold text-gray-800">{comp.title}</h3></div><span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(comp.priority)}`}>{comp.priority}</span></div>
                     <p className="text-sm text-gray-600 mb-2 pl-7">{comp.description}</p>
-                    <div className="flex justify-between items-center text-xs text-gray-500 pl-7">
-                        <span>{comp.issue} • Room {comp.hostelDetail.roomNumber}</span>
-                        <span>{new Date(comp.createdAt).toLocaleDateString()} • {comp.status}</span>
-                    </div>
+                    <div className="flex justify-between items-center text-xs text-gray-500 pl-7"><span>{comp.issue} • Room {comp.hostelDetail.roomNumber}</span><span>{new Date(comp.createdAt).toLocaleDateString()} • {comp.status}</span></div>
                 </div>
             )}
         />
@@ -249,12 +245,8 @@ const HostelDashboard = () => {
             emptyStateMessage="No room change requests found."
             renderItem={(req) => (
                 <div key={req._id} className="border border-gray-200 p-4 rounded-lg">
-                    <div className="flex justify-between items-start">
-                        <p className="text-sm text-gray-500">Requested on: {new Date(req.requestedAt).toLocaleDateString()}</p>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getRoomChangeStatusColor(req.status)}`}>{req.status}</span>
-                    </div>
-                    <p className="mt-2 font-medium text-gray-800">Reason:</p>
-                    <p className="text-sm text-gray-600 italic">"{req.reason}"</p>
+                    <div className="flex justify-between items-start"><p className="text-sm text-gray-500">Requested on: {new Date(req.requestedAt).toLocaleDateString()}</p><span className={`px-2 py-1 text-xs font-medium rounded-full ${getRoomChangeStatusColor(req.status)}`}>{req.status}</span></div>
+                    <p className="mt-2 font-medium text-gray-800">Reason:</p><p className="text-sm text-gray-600 italic">"{req.reason}"</p>
                 </div>
             )}
         />
@@ -266,12 +258,8 @@ const HostelDashboard = () => {
             emptyStateMessage="No visitor passes found."
             renderItem={(visitor) => (
                 <div key={visitor._id} className="border border-gray-200 p-4 rounded-lg">
-                    <div className="flex justify-between items-center">
-                        <h4 className="font-semibold text-gray-800">{visitor.name}</h4>
-                        <span className="text-sm text-gray-500">{new Date(visitor.date).toLocaleDateString()}</span>
-                    </div>
-                    <p className="text-sm text-gray-600">Relation: <span className="font-medium">{visitor.relation || 'N/A'}</span></p>
-                    <p className="text-sm text-gray-600">Purpose: <span className="font-medium">{visitor.purpose || 'N/A'}</span></p>
+                    <div className="flex justify-between items-center"><h4 className="font-semibold text-gray-800">{visitor.name}</h4><span className="text-sm text-gray-500">{new Date(visitor.date).toLocaleDateString()}</span></div>
+                    <p className="text-sm text-gray-600">Relation: <span className="font-medium">{visitor.relation || 'N/A'}</span></p><p className="text-sm text-gray-600">Purpose: <span className="font-medium">{visitor.purpose || 'N/A'}</span></p>
                 </div>
             )}
         />

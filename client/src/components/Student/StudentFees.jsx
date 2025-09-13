@@ -105,7 +105,7 @@ const FeesDashboard = () => {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedFee, setSelectedFee] = useState(null);
     const [paymentProcessing, setPaymentProcessing] = useState(false);
-    console.log(feeData)
+    console.log(selectedFee)
 
     const addToast = (type, message) => { const id = Date.now(); setToasts(prev => [...prev, { id, type, message }]); };
 
@@ -140,7 +140,7 @@ const FeesDashboard = () => {
             setFeeData({
                 semesters: academicData.semesters || [],
                 fines: academicData.fines || [],
-                hostelFees: hostelData.data || []
+                hostelFees: hostelData.data.hostelFees || []
             });
             setPaymentHistory(academicData.paymentHistory || []);
             setError(null);
@@ -180,6 +180,7 @@ const FeesDashboard = () => {
                 body: JSON.stringify({ type: fee._type, id: fee._id, amount: fee.pendingAmount })
             });
             const orderData = await orderRes.json();
+            console.log(orderData)
             if (!orderRes.ok || !orderData.order) throw new Error(orderData.message || 'Could not create payment order.');
 
             const options = {
