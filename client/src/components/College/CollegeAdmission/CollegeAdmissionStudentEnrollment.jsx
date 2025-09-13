@@ -62,7 +62,7 @@ export default function AdmissionForm() {
           throw new Error('Failed to fetch the list of available courses.');
         }
         const data = await response.json();
-        setCourses(data.college.courses || []); // Handle cases where API might return null
+        setCourses(data?.college?.courses || []); // Handle cases where API might return null
       } catch (error) {
         console.error("Course fetch error:", error);
         alert(`Error fetching courses: ${error.message}`);
@@ -93,7 +93,7 @@ export default function AdmissionForm() {
       const collegeCode = user?.collegeCode;
       
       // Find the full course object from the fetched list based on the selected _id
-      const selectedCourse = courses.find(c => c._id === formData.course);
+      const selectedCourse = courses.find(c => c.courseId === formData.course);
       if (!selectedCourse) {
         throw new Error("The selected course is invalid. Please refresh and try again.");
       }

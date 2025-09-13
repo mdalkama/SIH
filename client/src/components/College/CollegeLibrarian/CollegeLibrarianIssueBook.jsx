@@ -200,7 +200,7 @@ function CollegeLibrarianIssueBook() {
           {student && (
             <div className="mt-4 bg-green-50 ring-1 ring-green-200 text-green-800 rounded-lg p-4 space-y-1.5 text-sm">
               <div className="font-bold flex items-center gap-2"><UserCheck size={16} /> Student Found</div>
-              <p><strong>Name:</strong> {student.name}</p><p><strong>Course:</strong> {student.course || "—"}</p><p><strong>Books Issued:</strong> {student.booksIssued} / {student.maxBooks}</p>
+              <p><strong>Name:</strong> {student.name}</p><p><strong>Books Issued:</strong> {student.booksIssued} / {student.maxBooks}</p>
               {student.booksIssued >= student.maxBooks && (<p className="font-bold text-red-600 flex items-center gap-1.5"><AlertCircle size={14} /> Book limit reached.</p>)}
             </div>
           )}
