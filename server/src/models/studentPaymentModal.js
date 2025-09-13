@@ -14,9 +14,7 @@ const fineSchema = new Schema({
 // Semester schema
 const semesterSchema = new Schema({
     semester: { type: String, required: true },
-    tuitionFee: { type: Number, required: true },
-    examFee: { type: Number, required: true },
-    otherFee: { type: Number, default: 0 },
+    fees: { type: Number, required: true },
     paid: { type: Number, default: 0 },
 }, { timestamps: true });
 
