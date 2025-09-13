@@ -370,7 +370,7 @@ const Header = () => {
         <div className="theme-surface py-2 sm:py-4 md:py-6 px-2 sm:px-4 md:px-6 border-b border-gray-100 top-0 z-40 backdrop-blur-lg">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 sm:space-x-4 md:space-x-8">
+              <Link to="/" className="flex items-center space-x-2 sm:space-x-4 md:space-x-8 hover:opacity-80 transition-opacity duration-300">
                 <div className="flex-shrink-0">
                   <img 
                     src="https://svumshow.com/assets/images/department-logo/pngwing.png" 
@@ -389,7 +389,7 @@ const Header = () => {
                     Government of Rajasthan - Department of Technical Education
                   </h4>
                 </div>
-              </div>
+              </Link>
               <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
                 {/* Mobile Hamburger Menu */}
                 <div className="lg:hidden">
