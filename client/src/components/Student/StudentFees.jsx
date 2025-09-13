@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { CreditCard, Download, Calendar, IndianRupee, ReceiptIndianRupee, AlertCircle, CheckCircle, Clock, FileText, Wallet, Smartphone, Loader2, X, Info, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { CreditCard, Download, Calendar, IndianRupee, ReceiptIndianRupee, AlertCircle, CheckCircle, Clock, FileText, Wallet, Smartphone, Loader2, X, Info, AlertTriangle, Banknote } from 'lucide-react';
 
 // --- Helper Components ---
 
@@ -57,7 +57,7 @@ const getPaymentMethodIcon = (method) => {
     const methodLower = (method || '').toLowerCase();
     if (methodLower.includes('card')) return <CreditCard size={14} />;
     if (methodLower.includes('upi')) return <Smartphone size={14} />;
-    if (methodLower.includes('net') || methodLower.includes('bank')) return <Bank size={14} />;
+    if (methodLower.includes('net') || methodLower.includes('bank')) return <Banknote size={14} />;
     if (methodLower.includes('cash')) return <Wallet size={14} />;
     if (methodLower.includes('cheque')) return <FileText size={14} />;
     return <IndianRupee size={14} />;
@@ -74,7 +74,6 @@ const FeesDashboard = () => {
     const [selectedFee, setSelectedFee] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('online');
     const [paymentProcessing, setPaymentProcessing] = useState(false);
-    console.log("paymentData:", paymentData);
 
     const addToast = (type, message) => {
         const id = Date.now();
@@ -82,33 +81,53 @@ const FeesDashboard = () => {
     };
 
     useEffect(() => {
-        const fetchProfileAndPayments = async () => {
-            setLoading(true);
-            try {
-                const profileResponse = await fetch('https://sih-4ptm.onrender.com/api/v1/my-profile', { credentials: 'include' });
-                if (!profileResponse.ok) throw new Error("Could not fetch your profile. Please log in again.");
-                const profileData = await profileResponse.json();
-                const registrationNumber = profileData.user?.registrationNumber;
-                if (!registrationNumber) throw new Error("Registration number not found in your profile.");
-
-                const API_BASE_URL = `https://sih-4ptm.onrender.com/api/v1/payment/${registrationNumber}`;
-                const paymentResponse = await fetch(API_BASE_URL, { credentials: 'include' });
-                if (!paymentResponse.ok) {
-                    const errData = await paymentResponse.json();
-                    throw new Error(errData.message || "Failed to fetch payment details.");
+        // This check prevents adding the script multiple times if the component re-renders
+        if (!document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]')) {
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.async = true;
+            document.body.appendChild(script);
+            return () => {
+                if (document.body.contains(script)) {
+                    document.body.removeChild(script);
                 }
-                const paymentResult = await paymentResponse.json();
-                setPaymentData(paymentResult);
-                setError(null);
-            } catch (err) {
-                setError(err.message);
-                addToast('error', err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchProfileAndPayments();
+            };
+        }
     }, []);
+
+    // --- THIS IS THE FIX ---
+    // The dependency array for useCallback is corrected to prevent the infinite loop.
+    // It no longer depends on `loading`, which it was also setting.
+    const fetchProfileAndPayments = useCallback(async () => {
+        // Only show a full-page loader on the very first fetch
+        if (!paymentData) setLoading(true);
+        try {
+            const profileResponse = await fetch('https://sih-4ptm.onrender.com/api/v1/my-profile', { credentials: 'include' });
+            if (!profileResponse.ok) throw new Error("Could not fetch your profile. Please log in again.");
+            const profileData = await profileResponse.json();
+            const registrationNumber = profileData.user?.registrationNumber;
+            if (!registrationNumber) throw new Error("Registration number not found in your profile.");
+
+            const API_BASE_URL = `https://sih-4ptm.onrender.com/api/v1/payment/${registrationNumber}`;
+            const paymentResponse = await fetch(API_BASE_URL, { credentials: 'include' });
+            if (!paymentResponse.ok) {
+                const errData = await paymentResponse.json();
+                throw new Error(errData.message || "Failed to fetch payment details.");
+            }
+            const paymentResult = await paymentResponse.json();
+            setPaymentData(paymentResult);
+            setError(null);
+        } catch (err) {
+            setError(err.message);
+            addToast('error', err.message);
+        } finally {
+            setLoading(false);
+        }
+    }, [paymentData]); // Depends on `paymentData` to know if it's the first fetch
+
+    useEffect(() => {
+        fetchProfileAndPayments();
+    }, [fetchProfileAndPayments]); // This now correctly runs only once on mount
 
     const pendingFees = useMemo(() => {
         if (!paymentData) return [];
@@ -119,89 +138,56 @@ const FeesDashboard = () => {
 
     const handlePayment = async (fee) => {
         setPaymentProcessing(true);
-
-        // Handle Cash/Cheque payments via the existing controller
-        if (paymentMethod === 'cash' || paymentMethod === 'cheque') {
-            try {
-                const API_PAY_URL = `https://sih-4ptm.onrender.com/api/v1/payment/${paymentData.registrationNumber}/pay`;
-                const response = await fetch(API_PAY_URL, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-                    body: JSON.stringify({ type: fee._type, id: fee._id, amount: fee.pendingAmount, method: paymentMethod, receiptNo: `MANUAL-${Date.now()}`, description: fee.description })
-                });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.message || 'Payment recording failed.');
-                addToast('success', `Payment of ₹${fee.pendingAmount.toLocaleString()} recorded successfully!`);
-                setShowPaymentModal(false);
-                await fetchProfileAndPayments(); // Refresh data
-            } catch (err) {
-                addToast('error', err.message);
-            } finally {
-                setPaymentProcessing(false);
-            }
+        const regNo = paymentData?.registrationNumber;
+        if (!regNo) {
+            addToast('error', 'Student registration number not found.');
+            setPaymentProcessing(false);
             return;
         }
 
-        // Handle Online payment via Razorpay
         if (paymentMethod === 'online') {
             try {
-                // Step 1: Create Order
-                const orderRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/payment/${paymentData.registrationNumber}/create-order`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-                    body: JSON.stringify({ type: fee._type, id: fee._id, amount: fee.pendingAmount })
-                });
+                const orderRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/payment/${regNo}/create-order`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ type: fee._type, id: fee._id, amount: fee.pendingAmount }) });
                 const orderData = await orderRes.json();
                 if (!orderRes.ok) throw new Error(orderData.message || 'Could not create payment order.');
 
-                // Step 2: Configure Razorpay Options
                 const options = {
-                    key: orderData.key_id,
-                    amount: orderData.order.amount,
-                    currency: orderData.order.currency,
-                    name: "Your College/Institution Name",
-                    description: `Payment for ${fee.type}`,
+                    key: orderData.key_id, amount: orderData.order.amount,
+                    name: "Your College Name", description: `Payment for ${fee.type}`,
                     order_id: orderData.order.id,
                     handler: async function (response) {
-                        // Step 3: Verify Payment
                         try {
-                            const verifyRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/payment/verify-payment`, {
-                                method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-                                body: JSON.stringify(response)
-                            });
+                            const verifyRes = await fetch(`https://sih-4ptm.onrender.com/api/v1/payment/verify-payment`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(response) });
                             const verifyData = await verifyRes.json();
                             if (!verifyRes.ok) throw new Error(verifyData.message || 'Payment verification failed.');
-
                             addToast('success', verifyData.message);
                             setShowPaymentModal(false);
-                            await fetchProfileAndPayments(); // Refresh data
-                        } catch (verifyErr) {
-                            addToast('error', verifyErr.message);
-                        }
+                            fetchProfileAndPayments();
+                        } catch (verifyErr) { addToast('error', verifyErr.message); }
                     },
-                    prefill: {
-                        name: paymentData.student?.name,
-                        email: paymentData.student?.email,
-                        contact: paymentData.student?.phone,
-                    },
-                    notes: {
-                        address: "Your College Address",
-                    },
-                    theme: {
-                        color: "#3B82F6"
-                    }
+                    prefill: { name: paymentData.student?.name, email: paymentData.student?.email, contact: paymentData.student?.phone },
+                    theme: { color: "#3B82F6" }
                 };
-
-                // Step 4: Open Razorpay Checkout
+                
                 const rzp = new window.Razorpay(options);
                 rzp.open();
-
-            } catch (err) {
-                addToast('error', err.message);
-            } finally {
-                setPaymentProcessing(false);
-            }
+                rzp.on('payment.failed', function (response){ addToast('error', `Payment failed: ${response.error.description}`); });
+            } catch (err) { addToast('error', err.message); }
+            finally { setPaymentProcessing(false); }
+        } else {
+            // Handle Cash/Cheque
+            try {
+                const API_PAY_URL = `https://sih-4ptm.onrender.com/api/v1/payment/${regNo}/pay`;
+                const response = await fetch(API_PAY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ type: fee._type, id: fee._id, amount: fee.pendingAmount, method: paymentMethod, receiptNo: `MANUAL-${Date.now()}`, description: fee.description }) });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || 'Payment recording failed.');
+                addToast('success', `Payment of ₹${fee.pendingAmount.toLocaleString()} recorded!`);
+                setShowPaymentModal(false);
+                fetchProfileAndPayments();
+            } catch (err) { addToast('error', err.message); }
+            finally { setPaymentProcessing(false); }
         }
     };
-
 
     const downloadReceipt = (receiptNo) => addToast('info', `Downloading receipt ${receiptNo}...`);
 
@@ -251,30 +237,11 @@ const FeesDashboard = () => {
                 <div className="space-y-6">
                     {paymentData.paymentHistory.slice().reverse().map((payment) => (
                         <div key={payment._id} className="flex gap-4">
-                            <div className="flex flex-col items-center">
-                                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center ring-4 ring-white">
-                                    <CheckCircle className="w-5 h-5 text-green-600" />
-                                </div>
-                                <div className="flex-grow w-0.5 bg-slate-200"></div>
-                            </div>
+                            <div className="flex flex-col items-center"><div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center ring-4 ring-white"><CheckCircle className="w-5 h-5 text-green-600" /></div><div className="flex-grow w-0.5 bg-slate-200"></div></div>
                             <div className="flex-1 pb-8 border-b border-slate-200 last:border-b-0">
-                                <div className="flex flex-col sm:flex-row justify-between sm:items-center">
-                                    <div>
-                                        <p className="font-semibold text-slate-900">{payment.type}</p>
-                                        <p className="text-sm text-slate-500">{payment.description}</p>
-                                    </div>
-                                    <p className="text-xl font-bold text-slate-900 mt-2 sm:mt-0">₹{payment.amount.toLocaleString()}</p>
-                                </div>
-                                <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-600">
-                                    <div className="flex items-center gap-2"><Calendar size={14} /><span>{new Date(payment.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</span></div>
-                                    <div className="flex items-center gap-2">{getPaymentMethodIcon(payment.method)}<span className="capitalize">{payment.method}</span></div>
-                                    <div className="flex items-center gap-2"><FileText size={14} /><span>{payment.receiptNo}</span></div>
-                                </div>
-                                <div className="flex justify-end mt-4">
-                                    <button onClick={() => downloadReceipt(payment.receiptNo)} className="flex items-center px-3 py-1.5 text-blue-600 border border-blue-200 bg-blue-50 rounded-lg hover:bg-blue-100 text-sm font-medium transition-colors">
-                                        <Download className="w-4 h-4 mr-2" />Download Receipt
-                                    </button>
-                                </div>
+                                <div className="flex flex-col sm:flex-row justify-between sm:items-center"><div><p className="font-semibold text-slate-900">{payment.type}</p><p className="text-sm text-slate-500">{payment.description}</p></div><p className="text-xl font-bold text-slate-900 mt-2 sm:mt-0">₹{payment.amount.toLocaleString()}</p></div>
+                                <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-600"><div className="flex items-center gap-2"><Calendar size={14} /><span>{new Date(payment.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</span></div><div className="flex items-center gap-2">{getPaymentMethodIcon(payment.method)}<span className="capitalize">{payment.method}</span></div><div className="flex items-center gap-2"><FileText size={14} /><span>{payment.receiptNo}</span></div></div>
+                                <div className="flex justify-end mt-4"><button onClick={() => downloadReceipt(payment.receiptNo)} className="flex items-center px-3 py-1.5 text-blue-600 border border-blue-200 bg-blue-50 rounded-lg hover:bg-blue-100 text-sm font-medium transition-colors"><Download className="w-4 h-4 mr-2" />Download Receipt</button></div>
                             </div>
                         </div>
                     ))}
@@ -284,9 +251,9 @@ const FeesDashboard = () => {
     );
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-slate-50">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
-            <div className="">
+            <div className="max-w-6xl mx-auto p-4 sm:p-6">
                 {paymentData && (
                     <>
                         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">

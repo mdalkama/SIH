@@ -118,7 +118,7 @@ export const createRazorpayOrder = async (req, res) => {
             notes: {
                 studentRegNo: regNo,
                 paymentType: type,
-                paymentDbId: id, // The MongoDB _id of the fine/semester
+                paymentDbId: id, 
                 collegeCode: req.user.collegeCode
             }
         };
