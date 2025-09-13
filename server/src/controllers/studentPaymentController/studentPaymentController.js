@@ -109,30 +109,51 @@ export const createRazorpayOrder = async (req, res) => {
     try {
         const { regNo } = req.params;
         const { type, id, amount } = req.body;
+        const { collegeCode } = req.user;
 
-        const paymentDoc = await StudentPayment.findOne(getSecureQuery(req, regNo));
-        if (!paymentDoc) return res.status(404).json({ message: "Student payment record not found." });
-
-        // Server-side validation of the amount to prevent tampering
         let validatedAmount = 0;
-        if (type === 'fine') {
-            const fine = paymentDoc.fines.id(id);
-            if (!fine) return res.status(404).json({ message: "Fine not found." });
-            validatedAmount = fine.amount - fine.paidAmount;
-        } else if (type === 'semester') {
-            const semester = paymentDoc.semesters.id(id);
-            if (!semester) return res.status(404).json({ message: "Semester fee not found." });
-            validatedAmount = semester.fees - semester.paid;
+
+        // Handle SEMESTER and FINE fees, which are in the StudentPayment document
+        if (type === 'semester' || type === 'fine') {
+            const paymentDoc = await StudentPayment.findOne({ registrationNumber: regNo, collegeCode });
+            if (!paymentDoc) return res.status(404).json({ message: "Student academic payment record not found." });
+
+            if (type === 'semester') {
+                const semester = paymentDoc.semesters.id(id);
+                if (!semester) return res.status(404).json({ message: "Semester fee not found." });
+                
+                validatedAmount = semester.fees - (semester.paid || 0);
+
+            } else { // type is 'fine'
+                const fine = paymentDoc.fines.id(id);
+                if (!fine) return res.status(404).json({ message: "Fine not found." });
+                validatedAmount = fine.amount - fine.paidAmount;
+            }
+
+        } 
+        // Handle HOSTEL fees, which are in the StudentHostel document
+        else if (type === 'hostel') {
+            const hostelDoc = await StudentHostel.findOne({ registrationNumber: regNo, collegeCode });
+            if (!hostelDoc) return res.status(404).json({ message: "Student hostel record not found." });
+            
+            const hostelFee = hostelDoc.fees.id(id);
+            if (!hostelFee) return res.status(404).json({ message: "Hostel fee for this month not found." });
+            validatedAmount = hostelFee.amount - hostelFee.paidAmount;
+        
+        } else {
+            return res.status(400).json({ message: "Invalid payment type specified." });
         }
 
-        if (amount != validatedAmount) {
-            return res.status(400).json({ message: "Amount mismatch. Please refresh and try again." });
+        // Server-side validation to prevent amount tampering from the frontend
+        // Using Math.round to handle potential floating point inaccuracies
+        if (Math.round(amount) !== Math.round(validatedAmount)) {
+            return res.status(400).json({ message: `Amount mismatch. Server expected ${validatedAmount} but received ${amount}. Please refresh and try again.` });
         }
         
         const options = {
             amount: amount * 100, // Amount in paise
             currency: "INR",
-            receipt: `receipt_${regNo}_${Date.now()}`,
+            receipt: `receipt_${type}_${regNo}_${Date.now()}`,
             notes: {
                 studentRegNo: regNo,
                 paymentType: type,
