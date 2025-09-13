@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-// Wallet and FileText are removed as they are no longer needed
-import { CreditCard, Download, Calendar, IndianRupee, ReceiptIndianRupee, AlertCircle, CheckCircle, Clock, Smartphone, Loader2, X, Info, AlertTriangle, Banknote, FileText, Wallet } from 'lucide-react';
+import { CreditCard, Download, Calendar, IndianRupee, ReceiptIndianRupee, AlertCircle, CheckCircle, Clock, FileText, Wallet, Smartphone, Loader2, X, Info, AlertTriangle, Banknote } from 'lucide-react';
 
 // --- Helper Components ---
-
 const Toast = ({ message, type, onClose }) => {
     useEffect(() => {
         const timer = setTimeout(() => { onClose(); }, 4000);
@@ -22,11 +20,7 @@ const Toast = ({ message, type, onClose }) => {
 
 const ToastContainer = ({ toasts, setToasts }) => {
     const removeToast = (id) => { setToasts(prev => prev.filter(t => t.id !== id)); };
-    return (
-        <div className="fixed top-6 right-6 z-[100] space-y-3">
-            {toasts.map(toast => (<Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />))}
-        </div>
-    );
+    return (<div className="fixed top-6 right-6 z-[100] space-y-3">{toasts.map(toast => (<Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />))}</div>);
 };
 
 const getStatusColor = (status) => {
@@ -77,7 +71,6 @@ const FeesDashboard = () => {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedFee, setSelectedFee] = useState(null);
     const [paymentProcessing, setPaymentProcessing] = useState(false);
-    // The `paymentMethod` state is no longer needed
 
     const addToast = (type, message) => {
         const id = Date.now();
@@ -203,12 +196,10 @@ const FeesDashboard = () => {
         try {
             const API_DOWNLOAD_URL = `https://sih-4ptm.onrender.com/api/v1/payment/${paymentData.registrationNumber}/receipt/${receiptNo}`;
             const response = await fetch(API_DOWNLOAD_URL, { credentials: 'include' });
-
             if (!response.ok) {
                 const errData = await response.json();
                 throw new Error(errData.message || 'Could not download receipt.');
             }
-
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -266,34 +257,50 @@ const FeesDashboard = () => {
     const renderPaymentHistory = () => (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <h3 className="text-xl font-semibold mb-6 text-slate-800">Transaction History</h3>
-            {paymentData?.paymentHistory && paymentData.paymentHistory.length > 0 ?
-                <div className="relative">
-                    <div className="absolute left-9 top-2 h-full w-0.5 bg-slate-200" aria-hidden="true"></div>
-                    <div className="space-y-8">
-                        {paymentData.paymentHistory.slice().reverse().map((payment, index) => (
-                            <div key={payment._id} className="relative flex items-start">
-                                <div className="flex-shrink-0 w-24 text-right pr-8"><p className="font-semibold text-slate-700">{new Date(payment.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</p><p className="text-sm text-slate-500">{new Date(payment.date).getFullYear()}</p></div>
-                                <div className="absolute left-7 top-1 w-4 h-4 rounded-full bg-blue-500 ring-4 ring-white z-10"></div>
-                                <div className="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-4">
-                                    <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-3">
-                                        <div><p className="font-semibold text-slate-900">{payment.type}</p><p className="text-sm text-slate-500">{payment.description}</p></div>
-                                        <div className="text-left sm:text-right mt-2 sm:mt-0"><p className="text-xl font-bold text-slate-900">₹{payment.amount.toLocaleString()}</p></div>
+            <div className="relative pl-6">
+                {/* Vertical Timeline Bar */}
+                <div className="absolute left-6 top-0 h-full w-0.5 bg-slate-200" aria-hidden="true"></div>
+
+                <div className="space-y-10">
+                    {paymentData?.paymentHistory && paymentData.paymentHistory.length > 0 ?
+                        paymentData.paymentHistory.slice().reverse().map((payment) => (
+                            <div key={payment._id} className="relative">
+                                {/* Timeline Node */}
+                                <div className="absolute -left-9 top-1 w-4 h-4 rounded-full bg-blue-500 ring-4 ring-white z-10"></div>
+                                
+                                <div className="ml-4">
+                                    <div className="flex flex-col sm:flex-row justify-between sm:items-center">
+                                        <div>
+                                            <p className="font-semibold text-slate-900">{payment.type}</p>
+                                            <p className="text-sm text-slate-500">{payment.description}</p>
+                                        </div>
+                                        <div className="text-left sm:text-right mt-2 sm:mt-0">
+                                            <p className="text-xl font-bold text-slate-900">₹{payment.amount.toLocaleString()}</p>
+                                        </div>
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-600">
-                                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(payment.status)} capitalize`}>{getStatusIcon(payment.status)}{payment.status}</span>
+                                    <div className="mt-3 pt-3 border-t border-slate-200 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-600">
+                                        <div className="flex items-center gap-2"><Calendar size={14} /><span>{new Date(payment.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</span></div>
                                         <div className="flex items-center gap-2">{getPaymentMethodIcon(payment.method)}<span className="capitalize">{payment.method}</span></div>
                                         <div className="flex items-center gap-2"><FileText size={14} /><span>{payment.receiptNo}</span></div>
                                     </div>
-                                    <div className="flex justify-end mt-4"><button onClick={() => downloadReceipt(payment.receiptNo)} className="flex items-center px-3 py-1.5 text-blue-600 border border-blue-200 bg-blue-50 rounded-lg hover:bg-blue-100 text-sm font-medium transition-colors"><Download className="w-4 h-4 mr-2" />Download Receipt</button></div>
+                                    <div className="flex justify-end mt-3">
+                                        <button onClick={() => downloadReceipt(payment.receiptNo)} className="flex items-center px-3 py-1.5 text-blue-600 border border-blue-200 bg-blue-50 rounded-lg hover:bg-blue-100 text-sm font-medium transition-colors">
+                                            <Download className="w-4 h-4 mr-2" />Download Receipt
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        ))}
-                    </div>
+                        )) : 
+                    <div className="text-center p-12 text-slate-500">
+                        <ReceiptIndianRupee className="mx-auto w-16 h-16 text-slate-300" />
+                        <h4 className="mt-4 text-lg font-semibold text-slate-700">No Transactions Found</h4>
+                        <p>Your payment history will appear here once you make a payment.</p>
+                    </div>}
                 </div>
-                : <div className="text-center p-12 text-slate-500"><ReceiptIndianRupee className="mx-auto w-16 h-16 text-slate-300" /><h4 className="mt-4 text-lg font-semibold text-slate-700">No Transactions Found</h4><p>Your payment history will appear here once you make a payment.</p></div>}
+            </div>
         </div>
     );
-
+    
     return (
         <div className="min-h-screen">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
@@ -305,7 +312,7 @@ const FeesDashboard = () => {
                                 <div>
                                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Fees Management</h1>
                                     <p className="text-gray-600 font-semibold">{paymentData.student?.name} • {paymentData.registrationNumber}</p>
-                                    <p className="text-sm text-gray-500">{paymentData.student?.course?.branch} • Semester {paymentData.student?.currentSemester}</p>
+                                    <p className="text-sm text-gray-500">{paymentData.student?.course?.branch} • Semester {paymentData.student?.semester}</p>
                                 </div>
                                 <div className="text-center hidden sm:block"><IndianRupee className="w-12 h-12 text-green-600 mx-auto" /></div>
                             </div>
