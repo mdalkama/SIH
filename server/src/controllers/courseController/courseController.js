@@ -2,9 +2,6 @@
 import Course from "../../models/courseModel.js";
 
 
-// @desc    Create new course
-// @route   POST /api/v1/courses
-// @access  Admin/University Staff
 export const createCourse = async (req, res) => {
     try {
         const { courseId, degree, branch, specialization, totalSemester, semesters } = req.body;
@@ -36,9 +33,6 @@ export const createCourse = async (req, res) => {
 };
 
 
-// @desc    Get all courses
-// @route   GET /api/v1/courses
-// @access  Public
 export const getAllCourses = async (req, res) => {
     try {
         const courses = await Course.find()
@@ -52,9 +46,6 @@ export const getAllCourses = async (req, res) => {
 };
 
 
-// @desc    Get course by ID
-// @route   GET /api/v1/courses/:id
-// @access  Public
 export const getCourseById = async (req, res) => {
     try {
         const course = await Course.findById(req.params.id).populate("semesters.subjects");
@@ -68,9 +59,6 @@ export const getCourseById = async (req, res) => {
 };
 
 
-// @desc    Update course
-// @route   PUT /api/v1/courses/:id
-// @access  Admin/University Staff
 export const updateCourse = async (req, res) => {
     try {
         const { courseId, degree, branch, specialization, totalSemester, semesters } = req.body;
