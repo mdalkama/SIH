@@ -232,6 +232,46 @@ const Mylogin = () => {
     // login form
     return (
         <div className="min-h-screen bg-gray-50">
+            {/* Header Section - Logo Area Only */}
+            <div className="bg-white border-b border-gray-200 py-4 px-6 shadow-sm">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4 md:space-x-8">
+                            <div className="flex-shrink-0">
+                                <img 
+                                    src="https://svumshow.com/assets/images/department-logo/pngwing.png" 
+                                    alt="Government of Rajasthan Logo" 
+                                    className="h-12 w-12 md:h-16 md:w-16 lg:h-20 lg:w-20 object-contain"
+                                />
+                            </div>
+                            <div className="text-left">
+                                <h1 className="text-xs md:text-sm lg:text-base font-bold text-gray-800 leading-tight mb-1">
+                                    राजस्थान सरकार
+                                </h1>
+                                <h2 className="text-xs md:text-sm lg:text-base font-bold text-gray-800 leading-tight mb-2">
+                                    तकनीकी शिक्षा निदेशालय
+                                </h2>
+                                <h4 className="text-[10px] md:text-xs lg:text-sm font-semibold text-blue-600">
+                                    Government of Rajasthan - Department of Technical Education
+                                </h4>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-2 md:space-x-4">
+                            <img 
+                                src="https://dte.rajasthan.gov.in/assets/img/mono.jpg" 
+                                alt="DTE Mono Logo" 
+                                className="h-10 w-10 md:h-12 md:w-12 lg:h-16 lg:w-16 object-cover rounded-full border border-gray-200"
+                            />
+                            <img 
+                                src="https://dte.rajasthan.gov.in/assets/img/Azadi.png" 
+                                alt="Azadi Ka Amrit Mahotsav" 
+                                className="h-10 md:h-12 lg:h-16 object-contain"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div className="flex items-center justify-center py-12 px-4">
                 <div className="w-full max-w-md">
                     <div className="bg-white border border-gray-300 shadow-lg">
