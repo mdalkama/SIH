@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react'
-import { ChevronDown, ChevronRight, ChevronLeft, Globe, Menu, X, Phone, Mail, MapPin } from 'lucide-react'
-import { useLocation, Link } from 'react-router-dom'
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ChevronDown, Menu, X, Users, Globe, User, ChevronLeft, ChevronRight } from 'lucide-react';
+import contactPersonsPdf from '../../assets/Contact Persons DTE Updated.pdf';
+import { useLocation } from 'react-router-dom'
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -8,7 +10,7 @@ const Header = () => {
   const [activeDropdown, setActiveDropdown] = useState(null)
   const [hoverTimeout, setHoverTimeout] = useState(null)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [selectedLanguage, setSelectedLanguage] = useState('हिंदी')
+  const [selectedLanguage, setSelectedLanguage] = useState('English')
   const location = useLocation()
   
   // Check if we're on the home page
@@ -63,6 +65,12 @@ const Header = () => {
   };
 
   // Navigation structure with multi-level dropdowns for Government of Rajasthan
+  const navigate = useNavigate();
+
+  const handleContactUsClick = () => {
+    window.open(contactPersonsPdf, '_blank');
+  };
+
   const navigationItems = [
     {
       name: 'About Us',
@@ -94,138 +102,82 @@ const Header = () => {
     },
     {
       name: 'Students Corner',
-      items: [
-        { 
-          name: 'Academic Information', 
-          subitems: ['Academic Calendar', 'Examination Schedule', 'Results', 'Syllabus'] 
-        },
-        { 
-          name: 'Student Services', 
-          subitems: ['Library Services', 'Hostel Facilities', 'Transport', 'Medical Facilities'] 
-        },
-        { 
-          name: 'Scholarships', 
-          subitems: ['Merit Scholarships', 'Need-based Aid', 'Government Schemes', 'Application Process'] 
-        },
-        { 
-          name: 'Placement Cell', 
-          subitems: ['Placement Statistics', 'Company Partners', 'Training Programs', 'Career Guidance'] 
-        }
-      ]
+      path: '/students-corner',
+      items: []
     },
     {
       name: 'Employee Corner',
       items: [
-        { 
-          name: 'Faculty Information', 
-          subitems: ['Faculty Directory', 'Recruitment', 'Training Programs', 'Research Activities'] 
-        },
-        { 
-          name: 'Staff Services', 
-          subitems: ['Employee Portal', 'Leave Management', 'Payroll', 'Grievance Redressal'] 
-        },
-        { 
-          name: 'Professional Development', 
-          subitems: ['Training Calendar', 'Workshops', 'Conferences', 'Skill Enhancement'] 
-        }
+        { name: 'Transfer Orders', path: '/employee/transfer-orders' },
+        { name: 'Promotion Orders', path: '/employee/promotion-orders' },
+        { name: 'Posting Orders', path: '/employee/posting-orders' },
+        { name: 'Retirement Orders', path: '/employee/retirement-orders' },
+        { name: 'Seniority List', path: '/employee/seniority-list' },
+        { name: 'Civil List', path: '/employee/civil-list' },
+        { name: 'Emp. Transfer Policy', path: '/employee/transfer-policy' },
+        { name: 'Recruitment', path: '/employee/recruitment' }
       ]
     },
     {
       name: 'Documents',
       items: [
-        { 
-          name: 'Academic Documents', 
-          subitems: ['Syllabus', 'Curriculum', 'Academic Regulations', 'Examination Rules'] 
-        },
-        { 
-          name: 'Administrative Documents', 
-          subitems: ['Government Orders', 'Circulars', 'Notifications', 'Forms'] 
-        },
-        { 
-          name: 'Reports', 
-          subitems: ['Annual Reports', 'Financial Reports', 'Academic Reports', 'Audit Reports'] 
-        }
+        { name: 'Circulars & Letters', path: '/documents/circulars-letters' },
+        { name: 'Establishment', path: '/documents/establishment' },
+        { name: 'Department Rules', path: '/documents/department-rules' }
       ]
     },
     {
       name: 'RTI',
-      items: [
-        { 
-          name: 'RTI Information', 
-          subitems: ['RTI Act', 'Information Officers', 'Application Process', 'Fee Structure'] 
-        },
-        { 
-          name: 'RTI Applications', 
-          subitems: ['Online Application', 'Application Status', 'Appeal Process'] 
-        }
-      ]
+      path: '/rti',
+      items: []
     },
     {
       name: 'Tenders & Auctions',
-      items: [
-        { 
-          name: 'Current Tenders', 
-          subitems: ['Active Tenders', 'Tender Documents', 'Pre-bid Meetings'] 
-        },
-        { 
-          name: 'Auction Information', 
-          subitems: ['Auction Schedule', 'Terms & Conditions', 'Registration Process'] 
-        }
-      ]
+      path: '/tenders-auctions',
+      items: []
     },
     {
       name: 'Roster',
-      items: [
-        { 
-          name: 'Faculty Roster', 
-          subitems: ['Teaching Staff', 'Non-teaching Staff', 'Visiting Faculty'] 
-        },
-        { 
-          name: 'Administrative Roster', 
-          subitems: ['Officers', 'Clerks', 'Support Staff'] 
-        }
-      ]
+      path: '/roster',
+      items: []
     },
     {
       name: 'Colleges',
-      items: [
-        { 
-          name: 'Government Colleges', 
-          subitems: ['Engineering Colleges', 'Polytechnics', 'ITIs', 'Other Institutions'] 
-        },
-        { 
-          name: 'Private Colleges', 
-          subitems: ['Affiliated Colleges', 'Approved Institutions', 'Recognition Status'] 
-        }
-      ]
+      path: '/colleges',
+      items: []
     },
     {
       name: 'NOC',
-      items: [
-        { 
-          name: 'NOC Information', 
-          subitems: ['NOC Guidelines', 'Application Process', 'Required Documents'] 
-        },
-        { 
-          name: 'NOC Status', 
-          subitems: ['Application Status', 'Approved NOCs', 'Rejected Applications'] 
-        }
-      ]
+      path: '/noc',
+      items: []
     },
     {
       name: 'Other Links',
       items: [
         { 
           name: 'Government Portals', 
-          subitems: ['Rajasthan Government', 'Education Department', 'AICTE', 'UGC'] 
+          subitems: [
+            { name: 'Department of Technical Education, Rajasthan', path: 'https://dte.rajasthan.gov.in/' },
+            { name: 'Education Department', path: 'https://education.rajasthan.gov.in/home' },
+            { name: 'AICTE', path: 'https://internship.aicte-india.org/' },
+            { name: 'UGC', path: 'https://www.ugc.gov.in/' }
+          ]
         },
         { 
           name: 'Useful Links', 
-          subitems: ['Digital India', 'Skill India', 'Make in India', 'Start-up India'] 
+          subitems: [
+            { name: 'Digital India', path: 'https://www.digitalindiaportal.co.in/' },
+            { name: 'Skill India', path: 'https://www.skillindiadigital.gov.in' },
+            { name: 'Startup India', path: 'https://udyogsuvidhakendra.in/startup-india-registration?msclkid=0a074f8999b6100bb449274ca7ce74ad' }
+          ]
         },
         { 
           name: 'External Resources', 
-          subitems: ['NPTEL', 'SWAYAM', 'e-PG Pathshala', 'Virtual Labs'] 
+          subitems: [
+            { name: 'NPTEL', path: 'https://nptel.ac.in/?locale=en_us' },
+            { name: 'SWAYAM', path: 'https://onlinecourses.nptel.ac.in/' },
+            { name: 'Virtual Labs', path: 'https://www.vlab.co.in/' }
+          ]
         }
       ]
     }
@@ -302,6 +254,52 @@ const Header = () => {
       <div className="bg-white border-b border-gray-200 py-3 text-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-end">
+            {/* Desktop Menu for Top Bar */}
+            <div className="hidden md:flex items-center space-x-3">
+              <Link 
+                to="/login?role=student"
+                className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium px-3 py-1 rounded"
+              >
+                <User className="w-4 h-4" />
+                <span>{selectedLanguage === 'हिंदी' ? 'छात्र' : 'Students'}</span>
+              </Link>
+              <div className="w-px h-4 bg-gray-300 mx-2"></div>
+              <Link 
+                to="/login?role=staff"
+                className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium px-3 py-1 rounded"
+              >
+                <Users className="w-4 h-4" />
+                <span>{selectedLanguage === 'हिंदी' ? 'कर्मचारी' : 'Staff'}</span>
+              </Link>
+              <div className="w-px h-4 bg-gray-300 mx-2"></div>
+              <button 
+                onClick={handleContactUsClick}
+                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium px-3 py-1 rounded"
+              >
+                {selectedLanguage === 'हिंदी' ? 'संपर्क करें' : 'Contact Us'}
+              </button>
+              <div className="w-px h-4 bg-gray-300 mx-2"></div>
+              {/* Language Select */}
+              <div className="relative flex items-center space-x-2 group">
+                <Globe className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300" />
+                <div className="relative">
+                  <select 
+                    value={selectedLanguage}
+                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                    className="appearance-none bg-white dark:bg-gray-900 hover:bg-blue-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 focus:text-blue-700 dark:focus:text-blue-300 transition-all duration-300 font-medium px-4 py-2 pr-8 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none shadow-sm hover:shadow-md focus:shadow-lg cursor-pointer text-sm min-w-[80px] backdrop-blur-sm"
+                  >
+                    <option value="हिंदी">हिंदी</option>
+                    <option value="English">English</option>
+                  </select>
+                  {/* Custom Arrow */}
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300" />
+                  </div>
+                  {/* Modern accent line */}
+                  <div className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left w-full rounded-full"></div>
+                </div>
+              </div>
+            </div>
             {/* Mobile Menu Button for Top Bar */}
             <div className="md:hidden flex items-center space-x-3">
               {/* Modern Mobile Language Select */}
@@ -314,32 +312,30 @@ const Header = () => {
                     className="appearance-none bg-white dark:bg-gray-900 hover:bg-blue-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 focus:text-blue-700 dark:focus:text-blue-300 transition-all duration-300 font-medium px-3 py-1 pr-6 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none shadow-sm hover:shadow-md cursor-pointer text-xs min-w-[70px]"
                   >
                     <option value="हिंदी">हिंदी</option>
-                    <option value="English">EN</option>
                   </select>
-                  {/* Custom Arrow for Mobile */}
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                    <ChevronDown className="w-3 h-3 text-gray-400 dark:text-gray-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300" />
-                  </div>
                 </div>
               </div>
-              <button className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium px-2 py-1">
-                Menu
-              </button>
-            </div>
-            
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-1">
-              <button className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium px-3 py-1 rounded">
+              <div className="w-px h-4 bg-gray-300 mx-2"></div>
+              <Link 
+                to="/login?role=student"
+                className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium px-3 py-1 rounded"
+              >
+                <User className="w-4 h-4" />
                 <span>Students</span>
-                <ChevronDown className="w-4 h-4" />
-              </button>
+              </Link>
               <div className="w-px h-4 bg-gray-300 mx-2"></div>
-              <button className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium px-3 py-1 rounded">
+              <Link 
+                to="/login?role=staff"
+                className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium px-3 py-1 rounded"
+              >
+                <Users className="w-4 h-4" />
                 <span>Staff</span>
-                <ChevronDown className="w-4 h-4" />
-              </button>
+              </Link>
               <div className="w-px h-4 bg-gray-300 mx-2"></div>
-              <button className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium px-3 py-1 rounded">
+              <button 
+                onClick={handleContactUsClick}
+                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium px-3 py-1 rounded"
+              >
                 Contact Us
               </button>
               <div className="w-px h-4 bg-gray-300 mx-2"></div>
@@ -493,14 +489,23 @@ const Header = () => {
                         onMouseEnter={() => handleDropdownEnter(index)}
                         onMouseLeave={handleDropdownLeave}
                       >
-                        <button
-                          className="px-2 xl:px-3 py-3 text-white font-medium text-xs hover:bg-blue-500/20 transition-all duration-300 flex items-center space-x-1 border-b-2 border-transparent hover:border-blue-400 hover:text-blue-300"
-                        >
-                          <span>{item.name}</span>
-                          {item.items.length > 0 && (
-                            <ChevronDown className="w-3 h-3 transition-transform duration-300 group-hover:rotate-180" />
-                          )}
-                        </button>
+                        {item.path ? (
+                          <Link
+                            to={item.path}
+                            className="px-2 xl:px-3 py-3 text-white font-medium text-xs hover:bg-blue-500/20 transition-all duration-300 flex items-center space-x-1 border-b-2 border-transparent hover:border-blue-400 hover:text-blue-300"
+                          >
+                            <span>{item.name}</span>
+                          </Link>
+                        ) : (
+                          <button
+                            className="px-2 xl:px-3 py-3 text-white font-medium text-xs hover:bg-blue-500/20 transition-all duration-300 flex items-center space-x-1 border-b-2 border-transparent hover:border-blue-400 hover:text-blue-300"
+                          >
+                            <span>{item.name}</span>
+                            {item.items.length > 0 && (
+                              <ChevronDown className="w-3 h-3 transition-transform duration-300 group-hover:rotate-180" />
+                            )}
+                          </button>
+                        )}
 
                         {/* Enhanced Glass Morphism Dropdown - ONLY on home page */}
                         {item.items.length > 0 && activeDropdown === index && (
@@ -638,14 +643,23 @@ const Header = () => {
                       onMouseEnter={() => handleDropdownEnter(index)}
                       onMouseLeave={handleDropdownLeave}
                     >
-                      <button
-                        className="px-2 xl:px-3 py-3 text-white font-medium text-xs hover:bg-gray-800 transition-all duration-300 flex items-center space-x-1 border-b-2 border-transparent hover:border-blue-400 hover:text-blue-300"
-                      >
-                        <span>{item.name}</span>
-                        {item.items.length > 0 && (
-                          <ChevronDown className="w-3 h-3 transition-transform duration-300 group-hover:rotate-180" />
-                        )}
-                      </button>
+                      {item.path ? (
+                        <Link
+                          to={item.path}
+                          className="px-2 xl:px-3 py-3 text-white font-medium text-xs hover:bg-gray-800 transition-all duration-300 flex items-center space-x-1 border-b-2 border-transparent hover:border-blue-400 hover:text-blue-300"
+                        >
+                          <span>{item.name}</span>
+                        </Link>
+                      ) : (
+                        <button
+                          className="px-2 xl:px-3 py-3 text-white font-medium text-xs hover:bg-gray-800 transition-all duration-300 flex items-center space-x-1 border-b-2 border-transparent hover:border-blue-400 hover:text-blue-300"
+                        >
+                          <span>{item.name}</span>
+                          {item.items.length > 0 && (
+                            <ChevronDown className="w-3 h-3 transition-transform duration-300 group-hover:rotate-180" />
+                          )}
+                        </button>
+                      )}
 
                       {/* Solid Dropdown - NO glass effects on non-home pages */}
                       {item.items.length > 0 && activeDropdown === index && (
