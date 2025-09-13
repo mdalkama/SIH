@@ -109,7 +109,6 @@ export const createRazorpayOrder = async (req, res) => {
     try {
         const { regNo } = req.params;
         const { type, id, amount } = req.body;
-        console.log("type", type, "id", id, "amount", amount);
 
         const paymentDoc = await StudentPayment.findOne(getSecureQuery(req, regNo));
         if (!paymentDoc) return res.status(404).json({ message: "Student payment record not found." });
@@ -123,9 +122,8 @@ export const createRazorpayOrder = async (req, res) => {
         } else if (type === 'semester') {
             const semester = paymentDoc.semesters.id(id);
             if (!semester) return res.status(404).json({ message: "Semester fee not found." });
-            validatedAmount = (semester.tuitionFee + semester.examFee + semester.otherFee) - semester.paid;
+            validatedAmount = semester.fees - semester.paid;
         }
-        console.log("amount", amount, "validatedAmount", validatedAmount);
 
         if (amount != validatedAmount) {
             return res.status(400).json({ message: "Amount mismatch. Please refresh and try again." });
