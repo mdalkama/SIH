@@ -4,7 +4,7 @@ import StudentAcademics from "../../models/studentAcademicsModel.js";
 import StudentHostel from "../../models/studentHostelModal.js";
 import StudentLibrary from "../../models/studentLibraryModel.js";
 import StudentPayment from "../../models/studentPaymentModal.js";
-import collegeModel from "../../models/collegeModel.js";
+import College from "../../models/collegeModel.js";
 
 // 1️⃣ Add Student + Academics
 export const addStudent = async (req, res) => {
@@ -15,34 +15,31 @@ export const addStudent = async (req, res) => {
 
         const { password, courseId } = req.body; // courseId is the ObjectId of the course
 
-        // 1. Fetch the college document to get the fee structure
-        const college = await collegeModel.findOne({ code: req.user.collegeCode });
+        const college = await College.findOne({ code: req.user.collegeCode })
+            .populate("courses.courseId", "courseId degree branch specialization totalSemester semesters");
         if (!college) {
-            return res.status(404).json({ message: "College configuration not found." });
+            return res.status(404).json({ message: "College not found" });
         }
 
-        // 2. Find the specific course within the college's courses array
-        const courseFeeStructure = college.courses.find(
-            (course) => course.courseId.toString() === courseId
-        );
-        if (!courseFeeStructure) {
-            return res.status(404).json({ message: "The selected course is not offered by this college." });
+        const courseDetails = college.courses.map(c => {
+            const courseInfo = c.courseId;
+            return {
+                _id: courseInfo._id,
+                courseId: courseInfo.courseId,
+                fees: c.fees
+            };
+        });
+
+        // ✅ Correct way to get courseId = "105" and its 1st semester fee
+        const course = courseDetails.find(c => c.courseId === "105");
+        let sem1 = null;
+        if (course) {
+            sem1 = course.fees.find(f => f.semester === 1);
         }
 
-        // 3. Find the fees for the first semester from that course's fee structure
-        const semester1Fees = courseFeeStructure.fees.find(
-            (fee) => fee.semester === 1
-        );
 
-        const initialSemesterData = {
-            semester: 1,
-            tuitionFee: semester1Fees?.fees?.tuitionFee || 0,
-            examFee: semester1Fees?.fees?.examFee || 0,
-            otherFee: semester1Fees?.fees?.otherFee || 0,
-            paid: 0,
-        };
-        
-        // 4. Create the student and all associated documents
+
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const student = await Student.create({
@@ -56,7 +53,7 @@ export const addStudent = async (req, res) => {
             studentId: student._id,
             registrationNumber: student.registrationNumber,
             collegeCode: req.user.collegeCode,
-            courseId: student.course, // Use the ID from the created student
+            courseId: courseId, // Use the ID from the created student
         });
 
         await StudentHostel.create({
@@ -76,7 +73,7 @@ export const addStudent = async (req, res) => {
             registrationNumber: student.registrationNumber,
             collegeCode: req.user.collegeCode,
             fines: [],
-            semesters: [initialSemesterData], // ✅ Use the prepared semester data here
+            semesters: [{semester:1, fees:sem1.fees}], // ✅ Use the prepared semester data here
             paymentHistory: []
         });
 
