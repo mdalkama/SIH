@@ -5,6 +5,7 @@ import Razorpay from "razorpay";
 import dotenv from 'dotenv';
 import crypto from 'crypto';
 import html_to_pdf from 'html-pdf-node';
+import studentHostelModal from "../../models/studentHostelModal.js";
 
 // Configure dotenv right at the top of this file
 dotenv.config();
@@ -106,12 +107,15 @@ const getSecureQuery = (req, regNo) => {
 
 // 1. CREATE RAZORPAY ORDER (For Online Payments)
 export const createRazorpayOrder = async (req, res) => {
+    console.log(req.body)
     try {
         const { regNo } = req.params;
         const { type, id, amount } = req.body;
         const { collegeCode } = req.user;
+        console.log(req.body)
 
         let validatedAmount = 0;
+
 
         // Handle SEMESTER and FINE fees, which are in the StudentPayment document
         if (type === 'semester' || type === 'fine') {
@@ -131,9 +135,8 @@ export const createRazorpayOrder = async (req, res) => {
             }
 
         } 
-        // Handle HOSTEL fees, which are in the StudentHostel document
         else if (type === 'hostel') {
-            const hostelDoc = await StudentHostel.findOne({ registrationNumber: regNo, collegeCode });
+            const hostelDoc = await studentHostelModal.findOne({ registrationNumber: regNo, collegeCode });
             if (!hostelDoc) return res.status(404).json({ message: "Student hostel record not found." });
             
             const hostelFee = hostelDoc.fees.id(id);
@@ -144,8 +147,6 @@ export const createRazorpayOrder = async (req, res) => {
             return res.status(400).json({ message: "Invalid payment type specified." });
         }
 
-        // Server-side validation to prevent amount tampering from the frontend
-        // Using Math.round to handle potential floating point inaccuracies
         if (Math.round(amount) !== Math.round(validatedAmount)) {
             return res.status(400).json({ message: `Amount mismatch. Server expected ${validatedAmount} but received ${amount}. Please refresh and try again.` });
         }
