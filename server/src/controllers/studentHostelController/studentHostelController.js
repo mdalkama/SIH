@@ -43,7 +43,7 @@ export const getMyAllocation = async (req, res) => {
       name: studentHostel.occupant.name,
       rollNumber: studentHostel.occupant.registrationNumber,
       hostelName: hostel.name,
-	    hostelAddress: hostel.address, 
+      hostelAddress: hostel.address,
       roomNumber: room.roomNumber,
       roomType: room.roomType,
       floorNumber: floor.floorNumber,
@@ -62,28 +62,50 @@ export const getMyAllocation = async (req, res) => {
 export const raiseComplaint = async (req, res) => {
   try {
     const studentId = req.user.id;
-    
+
     const { issue, priority, title, description } = req.body;
 
     // Validation
     if (!issue || !title || !description) {
-        return res.status(400).json({ message: "Issue, title, and description are required fields." });
+      return res
+        .status(400)
+        .json({
+          message: "Issue, title, and description are required fields.",
+        });
     }
 
     const studentHostel = await StudentHostel.findOne({ occupant: studentId });
     if (!studentHostel || !studentHostel.currentHostel) {
-      return res.status(404).json({ message: "Student is not allocated to a hostel. Cannot raise complaint." });
+      return res
+        .status(404)
+        .json({
+          message:
+            "Student is not allocated to a hostel. Cannot raise complaint.",
+        });
     }
 
-    const hostelDoc = await Hostel.findById(studentHostel.currentHostel.hostel).lean();
-    if (!hostelDoc) return res.status(404).json({ message: "Hostel not found." });
+    const hostelDoc = await Hostel.findById(
+      studentHostel.currentHostel.hostel
+    ).lean();
+    if (!hostelDoc)
+      return res.status(404).json({ message: "Hostel not found." });
 
-    const floorDoc = hostelDoc.floors.find((f) => f._id.equals(studentHostel.currentHostel.floor));
-    const roomDoc = floorDoc?.rooms.find((r) => r._id.equals(studentHostel.currentHostel.room));
-    const bedDoc = roomDoc?.beds.find((b) => b._id.equals(studentHostel.currentHostel.bed));
+    const floorDoc = hostelDoc.floors.find((f) =>
+      f._id.equals(studentHostel.currentHostel.floor)
+    );
+    const roomDoc = floorDoc?.rooms.find((r) =>
+      r._id.equals(studentHostel.currentHostel.room)
+    );
+    const bedDoc = roomDoc?.beds.find((b) =>
+      b._id.equals(studentHostel.currentHostel.bed)
+    );
 
     if (!floorDoc || !roomDoc || !bedDoc) {
-        return res.status(404).json({ message: "Could not locate full hostel details for the complaint." });
+      return res
+        .status(404)
+        .json({
+          message: "Could not locate full hostel details for the complaint.",
+        });
     }
 
     // Nayi complaint ko complaints array me push karo
@@ -110,7 +132,9 @@ export const raiseComplaint = async (req, res) => {
     });
   } catch (error) {
     console.error("Error raising complaint:", error);
-    res.status(400).json({ message: "Failed to raise complaint", error: error.message });
+    res
+      .status(400)
+      .json({ message: "Failed to raise complaint", error: error.message });
   }
 };
 
@@ -138,51 +162,64 @@ export const getMyComplaints = async (req, res) => {
 
 //request room change
 export const requestRoomChange = async (req, res) => {
-    try {
-        const studentId = req.user.id;
-        const { reason } = req.body;
-        if (!reason) return res.status(400).json({ message: "Reason for room change is required." });
+  try {
+    const studentId = req.user.id;
+    const { reason } = req.body;
+    if (!reason)
+      return res
+        .status(400)
+        .json({ message: "Reason for room change is required." });
 
-        const studentHostel = await StudentHostel.findOne({ occupant: studentId });
-        if (!studentHostel || !studentHostel.currentHostel) {
-            return res.status(404).json({ message: "You are not allocated to a room." });
-        }
-
-        // Add the request to the array
-        studentHostel.roomChangeRequests.push({
-            reason,
-            from: studentHostel.currentHostel // Store the current location
-        });
-
-        await studentHostel.save();
-        res.status(201).json({ success: true, message: "Room change request submitted successfully." });
-
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
+    const studentHostel = await StudentHostel.findOne({ occupant: studentId });
+    if (!studentHostel || !studentHostel.currentHostel) {
+      return res
+        .status(404)
+        .json({ message: "You are not allocated to a room." });
     }
+
+    // Add the request to the array
+    studentHostel.roomChangeRequests.push({
+      reason,
+      from: studentHostel.currentHostel, // Store the current location
+    });
+
+    await studentHostel.save();
+    res
+      .status(201)
+      .json({
+        success: true,
+        message: "Room change request submitted successfully.",
+      });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 
 // Add a new visitor
 export const addVisitor = async (req, res) => {
-    try {
-        const studentId = req.user.id;
-        const { name, relation, purpose } = req.body;
-        if (!name) return res.status(400).json({ message: "Visitor name is required." });
+  try {
+    const studentId = req.user.id;
+    const { name, relation, purpose } = req.body;
+    if (!name)
+      return res.status(400).json({ message: "Visitor name is required." });
 
-        const studentHostel = await StudentHostel.findOne({ occupant: studentId });
-        if (!studentHostel) {
-            return res.status(404).json({ message: "Student hostel record not found." });
-        }
-
-        // Add the visitor to the array
-        studentHostel.visitors.push({ name, relation, purpose });
-
-        await studentHostel.save();
-        res.status(201).json({ success: true, message: "Visitor pass generated successfully." });
-        
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
+    const studentHostel = await StudentHostel.findOne({ occupant: studentId });
+    if (!studentHostel) {
+      return res
+        .status(404)
+        .json({ message: "Student hostel record not found." });
     }
+
+    // Add the visitor to the array
+    studentHostel.visitors.push({ name, relation, purpose });
+
+    await studentHostel.save();
+    res
+      .status(201)
+      .json({ success: true, message: "Visitor pass generated successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 
 export const getMyRoomChangeRequests = async (req, res) => {
@@ -234,24 +271,36 @@ export const getMyVisitors = async (req, res) => {
 
 export const getMyFees = async (req, res) => {
   try {
-    const studentId = req.user.id;
-    const studentHostel = await StudentHostel.findOne({ occupant: studentId })
-      .select("fees")
-      .lean();
+    const { registrationNumber, collegeCode } = req.user;
 
-    if (!studentHostel) {
-      return res.json({ success: true, data: [] });
-    }
-
-    // Sort fees by month in descending order (newest first)
-    const sortedFees = studentHostel.fees.sort((a, b) => {
-      if (a.month < b.month) return 1;
-      if (a.month > b.month) return -1;
-      return 0;
+    const academicPayments = await StudentPayment.findOne({
+      registrationNumber,
+      collegeCode,
     });
 
-    res.json({ success: true, data: sortedFees });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    const hostelPayments = await StudentHostel.findOne({
+      registrationNumber,
+      collegeCode,
+    }).select("fees");
+
+    if (!academicPayments && !hostelPayments) {
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: "No fee records found for this student.",
+        });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        semesters: academicPayments?.semesters || [],
+        fines: academicPayments?.fines || [],
+        hostelFees: hostelPayments?.fees || [],
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 };
