@@ -107,64 +107,49 @@ const getSecureQuery = (req, regNo) => {
 
 // 1. CREATE RAZORPAY ORDER (For Online Payments)
 export const createRazorpayOrder = async (req, res) => {
-    console.log(req.body)
     try {
         const { regNo } = req.params;
         const { type, id, amount } = req.body;
         const { collegeCode } = req.user;
-        console.log(req.body)
 
         let validatedAmount = 0;
 
-
-        // Handle SEMESTER and FINE fees, which are in the StudentPayment document
         if (type === 'semester' || type === 'fine') {
             const paymentDoc = await StudentPayment.findOne({ registrationNumber: regNo, collegeCode });
-            if (!paymentDoc) return res.status(404).json({ message: "Student academic payment record not found." });
+            if (!paymentDoc) return res.status(404).json({ message: "Academic payment record not found." });
 
             if (type === 'semester') {
                 const semester = paymentDoc.semesters.id(id);
                 if (!semester) return res.status(404).json({ message: "Semester fee not found." });
-                
-                validatedAmount = semester.fees - (semester.paid || 0);
-
-            } else { // type is 'fine'
+                validatedAmount = (semester.tuitionFee + semester.examFee + semester.otherFee) - semester.paid;
+            } else { // fine
                 const fine = paymentDoc.fines.id(id);
                 if (!fine) return res.status(404).json({ message: "Fine not found." });
                 validatedAmount = fine.amount - fine.paidAmount;
             }
 
-        } 
-        else if (type === 'hostel') {
-            const hostelDoc = await studentHostelModal.findOne({ registrationNumber: regNo, collegeCode });
-            if (!hostelDoc) return res.status(404).json({ message: "Student hostel record not found." });
+        } else if (type === 'hostel') {
+            const hostelDoc = await StudentHostel.findOne({ registrationNumber: regNo, collegeCode });
+            if (!hostelDoc) return res.status(404).json({ message: "Hostel record not found." });
             
             const hostelFee = hostelDoc.fees.id(id);
-            if (!hostelFee) return res.status(404).json({ message: "Hostel fee for this month not found." });
+            if (!hostelFee) return res.status(404).json({ message: "Hostel fee not found for this month." });
             validatedAmount = hostelFee.amount - hostelFee.paidAmount;
         
         } else {
-            return res.status(400).json({ message: "Invalid payment type specified." });
+            return res.status(400).json({ message: "Invalid payment type." });
         }
 
         if (Math.round(amount) !== Math.round(validatedAmount)) {
-            return res.status(400).json({ message: `Amount mismatch. Server expected ${validatedAmount} but received ${amount}. Please refresh and try again.` });
+            return res.status(400).json({ message: `Amount mismatch. Server expected ${validatedAmount} but received ${amount}.` });
         }
         
         const options = {
-            amount: amount * 100, // Amount in paise
-            currency: "INR",
-            receipt: `receipt_${type}_${regNo}_${Date.now()}`,
-            notes: {
-                studentRegNo: regNo,
-                paymentType: type,
-                paymentDbId: id, 
-                collegeCode: req.user.collegeCode
-            }
+            amount: amount * 100, currency: "INR", receipt: `receipt_${type}_${Date.now()}`,
+            notes: { studentRegNo: regNo, paymentType: type, paymentDbId: id, collegeCode }
         };
 
         const order = await razorpay.orders.create(options);
-        
         res.json({ success: true, order, key_id: process.env.RAZORPAY_KEY_ID });
 
     } catch (err) {
@@ -173,11 +158,11 @@ export const createRazorpayOrder = async (req, res) => {
     }
 };
 
-// 2. VERIFY PAYMENT (Callback from Frontend)
+
+// --- UPDATED VERIFY PAYMENT FUNCTION ---
 export const verifyPayment = async (req, res) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-
         const body = razorpay_order_id + "|" + razorpay_payment_id;
         const expectedSignature = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET).update(body.toString()).digest("hex");
 
@@ -190,26 +175,40 @@ export const verifyPayment = async (req, res) => {
         const { studentRegNo, paymentType, paymentDbId, collegeCode } = notes;
         const amountPaid = orderDetails.amount / 100;
 
-        const payment = await StudentPayment.findOne({ registrationNumber: studentRegNo, collegeCode });
-        if (!payment) return res.status(404).json({ message: "Student record not found post-payment." });
+        // Find the student's main academic payment doc to add the history
+        const academicPaymentDoc = await StudentPayment.findOne({ registrationNumber: studentRegNo, collegeCode });
+        if (!academicPaymentDoc) return res.status(404).json({ message: "Academic payment record not found to save history." });
 
-        if (paymentType === "fine") {
-            const fine = payment.fines.id(paymentDbId);
-            fine.paidAmount += amountPaid;
-            fine.status = fine.paidAmount >= fine.amount ? "paid" : "unpaid";
-            payment.paymentHistory.push({ type: "Fine Payment", description: fine.reason, amount: amountPaid, method: 'online', receiptNo: razorpay_payment_id, status: "paid" });
-        } else if (paymentType === "semester") {
-            const semester = payment.semesters.id(paymentDbId);
-            semester.paid += amountPaid;
-            payment.paymentHistory.push({ type: "Semester Fee", description: `Semester ${semester.semester} Fee`, amount: amountPaid, method: 'online', receiptNo: razorpay_payment_id, status: "paid" });
+        if (paymentType === "semester" || paymentType === "fine") {
+            if (paymentType === "semester") {
+                const semester = academicPaymentDoc.semesters.id(paymentDbId);
+                semester.paid += amountPaid;
+                academicPaymentDoc.paymentHistory.push({ type: "Semester Fee", description: `Semester ${semester.semester} Fee`, amount: amountPaid, method: 'online', receiptNo: razorpay_payment_id, status: "paid" });
+            } else {
+                const fine = academicPaymentDoc.fines.id(paymentDbId);
+                fine.paidAmount += amountPaid;
+                fine.status = fine.paidAmount >= fine.amount ? "paid" : "unpaid";
+                academicPaymentDoc.paymentHistory.push({ type: "Fine Payment", description: fine.reason, amount: amountPaid, method: 'online', receiptNo: razorpay_payment_id, status: "paid" });
+            }
+            await academicPaymentDoc.save();
+
+        } else if (paymentType === "hostel") {
+            const hostelDoc = await StudentHostel.findOne({ registrationNumber: studentRegNo, collegeCode });
+            const hostelFee = hostelDoc.fees.id(paymentDbId);
+            hostelFee.paidAmount += amountPaid;
+            hostelFee.status = hostelFee.paidAmount >= hostelFee.amount ? "Paid" : "Partial";
+            await hostelDoc.save();
+            
+            // Also add to the central payment history
+            academicPaymentDoc.paymentHistory.push({ type: "Hostel Fee", description: `Hostel Fee for ${hostelFee.month}`, amount: amountPaid, method: 'online', receiptNo: razorpay_payment_id, status: "paid" });
+            await academicPaymentDoc.save();
         }
 
-        await payment.save();
-        res.json({ success: true, message: "Payment verified and recorded successfully.", paymentId: razorpay_payment_id });
+        res.json({ success: true, message: "Payment verified and recorded successfully." });
 
     } catch (err) {
         console.error("Error verifying payment:", err);
-        res.status(500).json({ success: false, message: "Internal server error during payment verification." });
+        res.status(500).json({ success: false, message: "Internal server error during verification." });
     }
 };
 

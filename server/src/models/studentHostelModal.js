@@ -51,7 +51,7 @@ const feeSchema = new Schema({
         room: String,
         bed: String
     },
-    status: { type: String, enum: ["Unpaid", "Paid", "Partial"], default: "Unpaid" },
+    status: { type: String, enum: ["Unpaid", "Paid", "Partial", "Cancelled"], default: "Unpaid" },
     paidAmount: { type: Number, default: 0 },
     dueAmount: { 
         type: Number, 
