@@ -3,6 +3,7 @@
 import StudentHostel from "../../models/studentHostelModal.js";
 import Student from "../../models/studentModel.js";
 import Hostel from "../../models/hostelSchema.js";
+import StudentPayment from "../../models/studentPaymentModal.js";
 
 // Get logged-in student's current allocation details
 export const getMyAllocation = async (req, res) => {
