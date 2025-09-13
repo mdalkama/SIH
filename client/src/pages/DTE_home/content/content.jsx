@@ -19,10 +19,10 @@ const home = () => {
         </div>
         
         {/* Leadership Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-[95%] mx-auto">
           
           {/* Hon'ble Chief Minister */}
-          <div className="theme-surface rounded-lg shadow-xl p-6 text-center">
+          <div className="theme-surface rounded-lg shadow-xl p-4 text-center w-full min-w-0">
             <div className="mb-4">
               <img 
                 src="https://dte.rajasthan.gov.in/assets/img/shri%20Bhajan%20Lal%20Sharma.png" 
@@ -30,16 +30,16 @@ const home = () => {
                 className="w-full h-32 object-contain rounded-lg mx-auto"
               />
             </div>
-            <h3 className="text-sm font-bold theme-text mb-2 leading-tight">
+            <h3 className="text-xs font-bold text-gray-800 dark:text-gray-200 mb-1 leading-snug h-8 flex items-center justify-center">
               Hon'ble Chief Minister
             </h3>
-            <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+            <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap overflow-hidden text-ellipsis">
               Shri Bhajan Lal Sharma
             </p>
           </div>
 
           {/* Hon'ble Deputy Chief Minister */}
-          <div className="theme-surface rounded-lg shadow-xl p-6 text-center">
+          <div className="theme-surface rounded-lg shadow-xl p-4 text-center w-full min-w-0">
             <div className="mb-4">
               <img 
                 src="https://dte.rajasthan.gov.in/assets/img/Deputy%20CM.jpg" 
@@ -47,16 +47,16 @@ const home = () => {
                 className="w-full h-32 object-contain rounded-lg mx-auto"
               />
             </div>
-            <h3 className="text-sm font-bold theme-text mb-2 leading-tight">
-              Hon'ble Dy. Chief Minister & Minister of Technical Education
+            <h3 className="text-xs font-bold text-gray-800 dark:text-gray-200 mb-1 leading-snug h-8 flex items-center justify-center">
+              Hon'ble Dy. CM & Minister of Technical Education
             </h3>
-            <p className="text-lg font-semibold text-green-600 dark:text-green-400">
+            <p className="text-sm font-semibold text-green-600 dark:text-green-400 whitespace-nowrap overflow-hidden text-ellipsis">
               Dr. Prem Chand Bairwa
             </p>
           </div>
 
           {/* Additional Chief Secretary */}
-          <div className="theme-surface rounded-lg shadow-xl p-6 text-center">
+          <div className="theme-surface rounded-lg shadow-xl p-4 text-center w-full min-w-0">
             <div className="mb-4">
               <img 
                 src="https://dte.rajasthan.gov.in/assets/img/Kuldeep%20Sir%20.png" 
@@ -64,16 +64,16 @@ const home = () => {
                 className="w-full h-32 object-contain rounded-lg mx-auto"
               />
             </div>
-            <h3 className="text-sm font-bold theme-text mb-2 leading-tight">
-              Additional Chief Secretary, Higher & Tech. Education Dept.
+            <h3 className="text-xs font-bold text-gray-800 dark:text-gray-200 mb-1 leading-snug h-8 flex items-center justify-center">
+              Additional Chief Secretary, Higher & Tech. Education
             </h3>
-            <p className="text-lg font-semibold text-purple-600 dark:text-purple-400">
+            <p className="text-sm font-semibold text-purple-600 dark:text-purple-400 whitespace-nowrap overflow-hidden text-ellipsis">
               Shri Kuldeep Ranka
             </p>
           </div>
 
           {/* Director */}
-          <div className="theme-surface rounded-lg shadow-xl p-6 text-center">
+          <div className="theme-surface rounded-lg shadow-xl p-4 text-center w-full min-w-0">
             <div className="mb-4">
               <img 
                 src="https://dte.rajasthan.gov.in/assets/img/Mr.%20Rajesh%20Kumar%20Sharma%20.png" 
@@ -81,10 +81,10 @@ const home = () => {
                 className="w-full h-32 object-contain rounded-lg mx-auto"
               />
             </div>
-            <h3 className="text-sm font-bold theme-text mb-2 leading-tight">
+            <h3 className="text-xs font-bold text-gray-800 dark:text-gray-200 mb-1 leading-snug h-8 flex items-center justify-center">
               Director, Technical Education (Polytechnic)
             </h3>
-            <p className="text-lg font-semibold text-orange-600 dark:text-orange-400">
+            <p className="text-sm font-semibold text-orange-600 dark:text-orange-400 whitespace-nowrap overflow-hidden text-ellipsis">
               Shri Rajesh Kumar Sharma
             </p>
           </div>
