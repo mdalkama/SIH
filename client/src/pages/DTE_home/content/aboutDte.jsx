@@ -171,20 +171,20 @@ const AboutDte = () => {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="stats-card bg-white dark:bg-slate-700/80 rounded-3xl p-3 text-center transform hover:scale-95 transition-all duration-300 shadow-xl hover:shadow-inner cursor-pointer border border-gray-100 dark:border-slate-600/60">
-                <div className="text-2xl sm:text-3xl font-bold text-gray-700 dark:text-slate-200 mb-1">{counts.institutions}+</div>
-                <p className="text-xs font-medium text-gray-600 dark:text-slate-300">Institutions</p>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-700  mb-1">{counts.institutions}+</div>
+                <p className="text-xs font-medium text-gray-600 ">Institutions</p>
               </div>
               <div className="stats-card bg-white dark:bg-slate-700/80 rounded-3xl p-3 text-center transform hover:scale-95 transition-all duration-300 shadow-xl hover:shadow-inner cursor-pointer border border-gray-100 dark:border-slate-600/60">
-                <div className="text-2xl sm:text-3xl font-bold text-gray-700 dark:text-slate-200 mb-1">{counts.students.toLocaleString()}+</div>
-                <p className="text-xs font-medium text-gray-600 dark:text-slate-300">Students</p>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-700  mb-1">{counts.students.toLocaleString()}+</div>
+                <p className="text-xs font-medium text-gray-600 ">Students</p>
               </div>
               <div className="stats-card bg-white dark:bg-slate-700/80 rounded-3xl p-3 text-center transform hover:scale-95 transition-all duration-300 shadow-xl hover:shadow-inner cursor-pointer border border-gray-100 dark:border-slate-600/60">
-                <div className="text-2xl sm:text-3xl font-bold text-gray-700 dark:text-slate-200 mb-1">{counts.programs}+</div>
-                <p className="text-xs font-medium text-gray-600 dark:text-slate-300">Programs</p>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-700  mb-1">{counts.programs}+</div>
+                <p className="text-xs font-medium text-gray-600 ">Programs</p>
               </div>
               <div className="stats-card bg-white dark:bg-slate-700/80 rounded-3xl p-3 text-center transform hover:scale-95 transition-all duration-300 shadow-xl hover:shadow-inner cursor-pointer border border-gray-100 dark:border-slate-600/60">
-                <div className="text-2xl sm:text-3xl font-bold text-gray-700 dark:text-slate-200 mb-1">{counts.placement}%</div>
-                <p className="text-xs font-medium text-gray-600 dark:text-slate-300">Placement Rate</p>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-700  mb-1">{counts.placement}%</div>
+                <p className="text-xs font-medium text-gray-600 ">Placement Rate</p>
               </div>
             </div>
           </div>
