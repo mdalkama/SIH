@@ -5,6 +5,7 @@ import {
   Loader2, Building, GraduationCap, X, CreditCard, Clock
 } from 'lucide-react';
 import roleUtils from '../../../../utils/roleUtils';
+
 // --- HELPER COMPONENTS ---
 
 const ToastNotification = ({ message, type, onClose }) => {
@@ -46,6 +47,49 @@ const InfoField = ({ label, value, icon: Icon, isEditing, onChange, type = 'text
     </div>
 );
 
+// --- NEW SKELETON LOADER COMPONENT ---
+const ProfileSkeleton = () => (
+    <div className="min-h-screen animate-pulse">
+      <div className="">
+        {/* Header Card Skeleton */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-5">
+              <div className="w-24 h-24 rounded-full bg-slate-200"></div>
+              <div>
+                <div className="h-8 w-48 bg-slate-200 rounded-md mb-2"></div>
+                <div className="h-5 w-32 bg-slate-200 rounded-md mb-2"></div>
+                <div className="h-4 w-24 bg-slate-200 rounded-md"></div>
+              </div>
+            </div>
+            <div className="h-10 w-32 bg-slate-200 rounded-lg"></div>
+          </div>
+        </div>
+        
+        {/* Content Cards Skeleton */}
+        <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div className="h-6 w-40 bg-slate-200 rounded-md mb-6"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="h-16 bg-slate-100 rounded-lg"></div>
+                    <div className="h-16 bg-slate-100 rounded-lg"></div>
+                    <div className="h-16 bg-slate-100 rounded-lg"></div>
+                </div>
+            </div>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div className="h-6 w-48 bg-slate-200 rounded-md mb-6"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="h-16 bg-slate-100 rounded-lg"></div>
+                    <div className="h-16 bg-slate-100 rounded-lg"></div>
+                    <div className="h-16 bg-slate-100 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+);
+
+// --- MAIN COMPONENT ---
 const StaffProfile = () => {
   const [staffData, setStaffData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -53,7 +97,6 @@ const StaffProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
-  console.log(staffData)
 
   const showToast = (message, type = 'success') => setToast({ message, type });
 
@@ -66,14 +109,11 @@ const StaffProfile = () => {
           method: 'GET',
           credentials: 'include',
         });
-        
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || "Failed to fetch staff profile.");
         }
-        
         const data = await response.json();
-        
         if (data.user) {
           setStaffData(data.user);
           setEditedData(data.user);
@@ -105,7 +145,6 @@ const StaffProfile = () => {
         credentials: 'include',
         body: JSON.stringify(editedData)
       });
-      
       const result = await response.json();
       if (result.success) {
         setStaffData(result.user);
@@ -133,7 +172,7 @@ const StaffProfile = () => {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen bg-slate-50"><Loader2 className="w-12 h-12 animate-spin text-blue-600" /></div>;
+    return <ProfileSkeleton />;
   }
 
   if (error || !staffData) {
@@ -151,7 +190,6 @@ const StaffProfile = () => {
       {toast && <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       <div className="">
         
-        {/* Header Card */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-5">
@@ -173,7 +211,6 @@ const StaffProfile = () => {
           </div>
         </div>
         
-        {/* Content Cards */}
         <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
               <h3 className="text-xl font-semibold text-slate-800 mb-4">Personal & Contact</h3>

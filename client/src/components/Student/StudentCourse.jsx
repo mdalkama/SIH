@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Book, Download, GraduationCap, Calendar, Trophy, ChevronDown, ChevronUp, Clock, CheckCircle, Loader2, AlertTriangle } from 'lucide-react';
 
-// --- Helper Components (Unchanged) ---
+// --- HELPER COMPONENTS ---
 const getGradeColor = (grade) => {
     const gradeColors = { 'A+': 'text-green-700 bg-green-100', 'A': 'text-green-600 bg-green-50', 'A-': 'text-blue-600 bg-blue-50', 'B+': 'text-yellow-600 bg-yellow-50', 'B': 'text-orange-600 bg-orange-50', 'B-': 'text-red-600 bg-red-50' };
     return gradeColors[grade] || 'text-gray-600 bg-gray-50';
@@ -17,8 +17,49 @@ const downloadSyllabus = (subjectCode, subjectName) => {
     alert(`Downloading syllabus for ${subjectName} (${subjectCode})`);
 };
 
+// --- NEW SKELETON LOADER COMPONENT ---
+const DashboardSkeleton = () => (
+    <div className="min-h-screen animate-pulse">
+        <div className="max-w-6xl mx-auto">
+            {/* Header Skeleton */}
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <div className="h-8 w-64 bg-gray-200 rounded mb-3"></div>
+                        <div className="h-5 w-48 bg-gray-200 rounded mb-2"></div>
+                        <div className="h-4 w-56 bg-gray-200 rounded"></div>
+                    </div>
+                    <div className="text-right">
+                        <div className="h-8 w-24 bg-gray-200 rounded mb-2"></div>
+                        <div className="h-4 w-20 bg-gray-200 rounded"></div>
+                    </div>
+                </div>
+            </div>
 
-// --- Main Academic Dashboard Component ---
+            {/* Tabs Skeleton */}
+            <div className="bg-white rounded-lg shadow-sm mb-6">
+                <div className="flex border-b border-gray-200">
+                    <div className="h-12 w-48 bg-gray-200 border-b-2 border-blue-600"></div>
+                    <div className="h-12 w-48 bg-gray-100 ml-4"></div>
+                    <div className="h-12 w-56 bg-gray-100 ml-4"></div>
+                </div>
+            </div>
+
+            {/* Content Skeleton */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="h-6 w-1/3 bg-gray-200 rounded mb-6"></div>
+                <div className="space-y-4">
+                    <div className="h-24 bg-gray-100 rounded-lg"></div>
+                    <div className="h-16 bg-gray-100 rounded-lg"></div>
+                    <div className="h-16 bg-gray-100 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
+
+// --- MAIN ACADEMIC DASHBOARD COMPONENT ---
 const AcademicDashboard = () => {
     const [activeTab, setActiveTab] = useState('current');
     const [studentProfile, setStudentProfile] = useState(null);
@@ -29,24 +70,22 @@ const AcademicDashboard = () => {
     const fetchAcademicData = useCallback(async () => {
         setLoading(true);
         try {
-            // Step 1: Fetch the student's profile
             const profileRes = await fetch('https://sih-4ptm.onrender.com/api/v1/my-profile', { credentials: 'include' });
             if (!profileRes.ok) throw new Error("Could not fetch your profile. Please log in again.");
             
             const profileData = await profileRes.json();
-            console.log(profileData)
             
             if (!profileData.user || !profileData.course) {
                 throw new Error("Complete academic information (user and course) not found in your profile.");
             }
             
             const combinedProfile = {
-                ...profileData.user,      // Spread all properties from the user object
-                course: profileData.course   // Add the course object as a property
+                ...profileData.user,
+                course: profileData.course
             };
 
             setStudentProfile(combinedProfile);
-            setExpandedSemesters([combinedProfile.semester]); // Auto-expand current semester
+            setExpandedSemesters([combinedProfile.semester]); // Use semester from user object
             setError(null);
 
         } catch (err) {
@@ -69,7 +108,8 @@ const AcademicDashboard = () => {
         );
     };
 
-    if (loading) return <div className="flex items-center justify-center h-screen"><Loader2 className="w-12 h-12 animate-spin text-blue-600" /></div>;
+    if (loading) return <DashboardSkeleton />;
+    
     if (error) return <div className="max-w-6xl mx-auto p-4"><div className="text-center p-10 bg-red-50 rounded-lg border border-red-200"><AlertTriangle className="mx-auto w-12 h-12 text-red-500" /><h3 className="mt-4 text-lg font-semibold text-red-800">An Error Occurred</h3><p className="text-red-600 mt-1">{error}</p></div></div>;
 
     const renderCurrentSemester = () => {

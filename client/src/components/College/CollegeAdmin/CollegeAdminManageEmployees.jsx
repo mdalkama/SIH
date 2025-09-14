@@ -1,6 +1,39 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, Edit2, Trash2, Users, UserCheck, UserX, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
+// --- NEW: SKELETON LOADER COMPONENT ---
+const SkeletonLoader = () => (
+    <div className="animate-pulse">
+        {/* Skeleton for Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
+            {[...Array(8)].map((_, i) => (
+                <div key={i} className="bg-slate-200 h-20 rounded-lg"></div>
+            ))}
+        </div>
+        {/* Skeleton for Table Container */}
+        <div className="bg-slate-200 rounded-lg">
+            <div className="p-4 border-b border-slate-300">
+                <div className="h-6 w-1/2 bg-slate-300 rounded"></div>
+            </div>
+            <div className="p-4 flex justify-between items-center border-b border-slate-300">
+                <div className="h-10 w-64 bg-slate-300 rounded-lg"></div>
+                <div className="h-10 w-32 bg-slate-300 rounded-lg"></div>
+            </div>
+            <div className="p-4">
+                <div className="h-12 bg-slate-300 rounded mb-2"></div>
+                {[...Array(9)].map((_, i) => (
+                    <div key={i} className="h-12 bg-slate-100 rounded mb-2"></div>
+                ))}
+            </div>
+             <div className="p-4 border-t border-slate-300 flex justify-between items-center">
+                <div className="h-8 w-1/3 bg-slate-300 rounded-lg"></div>
+                <div className="h-8 w-1/4 bg-slate-300 rounded-lg"></div>
+            </div>
+        </div>
+    </div>
+);
+
+
 const CollegeAdminManageEmployees = () => {
     const [activeTab, setActiveTab] = useState('all');
     const [showAddModal, setShowAddModal] = useState(false);
@@ -8,7 +41,7 @@ const CollegeAdminManageEmployees = () => {
     const [deleteEmployeeId, setDeleteEmployeeId] = useState('');
     const [deleteEmployeeName, setDeleteEmployeeName] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [editingEmployeeId, setEditingEmployeeId] = useState('');
     const API_BASE = 'https://sih-4ptm.onrender.com/api/v1';
@@ -20,7 +53,6 @@ const CollegeAdminManageEmployees = () => {
     const [employees, setEmployees] = useState([]);
     const [selectedRole, setSelectedRole] = useState('');
 
-    // Pagination and Table State
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -161,9 +193,7 @@ const CollegeAdminManageEmployees = () => {
     };
 
     const resetForm = () => {
-        setFormData({
-            name: '', email: '', password: '', staffId: '', gender: '', salary: '', phone: '', department: '', status: 'Active',
-        });
+        setFormData({ name: '', email: '', password: '', staffId: '', gender: '', salary: '', phone: '', department: '', status: 'Active' });
         setSelectedRole('');
         setIsEditing(false);
         setEditingEmployeeId('');
@@ -178,17 +208,9 @@ const CollegeAdminManageEmployees = () => {
             name: formData.name, email: formData.email, staffId: formData.staffId,
             gender: (formData.gender || '').toLowerCase(), salary: formData.salary, phone: formData.phone,
         };
-
-        if (!isEditing && formData.password) {
-            payload.password = formData.password;
-        }
-        if (selectedRole === 'CollegeHOD' && formData.department) { 
-            payload.department = formData.department.trim(); 
-        }
-
-        if (isEditing) {
-            payload.status = formData.status.toLowerCase();
-        }
+        if (!isEditing && formData.password) { payload.password = formData.password; }
+        if (selectedRole === 'CollegeHOD' && formData.department) { payload.department = formData.department.trim(); }
+        if (isEditing) { payload.status = formData.status.toLowerCase(); }
 
         try {
             setLoading(true);
@@ -208,9 +230,7 @@ const CollegeAdminManageEmployees = () => {
                 } : emp));
             } else {
                 const endpoint = getEndpointForSelectedRole();
-                if (!endpoint) {
-                    alert('Invalid role selection'); setLoading(false); return;
-                }
+                if (!endpoint) { alert('Invalid role selection'); setLoading(false); return; }
                 const res = await fetch(`${API_BASE}/add-college-staff${endpoint}`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
                     body: JSON.stringify(payload)
@@ -227,11 +247,8 @@ const CollegeAdminManageEmployees = () => {
             }
             resetForm();
             setShowAddModal(false);
-        } catch (e) {
-            console.error(e); alert(e.message);
-        } finally {
-            setLoading(false);
-        }
+        } catch (e) { console.error(e); alert(e.message); }
+        finally { setLoading(false); }
     };
 
     const handleEditClick = (employee) => {
@@ -240,8 +257,7 @@ const CollegeAdminManageEmployees = () => {
         setFormData({
             name: employee.name || '', email: employee.email || '', password: '', staffId: employee.staffId || '',
             gender: (employee.gender || '').toLowerCase(), salary: employee.salary || '', phone: employee.phone || '',
-            department: employee.department || '',
-            status: employee.status || 'Active',
+            department: employee.department || '', status: employee.status || 'Active',
         });
     };
 
@@ -252,19 +268,12 @@ const CollegeAdminManageEmployees = () => {
     const handleDeleteConfirm = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${API_BASE}/add-college-staff/${deleteEmployeeId}`, {
-                method: 'DELETE', credentials: 'include',
-            });
-            if (!res.ok) {
-                const data = await res.json(); throw new Error(data?.message || 'Failed to delete employee');
-            }
+            const res = await fetch(`${API_BASE}/add-college-staff/${deleteEmployeeId}`, { method: 'DELETE', credentials: 'include' });
+            if (!res.ok) { const data = await res.json(); throw new Error(data?.message || 'Failed to delete employee'); }
             setEmployees(prev => prev.filter(emp => emp.id !== deleteEmployeeId));
             setShowDeleteModal(false); resetForm();
-        } catch (e) {
-            console.error(e); alert(e.message);
-        } finally {
-            setLoading(false);
-        }
+        } catch (e) { console.error(e); alert(e.message); }
+        finally { setLoading(false); }
     };
 
     const stats = useMemo(() => ({
@@ -285,77 +294,62 @@ const CollegeAdminManageEmployees = () => {
     return (
         <div className="min-h-screen font-sans" style={{ fontFamily: 'Poppins, sans-serif' }}>
             <div className="max-w-7xl mx-auto ">
-                {/* Page Header */}
-                {/* <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-blue-900 mb-2">Employee Management</h1>
-                    <p className="text-gray-600">Manage staff and employees for your college</p>
-                </div> */}
-
-                {/* Stats Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
-                    <StatCard icon={<Users size={20} className="text-blue-600" />} title="Total Staff" value={stats.total} />
-                    <StatCard icon={<UserCheck size={20} className="text-green-500" />} title="Active" value={stats.active} />
-                    <StatCard icon={<UserX size={20} className="text-yellow-500" />} title="Inactive" value={stats.inactive} />
-                    <StatCard title="Directors" value={stats.director} />
-                    <StatCard title="Deans" value={stats.dean} />
-                    <StatCard title="Librarians" value={stats.librarian} />
-                    <StatCard title="HODs" value={stats.hod} />
-                    <StatCard title="Faculty" value={stats.faculty} />
-                </div>
-
-                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                    <div className="p-4 border-b border-gray-200">
-                        <div className="flex flex-wrap gap-1">
-                            {[
-                                { key: 'all', label: 'All' }, { key: 'active', label: 'Active' }, { key: 'inactive', label: 'Inactive' },
-                                { key: 'CollegeDirector', label: 'Director' }, { key: 'CollegeDean', label: 'Dean' },
-                                { key: 'CollegeExaminationBody', label: 'Exam Controller' }, { key: 'CollegeLibrarian', label: 'Librarian' },
-                                { key: 'CollegeHostelWarden', label: 'Warden' }, { key: 'CollegeFinanceBody', label: 'Finance' },
-                                { key: 'CollegeAdmissionDepartment', label: 'Admission' }, { key: 'CollegeHOD', label: 'HOD' },
-                                { key: 'CollegeFaculty', label: 'Faculty' }
-                            ].map(tab => (
-                                <button key={tab.key} onClick={() => handleTabChange(tab.key)}
-                                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === tab.key
-                                        ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`}>
-                                    {tab.label}
-                                </button>
-                            ))}
+                {loading ? (
+                    <SkeletonLoader />
+                ) : (
+                    <>
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
+                            <StatCard icon={<Users size={20} className="text-blue-600" />} title="Total Staff" value={stats.total} />
+                            <StatCard icon={<UserCheck size={20} className="text-green-500" />} title="Active" value={stats.active} />
+                            <StatCard icon={<UserX size={20} className="text-yellow-500" />} title="Inactive" value={stats.inactive} />
+                            <StatCard title="Directors" value={stats.director} />
+                            <StatCard title="Deans" value={stats.dean} />
+                            <StatCard title="Librarians" value={stats.librarian} />
+                            <StatCard title="HODs" value={stats.hod} />
+                            <StatCard title="Faculty" value={stats.faculty} />
                         </div>
-                    </div>
 
-                    <TableView
-                        searchTerm={searchTerm}
-                        onSearchChange={setSearchTerm}
-                        onAddClick={() => { resetForm(); setShowAddModal(true); }} >
-
-                        <EmployeeTable
-                            employees={paginatedData}
-                            onEdit={handleEditClick}
-                            onDelete={handleDeleteClick}
-                            getRoleDisplayName={getRoleDisplayName}
-                            getRoleBadgeColor={getRoleBadgeColor}
-                            currentPage={currentPage}
-                            rowsPerPage={rowsPerPage}
-                        />
-
-                        {paginatedData.length === 0 && (
-                            <div className="text-center py-12">
-                                <Users size={48} className="mx-auto mb-4 text-gray-400" />
-                                <p className="text-lg text-gray-500">No employees found</p>
-                                {searchTerm && <p className="text-sm text-gray-400">Try adjusting your search.</p>}
+                        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                            <div className="p-4 border-b border-gray-200">
+                                <div className="flex flex-wrap gap-1">
+                                    {[
+                                        { key: 'all', label: 'All' }, { key: 'active', label: 'Active' }, { key: 'inactive', label: 'Inactive' },
+                                        { key: 'CollegeDirector', label: 'Director' }, { key: 'CollegeDean', label: 'Dean' },
+                                        { key: 'CollegeExaminationBody', label: 'Exam Controller' }, { key: 'CollegeLibrarian', label: 'Librarian' },
+                                        { key: 'CollegeHostelWarden', label: 'Warden' }, { key: 'CollegeFinanceBody', label: 'Finance' },
+                                        { key: 'CollegeAdmissionDepartment', label: 'Admission' }, { key: 'CollegeHOD', label: 'HOD' },
+                                        { key: 'CollegeFaculty', label: 'Faculty' }
+                                    ].map(tab => (
+                                        <button key={tab.key} onClick={() => handleTabChange(tab.key)}
+                                            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === tab.key ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`}>
+                                            {tab.label}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                        )}
 
-                        <Pagination
-                            currentPage={currentPage}
-                            totalCount={totalCount}
-                            pageSize={rowsPerPage}
-                            onPageChange={setCurrentPage}
-                            onPageSizeChange={(size) => { setRowsPerPage(size); setCurrentPage(1); }}
-                            filteredData={filteredData}
-                        />
-                    </TableView>
-                </div>
+                            <TableView searchTerm={searchTerm} onSearchChange={setSearchTerm} onAddClick={() => { resetForm(); setShowAddModal(true); }} >
+                                <EmployeeTable
+                                    employees={paginatedData}
+                                    onEdit={handleEditClick}
+                                    onDelete={handleDeleteClick}
+                                    getRoleDisplayName={getRoleDisplayName}
+                                    getRoleBadgeColor={getRoleBadgeColor}
+                                    currentPage={currentPage}
+                                    rowsPerPage={rowsPerPage}
+                                />
+                                {paginatedData.length === 0 && (
+                                    <div className="text-center py-12">
+                                        <Users size={48} className="mx-auto mb-4 text-gray-400" />
+                                        <p className="text-lg text-gray-500">No employees found</p>
+                                        {searchTerm && <p className="text-sm text-gray-400">Try adjusting your search.</p>}
+                                    </div>
+                                )}
+                                <Pagination currentPage={currentPage} totalCount={totalCount} pageSize={rowsPerPage} onPageChange={setCurrentPage} onPageSizeChange={(size) => { setRowsPerPage(size); setCurrentPage(1); }} filteredData={filteredData} />
+                            </TableView>
+                        </div>
+                    </>
+                )}
             </div>
 
             {showAddModal && <AddEditModal {...{ isEditing, showAddModal, setShowAddModal, formData, setFormData, selectedRole, setSelectedRole, availableRoles, getRoleDisplayName, loading, handleAddOrUpdate, resetForm }} />}
@@ -367,14 +361,7 @@ const CollegeAdminManageEmployees = () => {
 const AddEditModal = ({ isEditing, setShowAddModal, formData, setFormData, selectedRole, setSelectedRole, availableRoles, getRoleDisplayName, loading, handleAddOrUpdate, resetForm }) => (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-            <div className="p-6 border-b">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold text-gray-800">{isEditing ? 'Edit Employee' : 'Add New Employee'}</h2>
-                    <button onClick={() => { setShowAddModal(false); resetForm(); }} className="text-gray-400 hover:text-gray-600">
-                        <X size={20} />
-                    </button>
-                </div>
-            </div>
+            <div className="p-6 border-b"><div className="flex items-center justify-between"><h2 className="text-xl font-bold text-gray-800">{isEditing ? 'Edit Employee' : 'Add New Employee'}</h2><button onClick={() => { setShowAddModal(false); resetForm(); }} className="text-gray-400 hover:text-gray-600"><X size={20} /></button></div></div>
             <div className="p-6 space-y-6 overflow-y-auto">
                 {!isEditing && (
                     <div>
@@ -387,69 +374,22 @@ const AddEditModal = ({ isEditing, setShowAddModal, formData, setFormData, selec
                 )}
                 {isEditing && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Current Role</label>
-                            <div className="px-3 py-2 border rounded-lg bg-gray-50 text-gray-700">{getRoleDisplayName(selectedRole)}</div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                            <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="Active">Active</option>
-                                <option value="Inactive">Inactive</option>
-                            </select>
-                        </div>
+                        <div><label className="block text-sm font-medium text-gray-700 mb-2">Current Role</label><div className="px-3 py-2 border rounded-lg bg-gray-50 text-gray-700">{getRoleDisplayName(selectedRole)}</div></div>
+                        <div><label className="block text-sm font-medium text-gray-700 mb-2">Status</label><select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
                     </div>
                 )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                        <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter full name" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
-                        <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter email address" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Staff ID *</label>
-                        <input type="text" value={formData.staffId} onChange={(e) => setFormData({ ...formData, staffId: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter staff ID" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                        <input type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter phone number" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Gender *</label>
-                        <select value={formData.gender} onChange={(e) => setFormData({ ...formData, gender: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">Select gender</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Salary *</label>
-                        <input type="number" value={formData.salary} onChange={(e) => setFormData({ ...formData, salary: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter salary amount" />
-                    </div>
+                    <div><label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label><input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter full name" /></div>
+                    <div><label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label><input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter email address" /></div>
+                    <div><label className="block text-sm font-medium text-gray-700 mb-1">Staff ID *</label><input type="text" value={formData.staffId} onChange={(e) => setFormData({ ...formData, staffId: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter staff ID" /></div>
+                    <div><label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label><input type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter phone number" /></div>
+                    <div><label className="block text-sm font-medium text-gray-700 mb-1">Gender *</label><select value={formData.gender} onChange={(e) => setFormData({ ...formData, gender: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"><option value="">Select gender</option><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select></div>
+                    <div><label className="block text-sm font-medium text-gray-700 mb-1">Salary *</label><input type="number" value={formData.salary} onChange={(e) => setFormData({ ...formData, salary: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter salary amount" /></div>
                 </div>
-                {!isEditing && (
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
-                        <input type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter password" />
-                    </div>
-                )}
-                {selectedRole === 'CollegeHOD' && (
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Department *</label>
-                        <input type="text" value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter Department" />
-                    </div>
-                )}
+                {!isEditing && (<div><label className="block text-sm font-medium text-gray-700 mb-1">Password *</label><input type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter password" /></div>)}
+                {selectedRole === 'CollegeHOD' && (<div><label className="block text-sm font-medium text-gray-700 mb-1">Department *</label><input type="text" value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter Department" /></div>)}
             </div>
-            <div className="p-6 border-t flex justify-end space-x-3 bg-gray-50">
-                <button onClick={() => { setShowAddModal(false); resetForm(); }} className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">Cancel</button>
-                <button disabled={loading} onClick={handleAddOrUpdate} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
-                    {loading ? (isEditing ? 'Updating...' : 'Adding...') : (isEditing ? 'Update Employee' : 'Add Employee')}
-                </button>
-            </div>
+            <div className="p-6 border-t flex justify-end space-x-3 bg-gray-50"><button onClick={() => { setShowAddModal(false); resetForm(); }} className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">Cancel</button><button disabled={loading} onClick={handleAddOrUpdate} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">{loading ? (isEditing ? 'Updating...' : 'Adding...') : (isEditing ? 'Update Employee' : 'Add Employee')}</button></div>
         </div>
     </div>
 );
@@ -457,31 +397,12 @@ const AddEditModal = ({ isEditing, setShowAddModal, formData, setFormData, selec
 const DeleteModal = ({ setShowDeleteModal, deleteEmployeeName, handleDeleteConfirm, loading }) => (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="p-6 border-b">
-                <h2 className="text-xl font-bold text-gray-800">Delete Employee</h2>
-            </div>
-            <div className="p-6">
-                <div className="flex items-start">
-                    <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                        <Trash2 className="h-6 w-6 text-red-600" />
-                    </div>
-                    <div className="ml-4 text-left">
-                        <h3 className="text-lg font-medium text-gray-900">Confirm Deletion</h3>
-                        <p className="text-sm text-gray-500 mt-1">Are you sure you want to delete <span className="font-semibold">{deleteEmployeeName}</span>? This action cannot be undone.</p>
-                    </div>
-                </div>
-            </div>
-            <div className="p-4 bg-gray-50 border-t flex justify-end space-x-3">
-                <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">Cancel</button>
-                <button disabled={loading} onClick={handleDeleteConfirm} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50">
-                    {loading ? 'Deleting...' : 'Delete'}
-                </button>
-            </div>
+            <div className="p-6 border-b"><h2 className="text-xl font-bold text-gray-800">Delete Employee</h2></div>
+            <div className="p-6"><div className="flex items-start"><div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10"><Trash2 className="h-6 w-6 text-red-600" /></div><div className="ml-4 text-left"><h3 className="text-lg font-medium text-gray-900">Confirm Deletion</h3><p className="text-sm text-gray-500 mt-1">Are you sure you want to delete <span className="font-semibold">{deleteEmployeeName}</span>? This action cannot be undone.</p></div></div></div>
+            <div className="p-4 bg-gray-50 border-t flex justify-end space-x-3"><button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">Cancel</button><button disabled={loading} onClick={handleDeleteConfirm} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50">{loading ? 'Deleting...' : 'Delete'}</button></div>
         </div>
     </div>
 );
-
-export default CollegeAdminManageEmployees;
 
 // --- Child Components ---
 
@@ -610,3 +531,5 @@ const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSiz
         </div>
     );
 };
+
+export default CollegeAdminManageEmployees;
