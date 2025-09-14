@@ -26,6 +26,7 @@ import PromotionOrdersPage from "./pages/DTE_home/employee/PromotionOrdersPage.j
 import PostingOrdersPage from "./pages/DTE_home/employee/PostingOrdersPage.jsx";
 import StudentsCornerPage from "./pages/DTE_home/students/StudentsCornerPage.jsx";
 import TendersAuctionsPage from "./pages/DTE_home/tenders/TendersAuctionsPage.jsx";
+import DetailedNews from "./pages/DTE_home/content/detailedNews.jsx";
 import Chatbot from "./pages/DTE_home/Chatbot.jsx";
 
 function App() {
@@ -75,6 +76,9 @@ function App() {
           
           {/* Tenders & Auctions Route */}
           <Route path="/tenders-auctions" element={<TendersAuctionsPage />} />
+          
+          {/* News Detail Route */}
+          <Route path="/news/:id" element={<DetailedNews />} />
           
           {/* Employee Corner Routes */}
           <Route path="/employee/transfer-orders" element={<TransferOrdersPage />} />
