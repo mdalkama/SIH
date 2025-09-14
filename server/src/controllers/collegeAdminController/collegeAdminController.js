@@ -29,7 +29,7 @@ export const getAdminDashboardSummary = async (req, res) => {
             recentComplaints
         ] = await Promise.all([
             Student.countDocuments({ collegeCode }),
-            Staff.countDocuments({ collegeCode }),
+			Staff.countDocuments({ collegeCode, role: { $ne : "CollegeAdmin" }}),
             College.findById(collegeId).select('courses').then(c => c.courses.length),
             Complaint.countDocuments({ college: collegeId, status: { $ne: "Resolved" } }),
             Complaint.find({ college: collegeId, status: { $ne: "Resolved" } })
