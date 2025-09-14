@@ -2,6 +2,7 @@ import Complaint from "../../models/complaintModel.js";
 import Student from "../../models/studentModel.js";
 import Staff from "../../models/staffModel.js";
 import College from "../../models/collegeModel.js";
+import mongoose from "mongoose";
 
 // @desc    A logged-in student raises a new complaint
 // @route   POST /api/v1/complaints/raise
@@ -48,6 +49,7 @@ export const raiseComplaint = async (req, res) => {
 // @desc    A logged-in College Admin gets all complaints for their college
 // @route   GET /api/v1/complaints/college
 // @access  CollegeAdmin
+
 export const getCollegeComplaints = async (req, res) => {
     try {
         const staffId = req.user.id;
@@ -73,3 +75,51 @@ export const getCollegeComplaints = async (req, res) => {
         res.status(500).json({ success: false, message: "Server Error", error: err.message });
     }
 };
+
+export const updateComplaintStatus = async (req, res) => {
+    try {
+        const { complaintId } = req.params;
+        const { status } = req.body;
+        const staffId = req.user.id;
+
+        // 1. Find the admin to get their collegeCode
+        const admin = await Staff.findById(staffId).select('collegeCode');
+        if (!admin || !admin.collegeCode) {
+            return res.status(404).json({ message: "Admin is not associated with a college." });
+        }
+        
+        // 2. Find the College document using the admin's collegeCode to get its ObjectId
+        const college = await College.findOne({ code: admin.collegeCode }).select('_id');
+        if (!college) {
+            return res.status(404).json({ message: `College with code ${admin.collegeCode} not found.` });
+        }
+
+        // 3. Validate the incoming status
+        const validStatuses = ["Submitted", "Under Review", "Resolved", "Rejected"];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ message: "Invalid status provided." });
+        }
+        
+        if (!mongoose.Types.ObjectId.isValid(complaintId)) {
+            return res.status(400).json({ message: "Invalid Complaint ID." });
+        }
+
+        // 4. Find the complaint by its ID AND ensure it belongs to the admin's college ObjectId
+        const complaint = await Complaint.findOne({ _id: complaintId, college: college._id });
+
+        if (!complaint) {
+            return res.status(404).json({ message: "Complaint not found or you do not have permission to modify it." });
+        }
+
+        // 5. Update and save
+        complaint.status = status;
+        await complaint.save();
+
+        res.status(200).json({ success: true, message: `Complaint status updated to "${status}".`, complaint });
+
+    } catch (err) {
+        console.error("Error updating complaint status:", err);
+        res.status(500).json({ success: false, message: "Server Error", error: err.message });
+    }
+};
+
