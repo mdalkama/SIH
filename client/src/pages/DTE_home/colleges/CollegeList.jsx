@@ -8,7 +8,6 @@ const CollegeList = () => {
   const [colleges, setColleges] = useState([])
   const [filteredColleges, setFilteredColleges] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedType, setSelectedType] = useState('all')
   const [selectedDistrict, setSelectedDistrict] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [collegesPerPage] = useState(20)
@@ -18,8 +17,6 @@ const CollegeList = () => {
     {
       id: 1,
       name: "Government Polytechnic College, Ajmer",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpcajmer@rajasthan.gov.in",
       contact: "0145-2627501",
       district: "Ajmer",
@@ -30,8 +27,6 @@ const CollegeList = () => {
     {
       id: 2,
       name: "Government Polytechnic College, Alwar",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpcalwar@rajasthan.gov.in",
       contact: "0144-2334567",
       district: "Alwar",
@@ -42,8 +37,6 @@ const CollegeList = () => {
     {
       id: 3,
       name: "Government Polytechnic College, BadiSira, Banswara",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpcbanswara@rajasthan.gov.in",
       contact: "02962-234567",
       district: "Banswara",
@@ -54,8 +47,6 @@ const CollegeList = () => {
     {
       id: 4,
       name: "Government Polytechnic College, Banswara",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.banswara@rajasthan.gov.in",
       contact: "02962-245678",
       district: "Banswara",
@@ -66,8 +57,6 @@ const CollegeList = () => {
     {
       id: 5,
       name: "Government Polytechnic College, Baran",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.baran@rajasthan.gov.in",
       contact: "07453-234567",
       district: "Baran",
@@ -78,8 +67,6 @@ const CollegeList = () => {
     {
       id: 6,
       name: "Government Polytechnic College, Barmer",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpcbarmer@rajasthan.gov.in",
       contact: "02982-234567",
       district: "Barmer",
@@ -90,8 +77,6 @@ const CollegeList = () => {
     {
       id: 7,
       name: "Government Polytechnic College, Bhikarai",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpcbhikarai@rajasthan.gov.in",
       contact: "01437-234567",
       district: "Bhikarai",
@@ -102,8 +87,6 @@ const CollegeList = () => {
     {
       id: 8,
       name: "Shri Gohil Verma Government Polytechnic College, Bharatpur",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.bharatpur@rajasthan.gov.in",
       contact: "05644-234567",
       district: "Bharatpur",
@@ -114,8 +97,6 @@ const CollegeList = () => {
     {
       id: 9,
       name: "Government Polytechnic College Bhilwara",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpcbhilwara@rajasthan.gov.in",
       contact: "01482-234567",
       district: "Bhilwara",
@@ -126,8 +107,6 @@ const CollegeList = () => {
     {
       id: 10,
       name: "Government Polytechnic College, Bundi",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpcbundi@rajasthan.gov.in",
       contact: "0747-2434567",
       district: "Bundi",
@@ -138,8 +117,6 @@ const CollegeList = () => {
     {
       id: 11,
       name: "Government Polytechnic College, Chittorgarh",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.chittorgarh@rajasthan.gov.in",
       contact: "01472-234567",
       district: "Chittorgarh",
@@ -150,8 +127,6 @@ const CollegeList = () => {
     {
       id: 12,
       name: "Government Polytechnic College, Churu",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.churu@rajasthan.gov.in",
       contact: "01562-234567",
       district: "Churu",
@@ -162,8 +137,6 @@ const CollegeList = () => {
     {
       id: 13,
       name: "Rajesh Pilot Government Polytechnic College, Dausa",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.dausa@rajasthan.gov.in",
       contact: "01427-234567",
       district: "Dausa",
@@ -174,8 +147,6 @@ const CollegeList = () => {
     {
       id: 14,
       name: "Government Polytechnic College, Dholpur",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpcdholpur@rajasthan.gov.in",
       contact: "05642-234567",
       district: "Dholpur",
@@ -186,8 +157,6 @@ const CollegeList = () => {
     {
       id: 15,
       name: "Government Polytechnic College, Dungarpur",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.dungarpur@rajasthan.gov.in",
       contact: "02964-234567",
       district: "Dungarpur",
@@ -198,8 +167,6 @@ const CollegeList = () => {
     {
       id: 16,
       name: "Government Polytechnic College, Hanumangarh",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpchanumangarh@rajasthan.gov.in",
       contact: "01552-234567",
       district: "Hanumangarh",
@@ -210,8 +177,6 @@ const CollegeList = () => {
     {
       id: 17,
       name: "Government Ram Chandra Khaitan Polytechnic College, Jaipur",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpcjaipur@rajasthan.gov.in",
       contact: "0141-2234567",
       district: "Jaipur",
@@ -222,8 +187,6 @@ const CollegeList = () => {
     {
       id: 18,
       name: "Government Polytechnic College, Jalore (Camp Pali)",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.jalore@rajasthan.gov.in",
       contact: "02973-234567",
       district: "Jalore",
@@ -234,8 +197,6 @@ const CollegeList = () => {
     {
       id: 19,
       name: "Government Polytechnic College, Jalore",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.jalore.gov@rajasthan.gov.in",
       contact: "02973-245678",
       district: "Jalore",
@@ -246,8 +207,6 @@ const CollegeList = () => {
     {
       id: 20,
       name: "Government Polytechnic College, Jhalawar",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc_jhalawar@rajasthan.gov.in",
       contact: "07432-234567",
       district: "Jhalawar",
@@ -258,8 +217,6 @@ const CollegeList = () => {
     {
       id: 21,
       name: "Government Polytechnic College, Jhunjhunu",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.jhunjhunu@rajasthan.gov.in",
       contact: "01592-234567",
       district: "Jhunjhunu",
@@ -270,8 +227,6 @@ const CollegeList = () => {
     {
       id: 22,
       name: "Government Polytechnic College, Jodhpur (Camp Alwar)",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpcjodhpur@rajasthan.gov.in",
       contact: "0291-2434567",
       district: "Jodhpur",
@@ -282,8 +237,6 @@ const CollegeList = () => {
     {
       id: 23,
       name: "Government Polytechnic College, Kota",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpckota@rajasthan.gov.in",
       contact: "0744-2434567",
       district: "Kota",
@@ -294,8 +247,6 @@ const CollegeList = () => {
     {
       id: 24,
       name: "Government Polytechnic College, Kotawara",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.kotawara@rajasthan.gov.in",
       contact: "01463-234567",
       district: "Kotawara",
@@ -306,8 +257,6 @@ const CollegeList = () => {
     {
       id: 25,
       name: "Government Polytechnic College, Mandore",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpcmandore@rajasthan.gov.in",
       contact: "0291-2545678",
       district: "Jodhpur",
@@ -318,8 +267,6 @@ const CollegeList = () => {
     {
       id: 26,
       name: "Government Polytechnic College, Nagaur",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc_nagaur@rajasthan.gov.in",
       contact: "01582-234567",
       district: "Nagaur",
@@ -330,8 +277,6 @@ const CollegeList = () => {
     {
       id: 27,
       name: "Government Polytechnic College, Neemrana (Alwar)",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.neemrana.gov@rajasthan.gov.in",
       contact: "01494-234567",
       district: "Alwar",
@@ -342,8 +287,6 @@ const CollegeList = () => {
     {
       id: 28,
       name: "Government Polytechnic College, Pali",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.pali@rajasthan.gov.in",
       contact: "02932-234567",
       district: "Pali",
@@ -354,8 +297,6 @@ const CollegeList = () => {
     {
       id: 29,
       name: "Government Polytechnic College, Pratapgarh",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpcpratapgarh@rajasthan.gov.in",
       contact: "01478-234567",
       district: "Pratapgarh",
@@ -366,8 +307,6 @@ const CollegeList = () => {
     {
       id: 30,
       name: "Government Polytechnic College, Rajsamand",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpcrajsmnd@rajasthan.gov.in",
       contact: "02952-234567",
       district: "Rajsamand",
@@ -378,8 +317,6 @@ const CollegeList = () => {
     {
       id: 31,
       name: "Government Polytechnic College, Sawai Madhopur",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.sawaimadhopur@rajasthan.gov.in",
       contact: "07462-234567",
       district: "Sawai Madhopur",
@@ -390,8 +327,6 @@ const CollegeList = () => {
     {
       id: 32,
       name: "Government Polytechnic, Sikar",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.sikar@rajasthan.gov.in",
       contact: "01572-234567",
       district: "Sikar",
@@ -402,8 +337,6 @@ const CollegeList = () => {
     {
       id: 33,
       name: "SGMR Government Polytechnic College, Sirohi",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.sirohi@rajasthan.gov.in",
       contact: "02972-234567",
       district: "Sirohi",
@@ -414,8 +347,6 @@ const CollegeList = () => {
     {
       id: 34,
       name: "GBPR Government Polytechnic College, Sriganganagar",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.sriganganagar@rajasthan.gov.in",
       contact: "0154-2234567",
       district: "Sriganganagar",
@@ -426,8 +357,6 @@ const CollegeList = () => {
     {
       id: 35,
       name: "Government Polytechnic College, Tonk",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.tonk@rajasthan.gov.in",
       contact: "01432-234567",
       district: "Tonk",
@@ -438,8 +367,6 @@ const CollegeList = () => {
     {
       id: 36,
       name: "Government Polytechnic College, Udaipur",
-      type: "Government",
-      category: "Polytechnic",
       email: "gpc.udaipur@rajasthan.gov.in",
       contact: "0294-2434567",
       district: "Udaipur",
@@ -450,8 +377,6 @@ const CollegeList = () => {
     {
       id: 37,
       name: "Government Women Polytechnic College, Ajmer",
-      type: "Government",
-      category: "Women Polytechnic",
       email: "gwwpc.ajmer@rajasthan.gov.in",
       contact: "0145-2345678",
       district: "Ajmer",
@@ -462,8 +387,6 @@ const CollegeList = () => {
     {
       id: 38,
       name: "Government Women Polytechnic College, Bikaner",
-      type: "Government",
-      category: "Women Polytechnic",
       email: "gwwpc.bikaner@rajasthan.gov.in",
       contact: "0151-2345678",
       district: "Bikaner",
@@ -474,8 +397,6 @@ const CollegeList = () => {
     {
       id: 39,
       name: "Government Women Polytechnic College, Jhalawar",
-      type: "Government",
-      category: "Women Polytechnic",
       email: "gwwpc.jhalawar@rajasthan.gov.in",
       contact: "07432-345678",
       district: "Jhalawar",
@@ -486,8 +407,6 @@ const CollegeList = () => {
     {
       id: 40,
       name: "Government Women Polytechnic College, Jaipur",
-      type: "Government",
-      category: "Women Polytechnic",
       email: "gwwpc.jaipur@rajasthan.gov.in",
       contact: "0141-2345678",
       district: "Jaipur",
@@ -498,8 +417,6 @@ const CollegeList = () => {
     {
       id: 41,
       name: "Government Residential Women Polytechnic College, Jodhpur",
-      type: "Government",
-      category: "Women Polytechnic",
       email: "prinicpal.gwwpc.jdh@rajasthan.gov.in",
       contact: "0291-2345678",
       district: "Jodhpur",
@@ -510,8 +427,6 @@ const CollegeList = () => {
     {
       id: 42,
       name: "Government Women Polytechnic College, Kota",
-      type: "Government",
-      category: "Women Polytechnic",
       email: "gwwpc.kota@rajasthan.gov.in",
       contact: "0744-2345678",
       district: "Kota",
@@ -522,8 +437,6 @@ const CollegeList = () => {
     {
       id: 43,
       name: "Government Women Polytechnic College, Udaipur",
-      type: "Government",
-      category: "Women Polytechnic",
       email: "gwwpc.udaipur@rajasthan.gov.in",
       contact: "0294-2345678",
       district: "Udaipur",
@@ -534,8 +447,6 @@ const CollegeList = () => {
     {
       id: 44,
       name: "Government Women Polytechnic College, Lalsot",
-      type: "Government",
-      category: "Women Polytechnic",
       email: "gwwpc.lalsot@rajasthan.gov.in",
       contact: "01425-234567",
       district: "Dausa",
@@ -546,8 +457,6 @@ const CollegeList = () => {
     {
       id: 45,
       name: "TTC RGDC, Jodhpur",
-      type: "Government",
-      category: "Training Center",
       email: "ttc.jodhpur@rajasthan.gov.in",
       contact: "0291-2434567",
       district: "Jodhpur",
@@ -558,7 +467,6 @@ const CollegeList = () => {
   ]
 
   const districts = [...new Set(collegeData.map(college => college.district))].sort()
-  const categories = [...new Set(collegeData.map(college => college.category))].sort()
 
   useEffect(() => {
     setColleges(collegeData)
@@ -569,15 +477,14 @@ const CollegeList = () => {
     let filtered = colleges.filter(college => {
       const matchesSearch = college.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            college.district.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesType = selectedType === 'all' || college.type === selectedType
       const matchesDistrict = selectedDistrict === 'all' || college.district === selectedDistrict
       
-      return matchesSearch && matchesType && matchesDistrict
+      return matchesSearch && matchesDistrict
     })
     
     setFilteredColleges(filtered)
     setCurrentPage(1)
-  }, [searchTerm, selectedType, selectedDistrict, colleges])
+  }, [searchTerm, selectedDistrict, colleges])
 
   // Pagination
   const indexOfLastCollege = currentPage * collegesPerPage
@@ -635,30 +542,29 @@ const CollegeList = () => {
                 onFocus={(e) => e.target.select()}
               />
             </div>
-            <div className="flex gap-2">
+            
+            <div className="relative w-full md:max-w-xs">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Filter className="h-5 w-5 text-gray-400" />
+              </div>
               <select
-                className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white/90 dark:bg-gray-800/95 text-gray-900 dark:text-white px-4 py-3 
-                          focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/50 focus:outline-none focus:shadow-sm
-                          hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200"
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-              >
-                <option value="all">All Types</option>
-                <option value="Government">Government</option>
-                <option value="Private">Private</option>
-              </select>
-              <select
-                className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white/90 dark:bg-gray-800/95 text-gray-900 dark:text-white px-4 py-3 
-                          focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/50 focus:outline-none focus:shadow-sm
-                          hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200"
+                className="block w-full pl-10 pr-8 py-3 bg-white/90 dark:bg-gray-800/95 text-gray-900 dark:text-white rounded-lg 
+                           transition-all duration-200 ease-in-out border border-gray-200 dark:border-gray-700
+                           focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/50 focus:outline-none focus:shadow-sm
+                           hover:border-gray-300 dark:hover:border-gray-600 appearance-none"
                 value={selectedDistrict}
                 onChange={(e) => setSelectedDistrict(e.target.value)}
               >
                 <option value="all">All Districts</option>
-                {Array.from(new Set(collegeData.map(college => college.district))).map(district => (
+                {districts.map(district => (
                   <option key={district} value={district}>{district}</option>
                 ))}
               </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
           </div>
         </div>
@@ -673,7 +579,7 @@ const CollegeList = () => {
                     College Name
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/6">
-                    Type & Category
+                    Established
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/5">
                     Location
@@ -700,8 +606,8 @@ const CollegeList = () => {
                       <div className="text-xs text-gray-500 dark:text-gray-400">Est. {college.established}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 dark:text-white whitespace-normal">{college.type}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{college.category}</div>
+                      <div className="text-sm text-gray-900 dark:text-white whitespace-normal">{college.established}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Government</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-start">

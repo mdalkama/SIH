@@ -282,6 +282,19 @@ const Mylogin = () => {
                 </div>
             </div>
 
+            {/* Back Button Section */}
+            <div className="bg-gray-50 py-3 px-6">
+                <div className="max-w-7xl mx-auto">
+                    <button
+                        onClick={() => navigate('/')}
+                        className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-white"
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                        <span className="font-medium">Back to Home</span>
+                    </button>
+                </div>
+            </div>
+
             {/* Main Content Area with Background */}
             <div className="flex-1 flex relative">
                 {/* Full Background Image */}
@@ -293,27 +306,13 @@ const Mylogin = () => {
                     }}
                 ></div>
                 
-                {/* Left Side - Welcome Text */}
-                <div className="hidden lg:flex lg:w-1/2 relative z-10">
-                    <div className="flex items-center justify-center p-12">
-                        <div className="text-center">
-                            <h1 className="text-6xl font-bold text-gray-800 mb-4">
-                                Welcome to DTE Rajasthan
-                            </h1>
-                            <p className="text-lg text-gray-600">
-                                Department of Technical Education, Government of Rajasthan
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Side - Login Form */}
-                <div className="w-full lg:w-1/2 flex items-center justify-center py-12 px-4 relative z-10">
+                {/* Centered Login Form */}
+                <div className="w-full flex items-center justify-center py-12 px-4 relative z-10">
                     <div className="w-full max-w-md">
                         <div className="bg-white border border-gray-300 shadow-2xl rounded-lg">
                             {/* Login Header */}
                             <div className="bg-[#0D2841] text-white p-6 text-center">
-                                <h2 className="text-xl font-bold mb-1">Government of Rajasthan</h2>
+                                <h2 className="text-xl font-bold mb-1">Welcome to DTE Rajasthan</h2>
                                 <p className="text-blue-100 text-sm">Access your academic account</p>
                             </div>
 

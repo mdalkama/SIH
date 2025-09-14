@@ -161,7 +161,7 @@ const Footer = () => {
 
             <div className="mt-4 text-center">
               <p className="text-xs text-gray-400 dark:text-gray-500">
-                Developed by <span className="font-medium text-gray-600 dark:text-gray-300">Team X ERROR</span>
+                Developed by <span className="font-medium text-gray-600 dark:text-gray-300">Team ERROR</span>
                 <span className="mx-2">•</span>
                 Last Updated: {new Date().toLocaleDateString('en-IN')}
               </p>
