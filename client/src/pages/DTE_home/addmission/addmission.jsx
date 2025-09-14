@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../header_dte';
 import Footer from '../footer';
 
 const Admission = ({ admissionType }) => {
+  const navigate = useNavigate();
+
+  // Redirect to new OTP verification flow
+  useEffect(() => {
+    navigate('/admission/otp-verification?role=student');
+  }, [navigate]);
+
   // Determine content based on admission type
   const getTitle = () => {
     switch (admissionType) {
