@@ -46,6 +46,16 @@ export const raiseComplaint = async (req, res) => {
     }
 };
 
+export const getMyComplaints = async (req, res) => {
+    try {
+        const studentId = req.user.id;
+        const complaints = await Complaint.find({ filedBy: studentId }).sort({ createdAt: -1 });
+        res.status(200).json({ success: true, complaints });
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Server Error", error: err.message });
+    }
+};
+
 // @desc    A logged-in College Admin gets all complaints for their college
 // @route   GET /api/v1/complaints/college
 // @access  CollegeAdmin
