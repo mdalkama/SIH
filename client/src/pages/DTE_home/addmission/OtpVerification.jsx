@@ -180,10 +180,19 @@ const OtpVerification = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col relative">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(https://hte.rajasthan.gov.in/css_index/images/s1old.jpg)',
+          opacity: '0.3'
+        }}
+      ></div>
+      
       <Header />
       
-      <main className="flex-1 py-8">
+      <main className="flex-1 py-8 relative z-10">
         <div className="container mx-auto px-4 max-w-2xl">
           {/* Header */}
           <div className="text-center mb-8">

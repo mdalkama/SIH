@@ -39,17 +39,58 @@ const Footer = () => {
                 Quick Links
               </h3>
               <ul className="space-y-2.5">
-                {['About DTE', 'Admissions', 'Colleges', 'Results', 'Tenders'].map((link) => (
-                  <li key={link}>
-                    <a 
-                      href="#" 
-                      className="flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 mr-2"></span>
-                      {link}
-                    </a>
-                  </li>
-                ))}
+                <li>
+                  <a 
+                    href="#about-dte-section" 
+                    className="flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById('about-dte-section')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 mr-2"></span>
+                    About DTE
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="/admission/diploma-engineering-first-year" 
+                    className="flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 mr-2"></span>
+                    Admissions
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="/colleges" 
+                    className="flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 mr-2"></span>
+                    Colleges
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="https://dteapp.hte.rajasthan.gov.in/eng_sem_result/appMay24/pages/search_result_rwh_end_term" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 mr-2"></span>
+                    Results
+                    <ExternalLink className="w-3 h-3 ml-1 text-gray-400" />
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="/tenders-auctions" 
+                    className="flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition-colors duration-200"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 mr-2"></span>
+                    Tenders
+                  </a>
+                </li>
               </ul>
             </div>
 
@@ -93,7 +134,7 @@ const Footer = () => {
                 </div>
               </div>
               <div className="mt-3 text-sm text-gray-600 dark:text-gray-300">
-                W-6, Gaurav Path, Residency Road, Jodhpur, Rajasthan - 342032
+                Address: W-6, Gaurav Path, Residency Road, Jodhpur, Rajasthan - 342032
               </div>
             </div>
           </div>

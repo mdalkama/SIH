@@ -76,12 +76,21 @@ const Admission = ({ admissionType }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col theme-bg">
+    <div className="min-h-screen flex flex-col relative">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(https://hte.rajasthan.gov.in/css_index/images/s1old.jpg)',
+          opacity: '0.3'
+        }}
+      ></div>
+      
       {/* Header - Only the top part without carousel but with full navbar */}
       <Header />
       
       {/* Main Content */}
-      <main className="flex-1 theme-bg py-8">
+      <main className="flex-1 py-8 relative z-10 theme-bg" style={{ backgroundColor: 'transparent' }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold theme-text mb-2">
