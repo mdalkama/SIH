@@ -118,7 +118,7 @@ const CollegeAdminManageCollege = () => {
                 capacity: editedData.capacity // Include capacity if it becomes editable
             };
 
-            const res = await fetch('https://sih-4ptm.onrender.com/api/v1/manage-college/my-details', {
+            const res = await fetch('https://sih-4ptm.onrender.com/api/v1/manage-college/update/my-details', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',

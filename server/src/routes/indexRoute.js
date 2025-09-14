@@ -23,6 +23,7 @@ import studentLibraryRoute from "./studentLibraryRoutes.js";
 import studentHostelRoutes from "./studentHostelRoutes.js";
 import collegeCourseRoute from "./collegeCourseRoute.js";
 import admitStudentCollegeRoute from "./admitStudentCollegeRoute.js";
+import complaintRoutes from "./complaintRoutes.js";
 
 
 
@@ -35,6 +36,7 @@ router.get("/", (req, res) => { res.status(200).send("API is running"); });
 router.get("/me", role(['student', ...staffRoles]), getRole);
 router.use('/staff', staffRoute)   
 router.use("/student", studentRoutes);
+router.use('/complaints', complaintRoutes);
 router.use("/add-college-staff", collegeManageStaffRoute);
 router.use("/hostel", role(['CollegeHostelWarden']), hostelRoute)
 router.use("/student-hostel",role(['student']), studentHostelRoutes);
