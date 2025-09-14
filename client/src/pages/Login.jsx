@@ -150,8 +150,17 @@ const Mylogin = () => {
     // forget password
     if (showForgotPassword) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="flex items-center justify-center py-12 px-4">
+            <div className="min-h-screen flex items-center justify-center relative">
+                {/* Background Image */}
+                <div 
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                    style={{
+                        backgroundImage: 'url(https://hte.rajasthan.gov.in/css_index/images/s1old.jpg)',
+                        opacity: '0.3'
+                    }}
+                ></div>
+                
+                <div className="flex items-center justify-center py-12 px-4 relative z-10">
                     <div className="w-full max-w-md">
                         <div className="bg-white border border-gray-300 shadow-lg p-8 relative">
                             <div className="text-center mb-8">
