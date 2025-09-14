@@ -825,31 +825,62 @@ export const findStudentForAllocation = async (req, res) => {
 export const vacateBed = async (req, res) => {
   try {
     const { hostelId, floorId, roomId, bedId } = req.params;
+    
+    // Using .id() for more direct subdocument access
     const hostel = await Hostel.findById(hostelId);
     if (!hostel) return res.status(404).json({ error: "Hostel not found" });
 
-    const floor = hostel.floors.find((f) => f._id.equals(floorId));
+    const floor = hostel.floors.id(floorId);
     if (!floor) return res.status(404).json({ error: "Floor not found" });
-    const room = floor.rooms.find((r) => r._id.equals(roomId));
+
+    const room = floor.rooms.id(roomId);
     if (!room) return res.status(404).json({ error: "Room not found" });
-    const bed = room.beds.find((b) => b._id.equals(bedId));
+
+    const bed = room.beds.id(bedId);
     if (!bed) return res.status(404).json({ error: "Bed not found" });
 
-    if (!bed.isOccupied)
-      return res.status(400).json({ error: "Bed is already vacant" });
+    if (!bed.isOccupied) {
+      return res.status(400).json({ error: "This bed is already vacant." });
+    }
 
     const studentId = bed.occupant;
+
+    // 1. Vacate the bed in the Hostel document
     bed.isOccupied = false;
     bed.occupant = null;
     await hostel.save();
 
+    // 2. Find the student's hostel record
     const studentHostel = await StudentHostel.findOne({ occupant: studentId });
+
     if (studentHostel) {
+      // 3. Clear the student's current allocation
       studentHostel.currentHostel = null;
+
+      // --- NEW LOGIC: Cancel all pending hostel fees ---
+      let cancelledFeeCount = 0;
+      studentHostel.fees.forEach(fee => {
+        if (fee.status === "Unpaid" || fee.status === "Partial") {
+          fee.status = "Cancelled";
+          cancelledFeeCount++;
+        }
+      });
+
+      // 4. Save the updated student hostel record
       await studentHostel.save();
+
+      res.json({ 
+        success: true, 
+        message: `Bed vacated successfully. ${cancelledFeeCount} pending fee(s) were cancelled.` 
+      });
+
+    } else {
+        // This case handles if the studentHostel document somehow doesn't exist
+        res.json({ success: true, message: "Bed vacated successfully, but no corresponding student hostel record was found to update." });
     }
-    res.json({ success: true, message: "Bed vacated successfully" });
+
   } catch (err) {
+    console.error("Error in vacateBed:", err);
     res.status(500).json({ error: err.message });
   }
 };
