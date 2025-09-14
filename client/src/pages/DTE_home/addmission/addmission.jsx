@@ -6,10 +6,10 @@ import Footer from '../footer';
 const Admission = ({ admissionType }) => {
   const navigate = useNavigate();
 
-  // Redirect to new OTP verification flow
+  // Redirect to new OTP verification flow with course ID
   useEffect(() => {
-    navigate('/admission/otp-verification?role=student');
-  }, [navigate]);
+    navigate(`/admission/otp-verification?role=student&courseId=${admissionType}`);
+  }, [navigate, admissionType]);
 
   // Determine content based on admission type
   const getTitle = () => {

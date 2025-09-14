@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, AlertTriangle, LogOut } from 'lucide-react';
+import { Clock, AlertTriangle } from 'lucide-react';
 
-const SessionTimer = ({ 
+const HeaderSessionTimer = ({ 
   initialTime = 1800, // 30 minutes in seconds
   onSessionExpire, 
   isActive = true,
@@ -48,36 +48,27 @@ const SessionTimer = ({
     return 'text-green-600';
   };
 
-  const getBackgroundColor = () => {
-    if (timeLeft <= 300) return 'bg-red-50 border-red-200'; // 5 minutes
-    if (timeLeft <= 600) return 'bg-orange-50 border-orange-200'; // 10 minutes
-    return 'bg-green-50 border-green-200';
-  };
-
   if (!isActive) return null;
 
   return (
-    <div className={`fixed top-4 right-4 z-50 ${getBackgroundColor()} border-2 rounded-lg p-3 shadow-lg`}>
-      <div className="flex items-center space-x-2">
-        <Clock size={20} className={getTimerColor()} />
-        <div className="text-sm">
-          <div className="font-medium text-gray-700">Session Time</div>
-          <div className={`text-lg font-bold ${getTimerColor()}`}>
-            {formatTime(timeLeft)}
-          </div>
-        </div>
+    <div className="text-center">
+      <div className="flex items-center justify-center space-x-1 mb-1">
+        <Clock size={14} className={getTimerColor()} />
+        <span className="text-xs font-medium text-gray-600">Session Time</span>
         {showWarning && (
-          <AlertTriangle size={20} className="text-red-500 animate-pulse" />
+          <AlertTriangle size={12} className="text-red-500 animate-pulse" />
         )}
       </div>
-      
+      <div className={`text-lg font-bold ${getTimerColor()}`}>
+        {formatTime(timeLeft)}
+      </div>
       {showWarning && (
-        <div className="mt-2 text-xs text-red-600 font-medium">
-          ⚠️ Session expiring soon!
+        <div className="text-xs text-red-600 font-medium mt-1">
+          ⚠️ Expiring soon!
         </div>
       )}
     </div>
   );
 };
 
-export default SessionTimer;
+export default HeaderSessionTimer;
