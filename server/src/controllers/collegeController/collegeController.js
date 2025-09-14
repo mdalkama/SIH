@@ -138,10 +138,10 @@ export const deleteCollege = async (req, res) => {
 
 export const getMyCollege = async (req, res) => {
     // Assumes middleware has added user to req, and user has a 'college' field with the ID
-    const collegeId = req.user.college;
+    const collegeId = req.user.collegeCode;
     
     try {
-        const college = await College.findById(collegeId).populate('courses', 'name code');
+        const college = await College.findOne({code: collegeId}).populate('courses', 'name code');
         if (!college) {
             return res.status(404).json({ message: "Your assigned college could not be found." });
         }
@@ -157,14 +157,14 @@ export const getMyCollege = async (req, res) => {
  * @access College Admin
  */
 export const updateMyCollege = async (req, res) => {
-    const collegeId = req.user.college;
+    const collegeId = req.user.collegeCode;
     const { name, location, contact, website, capacity } = req.body;
 
     // College Admins can only update certain fields
     const allowedUpdates = { name, location, contact, website, capacity };
 
     try {
-        const updatedCollege = await College.findByIdAndUpdate(collegeId, allowedUpdates, { new: true });
+        const updatedCollege = await College.findByOneAndUpdate({code: collegeId}, allowedUpdates, { new: true });
         if (!updatedCollege) {
             return res.status(404).json({ message: "Your assigned college could not be found." });
         }

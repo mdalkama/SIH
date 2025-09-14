@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Building, MapPin, Users, Bed, ArrowRight, ArrowLeft, UserCheck, UserX, ArrowUpDown, Home, AlertCircle, CheckCircle, Pencil, Trash2, X, AlertTriangle } from 'lucide-react';
+import { Plus, Building, MapPin, Users, Bed, ArrowRight, ArrowLeft, UserCheck, UserX, ArrowUpDown, Home, AlertCircle, CheckCircle, Pencil, Trash2, X, AlertTriangle, Loader2 } from 'lucide-react';
 import ShiftStudentForm from './components/ShiftStudentForm';
 import AddHostelForm from './components/AddHostelForm';
 import AddFloorForm from './components/AddFloorForm';
@@ -8,7 +8,8 @@ import AddBedForm from './components/AddBedForm';
 import AllocateBedForm from './components/AllocateBedForm';
 import VacateBedForm from './components/VacateBedForm';
 
-// --- TOAST NOTIFICATION COMPONENT ---
+// --- HELPER COMPONENTS ---
+
 const ToastNotification = ({ message, type, onClose }) => {
     useEffect(() => {
         const timer = setTimeout(() => { onClose(); }, 4000);
@@ -27,7 +28,6 @@ const ToastNotification = ({ message, type, onClose }) => {
     );
 };
 
-// --- MODAL COMPONENTS ---
 const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, itemType, itemName, isDeleting }) => {
     if (!isOpen) return null;
     return (
@@ -54,7 +54,6 @@ const EditModal = ({ isOpen, onClose, onSuccess, item, showToast }) => {
     return (<div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"><div className="bg-white rounded-lg shadow-xl w-full max-w-md"><div className="flex justify-between items-center p-4 border-b"><h3 className="text-lg font-medium text-gray-900">Edit {type}</h3><button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button></div><form onSubmit={handleSubmit}><div className="p-6">{renderFormFields()}</div><div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3"><button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50">Cancel</button><button type="submit" disabled={isSaving} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 disabled:opacity-50">{isSaving ? 'Saving...' : 'Save Changes'}</button></div></form></div></div>);
 };
 
-// UPDATED: Empty State Component with Action Button
 const EmptyState = ({ icon: Icon, title, message, actionText, onActionClick }) => (
     <div className="text-center py-16">
         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -74,36 +73,113 @@ const EmptyState = ({ icon: Icon, title, message, actionText, onActionClick }) =
     </div>
 );
 
-const HostelManagementSystem = (props) => {
+// --- NEW SKELETON COMPONENTS ---
+const HostelCardSkeleton = () => (
+    <div className="bg-white border border-gray-200 rounded-xl p-6 animate-pulse">
+        <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="h-16 bg-gray-200 rounded-lg"></div>
+            <div className="h-16 bg-gray-200 rounded-lg"></div>
+        </div>
+        <div className="space-y-3">
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded"></div>
+        </div>
+    </div>
+);
+
+const FloorCardSkeleton = () => (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-pulse">
+        <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+                <div className="w-12 h-12 bg-gray-200 rounded-lg mr-3"></div>
+                <div>
+                    <div className="h-6 bg-gray-200 rounded w-24 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-16"></div>
+                </div>
+            </div>
+            <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+        </div>
+        <div className="grid grid-cols-2 gap-4 mt-6">
+            <div className="h-12 bg-gray-200 rounded-lg"></div>
+            <div className="h-12 bg-gray-200 rounded-lg"></div>
+            <div className="h-12 bg-gray-200 rounded-lg"></div>
+            <div className="h-12 bg-gray-200 rounded-lg"></div>
+        </div>
+    </div>
+);
+
+const RoomCardSkeleton = () => (
+     <div className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
+        <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+                <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                <div>
+                    <div className="h-5 bg-gray-200 rounded w-28 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-20"></div>
+                </div>
+            </div>
+             <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+        </div>
+        <div className="grid grid-cols-3 gap-3 mt-6">
+            <div className="h-16 bg-gray-200 rounded-lg"></div>
+            <div className="h-16 bg-gray-200 rounded-lg"></div>
+            <div className="h-16 bg-gray-200 rounded-lg"></div>
+        </div>
+    </div>
+);
+
+const HostelManagementSystem = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [hostels, setHostels] = useState([]);
     const [selectedHostel, setSelectedHostel] = useState(null);
     const [selectedFloor, setSelectedFloor] = useState(null);
     const [selectedRoom, setSelectedRoom] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true); // Start loading on initial mount
     const BASE_URL = 'https://sih-4ptm.onrender.com/api/v1';
-    const fetchHostels = async () => { try { setLoading(true); const res = await fetch(`${BASE_URL}/hostel`, { method: "GET", credentials: "include" }); const data = await res.json(); if (data.success) { setHostels(data.data); } else { console.error("Failed to fetch hostels:", data.error); } } catch (err) { console.error("Error fetching hostels:", err); } finally { setLoading(false); } };
-    useEffect(() => { fetchHostels(); }, []);
-    const tabs = [{ id: 'dashboard', label: 'Dashboard', icon: Building }, { id: 'add-hostel', label: 'Add Hostel', icon: Plus }, { id: 'add-floor', label: 'Add Floor', icon: Plus }, { id: 'add-room', label: 'Add Room', icon: Plus }, { id: 'add-bed', label: 'Add Bed', icon: Bed }, { id: 'allocate', label: 'Allocate', icon: UserCheck }, { id: 'vacate', label: 'Vacate', icon: UserX }, { id: 'shift', label: 'Shift Student', icon: ArrowUpDown }];
+
+    const fetchHostels = async () => {
+        try {
+            setLoading(true);
+            const res = await fetch(`${BASE_URL}/hostel`, { method: "GET", credentials: "include" });
+            const data = await res.json();
+            if (data.success) {
+                setHostels(data.data);
+            } else {
+                console.error("Failed to fetch hostels:", data.error);
+            }
+        } catch (err) {
+            console.error("Error fetching hostels:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchHostels();
+    }, []);
+
+    const tabs = [ { id: 'dashboard', label: 'Dashboard', icon: Building }, { id: 'add-hostel', label: 'Add Hostel', icon: Plus }, { id: 'add-floor', label: 'Add Floor', icon: Plus }, { id: 'add-room', label: 'Add Room', icon: Plus }, { id: 'add-bed', label: 'Add Bed', icon: Bed }, { id: 'allocate', label: 'Allocate', icon: UserCheck }, { id: 'vacate', label: 'Vacate', icon: UserX }, { id: 'shift', label: 'Shift Student', icon: ArrowUpDown }];
     
     const renderTabContent = () => {
+        // Main loading state for the whole page
+        if (loading) {
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                    <HostelCardSkeleton />
+                    <HostelCardSkeleton />
+                    <HostelCardSkeleton />
+                </div>
+            );
+        }
+        
         switch (activeTab) {
             case 'dashboard':
-                return <HostelDashboard
-                    hostels={hostels}
-                    onSelectHostel={setSelectedHostel}
-                    selectedHostel={selectedHostel}
-                    selectedFloor={selectedFloor}
-                    selectedRoom={selectedRoom}
-                    onSelectFloor={setSelectedFloor}
-                    onSelectRoom={setSelectedRoom}
-                    onBack={() => { if (selectedRoom) setSelectedRoom(null); else if (selectedFloor) setSelectedFloor(null); else setSelectedHostel(null); }}
-                    // UPDATED: Pass setActiveTab to the dashboard
-                    onSwitchTab={setActiveTab}
-                />;
-            // Other cases remain the same
+                return <HostelDashboard hostels={hostels} onSelectHostel={setSelectedHostel} selectedHostel={selectedHostel} selectedFloor={selectedFloor} selectedRoom={selectedRoom} onSelectFloor={setSelectedFloor} onSelectRoom={setSelectedRoom} onBack={() => { if (selectedRoom) setSelectedRoom(null); else if (selectedFloor) setSelectedFloor(null); else setSelectedHostel(null); }} onSwitchTab={setActiveTab} />;
             case 'add-hostel': return <AddHostelForm onSuccess={fetchHostels} />;
-            case 'add-floor': return <AddFloorForm hostels={hostels} />;
+            case 'add-floor': return <AddFloorForm hostels={hostels} onSuccess={fetchHostels} />;
             case 'add-room': return <AddRoomForm hostels={hostels} />;
             case 'add-bed': return <AddBedForm hostels={hostels} />;
             case 'allocate': return <AllocateBedForm hostels={hostels} />;
@@ -113,10 +189,11 @@ const HostelManagementSystem = (props) => {
         }
     };
     
-    return (<div className=""><div className="max-w-7xl mx-auto"><div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6"><div className="flex overflow-x-auto">{tabs.map((tab) => { const Icon = tab.icon; return (<button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center px-4 sm:px-6 py-3 sm:py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}><Icon className="w-4 h-4 mr-2" />{tab.label}</button>); })}</div></div><div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">{loading ? (<div className="flex justify-center items-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>) : (renderTabContent())}</div></div></div>);
+    return (
+        <div className=""><div className="max-w-7xl mx-auto"><div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6"><div className="flex overflow-x-auto">{tabs.map((tab) => { const Icon = tab.icon; return (<button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center px-4 sm:px-6 py-3 sm:py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}><Icon className="w-4 h-4 mr-2" />{tab.label}</button>); })}</div></div><div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">{renderTabContent()}</div></div></div>
+    );
 };
 
-// UPDATED: HostelDashboard now accepts onSwitchTab prop
 const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloor, selectedRoom, onSelectFloor, onSelectRoom, onBack, onSwitchTab }) => {
     const [floors, setFloors] = useState([]);
     const [rooms, setRooms] = useState([]);
@@ -128,6 +205,7 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
     const [toast, setToast] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/hostel';
+
     const fetchFloors = async (hostelId) => { setLoading(true); try { const res = await fetch(`${BASE_URL}/${hostelId}/floors`, { credentials: "include" }); const data = await res.json(); if (data.success) setFloors(data.data); } catch (error) { console.error("Error fetching floors:", error); } finally { setLoading(false); } };
     const fetchRooms = async (hostelId, floorId) => { setLoading(true); try { const res = await fetch(`${BASE_URL}/${hostelId}/floors/${floorId}/rooms`, { credentials: "include" }); const data = await res.json(); if (data.success) setRooms(data.data); } catch (error) { console.error("Error fetching rooms:", error); } finally { setLoading(false); } };
     const fetchBeds = async (hostelId, floorId, roomId) => { setLoading(true); try { const res = await fetch(`${BASE_URL}/${hostelId}/floors/${floorId}/rooms/${roomId}/beds`, { credentials: "include" }); const data = await res.json(); if (data.success) setBeds(data.data); } catch (error) { console.error("Error fetching beds:", error); } finally { setLoading(false); } };
@@ -160,12 +238,11 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
             <DeleteConfirmationModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} onConfirm={handleDeleteConfirm} itemType={selectedItem?.type} itemName={`${selectedItem?.type || ''} ${selectedItem?.data?.floorNumber || selectedItem?.data?.roomNumber || selectedItem?.data?.bedNumber || ''}`} isDeleting={isDeleting} />
 
             {(() => {
-                // Bed View
                 if (selectedHostel && selectedFloor && selectedRoom) {
                     return (
                         <div>
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6"><div className="flex items-center"><button onClick={onBack} className="flex items-center px-4 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200 mr-4 font-medium"><ArrowLeft className="w-4 h-4 mr-1" /> Back</button><h2 className="text-lg sm:text-xl font-semibold text-gray-900">Beds in Room {selectedRoom.roomNumber}</h2></div></div>
-                            {loading ? (<div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div></div>
+                            {loading ? (<div className="flex justify-center py-8"><Loader2 className="animate-spin text-blue-500 w-8 h-8" /></div>
                             ) : beds.length === 0 ? (
                                 <EmptyState icon={Bed} title="No Beds Found" message="This room currently has no beds." actionText="Add New Bed" onActionClick={() => onSwitchTab('add-bed')} />
                             ) : (
@@ -183,14 +260,14 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
                     );
                 }
 
-                // Room View
                 if (selectedHostel && selectedFloor) {
                     const getRoomOccupancyColor = (rate) => rate === 0 ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : rate <= 50 ? 'text-yellow-600 bg-yellow-50 border-yellow-200' : rate < 100 ? 'text-orange-600 bg-orange-50 border-orange-200' : 'text-red-600 bg-red-50 border-red-200';
                     const getStatusIcon = (rate) => rate === 0 ? <CheckCircle className="w-4 h-4" /> : rate < 100 ? <AlertCircle className="w-4 h-4" /> : <Users className="w-4 h-4" />;
                     return (
                         <div>
                             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8 gap-6 lg:gap-4"><div className="flex flex-col sm:flex-row items-start sm:items-center w-full lg:w-auto"><button onClick={onBack} className="flex items-center px-4 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200 mb-3 sm:mb-0 sm:mr-6 font-medium"><ArrowLeft className="w-4 h-4 mr-2" /> Back to Floors</button><div className="text-center sm:text-left"><h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">Floor {selectedFloor?.floorNumber || '1'} Rooms</h1><p className="text-gray-600">{rooms.length} rooms available</p></div></div><div className="bg-white rounded-xl shadow-sm p-3 border border-gray-200 flex items-center justify-around sm:justify-start space-x-2 sm:space-x-4 w-full lg:w-auto"><div className="text-center"><p className="text-lg sm:text-xl font-bold text-blue-600">{rooms.reduce((s, r) => s + r.totalBeds, 0)}</p><p className="text-xs text-gray-500">Total Beds</p></div><div className="text-center"><p className="text-lg sm:text-xl font-bold text-red-500">{rooms.reduce((s, r) => s + r.allocatedBeds, 0)}</p><p className="text-xs text-gray-500">Occupied</p></div><div className="text-center"><p className="text-lg sm:text-xl font-bold text-green-500">{rooms.reduce((s, r) => s + r.vacantBeds, 0)}</p><p className="text-xs text-gray-500">Available</p></div></div></div>
-                            {loading ? (<div className="flex justify-center py-16"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>
+                            {loading ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6"><RoomCardSkeleton /><RoomCardSkeleton /><RoomCardSkeleton /></div>
                             ) : rooms.length === 0 ? (
                                 <EmptyState icon={Home} title="No Rooms Found" message="This floor has no rooms yet. You can add one." actionText="Add New Room" onActionClick={() => onSwitchTab('add-room')} />
                             ) : (
@@ -210,12 +287,13 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
                         </div>
                     );
                 }
-                // Floor View
+                
                 if (selectedHostel) {
                     return (
                         <div>
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4 sm:gap-2"><button onClick={onBack} className="flex items-center px-4 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all sm:mr-6 font-medium"><ArrowLeft className="w-5 h-5 mr-2" /> Back to Hostels</button><div className="text-left sm:text-right"><h1 className="text-xl md:text-2xl font-bold text-gray-900">{selectedHostel.name}</h1><p className="text-gray-600 mt-1">Floor Management</p></div></div>
-                            {loading ? (<div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>
+                            {loading ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"><FloorCardSkeleton /><FloorCardSkeleton /><FloorCardSkeleton /></div>
                             ) : floors.length === 0 ? (
                                 <EmptyState icon={Building} title="No Floors Found" message="This hostel has no floors. Start by adding one." actionText="Add New Floor" onActionClick={() => onSwitchTab('add-floor')} />
                             ) : (
@@ -234,14 +312,14 @@ const HostelDashboard = ({ hostels, onSelectHostel, selectedHostel, selectedFloo
                         </div>
                     );
                 }
-                // Hostel List View (Main Dashboard)
+                
+                // Main Hostel List View
                 const getOccupancyRate = (allocated, total) => total === 0 ? 0 : Math.round((allocated / total) * 100);
                 const formatAddress = (address) => [address.street, address.city, address.state, address.zipCode].filter(Boolean).join(', ');
                 return (
                     <div>
                         <h2 className="text-xl font-semibold text-gray-900 mb-6">All Hostels</h2>
-                        {loading ? (<div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>
-                        ) : hostels.length === 0 ? (
+                        {hostels.length === 0 ? (
                             <EmptyState icon={Building} title="No Hostels Found" message="Get started by adding a new hostel from the tabs above." actionText="Add New Hostel" onActionClick={() => onSwitchTab('add-hostel')} />
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
