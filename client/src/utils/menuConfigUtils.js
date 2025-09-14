@@ -163,6 +163,7 @@ import MyProfile from "../components/Common/MyProfile";
 import CollegeAdminManageCollege from "../components/College/CollegeAdmin/CollegeAdminManageCollege.jsx";
 import CollegeAdminManageComplaints from "../components/College/CollegeAdmin/CollegeAdminManageComplaints.jsx";
 import CollegeAdminManageFeedback from "../components/College/CollegeAdmin/CollegeAdminManageFeedback.jsx";
+import StudentComplaintsAndFeedback from "../components/Student/StudentComplaintsAndFeedback.jsx";
 
 // 🎯 Roles mapping
 const menuConfig = {
@@ -214,6 +215,14 @@ const menuConfig = {
             icon: Wallet,
             path: "/student/fees",
             component: StudentFees,
+            role: "student",
+        },
+        {
+            id: "complaints and feedback",
+            label: "Complaints and Feedback",
+            icon: ClipboardList,
+            path: "/student/complaints-and-feedback",
+            component: StudentComplaintsAndFeedback,
             role: "student",
         },
         {

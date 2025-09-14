@@ -41,6 +41,17 @@ export const submitFeedback = async (req, res) => {
     }
 };
 
+export const getMyFeedback = async (req, res) => {
+    try {
+        const studentId = req.user.id;
+        // Find feedback where the user is the submitter AND it's not anonymous
+        const feedback = await Feedback.find({ submittedBy: studentId, isAnonymous: false }).sort({ createdAt: -1 });
+        res.status(200).json({ success: true, feedback });
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Server Error", error: err.message });
+    }
+};
+
 // @desc    College Admin gets all feedback for their college
 // @route   GET /api/v1/feedback/college
 // @access  CollegeAdmin
