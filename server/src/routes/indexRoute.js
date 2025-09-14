@@ -25,6 +25,7 @@ import collegeCourseRoute from "./collegeCourseRoute.js";
 import admitStudentCollegeRoute from "./admitStudentCollegeRoute.js";
 import complaintRoutes from "./complaintRoutes.js";
 import collegeAdminRoutes from "./collegeAdminRoutes.js";
+import feedbackRoutes from "./feedbackRoutes.js";
 
 
 
@@ -38,6 +39,7 @@ router.get("/me", role(['student', ...staffRoles]), getRole);
 router.use('/staff', staffRoute)   
 router.use("/student", studentRoutes);
 router.use('/complaints', complaintRoutes);
+router.use('/feedback', feedbackRoutes);
 router.use('/college-admin', collegeAdminRoutes);
 router.use("/add-college-staff", collegeManageStaffRoute);
 router.use("/hostel", role(['CollegeHostelWarden']), hostelRoute)

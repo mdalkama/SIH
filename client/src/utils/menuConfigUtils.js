@@ -162,6 +162,7 @@ import CollegeDirectorMeetings from "../components/College/CollegeDirector/Colle
 import MyProfile from "../components/Common/MyProfile";
 import CollegeAdminManageCollege from "../components/College/CollegeAdmin/CollegeAdminManageCollege.jsx";
 import CollegeAdminManageComplaints from "../components/College/CollegeAdmin/CollegeAdminManageComplaints.jsx";
+import CollegeAdminManageFeedback from "../components/College/CollegeAdmin/CollegeAdminManageFeedback.jsx";
 
 // 🎯 Roles mapping
 const menuConfig = {
@@ -587,6 +588,14 @@ const menuConfig = {
             icon: MessageSquare,
             path: "/college-admin/manage-complaints",
             component: CollegeAdminManageComplaints,
+            role: "CollegeAdmin",
+        },
+        {
+            id: "manage-feedback",
+            label: "Manage Feedback",
+            icon: MessageSquare,
+            path: "/college-admin/manage-feedback",
+            component: CollegeAdminManageFeedback,
             role: "CollegeAdmin",
         },
         {
