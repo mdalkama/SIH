@@ -35,10 +35,20 @@ const Modal = ({ isOpen, onClose, title, children }) => {
     );
 };
 
-// HELPER COMPONENT 2: Simple Centered Loading Spinner
-const LoadingSpinner = () => (
-    <div className="col-span-1 md:col-span-2 lg:col-span-3 flex justify-center items-center py-20">
-        <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+// --- NEW SKELETON COMPONENT ---
+const HostelCardSkeleton = () => (
+    <div className="bg-white border border-gray-200 rounded-xl p-6 animate-pulse">
+        <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="h-16 bg-gray-200 rounded-lg"></div>
+            <div className="h-16 bg-gray-200 rounded-lg"></div>
+        </div>
+        <div className="space-y-3 pt-2 border-t border-gray-100">
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded"></div>
+        </div>
     </div>
 );
 
@@ -70,7 +80,7 @@ const AddHostelForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const [showAddForm, setShowAddForm] = useState(false);
-    const [message, setMessage] = useState(''); // Can be an object { type, text }
+    const [message, setMessage] = useState('');
     const [formData, setFormData] = useState({
         name: '',
         address: { street: '', city: 'Patna', state: 'Bihar', zipCode: '' },
@@ -85,8 +95,6 @@ const AddHostelForm = () => {
         setMessage('');
         try {
             const response = await fetch(API_URL, { credentials: 'include' });
-            
-            // YAHAN FIX KIYA GAYA HAI: Server-side errors ko handle karna
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || "Failed to fetch hostels");
@@ -214,7 +222,11 @@ const AddHostelForm = () => {
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {isListLoading ? (
-                        <LoadingSpinner />
+                        <>
+                           <HostelCardSkeleton />
+                           <HostelCardSkeleton />
+                           <HostelCardSkeleton />
+                        </>
                     ) : hostels.length > 0 ? (
                         hostels.map((hostel) => {
                             const occupancyRate = getOccupancyRate(hostel.allocatedBeds, hostel.totalBeds);

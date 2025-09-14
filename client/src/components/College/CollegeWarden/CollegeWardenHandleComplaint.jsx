@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Clock, CheckCircle, AlertTriangle, Loader2, Wrench, MapPin, Calendar, User, MessageSquare, Repeat, Users, Check, X, ChevronDown } from 'lucide-react';
 
-// --- Helper Components (Unchanged) ---
+// --- HELPER COMPONENTS ---
 
 const LoadingState = () => (
+    // This component is no longer used, but kept in case you need it elsewhere.
     <div className="p-10 text-center">
         <Loader2 className="mx-auto h-8 w-8 animate-spin text-slate-400" />
         <p className="mt-2 text-sm text-slate-500">Loading requests...</p>
@@ -18,15 +19,60 @@ const EmptyState = ({ icon: Icon, title, message }) => (
     </div>
 );
 
+// --- NEW SKELETON COMPONENTS ---
+const ComplaintCardSkeleton = () => (
+    <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm animate-pulse">
+        <div className="flex justify-between items-start gap-4">
+            <div>
+                <div className="h-6 w-24 bg-slate-200 rounded-full mb-3"></div>
+                <div className="h-5 w-48 bg-slate-200 rounded-md"></div>
+                <div className="h-4 w-64 bg-slate-200 rounded-md mt-2"></div>
+            </div>
+            <div className="h-8 w-24 bg-slate-200 rounded-md"></div>
+        </div>
+        <div className="mt-4 pt-4 border-t border-slate-100 flex gap-4">
+            <div className="h-4 w-20 bg-slate-200 rounded"></div>
+            <div className="h-4 w-32 bg-slate-200 rounded"></div>
+            <div className="h-4 w-24 bg-slate-200 rounded"></div>
+        </div>
+    </div>
+);
+
+const RoomChangeCardSkeleton = () => (
+    <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm animate-pulse">
+        <div className="flex justify-between items-start gap-4">
+            <div>
+                <div className="h-5 w-40 bg-slate-200 rounded-md"></div>
+                <div className="h-4 w-32 bg-slate-200 rounded-md mt-2"></div>
+                <div className="h-4 w-56 bg-slate-200 rounded-md mt-3"></div>
+            </div>
+            <div className="flex gap-2">
+                <div className="h-8 w-20 bg-slate-200 rounded-md"></div>
+                <div className="h-8 w-20 bg-slate-200 rounded-md"></div>
+            </div>
+        </div>
+    </div>
+);
+
+const VisitorCardSkeleton = () => (
+    <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm animate-pulse">
+        <div className="flex justify-between items-start gap-4">
+            <div>
+                <div className="h-5 w-32 bg-slate-200 rounded-md"></div>
+                <div className="h-4 w-40 bg-slate-200 rounded-md mt-2"></div>
+                <div className="h-4 w-48 bg-slate-200 rounded-md mt-3"></div>
+            </div>
+            <div className="h-4 w-20 bg-slate-200 rounded-md"></div>
+        </div>
+    </div>
+);
+
 
 const CollegeWardenRequestManagement = () => {
     const [activeTab, setActiveTab] = useState('complaints');
-    
-    // State for each data type
     const [complaints, setComplaints] = useState([]);
     const [roomChangeRequests, setRoomChangeRequests] = useState([]);
     const [visitorPasses, setVisitorPasses] = useState([]);
-
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [updatingId, setUpdatingId] = useState(null);
@@ -41,15 +87,12 @@ const CollegeWardenRequestManagement = () => {
                 fetch('https://sih-4ptm.onrender.com/api/v1/hostel/warden/room-changes', { credentials: 'include' }),
                 fetch('https://sih-4ptm.onrender.com/api/v1/hostel/warden/visitors', { credentials: 'include' })
             ]);
-
             const complaintsData = await complaintsRes.json();
             const roomChangesData = await roomChangesRes.json();
             const visitorsData = await visitorsRes.json();
-
             if (complaintsData.success) setComplaints(complaintsData.data || []);
             if (roomChangesData.success) setRoomChangeRequests(roomChangesData.data || []);
             if (visitorsData.success) setVisitorPasses(visitorsData.data || []);
-
         } catch (err) {
             setError('Failed to fetch some data. Please try again.');
         } finally {
@@ -98,10 +141,17 @@ const CollegeWardenRequestManagement = () => {
         { id: 'visitors', label: 'Visitor Passes', icon: Users, count: visitorPasses.length }
     ];
 
-    // --- RENDER FUNCTIONS FOR EACH TAB ---
-
     const renderContent = () => {
-        if (loading) return <LoadingState />;
+        if (loading) {
+            // Render skeletons based on the active tab
+            return (
+                <>
+                    {activeTab === 'complaints' && <> <ComplaintCardSkeleton /> <ComplaintCardSkeleton /> </>}
+                    {activeTab === 'roomChanges' && <> <RoomChangeCardSkeleton /> <RoomChangeCardSkeleton /> </>}
+                    {activeTab === 'visitors' && <> <VisitorCardSkeleton /> <VisitorCardSkeleton /> </>}
+                </>
+            );
+        }
 
         switch (activeTab) {
             case 'complaints':
@@ -126,7 +176,7 @@ const CollegeWardenRequestManagement = () => {
                                 </div>
                             </div>
                             <div className="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
-                                <span className="font-semibold text-xs uppercase tracking-wider" style={{ color: priorityColor.replace('text-', '') }}>{c.priority} Priority</span>
+                                <span className="font-semibold text-xs uppercase tracking-wider" style={{ color: priorityColor }}>{c.priority} Priority</span>
                                 <span className="flex items-center"><MapPin className="w-3 h-3 mr-1.5" />{c.hostelDetail.hostelName}, Room {c.hostelDetail.roomNumber}</span>
                                 <span className="flex items-center"><Wrench className="w-3 h-3 mr-1.5" />{c.issue}</span>
                                 <span className="flex items-center"><User className="w-3 h-3 mr-1.5" />{c.registrationNumber}</span>
@@ -186,7 +236,6 @@ const CollegeWardenRequestManagement = () => {
     return (
         <div className="min-h-screen">
             <div className="">
-                
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm mb-6">
                     <div className="p-6">
                         <h1 className="text-2xl font-bold text-slate-900">Warden Dashboard</h1>
@@ -204,9 +253,7 @@ const CollegeWardenRequestManagement = () => {
                         </nav>
                     </div>
                 </div>
-
                 {error && <div className="p-4 bg-red-50 text-red-700 rounded-lg mb-6">{error}</div>}
-
                 <div className="space-y-4">
                     {renderContent()}
                 </div>
