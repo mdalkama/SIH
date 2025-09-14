@@ -166,3 +166,81 @@ export const updateStaffProfile = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error while updating profile." });
     }
 };
+
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const staffMember = await Staff.findOne({ email });
+
+        if (!staffMember) {
+            return res.status(404).json({ message: "No staff member found with that email address." });
+        }
+
+        const resetToken = crypto.randomBytes(32).toString("hex");
+
+        staffMember.passwordResetToken = crypto
+            .createHash("sha256")
+            .update(resetToken)
+            .digest("hex");
+        
+        staffMember.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+        await staffMember.save({ validateBeforeSave: false });
+
+        // IMPORTANT: The URL should point to a staff-specific reset page if you want different UIs
+        const resetURL = `${req.protocol}://${req.get('host')}/reset-password-staff/${resetToken}`;
+
+        const transporter = nodemailer.createTransport({ /* ... your nodemailer config ... */ });
+        const mailOptions = {
+            from: `"Your App Name" <${process.env.EMAIL_USER}>`,
+            to: staffMember.email,
+            subject: "Staff Account Password Reset Request",
+            html: `<p>Click the link to reset your staff account password: <a href="${resetURL}">Reset Password</a></p>`,
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.status(200).json({ success: true, message: "Password reset token sent to staff email." });
+
+    } catch (err) {
+         if (staffMember) {
+            staffMember.passwordResetToken = undefined;
+            staffMember.passwordResetExpires = undefined;
+            await staffMember.save({ validateBeforeSave: false });
+        }
+        console.error("STAFF FORGOT PASSWORD ERROR:", err);
+        res.status(500).json({ message: "An error occurred while sending the email. Please try again later." });
+    }
+};
+
+// @desc    Handle the actual password reset for Staff
+// @route   PATCH /api/v1/staff/reset-password/:token
+export const resetPassword = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { password } = req.body;
+
+        const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+        const staffMember = await Staff.findOne({
+            passwordResetToken: hashedToken,
+            passwordResetExpires: { $gt: Date.now() },
+        });
+
+        if (!staffMember) {
+            return res.status(400).json({ message: "Token is invalid or has expired." });
+        }
+
+        staffMember.password = await bcrypt.hash(password, 10);
+        staffMember.passwordResetToken = undefined;
+        staffMember.passwordResetExpires = undefined;
+
+        await staffMember.save();
+
+        res.status(200).json({ success: true, message: "Staff password has been reset successfully." });
+
+    } catch (err) {
+        console.error("STAFF RESET PASSWORD ERROR:", err);
+        res.status(500).json({ message: "An error occurred while resetting the password." });
+    }
+};

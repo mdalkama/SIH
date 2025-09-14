@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { CreditCard, Download, Calendar, IndianRupee, ReceiptIndianRupee, AlertCircle, CheckCircle, Clock, FileText, Smartphone, Loader2, X, Info, AlertTriangle, Banknote, Building, FileWarning, Wallet, ChevronLeft, ChevronRight } from 'lucide-react';
 
-// --- HELPER COMPONENTS (Unchanged) ---
+// --- HELPER COMPONENTS ---
 const Toast = ({ message, type, onClose }) => {
     useEffect(() => { const timer = setTimeout(() => { onClose(); }, 4000); return () => clearTimeout(timer); }, [onClose]);
     const icons = { success: <CheckCircle className="text-emerald-500" />, error: <AlertTriangle className="text-rose-500" />, info: <Info className="text-sky-500" /> };
@@ -28,7 +28,6 @@ const TabButton = ({ label, icon: Icon, active, onClick }) => (
         <Icon className="w-5 h-5 mr-2" />{label}
     </button>
 );
-
 const FeeTable = ({ type, data, onPay }) => {
     if (!data || data.length === 0) {
         return <div className="text-center text-slate-500 p-12"><p>No {type.toLowerCase()} records found.</p></div>;
@@ -39,7 +38,6 @@ const FeeTable = ({ type, data, onPay }) => {
                 <thead className="bg-slate-50"><tr><th className="p-3 text-left font-semibold text-slate-600">Details</th><th className="p-3 text-right font-semibold text-slate-600">Total</th><th className="p-3 text-right font-semibold text-slate-600">Paid</th><th className="p-3 text-right font-semibold text-slate-600">Pending</th><th className="p-3 text-center font-semibold text-slate-600">Action</th></tr></thead>
                 <tbody className="divide-y divide-slate-200">
                     {data.slice().reverse().map(item => {
-                        // CORRECTED LOGIC: Uses the correct key for total fee based on the object structure
                         const total = item.fees !== undefined ? item.fees : item.amount;
                         const paid = item.paid || item.paidAmount || 0;
                         const pending = total - paid;
@@ -61,7 +59,6 @@ const FeeTable = ({ type, data, onPay }) => {
         </div>
     );
 };
-
 const PaymentHistory = ({ data, onDownload }) => {
     if (!data || data.length === 0) {
         return (<div className="text-center p-12 text-slate-500"><ReceiptIndianRupee className="mx-auto w-16 h-16 text-slate-300" /><h4 className="mt-4 text-lg font-semibold text-slate-700">No Transactions Found</h4><p>Your payment history will appear here once you make a payment.</p></div>);
@@ -92,6 +89,38 @@ const PaymentHistory = ({ data, onDownload }) => {
     );
 };
 
+// --- NEW SKELETON COMPONENTS ---
+const StatCardSkeleton = () => (
+    <div className="bg-white p-6 rounded-lg border border-slate-200 animate-pulse">
+        <div className="h-4 bg-slate-200 rounded w-1/2 mb-2"></div>
+        <div className="h-8 bg-slate-200 rounded w-3/4"></div>
+    </div>
+);
+const HeaderSkeleton = () => (
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 animate-pulse">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+            <div>
+                <div className="h-8 bg-slate-200 rounded w-48 mb-2"></div>
+                <div className="h-5 bg-slate-200 rounded w-40 mb-2"></div>
+                <div className="h-4 bg-slate-200 rounded w-56"></div>
+            </div>
+        </div>
+    </div>
+);
+const TabsSkeleton = () => (
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 animate-pulse">
+        <div className="flex border-b border-slate-200 p-2">
+            <div className="h-10 w-32 bg-slate-200 rounded-md"></div>
+            <div className="h-10 w-32 bg-slate-100 rounded-md ml-2"></div>
+            <div className="h-10 w-24 bg-slate-100 rounded-md ml-2"></div>
+            <div className="h-10 w-40 bg-slate-100 rounded-md ml-2"></div>
+        </div>
+        <div className="p-6">
+            <div className="h-40 bg-slate-100 rounded-lg"></div>
+        </div>
+    </div>
+);
+
 
 // --- MAIN COMPONENT ---
 const FeesDashboard = () => {
@@ -105,7 +134,6 @@ const FeesDashboard = () => {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedFee, setSelectedFee] = useState(null);
     const [paymentProcessing, setPaymentProcessing] = useState(false);
-    console.log(selectedFee)
 
     const addToast = (type, message) => { const id = Date.now(); setToasts(prev => [...prev, { id, type, message }]); };
 
@@ -135,7 +163,6 @@ const FeesDashboard = () => {
 
             const academicData = academicRes.ok ? await academicRes.json() : { semesters: [], fines: [], paymentHistory: [] };
             const hostelData = hostelRes.ok ? await hostelRes.json() : { data: [] };
-            console.log(hostelData)
             
             setFeeData({
                 semesters: academicData.semesters || [],
@@ -156,7 +183,6 @@ const FeesDashboard = () => {
 
     const handleOpenPaymentModal = (item) => {
         let feeDetails = {};
-        // CORRECTED LOGIC: Checks for `item.semester` to identify a semester fee object
         if (item.semester) {
             const total = item.fees || 0;
             const paid = item.paid || 0;
@@ -180,7 +206,6 @@ const FeesDashboard = () => {
                 body: JSON.stringify({ type: fee._type, id: fee._id, amount: fee.pendingAmount })
             });
             const orderData = await orderRes.json();
-            console.log(orderData)
             if (!orderRes.ok || !orderData.order) throw new Error(orderData.message || 'Could not create payment order.');
 
             const options = {
@@ -226,30 +251,23 @@ const FeesDashboard = () => {
 
     const summaryStats = useMemo(() => {
         if (!feeData) return { totalPending: 0, totalCollected: 0, semesterPending: 0, otherPending: 0 };
-        // CORRECTED LOGIC: Uses `s.fees` for calculation
         const semesterPending = (feeData.semesters || []).reduce((acc, s) => acc + (s.fees - (s.paid || 0)), 0);
         const semesterCollected = (feeData.semesters || []).reduce((acc, s) => acc + (s.paid || 0), 0);
         const hostelPending = (feeData.hostelFees || []).reduce((acc, h) => acc + (h.amount - (h.paidAmount || 0)), 0);
         const hostelCollected = (feeData.hostelFees || []).reduce((acc, h) => acc + (h.paidAmount || 0), 0);
         const finesPending = (feeData.fines || []).reduce((acc, f) => acc + (f.amount - (f.paidAmount || 0)), 0);
         const finesCollected = (feeData.fines || []).reduce((acc, f) => acc + (f.paidAmount || 0), 0);
-        return {
-            totalPending: semesterPending + hostelPending + finesPending,
-            totalCollected: semesterCollected + hostelCollected + finesCollected,
-            semesterPending,
-            otherPending: hostelPending + finesPending,
-        };
+        return { totalPending: semesterPending + hostelPending + finesPending, totalCollected: semesterCollected + hostelCollected + finesCollected, semesterPending, otherPending: hostelPending + finesPending };
     }, [feeData]);
 
-    if (loading) return <div className="flex items-center justify-center h-screen bg-slate-50"><Loader2 className="w-12 h-12 animate-spin text-indigo-600" /></div>;
     if (error) return <div className="max-w-6xl mx-auto p-4 bg-slate-50"><div className="text-center p-10 bg-white rounded-lg border border-red-200"><AlertCircle className="mx-auto w-12 h-12 text-red-500" /><h3 className="mt-4 text-lg font-semibold text-red-800">An Error Occurred</h3><p className="text-red-600 mt-1">{error}</p></div></div>;
     
     const renderContent = () => {
         switch (activeTab) {
-            case 'semester': return <FeeTable type="Semester Fees" data={feeData.semesters} onPay={handleOpenPaymentModal} />;
-            case 'hostel': return <FeeTable type="Hostel Fees" data={feeData.hostelFees} onPay={handleOpenPaymentModal} />;
-            case 'fines': return <FeeTable type="Fines" data={feeData.fines} onPay={handleOpenPaymentModal} />;
-            case 'history': return <PaymentHistory data={paymentHistory} onDownload={downloadReceipt} />;
+            case 'semester': return <FeeTable type="Semester Fees" data={feeData.semesters} onPay={handleOpenPaymentModal} isLoading={loading} />;
+            case 'hostel': return <FeeTable type="Hostel Fees" data={feeData.hostelFees} onPay={handleOpenPaymentModal} isLoading={loading} />;
+            case 'fines': return <FeeTable type="Fines" data={feeData.fines} onPay={handleOpenPaymentModal} isLoading={loading} />;
+            case 'history': return <PaymentHistory data={paymentHistory} onDownload={downloadReceipt} isLoading={loading} />;
             default: return null;
         }
     };
@@ -258,7 +276,19 @@ const FeesDashboard = () => {
         <div className="min-h-screen">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
             <div className="">
-                {studentProfile && (
+                {loading ? (
+                    <div className="space-y-6">
+                        <HeaderSkeleton />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <StatCardSkeleton />
+                            <StatCardSkeleton />
+                            <StatCardSkeleton />
+                            <StatCardSkeleton />
+                        </div>
+                        <TabsSkeleton />
+                    </div>
+                ) : (
+                    studentProfile && (
                     <div className="space-y-6">
                         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
                             <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
@@ -289,6 +319,7 @@ const FeesDashboard = () => {
                             </div>
                         </div>
                     </div>
+                    )
                 )}
                 {showPaymentModal && selectedFee && (
                     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">

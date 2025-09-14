@@ -31,7 +31,8 @@ import {
     Wallet,
     Building2,
     Library,
-    User, // Added User icon for My Profile
+    User,
+    MessageSquare, // Added User icon for My Profile
 } from "lucide-react";
 
 // Student
@@ -159,6 +160,8 @@ import CollegeDirectorMeetings from "../components/College/CollegeDirector/Colle
 
 // Common MyProfile Component (for all roles)
 import MyProfile from "../components/Common/MyProfile";
+import CollegeAdminManageCollege from "../components/College/CollegeAdmin/CollegeAdminManageCollege.jsx";
+import CollegeAdminManageComplaints from "../components/College/CollegeAdmin/CollegeAdminManageComplaints.jsx";
 
 // 🎯 Roles mapping
 const menuConfig = {
@@ -568,6 +571,22 @@ const menuConfig = {
             icon: BookOpen,
             path: "/college-admin/manage-courses",
             component: CollegeAdminManageCourses,
+            role: "CollegeAdmin",
+        },
+        {
+            id: "manage-college",
+            label: "Manage College",
+            icon: Folder,
+            path: "/college-admin/manage-college",
+            component: CollegeAdminManageCollege,
+            role: "CollegeAdmin",
+        },
+        {
+            id: "manage-complaints",
+            label: "Manage Complaints",
+            icon: MessageSquare,
+            path: "/college-admin/manage-complaints",
+            component: CollegeAdminManageComplaints,
             role: "CollegeAdmin",
         },
         {

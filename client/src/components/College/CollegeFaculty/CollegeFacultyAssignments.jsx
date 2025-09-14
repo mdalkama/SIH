@@ -183,7 +183,7 @@ function CollegeFacultyAssignments() {
     };
 
     return (
-        <div className="min-h-screen p-6 bg-slate-50 font-sans">
+        <div className="min-h-screen font-sans">
             {notification && (
                 <div className={`fixed top-5 right-5 z-[100] p-4 rounded-lg shadow-lg flex items-center gap-3 transition-all duration-300 ${notification.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
                     {notification.type === "success" ? <ClipboardCheck size={20} /> : <AlertCircle size={20} />}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, User, Users, ArrowLeft, AlertCircle, Shield, Building2 } from 'lucide-react';
+import Footer from './DTE_home/footer';
 
 const Mylogin = () => {
     const { setUser } = useUser();
@@ -231,7 +232,7 @@ const Mylogin = () => {
 
     // login form
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen flex flex-col">
             {/* Header Section - Logo Area Only */}
             <div className="bg-white border-b border-gray-200 py-4 px-6 shadow-sm">
                 <div className="max-w-7xl mx-auto">
@@ -272,14 +273,40 @@ const Mylogin = () => {
                 </div>
             </div>
 
-            <div className="flex items-center justify-center py-12 px-4">
-                <div className="w-full max-w-md">
-                    <div className="bg-white border border-gray-300 shadow-lg">
-                        {/* Login Header */}
-                        <div className="bg-[#0D2841] text-white p-6 text-center">
-                            <h2 className="text-xl font-bold mb-1">Goverment of Rajasthan</h2>
-                            <p className="text-blue-100 text-sm">Access your academic account</p>
+            {/* Main Content Area with Background */}
+            <div className="flex-1 flex relative">
+                {/* Full Background Image */}
+                <div 
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                    style={{
+                        backgroundImage: 'url(https://hte.rajasthan.gov.in/css_index/images/s1old.jpg)',
+                        opacity: '0.3'
+                    }}
+                ></div>
+                
+                {/* Left Side - Welcome Text */}
+                <div className="hidden lg:flex lg:w-1/2 relative z-10">
+                    <div className="flex items-center justify-center p-12">
+                        <div className="text-center">
+                            <h1 className="text-6xl font-bold text-gray-800 mb-4">
+                                Welcome to DTE Rajasthan
+                            </h1>
+                            <p className="text-lg text-gray-600">
+                                Department of Technical Education, Government of Rajasthan
+                            </p>
                         </div>
+                    </div>
+                </div>
+
+                {/* Right Side - Login Form */}
+                <div className="w-full lg:w-1/2 flex items-center justify-center py-12 px-4 relative z-10">
+                    <div className="w-full max-w-md">
+                        <div className="bg-white border border-gray-300 shadow-2xl rounded-lg">
+                            {/* Login Header */}
+                            <div className="bg-[#0D2841] text-white p-6 text-center">
+                                <h2 className="text-xl font-bold mb-1">Government of Rajasthan</h2>
+                                <p className="text-blue-100 text-sm">Access your academic account</p>
+                            </div>
 
                         <div className="p-8">
                             {/* Role Selection */}
@@ -405,9 +432,13 @@ const Mylogin = () => {
                                 </div>
                             </div>
                         </div>
+                        </div>
                     </div>
                 </div>
             </div>
+            
+            {/* Footer */}
+            <Footer />
         </div>
     );
 };

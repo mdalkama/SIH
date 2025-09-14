@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Staff from '../../models/staffModel.js'
 import Course from '../../models/courseModel.js'
+import crypto from 'crypto'
+import nodemailer from 'nodemailer'
 
 // 🟢 Register
 export const registerStudent = async (req, res) => {
@@ -207,3 +209,116 @@ export const getSerial = async(req,res)=>{
     }    
     
 }
+
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const student = await Student.findOne({ email });
+
+        if (!student) {
+            return res.status(404).json({ message: "No student found with that email address." });
+        }
+
+        // 1. Generate a secure, random reset token
+        const resetToken = crypto.randomBytes(32).toString("hex");
+
+        // 2. Hash the token and set it in the database
+        student.passwordResetToken = crypto
+            .createHash("sha256")
+            .update(resetToken)
+            .digest("hex");
+        
+        // 3. Set an expiry time (e.g., 10 minutes from now)
+        student.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+        await student.save({ validateBeforeSave: false }); // Save the token fields
+
+        // 4. Create the reset URL for the email
+        const resetURL = `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`;
+
+        // 5. Send the email using nodemailer
+        const transporter = nodemailer.createTransport({
+            host: process.env.EMAIL_HOST,
+            port: process.env.EMAIL_PORT,
+            secure: false, // true for 465, false for other ports
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+
+        const mailOptions = {
+            from: `"sih" <${process.env.EMAIL_USER}>`,
+            to: student.email,
+            subject: "Password Reset Request",
+            html: `
+                <p>You requested a password reset for your account.</p>
+                <p>Please click the link below to set a new password. This link is valid for 10 minutes.</p>
+                <a href="${resetURL}" target="_blank">Reset Your Password</a>
+                <p>If you did not request this, please ignore this email.</p>
+            `,
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.status(200).json({ success: true, message: "Password reset token sent to email." });
+
+    } catch (err) {
+        // Clear token fields if something goes wrong
+        if (req.body.email) {
+            const student = await Student.findOne({ email: req.body.email });
+            if (student) {
+                student.passwordResetToken = undefined;
+                student.passwordResetExpires = undefined;
+                await student.save({ validateBeforeSave: false });
+            }
+        }
+        console.error("FORGOT PASSWORD ERROR:", err);
+        res.status(500).json({ message: "An error occurred while sending the email." });
+    }
+};
+
+
+// @desc    Handle the actual password reset
+// @route   PATCH /api/v1/student/reset-password/:token
+export const resetPassword = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { password } = req.body;
+
+        if (!password) {
+            return res.status(400).json({ message: "Password is required." });
+        }
+
+        // 1. Hash the incoming token to find the matching user in the DB
+        const hashedToken = crypto
+            .createHash("sha256")
+            .update(token)
+            .digest("hex");
+
+        // 2. Find the user by the hashed token and check if it's not expired
+        const student = await Student.findOne({
+            passwordResetToken: hashedToken,
+            passwordResetExpires: { $gt: Date.now() }, // Check if token is still valid
+        });
+
+        if (!student) {
+            return res.status(400).json({ message: "Token is invalid or has expired." });
+        }
+
+        // 3. Set the new password
+        student.password = await bcrypt.hash(password, 10);
+        
+        // 4. Clear the reset token fields
+        student.passwordResetToken = undefined;
+        student.passwordResetExpires = undefined;
+
+        await student.save();
+
+        res.status(200).json({ success: true, message: "Password has been reset successfully." });
+
+    } catch (err) {
+        console.error("RESET PASSWORD ERROR:", err);
+        res.status(500).json({ message: "An error occurred while resetting the password." });
+    }
+};

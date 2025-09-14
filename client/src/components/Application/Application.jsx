@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { User, MapPin, FileText, BookOpen, ClipboardList, File, Eye, ChevronDown, Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // Cache for transliteration results
 const cache = new Map();
@@ -93,33 +94,84 @@ const SelectField = ({ label, options = [], required = false, value, onChange, n
   </div>
 );
 
-const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl = "https://svumshow.com/assets/images/department-logo/pngwing.png", admissionType = "diploma", sessionYear = "2025" }) => {
-  const [activeTab, setActiveTab] = useState(0);
-  const [formData, setFormData] = useState({
-    applicantName: "", applicantNameHindi: "", fatherName: "", fatherNameHindi: "", motherName: "", motherNameHindi: "",
-    gender: "", dateOfBirth: "", email: "", mobile: "", maritalStatus: "", religion: "", nationality: "",
-    preferentialCategory: "", kashmiriMigrant: "", preferentialCategoryType: "", reservationCategory: "",
-    identityProof: "", identityNumber: "",
-    permanentAddressLine1: "", permanentAddressLine2: "", permanentAddressLine3: "", permanentState: "",
-    permanentDistrict: "", permanentBlockTehsil: "", permanentCityVillage: "", permanentPincode: "",
-    correspondenceAddressLine1: "", correspondenceAddressLine2: "", correspondenceAddressLine3: "",
-    correspondenceState: "", correspondenceDistrict: "", correspondenceBlockTehsil: "",
-    correspondenceCityVillage: "", correspondencePincode: "",
-    parentIncome: "", parentIncomeAmount: "", tfwsApplication: "",
-    tenthBoard: "", tenthYear: "", tenthRollNo: "", tenthMarksType: "", tenthMaxMarks: "",
-    tenthObtainedMarks: "", tenthPercentage: "", supplementaryAppeared: "", supplementaryYear: "",
-    supplementaryRollNo: "", supplementarySubject: "", supplementaryClass: "", supplementaryRecords: [],
-    twelfthBoard: "", twelfthYear: "", twelfthRollNo: "", twelfthPercentage: "", twelfthStream: "",
-    graduationDegree: "", graduationBranch: "", graduationUniversity: "", graduationYear: "", graduationPercentage: "",
-    mastersDegree: "", mastersBranch: "", mastersUniversity: "", mastersYear: "", mastersPercentage: "",
-    optionChoices: []
-  });
+const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl = "https://svumshow.com/assets/images/department-logo/pngwing.png", admissionType = "diploma", sessionYear = "2025", sessionTimer = null, applicationId, courseId }) => {
+  const navigate = useNavigate();
+  
+  // Get empty form data structure
+  const getEmptyFormData = () => {
+    return {
+      applicantName: "", applicantNameHindi: "", fatherName: "", fatherNameHindi: "", motherName: "", motherNameHindi: "",
+      gender: "", dateOfBirth: "", email: "", mobile: "", maritalStatus: "", religion: "", nationality: "",
+      preferentialCategory: "", kashmiriMigrant: "", preferentialCategoryType: "", reservationCategory: "",
+      identityProof: "", identityNumber: "",
+      permanentAddressLine1: "", permanentAddressLine2: "", permanentAddressLine3: "", permanentState: "",
+      permanentDistrict: "", permanentBlockTehsil: "", permanentCityVillage: "", permanentPincode: "",
+      correspondenceAddressLine1: "", correspondenceAddressLine2: "", correspondenceAddressLine3: "",
+      correspondenceState: "", correspondenceDistrict: "", correspondenceBlockTehsil: "",
+      correspondenceCityVillage: "", correspondencePincode: "",
+      parentIncome: "", parentIncomeAmount: "", tfwsApplication: "",
+      tenthBoard: "", tenthYear: "", tenthRollNo: "", tenthMarksType: "", tenthMaxMarks: "",
+      tenthObtainedMarks: "", tenthPercentage: "", supplementaryAppeared: "", supplementaryYear: "",
+      supplementaryRollNo: "", supplementarySubject: "", supplementaryClass: "", supplementaryRecords: [],
+      twelfthBoard: "", twelfthYear: "", twelfthRollNo: "", twelfthPercentage: "", twelfthStream: "",
+      graduationDegree: "", graduationBranch: "", graduationUniversity: "", graduationYear: "", graduationPercentage: "",
+      mastersDegree: "", mastersBranch: "", mastersUniversity: "", mastersYear: "", mastersPercentage: "",
+      optionChoices: []
+    };
+  };
 
-  const [errors, setErrors] = useState({});
-  const [completedTabs, setCompletedTabs] = useState([]);
-  const [uploadedFiles, setUploadedFiles] = useState({});
+  // Initialize form data from localStorage if available
+  const getInitialFormData = () => {
+    if (applicationId) {
+      const savedFormData = localStorage.getItem(`formData_${applicationId}`);
+      if (savedFormData) {
+        try {
+          return JSON.parse(savedFormData);
+        } catch (error) {
+          console.error('Error parsing saved form data:', error);
+        }
+      }
+    }
+    
+    return getEmptyFormData();
+  };
+
+  // Initialize app state from localStorage if available
+  const getInitialAppState = () => {
+    if (applicationId) {
+      const savedState = localStorage.getItem(`appState_${applicationId}`);
+      if (savedState) {
+        try {
+          const parsed = JSON.parse(savedState);
+          return {
+            activeTab: parsed.activeTab || 0,
+            errors: parsed.errors || {},
+            completedTabs: parsed.completedTabs || [],
+            uploadedFiles: parsed.uploadedFiles || {},
+            isPaymentCompleted: parsed.isPaymentCompleted || false
+          };
+        } catch (error) {
+          console.error('Error parsing saved app state:', error);
+        }
+      }
+    }
+    return {
+      activeTab: 0,
+      errors: {},
+      completedTabs: [],
+      uploadedFiles: {},
+      isPaymentCompleted: false
+    };
+  };
+
+  const initialAppState = getInitialAppState();
+  const [activeTab, setActiveTab] = useState(initialAppState.activeTab);
+  const [formData, setFormData] = useState(getInitialFormData);
+  const [errors, setErrors] = useState(initialAppState.errors);
+  const [completedTabs, setCompletedTabs] = useState(initialAppState.completedTabs);
+  const [uploadedFiles, setUploadedFiles] = useState(initialAppState.uploadedFiles);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isPaymentCompleted, setIsPaymentCompleted] = useState(false);
+  const [isPaymentCompleted, setIsPaymentCompleted] = useState(initialAppState.isPaymentCompleted);
 
   const tabs = [
     { name: "Applicant Details", icon: <User size={16} /> },
@@ -130,6 +182,61 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
     { name: "Documents", icon: <File size={16} /> },
     { name: "Preview", icon: <Eye size={16} /> }
   ];
+
+  // Reset form function
+  const handleReset = () => {
+    if (applicationId) {
+      // Clear localStorage data
+      localStorage.removeItem(`formData_${applicationId}`);
+      localStorage.removeItem(`appState_${applicationId}`);
+      
+      // Clear all file info
+      Object.keys(uploadedFiles).forEach(key => {
+        localStorage.removeItem(`fileInfo_${applicationId}_${key}`);
+      });
+    }
+    
+    // Reset all state to empty values
+    setFormData(getEmptyFormData());
+    setActiveTab(0);
+    setErrors({});
+    setCompletedTabs([]);
+    setUploadedFiles({});
+    setIsPaymentCompleted(false);
+    
+    console.log('Form reset completed - all data cleared');
+  };
+
+  // Auto-save functions
+  const saveFormData = (data) => {
+    if (applicationId) {
+      localStorage.setItem(`formData_${applicationId}`, JSON.stringify(data));
+    }
+  };
+
+  const saveAppState = () => {
+    if (applicationId) {
+      const stateToSave = {
+        activeTab,
+        completedTabs,
+        uploadedFiles,
+        isPaymentCompleted,
+        errors,
+        lastSaved: new Date().toISOString()
+      };
+      localStorage.setItem(`appState_${applicationId}`, JSON.stringify(stateToSave));
+    }
+  };
+
+  // Auto-save whenever form data changes
+  useEffect(() => {
+    saveFormData(formData);
+  }, [formData, applicationId]);
+
+  // Auto-save app state when relevant state changes
+  useEffect(() => {
+    saveAppState();
+  }, [activeTab, completedTabs, uploadedFiles, isPaymentCompleted, applicationId]);
 
   const handleInputChange = async (e) => {
     if (isPaymentCompleted) return; // Prevent changes after payment
@@ -303,8 +410,9 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
                 <img 
                   src={logoUrl} 
                   alt="Government of Rajasthan Logo" 
-                  className="h-12 w-12 sm:h-16 sm:w-16 object-contain" 
+                  className="h-12 w-12 sm:h-16 sm:w-16 object-contain cursor-pointer hover:opacity-80 transition-opacity" 
                   onError={(e) => (e.target.style.display = "none")} 
+                  onClick={() => navigate('/')}
                 />
               </div>
               <div className="text-center sm:text-left">
@@ -334,6 +442,11 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
                 <div className="border-b border-gray-300 mb-2"></div>
                 <div className="text-xs text-gray-600">
                   <div className="font-medium">Session {sessionYear}</div>
+                  {sessionTimer && (
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      {sessionTimer}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -446,7 +559,7 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
               </div>
 
               <div className="flex flex-col sm:flex-row justify-between items-center mt-6 sm:mt-8 space-y-3 sm:space-y-0">
-                <button type="button" onClick={() => window.location.reload()} className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 border border-[#1e40af] text-[#1e40af] font-medium rounded-lg hover:bg-[#e0f2fe] transition-all duration-200 cursor-pointer text-sm sm:text-base">Reset</button>
+                <button type="button" onClick={handleReset} className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 border border-[#1e40af] text-[#1e40af] font-medium rounded-lg hover:bg-[#e0f2fe] transition-all duration-200 cursor-pointer text-sm sm:text-base">Reset</button>
                 <button type="button" onClick={handleNext} className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-[#1e40af] text-white font-bold rounded-lg hover:bg-[#1e3a8a] hover:shadow-lg transition-all duration-200 cursor-pointer text-sm sm:text-base">Save & Next</button>
               </div>
             </form>
