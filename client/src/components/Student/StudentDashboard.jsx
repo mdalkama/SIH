@@ -28,7 +28,7 @@ const StudentDashboard = () => {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
 
-useEffect(() => {
+    useEffect(() => {
         const fetchUser = async () => {
             try {
                 const res = await fetch(
@@ -82,10 +82,10 @@ useEffect(() => {
         });
     };
 
-    if(loading) return <Loading />
+    if (loading) return <Loading />
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
