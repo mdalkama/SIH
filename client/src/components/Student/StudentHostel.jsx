@@ -85,10 +85,10 @@ const HostelDashboard = () => {
             else if (allocRes.ok) { const d = await allocRes.json(); if (d.success) setAllocationDetails(d.data); }
             else { const e = await allocRes.json(); throw new Error(e.message || 'Failed to fetch allocation'); }
             
-            if(compRes.ok) { const d = await compRes.json(); if(d.success) setComplaints(d.data); }
-            if(roomChangeRes.ok) { const d = await roomChangeRes.json(); if(d.success) setRoomChangeRequests(d.data); }
-            if(visitorRes.ok) { const d = await visitorRes.json(); if(d.success) setVisitors(d.data); }
-            if(feeRes.ok) { const d = await feeRes.json(); if(d.success) setFees(d.data); } // Set fees data
+            if(compRes.ok) { const d = await compRes.json(); if(d.success) setComplaints(Array.isArray(d.data) ? d.data : []); }
+            if(roomChangeRes.ok) { const d = await roomChangeRes.json(); if(d.success) setRoomChangeRequests(Array.isArray(d.data) ? d.data : []); }
+            if(visitorRes.ok) { const d = await visitorRes.json(); if(d.success) setVisitors(Array.isArray(d.data) ? d.data : []); }
+            if(feeRes.ok) { const d = await feeRes.json(); if(d.success) setFees(Array.isArray(d.data) ? d.data : []); } // Set fees data with array check
 
         } catch (err) { setError(err.message); }
         finally { setIsLoading(false); }
@@ -115,7 +115,7 @@ const HostelDashboard = () => {
     };
 
     const renderFees = () => {
-        if (fees.length === 0) {
+        if (!Array.isArray(fees) || fees.length === 0) {
             return <p className="text-center text-gray-500 py-8">No hostel fee records have been assigned yet.</p>;
         }
         return (
@@ -157,7 +157,7 @@ const HostelDashboard = () => {
     };
 
     const renderComplaints = () => {
-        const recentComplaints = complaints.slice(0, 5);
+        const recentComplaints = Array.isArray(complaints) ? complaints.slice(0, 5) : [];
         if (recentComplaints.length === 0) {
             return <p className="text-center text-gray-500 py-8">You haven't raised any complaints yet.</p>;
         }
@@ -177,7 +177,7 @@ const HostelDashboard = () => {
     };
 
     const renderRoomChanges = () => {
-        const recentRoomChanges = roomChangeRequests.slice(0, 5);
+        const recentRoomChanges = Array.isArray(roomChangeRequests) ? roomChangeRequests.slice(0, 5) : [];
         if (recentRoomChanges.length === 0) {
             return <p className="text-center text-gray-500 py-8">No room change requests found.</p>;
         }
@@ -195,7 +195,7 @@ const HostelDashboard = () => {
     };
 
     const renderVisitors = () => {
-        const recentVisitors = visitors.slice(0, 5);
+        const recentVisitors = Array.isArray(visitors) ? visitors.slice(0, 5) : [];
         if (recentVisitors.length === 0) {
             return <p className="text-center text-gray-500 py-8">No visitor passes found.</p>;
         }
