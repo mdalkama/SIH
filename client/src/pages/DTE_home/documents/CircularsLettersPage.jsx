@@ -1,114 +1,234 @@
-import React from 'react'
-import Header from '../header_dte'
-import Footer from '../footer'
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Search, FileText, Calendar, ArrowRight } from 'lucide-react';
+import Header from '../header_dte';
+import Footer from '../footer';
 
 const CircularsLettersPage = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  
   const circularsData = [
     {
-      particulars: "Date Extend For State Level Fee Assessment Committee Order",
-      orderNoAndDate: "Order No. 395 Dated 14.05.2025"
+      id: 1,
+      title: "Date Extend For State Level Fee Assessment Committee Order",
+      orderNo: "Order No. 395",
+      date: "14-05-2025",
+      category: "Fee",
+      status: "Active"
     },
     {
-      particulars: "State Level Fee Assessment Committee Order",
-      orderNoAndDate: "Order No. 388 Dated 17.04.2025"
+      id: 2,
+      title: "State Level Fee Assessment Committee Order",
+      orderNo: "Order No. 388",
+      date: "17-04-2025",
+      category: "Fee",
+      status: "Active"
     },
     {
-      particulars: "State Govt. NOC Policy 2023-24",
-      orderNoAndDate: "23(2)(55)/TE/2015 Part-2/Vol-2 Jaipur 02.02.2023"
+      id: 3,
+      title: "State Govt. NOC Policy 2023-24",
+      orderNo: "23(2)(55)/TE/2015 Part-2/Vol-2",
+      date: "02-02-2023",
+      category: "Policy",
+      status: "Active"
     },
     {
-      particulars: "NOC Process for Year 2020-21 Online Application Fillup",
-      orderNoAndDate: "---"
+      id: 4,
+      title: "NOC Process for Year 2020-21 Online Application Fillup",
+      orderNo: "N/A",
+      date: "15-10-2020",
+      category: "Admission",
+      status: "Active"
     },
     {
-      particulars: "Bond for Permanent Govt. Servants Proceeding for Study Leave [M.Tech. & Ph.D.]",
-      orderNoAndDate: "---"
+      id: 5,
+      title: "Bond for Permanent Govt. Servants Proceeding for Study Leave [M.Tech. & Ph.D.]",
+      orderNo: "N/A",
+      date: "10-05-2020",
+      category: "HR",
+      status: "Active"
     },
     {
-      particulars: "State Govt. NOC Policy",
-      orderNoAndDate: "F23(2)TE/2011-II Jaipur 11.07.2016"
+      id: 6,
+      title: "State Govt. NOC Policy",
+      orderNo: "F23(2)TE/2011-II",
+      date: "11-07-2016",
+      category: "Policy",
+      status: "Active"
     },
     {
-      particulars: "1% Reservation for MBC",
-      orderNoAndDate: "F7(2)/DOP/Ka-2/2015Part / Dtd. 01.07.2018"
+      id: 7,
+      title: "1% Reservation for MBC",
+      orderNo: "F7(2)/DOP/Ka-2/2015Part",
+      date: "01-07-2018",
+      category: "Reservation",
+      status: "Active"
     },
     {
-      particulars: "5% Reservation for Benchmark Disabilities",
-      orderNoAndDate: "F1(26)/TE/2007 dtd. 29.01.2018"
+      id: 8,
+      title: "5% Reservation for Benchmark Disabilities",
+      orderNo: "F1(26)/TE/2007",
+      date: "29-01-2018",
+      category: "Reservation",
+      status: "Active"
     },
     {
-      particulars: "Proposed Fee Structure 2017-18, 2018-19 & 2019-2020",
-      orderNoAndDate: "21.12.2017"
+      id: 9,
+      title: "Proposed Fee Structure 2017-18, 2018-19 & 2019-2020",
+      orderNo: "N/A",
+      date: "21-12-2017",
+      category: "Fee",
+      status: "Active"
     },
     {
-      particulars: "Concession for the ward of Kashmiri Migrates for admission",
-      orderNoAndDate: "GOI/ New Delhi 22nd July 2016"
+      id: 10,
+      title: "Concession for the ward of Kashmiri Migrates for admission",
+      orderNo: "GOI/New Delhi",
+      date: "22-07-2016",
+      category: "Admission",
+      status: "Active"
     },
     {
-      particulars: "Circular for Reservation in Polytechnics for TSP Area candidates",
-      orderNoAndDate: "F1(6)/TE/99 Jaipur dtd. 04.07.2016"
+      id: 11,
+      title: "Circular for Reservation in Polytechnics for TSP Area candidates",
+      orderNo: "F1(6)/TE/99",
+      date: "04-07-2016",
+      category: "Reservation",
+      status: "Active"
     }
   ]
 
+  const filteredCirculars = circularsData.filter(circular => 
+    circular.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    circular.orderNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    circular.date.includes(searchTerm) ||
+    circular.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const getCategoryBadge = (category) => {
+    const categoryClasses = {
+      'Fee': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+      'Policy': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+      'Admission': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      'Reservation': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+      'HR': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+      'Notice': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+      'Guidelines': 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300'
+    };
+    
+    return (
+      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryClasses[category] || 'bg-gray-100'}`}>
+        {category}
+      </span>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header Component */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <Header />
       
-      {/* Vision Section */}
-      <div className="bg-white dark:bg-gray-800 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Vision :
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed">
-              "To enhance the competitiveness of State's technical manpower to global standards by imparting high quality & state of art Technical Education and Training to all sections of the society."
-            </p>
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-r from-blue-50 to-blue-100 dark:from-slate-800 dark:to-slate-900 text-gray-800 dark:text-white overflow-hidden">
+        <div className="absolute inset-0 bg-grid-white/5"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+        <motion.div 
+          className="text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium mb-6">
+            <span className="inline-flex h-2 w-2 rounded-full bg-blue-500 mr-2"></span>
+            Circulars & Letters
           </div>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+              Circulars & Official Letters
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Access important circulars, official letters, and communications
+            </p>
+          </motion.div>
         </div>
       </div>
 
-      {/* Main Content Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Circulars, Orders & Letters Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-          <div className="px-6 py-4 bg-blue-600 dark:bg-blue-700">
-            <h1 className="text-2xl font-bold text-white text-center">
-              Circulars, Orders & Letters
-            </h1>
+      {/* Main Content */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Search and Filter */}
+        <div className="mb-8">
+          <div className="relative w-full md:max-w-md">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="block w-full pl-10 pr-3 py-3 bg-white/90 dark:bg-gray-800/95 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 rounded-lg 
+                         transition-all duration-200 ease-in-out border border-gray-200 dark:border-gray-700
+                         focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/50 focus:outline-none focus:shadow-sm
+                         hover:border-gray-300 dark:hover:border-gray-600"
+              placeholder="Search circulars and letters..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={(e) => e.target.select()}
+            />
           </div>
+        </div>
 
-          {/* Circulars Table */}
+        {/* Circulars List */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-orange-500 text-white">
-                  <th className="px-6 py-3 text-left text-sm font-semibold">
-                    Circulars, Orders & Letters
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700/50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Circular / Letter
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">
-                    Order No. and Date
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Order No.
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Action
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
-                {circularsData.map((item, index) => (
-                  <tr 
-                    key={index}
-                    className={`${
-                      index % 2 === 0 
-                        ? 'bg-white dark:bg-gray-800' 
-                        : 'bg-gray-50 dark:bg-gray-700'
-                    } hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors`}
-                  >
-                    <td className="px-6 py-4 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 cursor-pointer">
-                      <span className="hover:underline">
-                        {item.particulars}
-                      </span>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {filteredCirculars.map((circular) => (
+                  <tr key={circular.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <td className="px-6 py-4 whitespace-normal">
+                      <div className="flex items-center">
+                        <FileText className="flex-shrink-0 h-5 w-5 text-blue-500 mr-3" />
+                        <span className="text-gray-900 dark:text-white font-medium">
+                          {circular.title}
+                        </span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-                      {item.orderNoAndDate}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getCategoryBadge(circular.category)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      {circular.orderNo}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      <div className="flex items-center">
+                        <Calendar className="flex-shrink-0 h-4 w-4 text-gray-400 mr-2" />
+                        {circular.date}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <a 
+                        href={`/documents/circulars/${circular.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                      >
+                        View Details
+                        <ArrowRight className="ml-1 h-4 w-4" />
+                      </a>
                     </td>
                   </tr>
                 ))}
@@ -118,10 +238,9 @@ const CircularsLettersPage = () => {
         </div>
       </div>
       
-      {/* Footer Component */}
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default CircularsLettersPage
+export default CircularsLettersPage;
