@@ -7,7 +7,12 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(() => {
   const enableHttps = process.env.VITE_HTTPS === 'true'
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react({
+        jsxRuntime: 'automatic'
+      }), 
+      tailwindcss()
+    ],
     server: {
       https: enableHttps ? true : false,
       proxy: {
