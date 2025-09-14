@@ -20,7 +20,7 @@ router.delete("/:id", role(["UniversityAdmin"]), deleteCollege);
 
 
 router.get("/my-details", role(["CollegeAdmin"]), getMyCollege);
-router.put("/my-details", role(["CollegeAdmin"]), updateMyCollege);
+router.put("/update/my-details", role(["CollegeAdmin"]), updateMyCollege);
 
 router.get("/", getPublicColleges);
 
