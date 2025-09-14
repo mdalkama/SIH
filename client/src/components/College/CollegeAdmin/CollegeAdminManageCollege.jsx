@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building, MapPin, Phone, Mail, Globe, Edit3, Save, Loader2, AlertCircle, X, CheckCircle, User, Link } from 'lucide-react';
+import { Building, MapPin, Phone, Mail, Globe, Edit3, Save, Loader2, AlertCircle, X, CheckCircle, User, Link, Calendar, Users } from 'lucide-react';
 
 // --- HELPER COMPONENTS ---
 
@@ -31,13 +31,13 @@ const InfoField = ({ label, value, icon: Icon, isEditing, onChange, name, type =
             <input
                 type={type}
                 name={name}
-                value={value || ''}
+                value={type === 'date' && value ? value.split('T')[0] : (value || '')}
                 onChange={onChange}
                 className="w-full p-2.5 border border-slate-300 rounded-lg bg-slate-50 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition"
             />
         ) : (
             <p className="p-2.5 bg-slate-100 rounded-lg text-slate-800">
-                {value || 'N/A'}
+                {type === 'date' && value ? new Date(value).toLocaleDateString('en-GB') : (value || 'N/A')}
             </p>
         )}
     </div>
@@ -45,23 +45,11 @@ const InfoField = ({ label, value, icon: Icon, isEditing, onChange, name, type =
 
 const SkeletonLoader = () => (
     <div className="animate-pulse space-y-6">
-        <div className="bg-white rounded-xl p-6 mb-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <div className="h-8 w-64 bg-slate-200 rounded"></div>
-                    <div className="h-4 w-48 bg-slate-200 rounded mt-2"></div>
-                </div>
-                <div className="h-10 w-32 bg-slate-200 rounded-lg"></div>
-            </div>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-                <div className="bg-white p-6 rounded-xl h-48 border border-slate-200"></div>
-                <div className="bg-white p-6 rounded-xl h-48 border border-slate-200"></div>
-            </div>
-            <div className="lg:col-span-1">
-                <div className="bg-white p-6 rounded-xl h-64 border border-slate-200"></div>
-            </div>
+        <div className="h-24 bg-slate-200 rounded-xl"></div>
+        <div className="space-y-6">
+            <div className="h-64 bg-slate-200 rounded-xl"></div>
+            <div className="h-48 bg-slate-200 rounded-xl"></div>
+            <div className="h-64 bg-slate-200 rounded-xl"></div>
         </div>
     </div>
 );
@@ -92,12 +80,11 @@ const CollegeAdminManageCollege = () => {
                 }
                 const data = await res.json();
                 
-                // CORRECTED: Access the nested 'college' object from the response
-                if (data && data.college) {
-                    setCollegeData(data.college);
-                    setEditedData(JSON.parse(JSON.stringify(data.college))); // Deep copy for editing
+                if (data && data._id) {
+                    setCollegeData(data);
+                    setEditedData(JSON.parse(JSON.stringify(data)));
                 } else {
-                    throw new Error("College data not found in the API response.");
+                    throw new Error("Invalid college data received from the API.");
                 }
             } catch (err) {
                 setError(err.message);
@@ -113,13 +100,7 @@ const CollegeAdminManageCollege = () => {
         const { name, value } = e.target;
         setEditedData(prev => {
             if (nestedKey) {
-                return {
-                    ...prev,
-                    [nestedKey]: {
-                        ...prev[nestedKey],
-                        [name]: value
-                    }
-                };
+                return { ...prev, [nestedKey]: { ...prev[nestedKey], [name]: value } };
             }
             return { ...prev, [name]: value };
         });
@@ -131,10 +112,10 @@ const CollegeAdminManageCollege = () => {
         try {
             const payload = {
                 name: editedData.name,
-                website: editedData.website,
+                establishmentDate: editedData.establishmentDate,
                 location: editedData.location,
                 contact: editedData.contact,
-                // Assuming your backend can handle the full object or specific fields
+                capacity: editedData.capacity // Include capacity if it becomes editable
             };
 
             const res = await fetch('https://sih-4ptm.onrender.com/api/v1/manage-college/my-details', {
@@ -151,7 +132,7 @@ const CollegeAdminManageCollege = () => {
         } catch (err) {
             setError(err.message);
             showToast(err.message, 'error');
-            setEditedData(collegeData); // Revert changes on failure
+            setEditedData(collegeData);
         } finally {
             setLoading(false);
         }
@@ -169,6 +150,10 @@ const CollegeAdminManageCollege = () => {
                 <p className="mt-1 text-sm text-red-600">{error}</p>
             </div>
         );
+    }
+    
+    if (!collegeData) {
+        return null;
     }
 
     return (
@@ -190,36 +175,41 @@ const CollegeAdminManageCollege = () => {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                        <h2 className="text-xl font-semibold text-slate-800 mb-4">College Information</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-6">
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h2 className="text-xl font-semibold text-slate-800 mb-4">College Information</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* The grid now spans the full width */}
+                        <div className="md:col-span-2">
                             <InfoField label="College Name" name="name" value={isEditing ? editedData.name : collegeData.name} icon={Building} isEditing={isEditing} onChange={handleInputChange} />
-                            <InfoField label="College Code" name="code" value={collegeData.code} icon={Link} isEditing={false} />
-                            <InfoField label="Affiliated To" name="universityName" value={collegeData.university?.name || 'N/A'} icon={Globe} isEditing={false} />
-                            <InfoField label="Affiliation ID" name="affiliationId" value={collegeData.affiliationId} icon={Link} isEditing={false} />
                         </div>
+                        <InfoField label="College Code" name="code" value={collegeData.code} icon={Link} isEditing={false} />
+                        <InfoField label="Affiliation ID" name="affiliationId" value={collegeData.affiliationId} icon={Link} isEditing={false} />
+                        <InfoField label="Establishment Date" name="establishmentDate" value={collegeData.establishmentDate} icon={Calendar} isEditing={false} onChange={handleInputChange} type="date" />
+                        <InfoField label="Total Student Capacity" name="capacity" value={isEditing ? editedData.capacity : collegeData.capacity} icon={Users} isEditing={isEditing} onChange={handleInputChange} type="number"/>
                     </div>
-                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                        <h2 className="text-xl font-semibold text-slate-800 mb-4">Contact Details</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InfoField label="Principal Name" name="principal" value={isEditing ? editedData.contact?.principal : collegeData.contact?.principal} icon={User} isEditing={isEditing} onChange={(e) => handleInputChange(e, 'contact')} />
-                            <InfoField label="Contact Number" name="phone" value={isEditing ? editedData.contact?.phone : collegeData.contact?.phone} icon={Phone} isEditing={isEditing} onChange={(e) => handleInputChange(e, 'contact')} />
-                            <InfoField label="Email Address" name="email" value={isEditing ? editedData.contact?.email : collegeData.contact?.email} icon={Mail} isEditing={isEditing} onChange={(e) => handleInputChange(e, 'contact')} type="email"/>
-                            <InfoField label="Website" name="website" value={isEditing ? editedData.website : collegeData.website} icon={Globe} isEditing={isEditing} onChange={handleInputChange} />
+                </div>
+                
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h2 className="text-xl font-semibold text-slate-800 mb-4">Contact Details</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <InfoField label="Contact Number" name="phone" value={isEditing ? editedData.contact?.phone : collegeData.contact?.phone} icon={Phone} isEditing={isEditing} onChange={(e) => handleInputChange(e, 'contact')} />
+                        <InfoField label="Email Address" name="email" value={isEditing ? editedData.contact?.email : collegeData.contact?.email} icon={Mail} isEditing={isEditing} onChange={(e) => handleInputChange(e, 'contact')} type="email"/>
+                        <div className="md:col-span-2">
+                           <InfoField label="Website" name="website" value={isEditing ? editedData.contact?.website : collegeData.contact?.website} icon={Globe} isEditing={isEditing} onChange={(e) => handleInputChange(e, 'contact')} />
                         </div>
                     </div>
                 </div>
-                <div className="lg:col-span-1">
-                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm sticky top-8">
-                        <h2 className="text-xl font-semibold text-slate-800 mb-4">Location & Address</h2>
-                        <div className="space-y-4">
-                             <InfoField label="Street / Area" name="address" value={isEditing ? editedData.location?.address : collegeData.location?.address} icon={MapPin} isEditing={isEditing} onChange={(e) => handleInputChange(e, 'location')} />
-                             <InfoField label="City" name="city" value={isEditing ? editedData.location?.city : collegeData.location?.city} icon={Building} isEditing={isEditing} onChange={(e) => handleInputChange(e, 'location')} />
-                             <InfoField label="State" name="state" value={isEditing ? editedData.location?.state : collegeData.location?.state} icon={Building} isEditing={isEditing} onChange={(e) => handleInputChange(e, 'location')} />
-                             <InfoField label="ZIP Code" name="pincode" value={isEditing ? editedData.location?.pincode : collegeData.location?.pincode} icon={MapPin} isEditing={isEditing} onChange={(e) => handleInputChange(e, 'location')} />
-                        </div>
+
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h2 className="text-xl font-semibold text-slate-800 mb-4">Location & Address</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <div className="md:col-span-2">
+                            <InfoField label="Street / Area" name="address" value={isEditing ? editedData.location?.address : collegeData.location?.address} icon={MapPin} isEditing={isEditing} onChange={(e) => handleInputChange(e, 'location')} />
+                         </div>
+                         <InfoField label="City" name="city" value={isEditing ? editedData.location?.city : collegeData.location?.city} icon={Building} isEditing={isEditing} onChange={(e) => handleInputChange(e, 'location')} />
+                         <InfoField label="State" name="state" value={isEditing ? editedData.location?.state : collegeData.location?.state} icon={Building} isEditing={isEditing} onChange={(e) => handleInputChange(e, 'location')} />
+                         <InfoField label="ZIP Code" name="pincode" value={isEditing ? editedData.location?.pincode : collegeData.location?.pincode} icon={MapPin} isEditing={isEditing} onChange={(e) => handleInputChange(e, 'location')} />
                     </div>
                 </div>
             </div>

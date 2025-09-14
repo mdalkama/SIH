@@ -164,7 +164,7 @@ export const updateMyCollege = async (req, res) => {
     const allowedUpdates = { name, location, contact, website, capacity };
 
     try {
-        const updatedCollege = await College.findByOneAndUpdate({code: collegeId}, allowedUpdates, { new: true });
+        const updatedCollege = await College.findOneAndUpdate({code: collegeId}, allowedUpdates, { new: true });
         if (!updatedCollege) {
             return res.status(404).json({ message: "Your assigned college could not be found." });
         }
