@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import Application from '../../../components/Application/Application.jsx';
-import SessionTimer from '../../../components/SessionTimer/SessionTimer.jsx';
+import HeaderSessionTimer from '../../../components/SessionTimer/HeaderSessionTimer.jsx';
 import SessionExpiredModal from '../../../components/SessionTimer/SessionExpiredModal.jsx';
+import { getCourseConfig, isValidCourseId } from '../../../utils/courseConfigUtils.js';
 
 const ApplicationWrapper = () => {
   const { courseId } = useParams();
@@ -13,56 +14,20 @@ const ApplicationWrapper = () => {
   
   const [isSessionActive, setIsSessionActive] = useState(true);
   const [showExpiredModal, setShowExpiredModal] = useState(false);
-  const [sessionTime, setSessionTime] = useState(120); // 2 minutes default
+  const [sessionTime, setSessionTime] = useState(1800); // 30 minutes default
 
-  // Course configuration mapping
-  const courseConfig = {
-    'diploma-engineering-first-year': {
-      formName: 'Diploma Engineering First Year Admission Form 2025',
-      admissionType: 'diploma',
-      sessionYear: '2025'
-    },
-    'diploma-engineering-lateral-entry': {
-      formName: 'Diploma Engineering Lateral Entry Admission Form 2025',
-      admissionType: 'diploma',
-      sessionYear: '2025'
-    },
-    'diploma-non-engineering-first-year': {
-      formName: 'Diploma Non-Engineering First Year Admission Form 2025',
-      admissionType: 'diploma',
-      sessionYear: '2025'
-    },
-    'diploma-non-engineering-second-year-graduate': {
-      formName: 'Diploma Non-Engineering Second Year Graduate Admission Form 2025',
-      admissionType: 'diploma',
-      sessionYear: '2025'
-    },
-    'diploma-non-engineering-first-year-degree': {
-      formName: 'Diploma Non-Engineering First Year Degree Admission Form 2025',
-      admissionType: 'degree',
-      sessionYear: '2025'
-    },
-    'bsc-first-year': {
-      formName: 'B.Sc First Year Admission Form 2025',
-      admissionType: 'degree',
-      sessionYear: '2025'
-    },
-    'iti-courses': {
-      formName: 'ITI Courses Admission Form 2025',
-      admissionType: 'iti',
-      sessionYear: '2025'
-    }
-  };
-
-  const currentConfig = courseConfig[courseId] || {
-    formName: 'Admission Form 2025',
-    admissionType: 'diploma',
-    sessionYear: '2025'
-  };
+  // Get dynamic course configuration from navigation
+  const currentConfig = getCourseConfig(courseId);
 
   useEffect(() => {
     // Validate application ID and course ID
     if (!applicationId || !courseId) {
+      navigate('/admission/otp-verification');
+      return;
+    }
+
+    // Validate course ID against available courses
+    if (!isValidCourseId(courseId)) {
       navigate('/admission/otp-verification');
       return;
     }
@@ -92,18 +57,18 @@ const ApplicationWrapper = () => {
   }, [applicationId, courseId, navigate]);
 
   const getSessionDuration = (courseId) => {
-    // Different session durations for different courses (in seconds)
-    const durations = {
-      'diploma-engineering-first-year': 180, // 3 minutes
-      'diploma-engineering-lateral-entry': 180, // 3 minutes
-      'diploma-non-engineering-first-year': 120, // 2 minutes
-      'diploma-non-engineering-second-year-graduate': 150, // 2.5 minutes
-      'diploma-non-engineering-first-year-degree': 180, // 3 minutes
-      'bsc-first-year': 180, // 3 minutes
-      'iti-courses': 120 // 2 minutes
+    // Default session duration for all courses (30 minutes)
+    // Can be customized based on admission type if needed
+    const config = getCourseConfig(courseId);
+    
+    // Different durations based on admission type
+    const durationsByType = {
+      'diploma': 1800, // 30 minutes
+      'degree': 1800, // 30 minutes
+      'iti': 1800 // 30 minutes
     };
     
-    return durations[courseId] || 120; // Default 2 minutes
+    return durationsByType[config.admissionType] || 1800; // Default 30 minutes
   };
 
   const handleSessionExpire = () => {
@@ -138,14 +103,6 @@ const ApplicationWrapper = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Session Timer */}
-      <SessionTimer
-        initialTime={sessionTime}
-        onSessionExpire={handleSessionExpire}
-        isActive={isSessionActive}
-        showWarningAt={30}
-      />
-
       {/* Session Status Indicator */}
       {isSessionActive && (
         <div className="bg-green-50 border-b border-green-200 py-2">
@@ -155,9 +112,6 @@ const ApplicationWrapper = () => {
               <span className="text-sm text-green-700 font-medium">
                 Session Active - Application ID: {applicationId}
               </span>
-            </div>
-            <div className="text-sm text-green-600">
-              Course: {currentConfig.formName.split(' ').slice(0, 3).join(' ')}
             </div>
           </div>
         </div>
@@ -172,6 +126,14 @@ const ApplicationWrapper = () => {
           sessionYear={currentConfig.sessionYear}
           applicationId={applicationId}
           courseId={courseId}
+          sessionTimer={
+            <HeaderSessionTimer
+              initialTime={sessionTime}
+              onSessionExpire={handleSessionExpire}
+              isActive={isSessionActive}
+              showWarningAt={300}
+            />
+          }
         />
       ) : (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">

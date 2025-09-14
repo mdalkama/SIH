@@ -7,11 +7,11 @@ import Footer from '../footer';
 const OtpVerification = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const role = searchParams.get('role') || 'student';
+  const role = searchParams.get('user') || 'Applicant';
+  const courseId = searchParams.get('courseId');
 
-  const [step, setStep] = useState(1); // 1: Course Selection & Phone, 2: OTP Verification
+  const [step, setStep] = useState(1); // 1: Phone & Email, 2: OTP Verification
   const [formData, setFormData] = useState({
-    selectedCourse: '',
     phoneNumber: '',
     email: '',
     otp: ''
@@ -21,43 +21,54 @@ const OtpVerification = () => {
   const [otpSent, setOtpSent] = useState(false);
 
   // Course options based on admission types
-  const courseOptions = [
-    {
-      id: 'diploma-engineering-first-year',
+  const courseOptions = {
+    'diploma-engineering-first-year': {
       name: 'Diploma Engineering (1st Year)',
       description: 'First Year Diploma Engineering Courses'
     },
-    {
-      id: 'diploma-engineering-lateral-entry',
+    'diploma-engineering-lateral-entry': {
       name: 'Diploma Engineering (Lateral Entry)',
       description: 'Lateral Entry Diploma Engineering Courses'
     },
-    {
-      id: 'diploma-non-engineering-first-year',
+    'diploma-non-engineering-first-year': {
       name: 'Diploma Non-Engineering (1st Year)',
       description: 'First Year Diploma Non-Engineering Courses'
     },
-    {
-      id: 'diploma-non-engineering-second-year-graduate',
+    'diploma-non-engineering-second-year-graduate': {
       name: 'Diploma Non-Engineering (2nd Year Graduate)',
       description: 'Second Year Graduate Non-Engineering Courses'
     },
-    {
-      id: 'diploma-non-engineering-first-year-degree',
+    'diploma-non-engineering-first-year-degree': {
       name: 'Diploma Non-Engineering (1st Year Degree)',
       description: 'First Year Degree Non-Engineering Courses'
     },
-    {
-      id: 'bsc-first-year',
+    'engineering': {
+      name: 'Diploma Engineering',
+      description: 'Diploma Engineering Courses'
+    },
+    'non-engineering': {
+      name: 'Diploma Non-Engineering',
+      description: 'Diploma Non-Engineering Courses'
+    },
+    'bsc-first-year': {
       name: 'B.Sc (1st Year)',
       description: 'Bachelor of Science First Year'
     },
-    {
-      id: 'iti-courses',
+    'iti-courses': {
       name: 'ITI Courses',
       description: 'Industrial Training Institute Courses'
     }
-  ];
+  };
+
+  const selectedCourse = courseOptions[courseId];
+
+  // Redirect if no course ID provided
+  useEffect(() => {
+    if (!courseId || !selectedCourse) {
+      navigate('/');
+      return;
+    }
+  }, [courseId, selectedCourse, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -77,10 +88,6 @@ const OtpVerification = () => {
 
   const validateStep1 = () => {
     const newErrors = {};
-    
-    if (!formData.selectedCourse) {
-      newErrors.selectedCourse = 'Please select a course';
-    }
     
     if (!formData.phoneNumber) {
       newErrors.phoneNumber = 'Phone number is required';
@@ -132,27 +139,34 @@ const OtpVerification = () => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Generate application ID
-    const applicationId = `APP${Date.now()}${Math.floor(Math.random() * 1000)}`;
+    // Check if user has existing session data
+    const existingApplicationId = localStorage.getItem('currentApplicationId');
+    let applicationId = existingApplicationId;
     
-    // Store application data in localStorage for demo
+    if (!applicationId) {
+      // Generate new application ID if none exists
+      applicationId = `APP${Date.now()}${Math.floor(Math.random() * 1000)}`;
+      localStorage.setItem('currentApplicationId', applicationId);
+    }
+    
+    // Store/update application data in localStorage
     const applicationData = {
       applicationId,
-      courseId: formData.selectedCourse,
-      courseName: courseOptions.find(c => c.id === formData.selectedCourse)?.name,
+      courseId: courseId,
+      courseName: selectedCourse?.name,
       phoneNumber: formData.phoneNumber,
       email: formData.email,
       createdAt: new Date().toISOString(),
-      status: 'in_progress'
+      status: 'in_progress',
+      lastLogin: new Date().toISOString()
     };
     
     localStorage.setItem(`application_${applicationId}`, JSON.stringify(applicationData));
-    localStorage.setItem('currentApplicationId', applicationId);
     
     setIsLoading(false);
     
-    // Redirect to application form with course ID
-    navigate(`/application/${formData.selectedCourse}?applicationId=${applicationId}`);
+    // Redirect to application form with course ID and application ID
+    navigate(`/application/${courseId}?applicationId=${applicationId}`);
   };
 
   const handleBack = () => {
@@ -176,7 +190,10 @@ const OtpVerification = () => {
             <h1 className="text-3xl font-bold text-blue-900 mb-2">
               Admission Portal
             </h1>
-            <p className="text-gray-600">Role: {role.charAt(0).toUpperCase() + role.slice(1)}</p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+              <h3 className="font-semibold text-blue-900 mb-1">Selected Course:</h3>
+              <p className="text-blue-800 font-medium">{selectedCourse?.name || 'Course not found'}</p>
+            </div>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-blue-700 mx-auto rounded-full mt-4"></div>
           </div>
 
@@ -196,56 +213,8 @@ const OtpVerification = () => {
             {step === 1 ? (
               <>
                 <div className="text-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Select Course & Enter Details</h2>
-                  <p className="text-gray-600">Choose your course and provide your contact information</p>
-                </div>
-
-                {/* Course Selection */}
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold text-blue-900 mb-3">
-                    Select Course <span className="text-red-500">*</span>
-                  </label>
-                  <div className="grid gap-3">
-                    {courseOptions.map((course) => (
-                      <label key={course.id} className="cursor-pointer">
-                        <input
-                          type="radio"
-                          name="selectedCourse"
-                          value={course.id}
-                          checked={formData.selectedCourse === course.id}
-                          onChange={handleInputChange}
-                          className="sr-only"
-                        />
-                        <div className={`border-2 rounded-lg p-4 transition-all duration-200 ${
-                          formData.selectedCourse === course.id
-                            ? 'border-blue-600 bg-blue-50'
-                            : 'border-gray-200 hover:border-blue-300'
-                        }`}>
-                          <div className="flex items-center">
-                            <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                              formData.selectedCourse === course.id
-                                ? 'border-blue-600 bg-blue-600'
-                                : 'border-gray-300'
-                            }`}>
-                              {formData.selectedCourse === course.id && (
-                                <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                              )}
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-gray-800">{course.name}</h3>
-                              <p className="text-sm text-gray-600">{course.description}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                  {errors.selectedCourse && (
-                    <p className="text-red-500 text-sm mt-2 flex items-center">
-                      <AlertCircle size={16} className="mr-1" />
-                      {errors.selectedCourse}
-                    </p>
-                  )}
+                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Enter Your Details</h2>
+                  <p className="text-gray-600">Provide your contact information to proceed</p>
                 </div>
 
                 {/* Phone Number */}
@@ -368,13 +337,6 @@ const OtpVerification = () => {
                   )}
                 </div>
 
-                {/* Course Info */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                  <h3 className="font-semibold text-blue-900 mb-1">Selected Course:</h3>
-                  <p className="text-blue-800">
-                    {courseOptions.find(c => c.id === formData.selectedCourse)?.name}
-                  </p>
-                </div>
 
                 {/* Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4">
