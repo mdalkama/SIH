@@ -16,13 +16,14 @@ const router = Router();
 router.post("/", createExam);
 router.get("/", getAllExams);
 
-// --- NEW ROUTES FOR APPROVAL WORKFLOW ---
-router.get("/pending-approval", getExamsForApproval);
-router.put("/:examId/publish", publishResults);
 
 router.get("/:id", getExamById);
 router.put("/:id", updateExam);
 router.delete("/:id", deleteExam);
+
+// --- NEW ROUTES FOR APPROVAL WORKFLOW ---
+router.get("/pending-approval", getExamsForApproval);
+router.put("/:examId/publish", publishResults);
 
 // --- NEW ROUTES FOR RESULTS ---
 router.get("/:examId/results/entry", getExamResultsForEntry);

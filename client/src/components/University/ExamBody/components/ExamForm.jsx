@@ -1,5 +1,4 @@
-// FILE: ExamForm.jsx
-
+// File: ExamForm.jsx
 import React, { useState, useCallback } from 'react';
 import { PlusCircle, X, Loader2, Trash2, ArrowLeft } from 'lucide-react';
 
@@ -69,7 +68,7 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
             setExamCourses(newCourses);
         }
     };
-    
+
     const handleCourseChange = (index, courseId) => {
         const newCourses = [...examCourses];
         const selectedCourseData = allCourses.find(c => c.courseId === courseId);
