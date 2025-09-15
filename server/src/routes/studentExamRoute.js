@@ -15,9 +15,5 @@ router.get("/my-registrations", getMyRegistrations);
 // Get the result of a specific past exam
 router.get("/result/:examId", getExamResult); 
 
-// Results
-// router.post("/:id/result", addResult);                     // Add student result
-// router.put("/:id/result/:studentId", updateResult);        // Update student result
-// router.get("/:id/result/:studentId", getStudentResult); // Get specific student result
 
 export default router;
