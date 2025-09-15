@@ -44,7 +44,6 @@ export const submitFeedback = async (req, res) => {
 export const getMyFeedback = async (req, res) => {
     try {
         const studentId = req.user.id;
-        // Find feedback where the user is the submitter AND it's not anonymous
         const feedback = await Feedback.find({ submittedBy: studentId, isAnonymous: false }).sort({ createdAt: -1 });
         res.status(200).json({ success: true, feedback });
     } catch (err) {
