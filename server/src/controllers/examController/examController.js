@@ -1,6 +1,7 @@
 import Exam from '../../models/examModel.js';
 import mongoose from 'mongoose';
 import Student from '../../models/studentModel.js';
+import StudentAcademics from '../../models/studentAcademicsModel.js';
 
 /**
  * @description Create a new examination schedule.
@@ -70,7 +71,7 @@ export const getExamById = async (req, res) => {
     try {
         const { id } = req.params;
         const exam = await Exam.findById(id).populate('createdBy', 'name email');
-        
+        console.log(exam)
         if (!exam) {
             return res.status(404).json({ message: "Exam not found." });
         }
