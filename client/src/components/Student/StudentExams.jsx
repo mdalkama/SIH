@@ -17,6 +17,24 @@ const Modal = ({ isOpen, onClose, title, children }) => {
     );
 };
 
+// --- NEW SKELETON LOADER COMPONENT ---
+const ExamCardSkeleton = () => (
+    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm animate-pulse">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
+            <div>
+                <div className="h-6 w-32 bg-slate-200 rounded-full mb-3"></div>
+                <div className="h-7 w-56 bg-slate-200 rounded-md"></div>
+                <div className="h-5 w-32 bg-slate-200 rounded-md mt-2"></div>
+            </div>
+            <div className="h-10 w-full sm:w-40 bg-slate-200 rounded-lg"></div>
+        </div>
+        <div className="mt-4 pt-4 border-t border-slate-100 flex flex-wrap gap-x-6 gap-y-2">
+            <div className="h-5 w-40 bg-slate-200 rounded-md"></div>
+            <div className="h-5 w-40 bg-slate-200 rounded-md"></div>
+        </div>
+    </div>
+);
+
 // --- Main Component ---
 const StudentExam = () => {
     const [exams, setExams] = useState([]);
@@ -28,7 +46,7 @@ const StudentExam = () => {
         const fetchExams = async () => {
             setLoading(true);
             try {
-                const response = await fetch('https://sih-4ptm.onrender.com/api/v1/exams/my-exams', {
+                const response = await fetch('https://sih-4ptm.onrender.com/api/v1/exam/my-exams', {
                     credentials: 'include'
                 });
                 const result = await response.json();
@@ -43,7 +61,6 @@ const StudentExam = () => {
         fetchExams();
     }, []);
 
-    // --- UPDATED getStatusInfo FUNCTION ---
     const getStatusInfo = (status) => {
         switch(status) {
             case 'OPEN_FOR_REGISTRATION':
@@ -59,7 +76,6 @@ const StudentExam = () => {
         }
     };
 
-    if (loading) return <div className="flex justify-center p-12"><Loader2 className="w-10 h-10 animate-spin text-indigo-600" /></div>;
     if (error) return <div className="p-4 bg-red-50 text-red-700 rounded-md">{error}</div>;
 
     return (
@@ -70,7 +86,13 @@ const StudentExam = () => {
             </header>
 
             <div className="space-y-6">
-                {exams.length > 0 ? (
+                {loading ? (
+                    <>
+                        <ExamCardSkeleton />
+                        <ExamCardSkeleton />
+                        <ExamCardSkeleton />
+                    </>
+                ) : exams.length > 0 ? (
                     exams.map(exam => {
                         const statusInfo = getStatusInfo(exam.status);
                         return (
@@ -96,7 +118,7 @@ const StudentExam = () => {
                         );
                     })
                 ) : (
-                    <div className="text-center py-16 bg-white rounded-xl border-2 border-dashed border-slate-200">
+                    <div className="text-center py-16 bg-white rounded-xl border-2 border border-slate-200">
                         <BookOpen className="mx-auto h-12 w-12 text-slate-300" />
                         <h3 className="mt-4 text-lg font-medium text-slate-800">No Upcoming Exams</h3>
                         <p className="mt-1 text-sm text-slate-500">There are currently no examination schedules available for your course and semester.</p>
