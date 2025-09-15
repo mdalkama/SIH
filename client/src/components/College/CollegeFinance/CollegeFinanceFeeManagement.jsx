@@ -482,7 +482,7 @@ const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSiz
   const summaryStats = useMemo(() => {
     if (!sortedData || sortedData.length === 0) return null;
     if (activeTab === 'semesters') {
-      const totalPending = sortedData.reduce((sum, s) => sum + ((s.fees) - s.paid), 0);
+      const totalPending = sortedData.reduce((sum, s) => sum + ((s.tuitionFee + s.examFee + s.otherFee) - s.paid), 0);
       return { label: 'Total Pending:', value: formatCurrency(totalPending) };
     }
     if (activeTab === 'fines') {
@@ -667,7 +667,7 @@ const PaymentHistoryTable = ({ history, formatCurrency, formatDate, currentPage,
 const PaymentModal = ({ target, amount, method, onAmountChange, onMethodChange, onClose, onConfirm, processing, formatCurrency }) => {
   if (!target) return null;
   const pendingAmount = target.type === 'semester'
-    ? (target.data.tuitionFee + target.data.examFee + target.data.otherFee) - target.data.paid
+    ? (target.data.fees) - target.data.paid
     : target.data.amount - target.data.paidAmount;
 
   return (
