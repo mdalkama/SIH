@@ -1,5 +1,6 @@
 import Exam from '../../models/examModel.js';
 import mongoose from 'mongoose';
+import Student from '../../models/studentModel.js';
 
 /**
  * @description Create a new examination schedule.
@@ -61,6 +62,51 @@ export const getAllExams = async (req, res) => {
     }
 };
 
+export const getStudentExams = async (req, res) => {
+    try {
+        const studentId = req.user.id;
+
+        const student = await Student.findById(studentId).select('courseId semester');
+        if (!student || !student.courseId || !student.semester) {
+            return res.status(404).json({ message: "Student academic details (courseId, semester) are incomplete." });
+        }
+        
+        const studentCourseId = student.courseId; 
+        const studentSemester = student.semester;
+        console.log(studentCourseId)
+
+        // 2. Find all exams that are for the student's semester AND contain their courseId in the courses array
+        const relevantExams = await Exam.find({
+            semester: studentSemester,
+            'courses.courseCode': studentCourseId, 
+            status: { $in: ["OPEN_FOR_REGISTRATION", "CLOSED","RESULT_PROCESSING", "PUBLISHED"] } 
+        }).sort({ startDate: 1 });
+
+        // 3. For each found exam, filter its 'courses' array to only return the timetable relevant to the student
+        const personalizedExams = relevantExams.map(exam => {
+            const studentCourseData = exam.courses.find(c => c.courseCode === studentCourseId);
+            
+            return {
+                _id: exam._id,
+                examName: exam.examName,
+                examType: exam.examType,
+                semester: exam.semester,
+                year: exam.year,
+                startDate: exam.startDate,
+                endDate: exam.endDate,
+                status: exam.status,
+                timetable: studentCourseData ? studentCourseData.timetable : [] 
+            };
+        });
+
+        res.status(200).json({ success: true, exams: personalizedExams });
+
+    } catch (error) {
+        console.error("Error fetching student exams:", error);
+        res.status(500).json({ message: "Server error fetching exams.", error: error.message });
+    }
+};
+
 /**
  * @description Get detailed information of a single exam by its ID.
  * @route GET /api/v1/exams/:id
@@ -75,8 +121,6 @@ export const getExamById = async (req, res) => {
             return res.status(404).json({ message: "Exam not found." });
         }
 
-        // In a real app, you would also populate student registration details here
-        // Example: .populate('registrations.student', 'name registrationNumber');
         
         res.status(200).json(exam);
     } catch (error) {
