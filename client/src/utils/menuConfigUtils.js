@@ -219,7 +219,7 @@ const menuConfig = {
         },
         {
             id: "complaints and feedback",
-            label: "Complaints and Feedback",
+            label: "Complaints & Feedback",
             icon: ClipboardList,
             path: "/student/complaints-and-feedback",
             component: StudentComplaintsAndFeedback,

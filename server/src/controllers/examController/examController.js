@@ -9,9 +9,8 @@ import Student from '../../models/studentModel.js';
  */
 export const createExam = async (req, res) => {
     try {
-        console.log(req.user)
         // createdBy should be added from authenticated user's ID
-        const examData = { ...req.body, createdBy: req.user._id };
+        const examData = { ...req.body, createdBy: req.user.id };
         
         const newExam = new Exam(examData);
         await newExam.save();

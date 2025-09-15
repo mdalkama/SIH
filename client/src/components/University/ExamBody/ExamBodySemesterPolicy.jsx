@@ -1,4 +1,4 @@
-import {React, useState, useMemo, useEffect} from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { PlusCircle, Edit, X, Loader2, Search, ChevronLeft, ChevronRight, Trash2, AlertTriangle, CheckCircle, Info, ArrowLeft, Eye, BookOpen, CalendarDays } from 'lucide-react';
 
 const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/semester-exam';
@@ -19,7 +19,6 @@ const UniversityExamManager = () => {
     const addToast = (type, message) => {
         const id = Date.now();
         setToasts(prev => [...prev, { id, type, message }]);
-        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
     };
 
     useEffect(() => {
@@ -119,7 +118,7 @@ const ExamListView = ({ onShowForm, addToast, onViewDetails }) => {
                 setIsLoading(false);
             }
         };
-        const timer = setTimeout(() => fetchExams(), 300); // Debounce search
+        const timer = setTimeout(() => fetchExams(), 300);
         return () => clearTimeout(timer);
     }, [pagination.currentPage, rowsPerPage, searchTerm, addToast]);
 
@@ -249,10 +248,18 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
             });
             setFormData(prev => ({ ...prev, courses: updatedCourses }));
         }
-    }, [formData.semester, allCourses, formData.courses.length]);
+    }, [formData.semester, allCourses]); // Correct dependency array
 
-    const handleCourseChange = (index, courseId) => { /* ... (logic unchanged) */ };
-    const handleTimetableChange = (courseIndex, ttIndex, field, value) => { /* ... (logic unchanged) */ };
+    const handleCourseChange = (index, courseId) => {
+        const updatedCourses = [...formData.courses];
+        updatedCourses[index] = { ...updatedCourses[index], courseCode: courseId, timetable: [] };
+        setFormData({ ...formData, courses: updatedCourses });
+    };
+    const handleTimetableChange = (courseIndex, ttIndex, field, value) => {
+        const updatedCourses = [...formData.courses];
+        updatedCourses[courseIndex].timetable[ttIndex][field] = value;
+        setFormData({ ...formData, courses: updatedCourses });
+    };
     const addCourse = () => setFormData({ ...formData, courses: [...formData.courses, { courseCode: '', timetable: [] }] });
     const removeCourse = (index) => setFormData({ ...formData, courses: formData.courses.filter((_, i) => i !== index) });
 
@@ -299,7 +306,6 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
                     <h1 className="text-2xl font-bold text-slate-800">{exam ? 'Edit Exam' : 'Create New Exam'}</h1>
                     <p className="text-slate-500 mt-1">Fill in the examination details below.</p>
                 </div>
-
                 <fieldset className="mt-6">
                     <legend className="text-lg font-semibold text-slate-700 mb-4">Core Details</legend>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -313,7 +319,6 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
                         {exam && <div className="lg:col-span-4"><FormSelect label="Status" name="status" value={formData.status} onChange={handleChange}>{STATUSES.map(s => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}</FormSelect></div>}
                     </div>
                 </fieldset>
-
                 <fieldset className="mt-8 border-t border-slate-200 pt-6">
                     <legend className="text-lg font-semibold text-slate-700 mb-4">Course Timetables</legend>
                     <div className="space-y-4">
@@ -343,27 +348,20 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
                             </div>
                         ))}
                     </div>
-                    <button type="button" onClick={addCourse} className="mt-4 flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors">
-                        <PlusCircle size={16} /> Add Course Timetable
-                    </button>
+                    <button type="button" onClick={addCourse} className="mt-4 flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"><PlusCircle size={16} /> Add Course Timetable</button>
                 </fieldset>
-
                 <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-slate-200">
                     <button type="button" onClick={onBack} className="px-5 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-semibold transition-colors">Cancel</button>
-                    <button type="submit" disabled={isLoading} className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg disabled:bg-indigo-300 flex items-center font-semibold transition-colors hover:bg-indigo-700">
-                        {isLoading ? <><Loader2 size={18} className="animate-spin mr-2" /> Saving...</> : (exam ? 'Update Exam' : 'Create Exam')}
-                    </button>
+                    <button type="submit" disabled={isLoading} className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg disabled:bg-indigo-300 flex items-center font-semibold transition-colors hover:bg-indigo-700">{isLoading ? <><Loader2 size={18} className="animate-spin mr-2" /> Saving...</> : (exam ? 'Update Exam' : 'Create Exam')}</button>
                 </div>
             </form>
         </div>
     );
 };
 
-
-// --- Child & Helper Components (Restyled) ---
+// --- Child & Helper Components ---
 const DataTableToolbar = ({ onSearchChange, onAddClick }) => (
     <div className="p-4 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-slate-200">
-        
         <div className="flex items-center justify-between  gap-4 w-full ">
             <div className="relative flex-grow md:flex-grow-0">
                 <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -421,7 +419,7 @@ const StatusSelector = ({ exam, onUpdate }) => {
         const newStatus = e.target.value;
         if (newStatus !== exam.status) {
             setNextStatus(newStatus);
-            setShowConfirm(true);
+setShowConfirm(true);
         }
     };
     const handleConfirm = async () => {

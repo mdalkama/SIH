@@ -137,7 +137,7 @@ const LibraryDashboard = () => {
                         </div>
                     </div>
                 );
-            }) : <div className="text-center p-12 bg-gray-50 rounded-xl"><BookOpen size={40} className="mx-auto text-gray-400 mb-3"/><p className="font-semibold text-lg">No Books Borrowed</p><p className="text-gray-500">Your currently borrowed list is empty.</p></div>}
+            }) : <div className="text-center p-12 bg-gray-50 border border-gray-200 shadow-sm rounded-xl"><BookOpen size={40} className="mx-auto text-gray-400 mb-3"/><p className="font-semibold text-lg">No Books Borrowed</p><p className="text-gray-500">Your currently borrowed list is empty.</p></div>}
         </div>
     );
 
@@ -198,7 +198,7 @@ const LibraryDashboard = () => {
     return (
         <div className="min-h-screen">
             <div className="max-w-6xl mx-auto">
-                <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div className="bg-white rounded-xl border border-gray-300 shadow-sm p-6 mb-6">
                     {isLoading ? <div className="h-20 animate-pulse bg-gray-100 rounded-lg"></div> : 
                     <div className="flex items-center justify-between">
                         <div>
@@ -209,7 +209,7 @@ const LibraryDashboard = () => {
                     </div>
                     }
                 </div>
-                <div className="bg-white rounded-xl shadow-sm mb-6">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
                     <div className="flex border-b border-gray-200 overflow-x-auto">
                         <button onClick={() => setActiveTab('dashboard')} className={`flex-shrink-0 flex items-center px-6 py-3 font-medium ${activeTab === 'dashboard' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}><User className="w-4 h-4 mr-2" />Dashboard</button>
                         <button onClick={() => setActiveTab('borrowed')} className={`flex-shrink-0 flex items-center px-6 py-3 font-medium ${activeTab === 'borrowed' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}><BookOpen className="w-4 h-4 mr-2" />My Books ({borrowedBooks.length})</button>
