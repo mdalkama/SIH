@@ -71,7 +71,6 @@ import RegistrarCompliance from "../components/University/Registrar/RegistrarCom
 // University Examination Body Components
 import ExamBodyDashboard from "../components/University/ExamBody/ExamBodyDashboard";
 import ExamBodyEntrancePolicy from "../components/University/ExamBody/ExamBodyEntrancePolicy";
-import ExamBodyResultsEntry from "../components/University/ExamCell/ExamBodyResultsEntry.jsx";
 import ExamBodySemesterPolicy from "../components/University/ExamBody/ExamBodySemesterPolicy";
 import ExamBodyResultApproval from "../components/University/ExamBody/ExamBodyResultApproval";
 import ExamBodySeatAllotmentApproval from "../components/University/ExamBody/ExamBodySeatAllotmentApproval";

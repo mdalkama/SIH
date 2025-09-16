@@ -21,11 +21,11 @@ router.put("/:id",role(['UniversityExaminationBody']),  updateExam);
 router.delete("/:id",role(['UniversityExaminationBody']),  deleteExam);
 router.put("/:examId/publish",role(['UniversityExaminationBody']),  publishResults);
 
+router.get("/pending-approval",role(['UniversityExaminationBody', 'UniversityExamCellStaff']),  getExamsForApproval);
 
 
 router.get("/",role(['UniversityExaminationBody', 'UniversityExamCellStaff']),  getAllExams);
 router.get("/:id",role(['UniversityExaminationBody', 'UniversityExamCellStaff']),  getExamById);
-router.get("/pending-approval",role(['UniversityExaminationBody', 'UniversityExamCellStaff']),  getExamsForApproval);
 
 // --- NEW ROUTES FOR RESULTS ---
 router.get("/:examId/results/entry", role(['UniversityExamCellStaff']), getExamResultsForEntry);
