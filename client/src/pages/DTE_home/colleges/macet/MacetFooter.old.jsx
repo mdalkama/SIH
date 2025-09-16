@@ -92,9 +92,9 @@ const MacetFooter = () => {
                     loading="lazy"
                   />
                   <div>
-                    <h2 className="text-xl font-bold text-white leading-tight">
+                    {/* <h2 className="text-xl font-bold text-white leading-tight">
                       मौलाना अज़ाद कॉलेज ऑफ़ इंजीनियरिंग एंड टेक्नोलॉजी
-                    </h2>
+                    </h2> */}
                     <h3 className="text-base font-semibold text-blue-200 mt-1">
                       Maulana Azad College of Engineering & Technology
                     </h3>

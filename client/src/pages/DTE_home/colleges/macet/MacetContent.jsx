@@ -163,7 +163,7 @@ const MacetContent = () => {
       <AboutSection />
       <NewsSection news={news} />
       <FacilitiesSection facilities={facilities} />
-      <ContactSection />
+     
     </div>
   );
 };

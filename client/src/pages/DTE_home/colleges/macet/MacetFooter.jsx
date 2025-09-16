@@ -67,7 +67,7 @@ const MacetFooter = () => {
   }, []);
   
   return (
-    <footer className="relative bg-gradient-to-b from-blue-900 to-blue-800 text-white">
+    <footer className="relative bg-white text-gray-900">
       {/* Top Wave Decoration */}
       <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-500 to-blue-400"></div>
       
@@ -85,28 +85,26 @@ const MacetFooter = () => {
               >
                 <div className="flex items-start gap-4 mb-4">
                   <img 
-                    src="https://macet.ac.in/assets/img/logo.png" 
+                    src="https://1.bp.blogspot.com/-PAhIIGTrAIc/YGQvB1Ode6I/AAAAAAAAOOM/DqjPA77lxYMqjzjWie1jSc2il8avf3m_ACLcBGAsYHQ/s0/download.png" 
                     alt="MACET Logo" 
                     className="h-20 w-20 object-contain"
                     loading="lazy"
                   />
                   <div>
-                    <h2 className="text-xl font-bold text-white leading-tight">
-                      मौलाना अज़ाद कॉलेज ऑफ़ इंजीनियरिंग एंड टेक्नोलॉजी
-                    </h2>
-                    <h3 className="text-base font-semibold text-blue-200 mt-1">
+                   
+                    <h3 className="text-base font-semibold text-gray-700 mt-1">
                       Maulana Azad College of Engineering & Technology
                     </h3>
                   </div>
                 </div>
-                <p className="text-blue-100 text-sm mt-2 mb-4">
+                <p className="text-gray-600 text-sm mt-2 mb-4">
                   Empowering engineering education through innovation, excellence, and industry partnerships. 
                   Committed to developing skilled professionals for tomorrow's technological challenges.
                 </p>
                 
                 {/* Social Media */}
-                <div className="mt-auto pt-4 border-t border-blue-700">
-                  <h4 className="text-sm font-semibold text-white mb-3">Connect With Us</h4>
+                <div className="mt-auto pt-4 border-t border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-3">Connect With Us</h4>
                   <div className="flex space-x-3">
                     {socialLinks.map((social, index) => (
                       <a
@@ -114,7 +112,7 @@ const MacetFooter = () => {
                         href={social.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="bg-blue-800 hover:bg-blue-700 text-white p-2 rounded-full transition-colors duration-300"
+                        className="bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-colors duration-300"
                         aria-label={social.name}
                       >
                         <social.icon className="h-4 w-4" />
@@ -133,7 +131,7 @@ const MacetFooter = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="lg:col-span-1"
             >
-              <h3 className="text-lg font-bold text-white mb-5 pb-2 border-b border-blue-700">
+              <h3 className="text-lg font-bold text-gray-900 mb-5 pb-2 border-b border-gray-200">
                 Quick Links
               </h3>
               <ul className="space-y-3">
@@ -141,9 +139,9 @@ const MacetFooter = () => {
                   <li key={index} className="group">
                     <a 
                       href={link.path} 
-                      className="flex items-center text-blue-100 hover:text-white transition-colors duration-300"
+                      className="flex items-center text-gray-600 hover:text-blue-700 transition-colors duration-300"
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 mr-3 group-hover:bg-white transition-colors duration-300"></span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mr-3 group-hover:bg-blue-700 transition-colors duration-300"></span>
                       {link.name}
                     </a>
                   </li>
@@ -159,7 +157,7 @@ const MacetFooter = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="lg:col-span-1"
             >
-              <h3 className="text-lg font-bold text-white mb-5 pb-2 border-b border-blue-700">
+              <h3 className="text-lg font-bold text-gray-900 mb-5 pb-2 border-b border-gray-200">
                 Important Links
               </h3>
               <ul className="space-y-3">
@@ -169,9 +167,9 @@ const MacetFooter = () => {
                       href={link.url} 
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center text-blue-100 hover:text-white transition-colors duration-300"
+                      className="flex items-center text-gray-600 hover:text-blue-700 transition-colors duration-300"
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 mr-3 group-hover:bg-white transition-colors duration-300"></span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mr-3 group-hover:bg-blue-700 transition-colors duration-300"></span>
                       {link.name}
                       <ExternalLink className="w-3 h-3 ml-2 opacity-70" />
                     </a>
@@ -188,7 +186,7 @@ const MacetFooter = () => {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="lg:col-span-1"
             >
-              <h3 className="text-lg font-bold text-white mb-5 pb-2 border-b border-blue-700">
+              <h3 className="text-lg font-bold text-gray-900 mb-5 pb-2 border-b border-gray-200">
                 Contact Us
               </h3>
               <div className="space-y-4">
@@ -197,8 +195,8 @@ const MacetFooter = () => {
                     <MapPin className="h-5 w-5 text-blue-300" />
                   </div>
                   <div className="ml-4">
-                    <h4 className="text-sm font-semibold text-white">Address</h4>
-                    <p className="text-sm text-blue-100 mt-1 leading-relaxed">
+                    <h4 className="text-sm font-semibold text-gray-900">Address</h4>
+                    <p className="text-sm text-gray-600 mt-1 leading-relaxed">
                       {contactInfo.address}
                     </p>
                   </div>
@@ -209,13 +207,13 @@ const MacetFooter = () => {
                     <Phone className="h-5 w-5 text-blue-300" />
                   </div>
                   <div className="ml-4">
-                    <h4 className="text-sm font-semibold text-white">Phone</h4>
+                    <h4 className="text-sm font-semibold text-gray-900">Phone</h4>
                     <div className="space-y-1 mt-1">
                       {contactInfo.phone.map((number, index) => (
                         <a 
                           key={index} 
                           href={`tel:${number}`}
-                          className="block text-sm text-blue-100 hover:text-white transition-colors duration-200"
+                          className="block text-sm text-gray-600 hover:text-blue-700 transition-colors duration-200"
                         >
                           {number}
                         </a>
@@ -229,10 +227,10 @@ const MacetFooter = () => {
                     <Mail className="h-5 w-5 text-blue-300" />
                   </div>
                   <div className="ml-4">
-                    <h4 className="text-sm font-semibold text-white">Email</h4>
+                    <h4 className="text-sm font-semibold text-gray-900">Email</h4>
                     <a 
                       href={`mailto:${contactInfo.email}`} 
-                      className="text-sm text-blue-100 hover:text-white transition-colors duration-200 block mt-1"
+                      className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200 block mt-1"
                     >
                       {contactInfo.email}
                     </a>
@@ -244,8 +242,8 @@ const MacetFooter = () => {
                     <Clock className="h-5 w-5 text-blue-300" />
                   </div>
                   <div className="ml-4">
-                    <h4 className="text-sm font-semibold text-white">Working Hours</h4>
-                    <p className="text-sm text-blue-100 mt-1">
+                    <h4 className="text-sm font-semibold text-gray-900">Working Hours</h4>
+                    <p className="text-sm text-gray-600 mt-1">
                       {contactInfo.workingHours}
                     </p>
                   </div>
@@ -253,10 +251,10 @@ const MacetFooter = () => {
               </div>
               
               {/* Current Date & Time */}
-              <div className="mt-6 pt-4 border-t border-blue-700">
+              <div className="mt-6 pt-4 border-t border-gray-200">
                 <div className="text-center bg-blue-800/50 rounded-lg p-3">
-                  <p className="text-xs text-blue-200">Today is</p>
-                  <p className="text-sm font-medium text-white mt-1">{currentDate}</p>
+                  <p className="text-xs text-gray-500">Today is</p>
+                  <p className="text-sm font-medium text-gray-900 mt-1">{currentDate}</p>
                 </div>
               </div>
             </motion.div>
@@ -268,22 +266,22 @@ const MacetFooter = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="mt-12 bg-blue-800/30 rounded-xl p-6 lg:col-span-4"
+            className="mt-12 bg-gray-100 rounded-xl p-6 lg:col-span-4"
           >
-            <h3 className="text-lg font-bold text-white mb-3">Subscribe to Our Newsletter</h3>
-            <p className="text-blue-100 text-sm mb-4">
+            <h3 className="text-lg font-bold text-gray-900 mb-3">Subscribe to Our Newsletter</h3>
+            <p className="text-gray-600 text-sm mb-4">
               Stay updated with the latest news, events, and announcements from MACET.
             </p>
             <form className="flex flex-col sm:flex-row gap-3">
               <input
                 type="email"
                 placeholder="Your email address"
-                className="flex-1 px-4 py-2.5 rounded-lg bg-blue-900/50 border border-blue-700 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 px-4 py-2.5 rounded-lg bg-white border border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
               <button
                 type="submit"
-                className="bg-yellow-500 hover:bg-yellow-600 text-blue-900 font-semibold px-6 py-2.5 rounded-lg transition-colors duration-300 whitespace-nowrap"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors duration-300 whitespace-nowrap"
               >
                 Subscribe
               </button>
@@ -292,13 +290,13 @@ const MacetFooter = () => {
         </div>
 
         {/* Copyright */}
-        <div className="mt-12 pt-8 border-t border-blue-700">
+        <div className="mt-12 pt-8 border-t border-gray-200">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div className="text-center md:text-left mb-4 md:mb-0">
-              <p className="text-sm text-blue-300">
+              <p className="text-sm text-gray-600">
                 &copy; {currentYear} Maulana Azad College of Engineering & Technology. All rights reserved.
               </p>
-              <p className="text-xs text-blue-400 mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Designed & Developed by <a href="#" className="text-blue-300 hover:text-white transition-colors duration-200">MACET IT Department</a>
               </p>
             </div>
@@ -306,25 +304,25 @@ const MacetFooter = () => {
             <div className="flex justify-center md:justify-end space-x-6">
               <a 
                 href="/privacy-policy" 
-                className="text-sm text-blue-300 hover:text-white transition-colors duration-200"
+                className="text-gray-600 hover:text-blue-700 transition-colors duration-200"
               >
                 Privacy Policy
               </a>
               <a 
                 href="/terms" 
-                className="text-sm text-blue-300 hover:text-white transition-colors duration-200"
+                className="text-gray-600 hover:text-blue-700 transition-colors duration-200"
               >
                 Terms of Service
               </a>
               <a 
                 href="/sitemap" 
-                className="text-sm text-blue-300 hover:text-white transition-colors duration-200"
+                className="text-gray-600 hover:text-blue-700 transition-colors duration-200"
               >
                 Sitemap
               </a>
               <a 
                 href="/disclaimer" 
-                className="text-sm text-blue-300 hover:text-white transition-colors duration-200"
+                className="text-gray-600 hover:text-blue-700 transition-colors duration-200"
               >
                 Disclaimer
               </a>
@@ -335,7 +333,7 @@ const MacetFooter = () => {
           <div className="mt-6 text-center">
             <button 
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="inline-flex items-center text-xs text-blue-300 hover:text-white transition-colors duration-200"
+              className="inline-flex items-center text-xs text-gray-600 hover:text-blue-700 transition-colors duration-200"
               aria-label="Back to top"
             >
               <svg 
