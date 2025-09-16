@@ -1,6 +1,7 @@
 import Exam from "../../models/examModel.js";
 import StudentAcademics from "../../models/studentAcademicsModel.js";
 import Student from "../../models/studentModel.js";
+import mongoose from "mongoose";
 
 /**
  * @description Get all available and relevant exams for the logged-in student.
@@ -25,7 +26,6 @@ export const getStudentExams = async (req, res) => {
 
     const studentCourseId = student.courseId;
     const studentSemester = student.semester;
-    console.log(studentCourseId);
 
     // 2. Find all exams that are for the student's semester AND contain their courseId in the courses array
     const relevantExams = await Exam.find({
@@ -76,55 +76,85 @@ export const getStudentExams = async (req, res) => {
  * @access  Student
  */
 export const registerForExam = async (req, res) => {
+    const { examId } = req.params;
+    const studentId = req.user.id;
+
+    if (!mongoose.Types.ObjectId.isValid(examId)) {
+        return res.status(400).json({ message: "Invalid Exam ID format." });
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
-        const { examId } = req.params; // This is the Exam document's _id
-        const studentId = req.user.id;
+        // --- FIX STARTS HERE: On-the-fly creation of Academic Record ---
 
-        // 1. Find the student's academic record
-        const studentAcademics = await StudentAcademics.findOne({ studentId });
+        // Step 1: Try to find the student's academic record.
+        let studentAcademics = await StudentAcademics.findOne({ studentId }).session(session);
+
+        // Step 2: If the academic record is NOT found, create a new one.
         if (!studentAcademics) {
-            return res.status(404).json({ message: "Student academic record not found." });
+            // To create an academic record, we need info from the main Student model.
+            const student = await Student.findById(studentId).select("registrationNumber collegeCode courseId").session(session);
+            if (!student) {
+                // This is a critical error, the main student record itself is missing.
+                throw new Error("Student profile not found. Cannot create academic record.");
+            }
+            
+            // Create a new instance of the StudentAcademics model.
+            studentAcademics = new StudentAcademics({
+                studentId: studentId,
+                registrationNumber: student.registrationNumber,
+                collegeCode: student.collegeCode,
+                courseId: student.courseId,
+                previousResults: [],
+                currentExamRegistrations: []
+            });
         }
+        // --- FIX ENDS HERE ---
 
-        // 2. Find the exam to ensure it exists and is open
-        const exam = await Exam.findById(examId);
+
+        // Now, we proceed with the rest of the logic, confident that studentAcademics exists.
+        const exam = await Exam.findById(examId).session(session);
         if (!exam) {
-            return res.status(404).json({ message: "Exam not found." });
+            throw new Error("Exam not found.");
         }
         if (exam.status !== 'OPEN_FOR_REGISTRATION') {
-            return res.status(400).json({ message: `Registration for "${exam.examName}" is currently closed.` });
+            throw new Error(`Registration for "${exam.examName}" is currently closed.`);
         }
 
-        // 3. Check for existing registration
         const isAlreadyRegistered = studentAcademics.currentExamRegistrations.some(
             reg => reg.examId === exam.examId
         );
         if (isAlreadyRegistered) {
-            return res.status(409).json({ message: "You are already registered for this exam." });
+            throw new Error("You are already registered for this exam.");
         }
 
-        // 4. Create the new registration record
+        // Create the new registration record
         const newRegistration = {
             examId: exam.examId,
             examName: exam.examName,
-            // --- THIS IS THE FIX ---
-            // Get the semester directly from the exam document itself.
-            semester: exam.semester, 
+            semester: exam.semester,
             year: exam.year,
             courseCode: studentAcademics.courseId,
             collegeCode: studentAcademics.collegeCode,
             status: 'REGISTERED'
         };
 
-        // 5. Add the registration to the student's academic record
+        // Add the registration to the student's academic record
         studentAcademics.currentExamRegistrations.push(newRegistration);
-        await studentAcademics.save();
+        await studentAcademics.save({ session }); // This will save the document whether it was new or existing.
+
+        await session.commitTransaction();
         
         res.status(201).json({ success: true, message: `Successfully registered for ${exam.examName}.` });
 
     } catch (error) {
+        await session.abortTransaction();
         console.error("Error registering for exam:", error);
-        res.status(500).json({ message: "Server error during exam registration.", error: error.message });
+        res.status(400).json({ message: error.message || "Server error during exam registration." });
+    } finally {
+        session.endSession();
     }
 };
 
@@ -166,50 +196,48 @@ export const getMyRegistrations = async (req, res) => {
  * @access  Student
  */
 export const getExamResult = async (req, res) => {
-  try {
-    const { examId } = req.params; 
-    const studentId = req.user.id;
+    try {
+        const { examId } = req.params; // This is the unique examId STRING, e.g., "ENDSEM2024-SEM4"
+        const studentId = req.user.id; // This comes from the 'protect' middleware
 
-    const studentAcademics = await StudentAcademics.findOne({
-      studentId: studentId,
-      "previousResults.examId": examId,
-    })
-      .select("previousResults.$")
-      .lean();
+        // Find the student's academic document that contains the specific exam result
+        const studentAcademics = await StudentAcademics.findOne(
+            {
+                studentId: studentId, // Match the logged-in student
+                "previousResults.examId": examId // Match the specific exam inside the array
+            },
+            {
+                "previousResults.$": 1 // Project ONLY the first matching element from the array
+            }
+        ).lean();
 
-    if (
-      !studentAcademics ||
-      !studentAcademics.previousResults ||
-      studentAcademics.previousResults.length === 0
-    ) {
-      const currentReg = await StudentAcademics.findOne({
-        studentId: studentId,
-        "currentExamRegistrations.examId": examId,
-      })
-        .select("currentExamRegistrations.$")
-        .lean();
+        // SCENARIO 1: Result is found and published
+        if (studentAcademics && studentAcademics.previousResults && studentAcademics.previousResults.length > 0) {
+            const result = studentAcademics.previousResults[0];
+            return res.status(200).json({ success: true, result });
+        }
 
-      if (currentReg) {
-        return res
-          .status(202)
-          .json({
-            message: "Result for this exam has not been published yet.",
-          }); // Use 202 Accepted
-      }
-      return res
-        .status(404)
-        .json({ message: "No result found for this exam." });
+        // SCENARIO 2: Result is NOT found in 'previousResults'. Check if it's still being processed.
+        const currentRegistration = await StudentAcademics.findOne({
+            studentId: studentId,
+            "currentExamRegistrations.examId": examId
+        });
+
+        if (currentRegistration) {
+            // The student is registered, but the result isn't published yet.
+            return res.status(202).json({
+                message: "Result for this exam has not been published yet."
+            });
+        }
+        
+        // SCENARIO 3: No record found anywhere. The student never registered or the examId is wrong.
+        return res.status(404).json({ message: "No result found for this exam. Please check the Exam ID or your registration status." });
+
+    } catch (error) {
+        console.error("Server error fetching exam result:", error);
+        res.status(500).json({
+            message: "Server error fetching exam result.",
+            error: error.message
+        });
     }
-
-    const result = studentAcademics.previousResults[0];
-
-    res.status(200).json({ success: true, result });
-  } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Server error fetching exam result.",
-        error: error.message,
-      });
-  }
 };
