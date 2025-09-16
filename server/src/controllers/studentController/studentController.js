@@ -5,6 +5,7 @@ import Staff from '../../models/staffModel.js'
 import Course from '../../models/courseModel.js'
 import crypto from 'crypto'
 import nodemailer from 'nodemailer'
+import StudentAcademics from "../../models/studentAcademicsModel.js";
 
 // 🟢 Register
 export const registerStudent = async (req, res) => {
@@ -210,6 +211,20 @@ export const getSerial = async(req,res)=>{
     
 }
 
+export const getMyAcademics = async (req, res) => {
+    try {
+        if(!req.user) return res.status(401).json({ message: "Unauthorized" });
+
+        const studentAcademics = await StudentAcademics.findOne({ studentId: req.user.id });
+        if (!studentAcademics) {
+            return res.status(404).json({ message: "Academic record not found." });
+        }
+        res.status(200).json({ success: true, academics: studentAcademics });
+    } catch (error) {
+        res.status(500).json({ message: "Server error.", error: error.message });
+    }
+};
+
 export const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
@@ -279,8 +294,6 @@ export const forgotPassword = async (req, res) => {
 };
 
 
-// @desc    Handle the actual password reset
-// @route   PATCH /api/v1/student/reset-password/:token
 export const resetPassword = async (req, res) => {
     try {
         const { token } = req.params;

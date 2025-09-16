@@ -70,24 +70,39 @@ export const calculateResults = async (subjectsWithMarks) => { // Now it's an as
     };
 };
 
-
 export const createExam = async (req, res) => {
-  try {
-
-    if (!req.user || !req.user.id) {
+  // Check if user is authenticated
+  if (!req.user || !req.user.id) {
     return res.status(401).json({ message: "Authentication error: User not found." });
   }
-    // createdBy should be added from authenticated user's ID
-    const examData = { ...req.body, createdBy: req.user.id };
 
+  try {
+    const examData = { ...req.body, createdBy: req.user.id };
     const newExam = new Exam(examData);
     await newExam.save();
 
-    res
-      .status(201)
-      .json({ message: "Exam created successfully.", exam: newExam });
+    res.status(201).json({ message: "Exam created successfully.", exam: newExam });
+
   } catch (error) {
     console.error("Error creating exam:", error);
+
+    // Handle Duplicate Key Error (for unique examId)
+    if (error.code === 11000) {
+      return res.status(409).json({
+        message: `An exam with Exam ID '${error.keyValue.examId}' already exists. Please use a unique ID.`,
+      });
+    }
+
+    // Handle Mongoose Validation Errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(val => val.message);
+      return res.status(400).json({
+        message: "Validation failed. Please check your input.",
+        errors: messages
+      });
+    }
+
+    // Generic Fallback
     res.status(500).json({
       message: "Server error during exam creation.",
       error: error.message,
