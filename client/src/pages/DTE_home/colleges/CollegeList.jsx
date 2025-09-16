@@ -519,15 +519,11 @@ const CollegeList = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium mb-6">
-              <span className="inline-flex h-2 w-2 rounded-full bg-blue-500 mr-2"></span>
-              Polytechnic Colleges
-            </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-              College Directory
+              Our Vision
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Find and explore government polytechnic colleges in Rajasthan
+              To enhance the competitiveness of State's technical manpower to global standards by imparting high quality & state of art Technical Education and Training to all sections of the society.
             </p>
           </motion.div>
         </div>

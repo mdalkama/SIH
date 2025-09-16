@@ -72,7 +72,7 @@ const RosterPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              Roster of Personnel
+              Our Vision
             </motion.h1>
             <motion.p 
               className="text-xl text-gray-700 dark:text-gray-200 max-w-3xl mx-auto"
@@ -80,36 +80,12 @@ const RosterPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              Access comprehensive personnel information and organizational structure
-            </motion.p>
-          </div>
-        </div>
-      </div>
-
-      {/* Vision Section */}
-      <div className="relative bg-white dark:bg-gray-800 shadow-xl rounded-lg -mt-8 mx-4 md:mx-8 lg:mx-auto max-w-7xl">
-        <div className="p-6 md:p-8">
-          <div className="text-center max-w-4xl mx-auto">
-            <motion.div 
-              className="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium mb-6"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <span className="inline-flex h-2 w-2 rounded-full bg-blue-500 mr-2"></span>
-              Our Vision
-            </motion.div>
-            <motion.p 
-              className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
               To enhance the competitiveness of State's technical manpower to global standards by imparting high quality & state of art Technical Education and Training to all sections of the society.
             </motion.p>
           </div>
         </div>
       </div>
+
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

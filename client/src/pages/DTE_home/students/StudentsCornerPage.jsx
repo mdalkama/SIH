@@ -174,13 +174,13 @@ const StudentsCornerPage = () => {
           <div className="text-center">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium mb-6">
               <span className="inline-flex h-2 w-2 rounded-full bg-blue-500 mr-2"></span>
-              Student Resources
+              Our Vision
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-              Students Corner
+              Our Vision
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Access important documents, policies, and resources for students
+              To enhance the competitiveness of State's technical manpower to global standards by imparting high quality & state of art Technical Education and Training to all sections of the society.
             </p>
           </div>
         </div>
