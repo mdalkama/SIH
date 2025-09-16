@@ -295,7 +295,7 @@ const FeesDashboard = () => {
                                 <div>
                                     <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{studentProfile.name}</h1>
                                     <p className="text-slate-500 mt-1">{studentProfile.registrationNumber}</p>
-                                    <p className="text-sm text-slate-500 mt-1">{studentProfile.course?.branch} • Semester {studentProfile.currentSemester}</p>
+                                    <p className="text-sm text-slate-500 mt-1">{studentProfile.course?.branch} • Semester {studentProfile.semester}</p>
                                 </div>
                             </div>
                         </div>

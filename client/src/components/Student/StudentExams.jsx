@@ -69,7 +69,7 @@ const ResultDisplay = ({ resultData, isLoading }) => {
 
     return (
         <div className="space-y-6">
-            <div className="bg-white p-6 rounded-lg border">
+            <div className="bg-white p-6 rounded-lg border border-gray-300">
                 <table className="w-full text-sm">
                     <thead className="text-left text-xs text-slate-500 uppercase">
                         <tr>
@@ -96,10 +96,10 @@ const ResultDisplay = ({ resultData, isLoading }) => {
                 </table>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div className="bg-white p-4 rounded-lg border"><p className="text-sm text-slate-500 mb-1">Total Marks</p><p className="text-xl font-bold text-slate-800">{overallTotal} / {maxTotal}</p></div>
-                <div className="bg-white p-4 rounded-lg border"><p className="text-sm text-slate-500 mb-1">SGPA</p><p className="text-xl font-bold text-slate-800">{resultData.sgpa.toFixed(2)}</p></div>
-                <div className="bg-white p-4 rounded-lg border"><p className="text-sm text-slate-500 mb-1">Overall Result</p><p className={`text-xl font-bold ${resultData.overallResult === 'PASS' ? 'text-emerald-600' : 'text-rose-600'}`}>{resultData.overallResult}</p></div>
-                <div className="bg-white p-4 rounded-lg border"><p className="text-sm text-slate-500 mb-1">Published On</p><p className="text-base font-semibold text-slate-700 pt-1">{new Date(resultData.publishedOn).toLocaleDateString('en-GB')}</p></div>
+                <div className="bg-white p-4 rounded-lg border border-gray-300"><p className="text-sm text-slate-500 mb-1">Total Marks</p><p className="text-xl font-bold text-slate-800">{overallTotal} / {maxTotal}</p></div>
+                <div className="bg-white p-4 rounded-lg border border-gray-300"><p className="text-sm text-slate-500 mb-1">SGPA</p><p className="text-xl font-bold text-slate-800">{resultData.sgpa.toFixed(2)}</p></div>
+                <div className="bg-white p-4 rounded-lg border border-gray-300"><p className="text-sm text-slate-500 mb-1">Overall Result</p><p className={`text-xl font-bold ${resultData.overallResult === 'PASS' ? 'text-emerald-600' : 'text-rose-600'}`}>{resultData.overallResult}</p></div>
+                <div className="bg-white p-4 rounded-lg border border-gray-300"><p className="text-sm text-slate-500 mb-1">Published On</p><p className="text-base font-semibold text-slate-700 pt-1">{new Date(resultData.publishedOn).toLocaleDateString('en-GB')}</p></div>
             </div>
         </div>
     );
