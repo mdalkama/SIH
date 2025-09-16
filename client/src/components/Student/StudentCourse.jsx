@@ -1,11 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Book, Download, GraduationCap, Calendar, Trophy, ChevronDown, ChevronUp, Clock, CheckCircle, Loader2, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Loader2, Download, GraduationCap, Calendar, Trophy, ChevronDown, ChevronUp, Clock, CheckCircle, AlertTriangle, Book } from 'lucide-react';
 
 // --- HELPER COMPONENTS ---
 const getGradeColor = (grade) => {
-    const gradeColors = { 'A+': 'text-green-700 bg-green-100', 'A': 'text-green-600 bg-green-50', 'A-': 'text-blue-600 bg-blue-50', 'B+': 'text-yellow-600 bg-yellow-50', 'B': 'text-orange-600 bg-orange-50', 'B-': 'text-red-600 bg-red-50' };
-    return gradeColors[grade] || 'text-gray-600 bg-gray-50';
+    if (!grade) return 'text-gray-600 bg-gray-100';
+    if (grade.startsWith('O') || grade.startsWith('A')) return 'text-green-700 bg-green-100';
+    if (grade.startsWith('B')) return 'text-yellow-700 bg-yellow-100';
+    if (grade.startsWith('C')) return 'text-orange-700 bg-orange-100';
+    return 'text-red-700 bg-red-100'; // For 'F' or Fail
 };
+
 const getStatusIcon = (status) => {
     switch (status) {
         case 'Completed': return <CheckCircle className="w-4 h-4 text-green-500" />;
@@ -13,15 +17,15 @@ const getStatusIcon = (status) => {
         default: return <Calendar className="w-4 h-4 text-gray-400" />;
     }
 };
+
 const downloadSyllabus = (subjectCode, subjectName) => {
     alert(`Downloading syllabus for ${subjectName} (${subjectCode})`);
 };
 
-// --- NEW SKELETON LOADER COMPONENT ---
+// --- SKELETON LOADER COMPONENT ---
 const DashboardSkeleton = () => (
     <div className="min-h-screen animate-pulse">
         <div className="max-w-6xl mx-auto">
-            {/* Header Skeleton */}
             <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                 <div className="flex items-center justify-between">
                     <div>
@@ -35,17 +39,13 @@ const DashboardSkeleton = () => (
                     </div>
                 </div>
             </div>
-
-            {/* Tabs Skeleton */}
             <div className="bg-white rounded-lg shadow-sm mb-6">
                 <div className="flex border-b border-gray-200">
-                    <div className="h-12 w-48 bg-gray-200 border-b-2 border-blue-600"></div>
+                    <div className="h-12 w-48 bg-gray-100 border-b-2 border-blue-600"></div>
                     <div className="h-12 w-48 bg-gray-100 ml-4"></div>
                     <div className="h-12 w-56 bg-gray-100 ml-4"></div>
                 </div>
             </div>
-
-            {/* Content Skeleton */}
             <div className="bg-white rounded-lg shadow-sm p-6">
                 <div className="h-6 w-1/3 bg-gray-200 rounded mb-6"></div>
                 <div className="space-y-4">
@@ -58,36 +58,36 @@ const DashboardSkeleton = () => (
     </div>
 );
 
-
 // --- MAIN ACADEMIC DASHBOARD COMPONENT ---
 const AcademicDashboard = () => {
     const [activeTab, setActiveTab] = useState('current');
     const [studentProfile, setStudentProfile] = useState(null);
+    const [academicInfo, setAcademicInfo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [expandedSemesters, setExpandedSemesters] = useState([]);
 
     const fetchAcademicData = useCallback(async () => {
         setLoading(true);
+        setError(null);
         try {
-            const profileRes = await fetch('https://sih-4ptm.onrender.com/api/v1/my-profile', { credentials: 'include' });
+            const [profileRes, academicsRes] = await Promise.all([
+                fetch('https://sih-4ptm.onrender.com/api/v1/my-profile', { credentials: 'include' }),
+                fetch('https://sih-4ptm.onrender.com/api/v1/student/my-academics', { credentials: 'include' })
+            ]);
+
             if (!profileRes.ok) throw new Error("Could not fetch your profile. Please log in again.");
-            
             const profileData = await profileRes.json();
+            if (!profileData.user || !profileData.course) throw new Error("Complete academic information (user and course) not found in your profile.");
             
-            if (!profileData.user || !profileData.course) {
-                throw new Error("Complete academic information (user and course) not found in your profile.");
-            }
-            
-            const combinedProfile = {
-                ...profileData.user,
-                course: profileData.course
-            };
-
+            const combinedProfile = { ...profileData.user, course: profileData.course };
             setStudentProfile(combinedProfile);
-            setExpandedSemesters([combinedProfile.semester]); // Use semester from user object
-            setError(null);
+            setExpandedSemesters([combinedProfile.semester]);
 
+            if (academicsRes.ok) {
+                const academicsData = await academicsRes.json();
+                setAcademicInfo(academicsData.academics);
+            }
         } catch (err) {
             setError(err.message);
             console.error(err);
@@ -107,6 +107,30 @@ const AcademicDashboard = () => {
                 : [...prev, semesterNumber]
         );
     };
+
+    const cgpa = useMemo(() => {
+        if (!academicInfo || !academicInfo.previousResults || academicInfo.previousResults.length === 0 || !studentProfile) {
+            return 'N/A';
+        }
+        
+        let totalWeightedSGPA = 0;
+        let totalCompletedCredits = 0;
+        
+        academicInfo.previousResults.forEach(result => {
+            const courseSemesterData = studentProfile.course.semesters.find(s => s.semesterNumber === result.semester);
+            if (!courseSemesterData) return;
+
+            // Calculate total credits for the semester from the course data
+            const semesterCredits = courseSemesterData.subjects.reduce((acc, sub) => acc + (sub.credits || 0), 0);
+            
+            if (semesterCredits > 0 && result.sgpa) {
+                totalWeightedSGPA += result.sgpa * semesterCredits;
+                totalCompletedCredits += semesterCredits;
+            }
+        });
+
+        return totalCompletedCredits > 0 ? (totalWeightedSGPA / totalCompletedCredits).toFixed(2) : 'N/A';
+    }, [academicInfo, studentProfile]);
 
     if (loading) return <DashboardSkeleton />;
     
@@ -133,10 +157,7 @@ const AcademicDashboard = () => {
                     {currentSemData.subjects.map((subject) => (
                         <div key={subject._id || subject.code} className="bg-white border border-gray-200 rounded-lg p-4">
                             <div className="flex justify-between items-start mb-2">
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-gray-900">{subject.name}</h4>
-                                    <p className="text-sm text-gray-600">{subject.code} • {subject.credits} Credits • {subject.type}</p>
-                                </div>
+                                <div className="flex-1"><h4 className="font-semibold text-gray-900">{subject.name}</h4><p className="text-sm text-gray-600">{subject.code} • {subject.credits} Credits • {subject.type}</p></div>
                                 <button onClick={() => downloadSyllabus(subject.code, subject.name)} className="flex items-center px-3 py-1 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700"><Download className="w-3 h-3 mr-1" />Syllabus</button>
                             </div>
                         </div>
@@ -188,11 +209,40 @@ const AcademicDashboard = () => {
     };
 
     const renderResults = () => {
+        if (!academicInfo || !academicInfo.previousResults || academicInfo.previousResults.length === 0) {
+            return (
+                <div className="text-center text-gray-500 py-12"><GraduationCap className="mx-auto w-16 h-16 text-gray-300" /><h3 className="mt-4 text-lg font-semibold">No Results Published</h3><p>Your examination results have not been published yet.</p></div>
+            );
+        }
+        const sortedResults = [...academicInfo.previousResults].sort((a, b) => b.semester - a.semester);
         return (
-            <div className="text-center text-gray-500 py-12">
-                <GraduationCap className="mx-auto w-16 h-16 text-gray-300" />
-                <h3 className="mt-4 text-lg font-semibold">Results & Performance</h3>
-                <p>This section will show SGPA/CGPA and subject grades once result data is available.</p>
+            <div className="space-y-6">
+                {sortedResults.map(result => (
+                    <div key={result.examId} className="border border-gray-200 rounded-lg">
+                        <div className="p-4 bg-gray-50 rounded-t-lg"><h3 className="font-semibold text-lg text-gray-900">{result.examName}</h3><div className="flex items-center space-x-4 text-sm text-gray-600 mt-1"><span>Semester {result.semester}</span><span className="w-1 h-1 bg-gray-400 rounded-full"></span><span>Published: {new Date(result.publishedOn).toLocaleDateString('en-GB')}</span></div></div>
+                        <div className="p-4 md:p-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-center">
+                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200"><p className="text-sm text-blue-800 font-medium">SGPA</p><p className="text-2xl font-bold text-blue-600">{result.sgpa.toFixed(2)}</p></div>
+                                <div className="p-3 bg-green-50 rounded-lg border border-green-200"><p className="text-sm text-green-800 font-medium">Overall Result</p><p className={`text-xl font-bold ${result.overallResult === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{result.overallResult}</p></div>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead className="text-left text-xs text-gray-500"><tr><th className="pb-2 font-medium">Subject</th><th className="pb-2 font-medium text-center">Total Marks</th><th className="pb-2 font-medium text-center">Grade</th><th className="pb-2 font-medium text-center">Status</th></tr></thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {result.subjects.map(subject => (
+                                            <tr key={subject.subjectCode}>
+                                                <td className="py-3"><p className="font-medium text-gray-800">{subject.subjectName}</p><p className="font-mono text-gray-500 text-xs">{subject.subjectCode}</p></td>
+                                                <td className="py-3 text-center font-semibold text-gray-800">{subject.total}</td>
+                                                <td className="py-3 text-center"><span className={`px-2 py-1 text-xs font-bold rounded-full ${getGradeColor(subject.grade)}`}>{subject.grade}</span></td>
+                                                <td className="py-3 text-center"><span className={`font-semibold ${subject.status === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{subject.status}</span></td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
         );
     };
@@ -204,15 +254,8 @@ const AcademicDashboard = () => {
                     <>
                         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                             <div className="flex items-center justify-between">
-                                <div>
-                                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Academic Dashboard</h1>
-                                    <p className="text-gray-600 font-semibold">{studentProfile.name} • {studentProfile.registrationNumber}</p>
-                                    <p className="text-sm text-gray-500">{studentProfile.course.degree} - {studentProfile.course.branch} {studentProfile.course.specialization && `(${studentProfile.course.specialization})`}</p>
-                                </div>
-                                <div className="text-right">
-                                    <div className="flex items-center text-2xl font-bold text-blue-600 mb-1"><Trophy className="w-6 h-6 mr-2" />{studentProfile.cgpa || 'N/A'}</div>
-                                    <p className="text-sm text-gray-600">Current CGPA</p>
-                                </div>
+                                <div><h1 className="text-3xl font-bold text-gray-900 mb-2">Academic Dashboard</h1><p className="text-gray-600 font-semibold">{studentProfile.name} • {studentProfile.registrationNumber}</p><p className="text-sm text-gray-500">{studentProfile.course.degree} - {studentProfile.course.branch} {studentProfile.course.specialization && `(${studentProfile.course.specialization})`}</p></div>
+                                <div className="text-right"><div className="flex items-center text-2xl font-bold text-blue-600 mb-1"><Trophy className="w-6 h-6 mr-2" />{cgpa}</div><p className="text-sm text-gray-600">Current CGPA</p></div>
                             </div>
                         </div>
                         <div className="bg-white rounded-lg shadow-sm mb-6">

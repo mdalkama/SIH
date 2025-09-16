@@ -1,22 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
     User, Mail, Phone, MapPin, Calendar, GraduationCap,
-    BookOpen, FileText, Eye, Award, Clock,
-    Users, Building, MessageSquare, AlertTriangle, CheckCircle
+    BookOpen, FileText, Award, Clock,
+    Users, Building, MessageSquare, AlertTriangle,
+    Book
 } from 'lucide-react';
-
-import { useUser } from '../../context/UserContext';
-import roleUtils from '../../utils/roleUtils';
 import { checkStaffOrStudent } from '../../utils/checkStaffOrStudentUtils';
 import { ordinalIndicators } from '../../utils/ordinalIndicators';
-import Loading from '../Loading';
+import Loading from '../Loading'; // Assuming you have a Loading component
 
 const StudentDashboard = () => {
     const [user, setUser] = useState(null);
     const [courses, setCourses] = useState(null);
+    const [academicInfo, setAcademicInfo] = useState(null); // State for real academic data
     const [loading, setLoading] = useState(true);
+    console.log(academicInfo)
     
-    // State for complaints and feedback
     const [complaints, setComplaints] = useState([]);
     const [feedback, setFeedback] = useState([]);
 
@@ -25,29 +24,35 @@ const StudentDashboard = () => {
             setLoading(true);
             try {
                 // Fetch all data in parallel for a faster load time
-                const [profileRes, complaintsRes, feedbackRes] = await Promise.all([
+                const [profileRes, complaintsRes, feedbackRes, academicsRes] = await Promise.all([
                     fetch("https://sih-4ptm.onrender.com/api/v1/my-profile", { credentials: "include" }),
                     fetch("https://sih-4ptm.onrender.com/api/v1/complaints/my-complaints", { credentials: "include" }),
-                    fetch("https://sih-4ptm.onrender.com/api/v1/feedback/my-feedback", { credentials: "include" })
+                    fetch("https://sih-4ptm.onrender.com/api/v1/feedback/my-feedback", { credentials: "include" }),
+                    // API call to fetch academic records
+                    fetch("https://sih-4ptm.onrender.com/api/v1/student/my-academics", { credentials: "include" })
                 ]);
                 
-                // Process Profile Data
-                const profileData = await profileRes.json();
-                if (profileData.user) {
-                    setUser(profileData.user);
-                    setCourses(profileData.course);
+                if (profileRes.ok) {
+                    const profileData = await profileRes.json();
+                    if (profileData.user) {
+                        setUser(profileData.user);
+                        setCourses(profileData.course);
+                    }
                 }
 
-                // Process Complaints Data
                 if (complaintsRes.ok) {
                     const complaintsData = await complaintsRes.json();
                     setComplaints(complaintsData.complaints || []);
                 }
                 
-                // Process Feedback Data
                 if (feedbackRes.ok) {
                     const feedbackData = await feedbackRes.json();
                     setFeedback(feedbackData.feedback || []);
+                }
+
+                if (academicsRes.ok) {
+                    const academicsData = await academicsRes.json();
+                    setAcademicInfo(academicsData.academics);
                 }
                 
             } catch (err) {
@@ -61,23 +66,47 @@ const StudentDashboard = () => {
 
     const [activeTab, setActiveTab] = useState('overview');
 
-    // Hardcoded academic data as requested
-    const academicData = {
-        currentSGPA: 8.45,
-        overallCGPA: 8.12,
-        completedCredits: 95,
-        totalCredits: 160,
-        currentSubjects: [
-            { code: "CS501", name: "Machine Learning", credits: 4, grade: "A" },
-            { code: "CS502", name: "Database Management", credits: 3, grade: "A-" },
-            { code: "CS503", name: "Software Engineering", credits: 4, grade: "B+" },
-            { code: "CS504", name: "Computer Networks", credits: 3, grade: "A" },
-            { code: "CS505", name: "Web Development", credits: 3, grade: "A-" }
-        ],
-        attendance: 87.5
-    };
+    // --- REAL DATA CALCULATION ---
+    const calculatedAcademics = useMemo(() => {
+        if (!academicInfo || !academicInfo.previousResults || academicInfo.previousResults.length === 0) {
+            return { latestSGPA: 'N/A', overallCGPA: 'N/A', completedCredits: 0, totalCredits: courses?.totalCredits || 160 };
+        }
+        
+        // Sort results to find the most recent one for the latest SGPA
+        const sortedResults = [...academicInfo.previousResults].sort((a, b) => {
+            if (a.year !== b.year) return b.year - a.year;
+            return b.semester - a.semester;
+        });
+        const latestResult = sortedResults[0];
 
-    // Combine and sort the 3 most recent activities
+        let totalWeightedSGPA = 0;
+        let totalCompletedCredits = 0;
+        
+        // As your 'previousResults' do not contain credits, we have to look them up in the 'courses' data.
+        academicInfo.previousResults.forEach(result => {
+            let semesterCredits = 0;
+            if (result.subjects && Array.isArray(result.subjects)) {
+                result.subjects.forEach(subjectResult => {
+                    const courseSemester = courses?.semesters?.find(s => s.semesterNumber === result.semester);
+                    const subjectDetails = courseSemester?.subjects?.find(s => s.code === subjectResult.subjectCode);
+                    semesterCredits += subjectDetails?.credits || 0;
+                });
+            }
+            
+            if (semesterCredits > 0 && result.sgpa) {
+                totalWeightedSGPA += result.sgpa * semesterCredits;
+                totalCompletedCredits += semesterCredits;
+            }
+        });
+
+        return {
+            latestSGPA: latestResult ? latestResult.sgpa.toFixed(2) : 'N/A',
+            overallCGPA: totalCompletedCredits > 0 ? (totalWeightedSGPA / totalCompletedCredits).toFixed(2) : 'N/A',
+            completedCredits: totalCompletedCredits,
+            totalCredits: courses?.totalCredits || 160,
+        };
+    }, [academicInfo, courses]);
+
     const recentActivity = useMemo(() => {
         const combined = [
             ...complaints.map(c => ({ ...c, type: 'complaint' })),
@@ -88,11 +117,7 @@ const StudentDashboard = () => {
 
     const formatDate = (date) => {
         if (!date) return 'N/A';
-        return new Date(date).toLocaleDateString('en-IN', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+        return new Date(date).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
     };
 
     if (loading) return <Loading />;
@@ -120,7 +145,7 @@ const StudentDashboard = () => {
                                     <span>Active Student</span>
                                 </div>
                                 <p className="text-sm text-gray-600">Semester: {user?.semester}{ordinalIndicators(user?.semester)}</p>
-                                <p className="text-sm text-gray-600">CGPA: {academicData.overallCGPA}</p>
+                                <p className="text-sm text-gray-600">CGPA: {calculatedAcademics.overallCGPA}</p>
                             </div>
                         }
                     </div>
@@ -130,40 +155,20 @@ const StudentDashboard = () => {
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
                     <div className="border-b border-gray-200">
                         <nav className="flex space-x-8 px-6">
-                            {[
-                                { id: 'overview', label: 'Overview', icon: User },
-                                { id: 'academic', label: 'Academic', icon: GraduationCap },
-                                { id: 'personal', label: 'Personal Info', icon: FileText }
-                            ].map((tab) => {
-                                const Icon = tab.icon;
-                                return (
-                                    <button
-                                        key={tab.id}
-                                        onClick={() => setActiveTab(tab.id)}
-                                        className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors
-                                            ${activeTab === tab.id
-                                                ? 'border-blue-500 text-blue-600'
-                                                : 'border-transparent text-gray-500 hover:text-gray-700'
-                                            }`}
-                                    >
-                                        <Icon className="h-4 w-4" />
-                                        <span>{tab.label}</span>
-                                    </button>
-                                );
-                            })}
+                            {[{ id: 'overview', label: 'Overview', icon: User }, { id: 'academic', label: 'Academic', icon: GraduationCap }, { id: 'personal', label: 'Personal Info', icon: FileText }].map((tab) => { const Icon = tab.icon; return (<button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}><Icon className="h-4 w-4" /><span>{tab.label}</span></button>); })}
                         </nav>
                     </div>
                 </div>
 
                 {/* Content based on active tab */}
                 {activeTab === 'overview' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 lg-grid-cols-3 gap-6">
                         <div className="lg:col-span-2 space-y-6">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="bg-white p-4 rounded-lg border border-gray-200"><div className="flex items-center space-x-2"><Award className="h-5 w-5 text-green-600" /><span className="text-sm text-gray-600">CGPA</span></div><p className="text-2xl font-bold text-gray-900">{academicData.overallCGPA}</p></div>
-                                <div className="bg-white p-4 rounded-lg border border-gray-200"><div className="flex items-center space-x-2"><BookOpen className="h-5 w-5 text-blue-600" /><span className="text-sm text-gray-600">Semester</span></div><p className="text-2xl font-bold text-gray-900">{user?.semester}{ordinalIndicators(user?.semester)}</p></div>
-                                <div className="bg-white p-4 rounded-lg border border-gray-200"><div className="flex items-center space-x-2"><Clock className="h-5 w-5 text-orange-600" /><span className="text-sm text-gray-600">Attendance</span></div><p className="text-2xl font-bold text-gray-900">{academicData.attendance}%</p></div>
-                                <div className="bg-white p-4 rounded-lg border border-gray-200"><div className="flex items-center space-x-2"><Users className="h-5 w-5 text-purple-600" /><span className="text-sm text-gray-600">Credits</span></div><p className="text-2xl font-bold text-gray-900">{academicData.completedCredits}/{academicData.totalCredits}</p></div>
+                                <div className="bg-white p-4 rounded-lg border border-gray-200"><div className="flex items-center space-x-2"><Award className="h-5 w-5 text-green-600" /><span className="text-sm text-gray-600">CGPA</span></div><p className="text-2xl font-bold text-gray-900">{calculatedAcademics.overallCGPA}</p></div>
+                                <div className="bg-white p-4 rounded-lg border border-gray-200"><div className="flex items-center space-x-2"><Award className="h-5 w-5 text-blue-600" /><span className="text-sm text-gray-600">Latest SGPA</span></div><p className="text-2xl font-bold text-gray-900">{calculatedAcademics.latestSGPA}</p></div>
+                                <div className="bg-white p-4 rounded-lg border border-gray-200"><div className="flex items-center space-x-2"><Book className="h-5 w-5 text-orange-600" /><span className="text-sm text-gray-600">Course</span></div><p className="text-2xl font-bold text-gray-900">{academicInfo.courseId}</p></div>
+                                <div className="bg-white p-4 rounded-lg border border-gray-200"><div className="flex items-center space-x-2"><Users className="h-5 w-5 text-purple-600" /><span className="text-sm text-gray-600">Credits</span></div><p className="text-2xl font-bold text-gray-900">{calculatedAcademics.completedCredits}/{calculatedAcademics.totalCredits}</p></div>
                             </div>
 
                             {courses &&
@@ -197,21 +202,7 @@ const StudentDashboard = () => {
                             <div className="bg-white rounded-lg border border-gray-200">
                                 <div className="p-6 border-b border-gray-200"><h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3></div>
                                 <div className="p-6 space-y-4">
-                                    {recentActivity.length > 0 ? (
-                                        recentActivity.map(item => (
-                                            <div key={item._id} className="flex items-start space-x-3">
-                                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${item.type === 'complaint' ? 'bg-blue-100' : 'bg-green-100'}`}>
-                                                    {item.type === 'complaint' ? <AlertTriangle className="h-4 w-4 text-blue-600" /> : <MessageSquare className="h-4 w-4 text-green-600" />}
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-sm text-gray-800">{item.title || item.subject}</p>
-                                                    <p className="text-xs text-gray-500">{item.type === 'complaint' ? `Complaint: ${item.status}` : 'Feedback Submitted'}</p>
-                                                </div>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-sm text-center text-gray-500 py-4">No recent complaints or feedback.</p>
-                                    )}
+                                    {recentActivity.length > 0 ? (recentActivity.map(item => (<div key={item._id} className="flex items-start space-x-3"><div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${item.type === 'complaint' ? 'bg-blue-100' : 'bg-green-100'}`}>{item.type === 'complaint' ? <AlertTriangle className="h-4 w-4 text-blue-600" /> : <MessageSquare className="h-4 w-4 text-green-600" />}</div><div><p className="font-medium text-sm text-gray-800">{item.title || item.subject}</p><p className="text-xs text-gray-500">{item.type === 'complaint' ? `Complaint: ${item.status}` : 'Feedback Submitted'}</p></div></div>))) : (<p className="text-sm text-center text-gray-500 py-4">No recent complaints or feedback.</p>)}
                                 </div>
                             </div>
                         </div>
@@ -219,58 +210,54 @@ const StudentDashboard = () => {
                 )}
 
                 {activeTab === 'academic' && (
-                    <div className="bg-white rounded-lg border border-gray-200 p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-6">Academic Information</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-4">
-                                <div><label className="text-sm font-medium text-gray-700">Registration Number</label><p className="mt-1 text-gray-900">{user?.registrationNumber || 'N/A'}</p></div>
-                                <div><label className="text-sm font-medium text-gray-700">Roll Number</label><p className="mt-1 text-gray-900">{user?.rollNumber || 'N/A'}</p></div>
-                                <div><label className="text-sm font-medium text-gray-700">College Code</label><p className="mt-1 text-gray-900">{user?.collegeCode || 'N/A'}</p></div>
-                                <div><label className="text-sm font-medium text-gray-700">Degree</label><p className="mt-1 text-gray-900">{courses?.degree || 'N/A'}</p></div>
-                            </div>
-                            <div className="space-y-4">
-                                <div><label className="text-sm font-medium text-gray-700">Branch</label><p className="mt-1 text-gray-900">{courses?.branch || 'N/A'}</p></div>
-                                <div><label className="text-sm font-medium text-gray-700">Specialization</label><p className="mt-1 text-gray-900">{courses?.specialization || 'None'}</p></div>
-                                <div><label className="text-sm font-medium text-gray-700">Year of Admission</label><p className="mt-1 text-gray-900">{user?.yearOfAdmission || 'N/A'}</p></div>
-                                <div><label className="text-sm font-medium text-gray-700">Expected Year of Passing</label><p className="mt-1 text-gray-900">{user?.yearOfPassing || 'N/A'}</p></div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'personal' && (
                     <div className="space-y-6">
                         <div className="bg-white rounded-lg border border-gray-200 p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Personal Information</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Academic Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-4">
-                                    <div><label className="text-sm font-medium text-gray-700">Full Name</label><p className="mt-1 text-gray-900">{user?.name || 'N/A'}</p></div>
-                                    <div><label className="text-sm font-medium text-gray-700">Father's Name</label><p className="mt-1 text-gray-900">{user?.fatherName || 'N/A'}</p></div>
-                                    <div><label className="text-sm font-medium text-gray-700">Mother's Name</label><p className="mt-1 text-gray-900">{user?.motherName || 'N/A'}</p></div>
-                                    <div><label className="text-sm font-medium text-gray-700">Date of Birth</label><p className="mt-1 text-gray-900">{formatDate(user?.dob)}</p></div>
-                                    <div><label className="text-sm font-medium text-gray-700">Gender</label><p className="mt-1 text-gray-900 capitalize">{user?.gender || 'N/A'}</p></div>
+                                    <div><label className="text-sm font-medium text-gray-700">Registration Number</label><p className="mt-1 text-gray-900">{user?.registrationNumber || 'N/A'}</p></div>
+                                    <div><label className="text-sm font-medium text-gray-700">Roll Number</label><p className="mt-1 text-gray-900">{user?.rollNumber || 'N/A'}</p></div>
+                                    <div><label className="text-sm font-medium text-gray-700">College Code</label><p className="mt-1 text-gray-900">{user?.collegeCode || 'N/A'}</p></div>
+                                    <div><label className="text-sm font-medium text-gray-700">Degree</label><p className="mt-1 text-gray-900">{courses?.degree || 'N/A'}</p></div>
                                 </div>
                                 <div className="space-y-4">
-                                    <div><label className="text-sm font-medium text-gray-700">Aadhar Number</label><p className="mt-1 text-gray-900">{user?.aadharNumber || 'N/A'}</p></div>
-                                    <div><label className="text-sm font-medium text-gray-700">Religion</label><p className="mt-1 text-gray-900">{user?.religion || 'N/A'}</p></div>
-                                    <div><label className="text-sm font-medium text-gray-700">Category</label><p className="mt-1 text-gray-900">{user?.category || 'N/A'}</p></div>
+                                    <div><label className="text-sm font-medium text-gray-700">Branch</label><p className="mt-1 text-gray-900">{courses?.branch || 'N/A'}</p></div>
+                                    <div><label className="text-sm font-medium text-gray-700">Specialization</label><p className="mt-1 text-gray-900">{courses?.specialization || 'None'}</p></div>
+                                    <div><label className="text-sm font-medium text-gray-700">Year of Admission</label><p className="mt-1 text-gray-900">{user?.yearOfAdmission || 'N/A'}</p></div>
+                                    <div><label className="text-sm font-medium text-gray-700">Expected Year of Passing</label><p className="mt-1 text-gray-900">{user?.yearOfPassing || 'N/A'}</p></div>
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-white rounded-lg border border-gray-200 p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Contact Information</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                    <div><label className="text-sm font-medium text-gray-700">Email</label><p className="mt-1 text-gray-900">{user?.email || 'N/A'}</p></div>
-                                    <div><label className="text-sm font-medium text-gray-700">Phone</label><p className="mt-1 text-gray-900">{user?.phone || 'N/A'}</p></div>
-                                </div>
-                                <div className="space-y-4">
-                                    <div><label className="text-sm font-medium text-gray-700">Address</label><p className="mt-1 text-gray-900">{user?.address || 'N/A'}</p></div>
-                                </div>
+
+                        <div className="bg-white rounded-lg border border-gray-200">
+                            <div className="p-6 border-b border-gray-200"><h3 className="text-lg font-semibold text-gray-900">Semester-wise Performance</h3></div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead className="text-left bg-gray-50">
+                                        <tr><th className="px-6 py-3 font-medium text-gray-600">Semester</th><th className="px-6 py-3 font-medium text-gray-600">Exam Name</th><th className="px-6 py-3 font-medium text-gray-600 text-center">SGPA</th><th className="px-6 py-3 font-medium text-gray-600 text-center">Result</th><th className="px-6 py-3 font-medium text-gray-600">Published On</th></tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {academicInfo?.previousResults && academicInfo.previousResults.length > 0 ? (
+                                            academicInfo.previousResults.map((result) => (
+                                                <tr key={result.examId}>
+                                                    <td className="px-6 py-4 font-semibold text-gray-800">{result.semester}</td>
+                                                    <td className="px-6 py-4 text-gray-700">{result.examName}</td>
+                                                    <td className="px-6 py-4 text-center font-bold text-gray-800">{result.sgpa.toFixed(2)}</td>
+                                                    <td className="px-6 py-4 text-center"><span className={`px-2 py-1 text-xs font-bold rounded-full ${result.overallResult === 'PASS' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{result.overallResult}</span></td>
+                                                    <td className="px-6 py-4 text-gray-600">{formatDate(result.publishedOn)}</td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr><td colSpan="5" className="text-center py-10 text-gray-500">No past results found.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
                 )}
+                
+                {activeTab === 'personal' && ( <div className="space-y-6"><div className="bg-white rounded-lg border border-gray-200 p-6"><h3 className="text-lg font-semibold text-gray-900 mb-6">Personal Information</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="space-y-4"><div><label className="text-sm font-medium text-gray-700">Full Name</label><p className="mt-1 text-gray-900">{user?.name || 'N/A'}</p></div><div><label className="text-sm font-medium text-gray-700">Father's Name</label><p className="mt-1 text-gray-900">{user?.fatherName || 'N/A'}</p></div><div><label className="text-sm font-medium text-gray-700">Mother's Name</label><p className="mt-1 text-gray-900">{user?.motherName || 'N/A'}</p></div><div><label className="text-sm font-medium text-gray-700">Date of Birth</label><p className="mt-1 text-gray-900">{formatDate(user?.dob)}</p></div><div><label className="text-sm font-medium text-gray-700">Gender</label><p className="mt-1 text-gray-900 capitalize">{user?.gender || 'N/A'}</p></div></div><div className="space-y-4"><div><label className="text-sm font-medium text-gray-700">Aadhar Number</label><p className="mt-1 text-gray-900">{user?.aadharNumber || 'N/A'}</p></div><div><label className="text-sm font-medium text-gray-700">Religion</label><p className="mt-1 text-gray-900">{user?.religion || 'N/A'}</p></div><div><label className="text-sm font-medium text-gray-700">Category</label><p className="mt-1 text-gray-900">{user?.category || 'N/A'}</p></div></div></div></div><div className="bg-white rounded-lg border border-gray-200 p-6"><h3 className="text-lg font-semibold text-gray-900 mb-6">Contact Information</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="space-y-4"><div><label className="text-sm font-medium text-gray-700">Email</label><p className="mt-1 text-gray-900">{user?.email || 'N/A'}</p></div><div><label className="text-sm font-medium text-gray-700">Phone</label><p className="mt-1 text-gray-900">{user?.phone || 'N/A'}</p></div></div><div className="space-y-4"><div><label className="text-sm font-medium text-gray-700">Address</label><p className="mt-1 text-gray-900">{user?.address || 'N/A'}</p></div></div></div></div></div>)}
             </div>
         </div>
     );
