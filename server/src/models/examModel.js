@@ -26,6 +26,8 @@ const examSchema = new mongoose.Schema({
                 {
                     subjectCode: { type: String, required: true },
                     subjectName: { type: String, required: true },
+                    credits: { type: Number, required: true, min: 0 }, 
+                    maxMarks: { type: Number, default: 100 }, 
                     examDate: { type: Date},
                     session: { type: String, enum: ["FN", "AN"], required: true } // Forenoon/Afternoon
                 }

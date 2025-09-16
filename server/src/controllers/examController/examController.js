@@ -3,6 +3,67 @@ import mongoose from "mongoose";
 import Student from "../../models/studentModel.js";
 import StudentAcademics from "../../models/studentAcademicsModel.js";
 
+// Yeh function marks ke basis par Grade aur Grade Point nikalega.
+// Aap isko apni university ke rules ke hisaab se badal sakte hain.
+const getGradeDetails = (totalMarks, maxMarks = 100) => {
+    const percentage = (totalMarks / maxMarks) * 100;
+
+    if (percentage < 40) return { grade: 'F', gradePoint: 0, status: 'FAIL' };
+    if (percentage >= 90) return { grade: 'O', gradePoint: 10, status: 'PASS' };
+    if (percentage >= 80) return { grade: 'A+', gradePoint: 9, status: 'PASS' };
+    if (percentage >= 70) return { grade: 'A', gradePoint: 8, status: 'PASS' };
+    if (percentage >= 60) return { grade: 'B+', gradePoint: 7, status: 'PASS' };
+    if (percentage >= 50) return { grade: 'B', gradePoint: 6, status: 'PASS' };
+    if (percentage >= 40) return { grade: 'C', gradePoint: 5, status: 'PASS' };
+    return { grade: 'F', gradePoint: 0, status: 'FAIL' }; // Fallback
+};
+
+// Yeh main function hai jo poora result calculate karega.
+export const calculateResults = (subjectsWithMarks, examTimetable) => {
+    let totalCredits = 0;
+    let weightedGradePoints = 0;
+    let finalOverallResult = 'PASS';
+
+    // Har subject ke liye Grade, Total, Status calculate karo
+    const subjectsWithGrades = subjectsWithMarks.map(sub => {
+        const timetableInfo = examTimetable.find(ts => ts.subjectCode === sub.subjectCode);
+        if (!timetableInfo || typeof timetableInfo.credits !== 'number') {
+            throw new Error(`Credit information is missing for subject ${sub.subjectCode}.`);
+        }
+
+        const credits = timetableInfo.credits;
+        const maxMarks = timetableInfo.maxMarks || 100;
+        const totalMarks = (sub.internal || 0) + (sub.external || 0) + (sub.practical || 0);
+        
+        const { grade, gradePoint, status } = getGradeDetails(totalMarks, maxMarks);
+
+        // Agar ek bhi subject mein FAIL, to overall FAIL
+        if (status === 'FAIL') {
+            finalOverallResult = 'FAIL';
+        }
+        
+        totalCredits += credits;
+        weightedGradePoints += credits * gradePoint;
+
+        return {
+            ...sub,
+            total: totalMarks,
+            grade,
+            status,
+        };
+    });
+
+    // Final SGPA calculate karo
+    const sgpa = totalCredits > 0 ? (weightedGradePoints / totalCredits) : 0;
+
+    return {
+        subjects: subjectsWithGrades,
+        sgpa: parseFloat(sgpa.toFixed(2)),
+        overallResult: finalOverallResult
+    };
+};
+
+
 export const createExam = async (req, res) => {
   try {
     // createdBy should be added from authenticated user's ID
@@ -188,96 +249,69 @@ export const getExamResultsForEntry = async (req, res) => {
 };
 
 export const addOrUpdateResults = async (req, res) => {
-  const { examId } = req.params; // Exam document _id
-  const { results } = req.body; // Expects an array of student results
+    const { examId } = req.params;
+    const { results } = req.body;
 
-  if (!results || !Array.isArray(results) || results.length === 0) {
-    return res
-      .status(400)
-      .json({ message: "Results data must be a non-empty array." });
-  }
-
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
-  try {
-    const exam = await Exam.findById(examId).session(session);
-    if (!exam) {
-      throw new Error("Exam not found.");
+    if (!results || !Array.isArray(results) || results.length === 0) {
+        return res.status(400).json({ message: "Results data must be a non-empty array." });
     }
 
-    for (const studentResult of results) {
-      const { studentAcademicId, subjects, sgpa, overallResult } =
-        studentResult;
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-      const studentAcademics = await StudentAcademics.findById(
-        studentAcademicId
-      ).session(session);
-      if (!studentAcademics) {
-        console.warn(
-          `Skipping result for non-existent academic record: ${studentAcademicId}`
-        );
-        continue; // Skip this student if their academic record isn't found
-      }
+    try {
+        const exam = await Exam.findById(examId).session(session);
+        if (!exam) { throw new Error("Exam not found."); }
 
-      // Prepare the new result entry to be pushed into previousResults
-      const newResultRecord = {
-        examId: exam.examId,
-        examName: exam.examName,
-        collegeCode: studentAcademics.collegeCode,
-        courseCode: studentAcademics.courseId,
-        year: exam.year,
-        semester: exam.semester,
-        subjects: subjects.map((sub) => ({
-          ...sub,
-          total:
-            (sub.internal || 0) + (sub.external || 0) + (sub.practical || 0),
-          // Grade calculation logic would go here
-          grade: "A", // Placeholder for grade calculation
-          status:
-            (sub.internal || 0) + (sub.external || 0) + (sub.practical || 0) >=
-            40
-              ? "PASS"
-              : "FAIL", // Placeholder
-        })),
-        sgpa,
-        overallResult,
-        publishedOn: new Date(),
-      };
+        for (const studentResult of results) {
+            const { studentAcademicId, subjects: studentMarks } = studentResult;
+            
+            const studentAcademics = await StudentAcademics.findById(studentAcademicId).session(session);
+            if (!studentAcademics) { continue; }
 
-      // Remove the current exam registration for this student
-      studentAcademics.currentExamRegistrations =
-        studentAcademics.currentExamRegistrations.filter(
-          (reg) => reg.examId !== exam.examId
-        );
+            const courseTimetable = exam.courses.find(c => c.courseCode === studentAcademics.courseId)?.timetable;
+            if (!courseTimetable) {
+                throw new Error(`Timetable with credits not found for course ${studentAcademics.courseId}.`);
+            }
 
-      // Add the detailed result to their history
-      studentAcademics.previousResults.push(newResultRecord);
+            // --- SGPA CALCULATION YAHAN HOGA ---
+            const { subjects, sgpa, overallResult } = calculateResults(studentMarks, courseTimetable);
+            // ------------------------------------
 
-      await studentAcademics.save({ session });
+            const newResultRecord = {
+                examId: exam.examId,
+                examName: exam.examName,
+                collegeCode: studentAcademics.collegeCode,
+                courseCode: studentAcademics.courseId,
+                year: exam.year,
+                semester: exam.semester,
+                subjects,       // Automatically calculated
+                sgpa,           // Automatically calculated
+                overallResult,  // Automatically calculated
+                publishedOn: new Date()
+            };
+
+            studentAcademics.currentExamRegistrations = studentAcademics.currentExamRegistrations.filter(
+                reg => reg.examId !== exam.examId
+            );
+            studentAcademics.previousResults.push(newResultRecord);
+            await studentAcademics.save({ session });
+        }
+
+        exam.status = 'RESULT_PROCESSING';
+        await exam.save({ session });
+
+        await session.commitTransaction();
+        session.endSession();
+
+        res.status(200).json({ success: true, message: "Results calculated and submitted for approval." });
+
+    } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        console.error("Error adding/updating results:", error);
+        res.status(500).json({ message: "Server error while processing results.", error: error.message });
     }
-
-    // Optionally, update the exam status to PUBLISHED
-    exam.status = "RESULT_PROCESSING";
-    await exam.save({ session });
-
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(200).json({
-      success: true,
-      message:
-        "Results have been successfully submitted for processing and approval.",
-    });
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    console.error("Error adding/updating results:", error);
-    res.status(500).json({
-      message: "Server error while processing results.",
-      error: error.message,
-    });
-  }
 };
 
 export const getExamsForApproval = async (req, res) => {
