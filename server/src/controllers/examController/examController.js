@@ -73,6 +73,10 @@ export const calculateResults = async (subjectsWithMarks) => { // Now it's an as
 
 export const createExam = async (req, res) => {
   try {
+
+    if (!req.user || !req.user.id) {
+    return res.status(401).json({ message: "Authentication error: User not found." });
+  }
     // createdBy should be added from authenticated user's ID
     const examData = { ...req.body, createdBy: req.user.id };
 

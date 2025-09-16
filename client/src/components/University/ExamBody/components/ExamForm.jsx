@@ -30,6 +30,7 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
     
     const [examCourses, setExamCourses] = useState([{ courseCode: '', timetable: [] }]);
     const [isLoading, setIsLoading] = useState(false);
+    console.log(exam)
 
     useEffect(() => {
         if (exam) {
