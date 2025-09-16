@@ -120,7 +120,7 @@ const ExamApprovalDashboard = () => {
     }
 
     return (
-        <div className="font-sans p-4 md:p-6">
+        <div className="font-sans">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
                 <div className="p-4 border-b">
