@@ -2,6 +2,7 @@ import Exam from "../../models/examModel.js";
 import mongoose from "mongoose";
 import Student from "../../models/studentModel.js";
 import StudentAcademics from "../../models/studentAcademicsModel.js";
+import Subject from "../../models/subjectModel.js";
 
 // Yeh function marks ke basis par Grade aur Grade Point nikalega.
 // Aap isko apni university ke rules ke hisaab se badal sakte hain.
@@ -191,67 +192,61 @@ export const deleteExam = async (req, res) => {
 };
 
 export const getExamResultsForEntry = async (req, res) => {
-  try {
-    const { examId } = req.params; // This is the Exam document _id
+    try {
+        const { examId } = req.params;
 
-    const exam = await Exam.findById(examId).lean();
-    if (!exam) {
-      return res.status(404).json({ message: "Exam not found." });
+        const exam = await Exam.findById(examId).lean();
+        if (!exam) {
+            return res.status(404).json({ message: "Exam not found." });
+        }
+
+        const registeredStudents = await StudentAcademics.find({
+            'currentExamRegistrations.examId': exam.examId
+        })
+        .populate('studentId', 'name registrationNumber')
+        .select('studentId registrationNumber courseId')
+        .lean();
+
+        if (!registeredStudents || registeredStudents.length === 0) {
+            return res.status(200).json({ success: true, examDetails: exam, students: [] });
+        }
+        
+        // --- THIS IS THE NEW LOGIC ---
+        // 1. Get all unique subject codes from the exam's timetables
+        const allSubjectCodes = new Set();
+        exam.courses.forEach(course => {
+            course.timetable.forEach(slot => {
+                allSubjectCodes.add(slot.subjectCode);
+            });
+        });
+        
+        // 2. Fetch all subject details (including credits) in one go
+        const subjectDetails = await Subject.find({ code: { $in: [...allSubjectCodes] } }).lean();
+        const subjectDetailsMap = new Map(subjectDetails.map(sub => [sub.code, sub]));
+        // -----------------------------
+
+        const resultEntryList = registeredStudents.map(student => {
+            const courseInExam = exam.courses.find(c => c.courseCode === student.courseId);
+            const subjectsForStudent = courseInExam ? courseInExam.timetable : [];
+
+            return {
+                studentAcademicId: student._id,
+                name: student.studentId.name,
+                registrationNumber: student.registrationNumber,
+                subjects: subjectsForStudent.map(sub => ({
+                    subjectCode: sub.subjectCode,
+                    subjectName: sub.subjectName,
+                    credits: subjectDetailsMap.get(sub.subjectCode)?.credits || 0, // <-- CREDITS ADDED HERE
+                })),
+            };
+        });
+
+        res.status(200).json({ success: true, examDetails: exam, students: resultEntryList });
+
+    } catch (error) {
+        console.error("Error fetching students for result entry:", error);
+        res.status(500).json({ message: "Server error while fetching data.", error: error.message });
     }
-
-    // Find all student academic records that have a registration for this exam's unique ID
-    const registeredStudents = await StudentAcademics.find({
-      "currentExamRegistrations.examId": exam.examId,
-    })
-      .populate("studentId", "name registrationNumber") // Populate student's name and reg no
-      .select("studentId registrationNumber currentExamRegistrations courseId")
-      .lean();
-
-    if (!registeredStudents) {
-      return res.status(200).json({ success: true, students: [] });
-    }
-
-    const resultEntryList = registeredStudents.map((student) => {
-      // Now, student.courseId will have the correct value (e.g., "105")
-      const courseInExam = exam.courses.find(
-        (c) => c.courseCode === student.courseId
-      );
-
-      // If a matching course is found in the exam doc, use its timetable. Otherwise, empty array.
-      const subjects = courseInExam ? courseInExam.timetable : [];
-
-      return {
-        studentAcademicId: student._id,
-        studentId: student.studentId._id,
-        name: student.studentId.name,
-        registrationNumber: student.registrationNumber,
-        // The subjects array will now be correctly populated
-        subjects: subjects.map((sub) => ({
-          subjectCode: sub.subjectCode,
-          subjectName: sub.subjectName,
-          internal: 0, // Default values for entry form
-          external: 0,
-          practical: 0,
-        })),
-        sgpa: 0,
-        overallResult: "PASS",
-      };
-    });
-
-    res.status(200).json({
-      success: true,
-      examDetails: { examName: exam.examName, examId: exam.examId },
-      students: resultEntryList,
-    });
-  } catch (error) {
-    console.error("Error fetching students for result entry:", error);
-    res
-      .status(500)
-      .json({
-        message: "Server error while fetching data for result entry.",
-        error: error.message,
-      });
-  }
 };
 
 export const addOrUpdateResults = async (req, res) => {

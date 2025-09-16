@@ -14,19 +14,17 @@ const ToastContainer = ({ toasts, setToasts }) => {
     return (<div className="fixed top-6 right-6 z-[100] space-y-3"> {toasts.map(toast => (<Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />))} </div>);
 };
 const FullPageLoader = ({ message }) => (<div className="flex flex-col justify-center items-center h-full bg-white rounded-xl py-20"><Loader2 className="animate-spin text-indigo-600" size={48} /><p className="mt-4 text-slate-600">{message}</p></div>);
-const EmptyState = ({ icon: Icon, title, message }) => (<div className="text-center py-20 px-6 bg-white rounded-xl border-slate-200"><Icon className="mx-auto h-12 w-12 text-slate-300" /><h3 className="mt-4 text-lg font-semibold text-slate-800">{title}</h3><p className="mt-1 text-sm text-slate-500">{message}</p></div>);
+const EmptyState = ({ icon: Icon, title, message }) => (<div className="text-center py-20 px-6 bg-white rounded-xl border-2 border-dashed border-slate-200"><Icon className="mx-auto h-12 w-12 text-slate-300" /><h3 className="mt-4 text-lg font-semibold text-slate-800">{title}</h3><p className="mt-1 text-sm text-slate-500">{message}</p></div>);
 
-// --- MODAL (SIMPLIFIED: ONLY FOR SUBJECT MARKS) ---
+// --- MODAL FOR SUBJECT MARKS ---
 const StudentMarksEntryModal = ({ isOpen, onClose, student, onSave }) => {
     const [subjectMarks, setSubjectMarks] = useState({});
+    console.log(student)
     
     useEffect(() => {
         if (student && student.subjects) {
             const initialMarks = {};
             student.subjects.forEach(sub => {
-                // --- THIS IS THE FIX ---
-                // The issue was here. It was trying to access `student.initialMarks.subjects`.
-                // The correct path is directly `student.initialMarks`.
                 initialMarks[sub.subjectCode] = {
                     internal: student.initialMarks?.[sub.subjectCode]?.internal ?? '',
                     external: student.initialMarks?.[sub.subjectCode]?.external ?? '',
@@ -76,72 +74,13 @@ const StudentMarksEntryModal = ({ isOpen, onClose, student, onSave }) => {
 };
 
 // --- Component to Select an Exam ---
-const ExamSelectionList = ({ exams, onSelect }) => (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm animate-fade-in">
-        <div className="p-4 border-b">
-            <h2 className="text-lg font-semibold text-slate-800">Select Exam for Results Entry</h2>
-        </div>
-        <div className="divide-y divide-slate-200">
-            {exams.length > 0 ? exams.map(exam => (
-                <div key={exam._id} className="p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 hover:bg-slate-50 transition-colors">
-                    <div>
-                        <p className="font-semibold text-slate-800">{exam.examName}</p>
-                        <p className="text-sm text-slate-500 font-mono mt-1">{exam.examId} | Semester {exam.semester}, {exam.year}</p>
-                    </div>
-                    <button onClick={() => onSelect(exam)} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold text-sm transition-colors">
-                        <Edit size={16} /> Enter Marks
-                    </button>
-                </div>
-            )) : (
-                <EmptyState icon={BookOpen} title="No Exams Ready for Entry" message="There are currently no exams with the status 'CLOSED'." />
-            )}
-        </div>
-    </div>
-);
+const ExamSelectionList = ({ exams, onSelect }) => ( <div className="bg-white rounded-xl border border-slate-200 shadow-sm animate-fade-in"><div className="p-4 border-b"><h2 className="text-lg font-semibold text-slate-800">Select Exam for Results Entry</h2></div><div className="divide-y divide-slate-200">{exams.length > 0 ? exams.map(exam => (<div key={exam._id} className="p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 hover:bg-slate-50 transition-colors"><div><p className="font-semibold text-slate-800">{exam.examName}</p><p className="text-sm text-slate-500 font-mono mt-1">{exam.examId} | Semester {exam.semester}, {exam.year}</p></div><button onClick={() => onSelect(exam)} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold text-sm transition-colors"><Edit size={16} /> Enter Marks</button></div>)) : (<EmptyState icon={BookOpen} title="No Exams Ready for Entry" message="There are currently no exams with the status 'CLOSED'." />)}</div></div>);
 
 // --- Component to Show Student List ---
 const ResultsEntryGrid = ({ exam, students, studentMarks, onEditStudent, onSubmit, onBack, isSubmitting, isLoading }) => {
-    const areAllMarksEntered = (marks) => {
-        if (!marks) return false;
-        // Check if every subject has a non-empty string for each mark type
-        return Object.values(marks).every(m => m.internal !== '' && m.external !== '' && m.practical !== '');
-    };
-
-    return (
-        <div className="animate-fade-in">
-             <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
-                <div><button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-600 hover:text-indigo-600 font-medium mb-2 transition-colors"><ArrowLeft size={16} /> Back to Exam Selection</button><h2 className="text-2xl font-bold text-slate-800">Marks Entry: {exam?.examName}</h2></div>
-                {students.length > 0 && (<button onClick={onSubmit} disabled={isSubmitting || isLoading} className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg disabled:bg-emerald-300 flex items-center justify-center font-semibold hover:bg-emerald-700 transition-shadow shadow-sm hover:shadow-md">{isSubmitting ? <><Loader2 size={18} className="animate-spin mr-2" /> Submitting...</> : 'Submit All Results for Approval'}</button>)}
-            </div>
-            {isLoading ? <FullPageLoader message="Loading student list..." /> :
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                {students.length > 0 ? (<table className="w-full text-sm">
-                    <thead className="text-left text-xs text-slate-500 uppercase bg-slate-50">
-                        <tr>
-                            <th className="px-4 py-3 font-semibold">Student Name</th>
-                            <th className="px-4 py-3 font-semibold">Registration Number</th>
-                            <th className="px-4 py-3 font-semibold text-center">Marks Status</th>
-                            <th className="px-4 py-3 font-semibold text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200">
-                        {students.map(student => {
-                            const marks = studentMarks[student.studentAcademicId];
-                            const entered = areAllMarksEntered(marks);
-                            return (<tr key={student.studentAcademicId} className="hover:bg-slate-50/50">
-                                <td className="px-4 py-3 font-semibold text-slate-800">{student.name}</td>
-                                <td className="px-4 py-3 text-slate-500 font-mono">{student.registrationNumber}</td>
-                                <td className="px-4 py-3 text-center">{entered ? (<span className="flex items-center justify-center gap-1.5 text-green-600 text-xs font-semibold"><CheckCircle size={14}/> Entered</span>) : (<span className="flex items-center justify-center gap-1.5 text-amber-600 text-xs font-semibold"><AlertTriangle size={14}/> Pending</span>)}</td>
-                                <td className="px-4 py-3 text-center"><button onClick={() => onEditStudent(student)} className="flex items-center gap-2 mx-auto px-3 py-1.5 bg-white text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-100 font-semibold text-xs"><Edit size={14} /> {entered ? 'Edit Marks' : 'Add Marks'}</button></td>
-                            </tr>);
-                        })}
-                    </tbody>
-                </table>) : ( <EmptyState icon={Edit} title="No Students Registered" message="There are no students registered for this examination." /> )}
-            </div>}
-        </div>
-    );
+    const areAllMarksEntered = (marks) => marks && Object.values(marks).every(m => m.internal !== '' && m.external !== '' && m.practical !== '');
+    return (<div className="animate-fade-in"><div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4"><div><button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-600 hover:text-indigo-600 font-medium mb-2 transition-colors"><ArrowLeft size={16} /> Back to Exam Selection</button><h2 className="text-2xl font-bold text-slate-800">Marks Entry: {exam?.examName}</h2></div>{students.length > 0 && (<button onClick={onSubmit} disabled={isSubmitting || isLoading} className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg disabled:bg-emerald-300 flex items-center justify-center font-semibold hover:bg-emerald-700 transition-shadow shadow-sm hover:shadow-md">{isSubmitting ? <><Loader2 size={18} className="animate-spin mr-2" /> Submitting...</> : 'Submit All Results for Approval'}</button>)}</div>{isLoading ? <FullPageLoader message="Loading student list..." /> : <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">{students.length > 0 ? (<table className="w-full text-sm"><thead className="text-left text-xs text-slate-500 uppercase bg-slate-50"><tr><th className="px-4 py-3 font-semibold">Student Name</th><th className="px-4 py-3 font-semibold">Registration Number</th><th className="px-4 py-3 font-semibold text-center">Marks Status</th><th className="px-4 py-3 font-semibold text-center">Actions</th></tr></thead><tbody className="divide-y divide-slate-200">{students.map(student => { const marks = studentMarks[student.studentAcademicId]; const entered = areAllMarksEntered(marks); return (<tr key={student.studentAcademicId} className="hover:bg-slate-50/50"><td className="px-4 py-3 font-semibold text-slate-800">{student.name}</td><td className="px-4 py-3 text-slate-500 font-mono">{student.registrationNumber}</td><td className="px-4 py-3 text-center">{entered ? (<span className="flex items-center justify-center gap-1.5 text-green-600 text-xs font-semibold"><CheckCircle size={14}/> Entered</span>) : (<span className="flex items-center justify-center gap-1.5 text-amber-600 text-xs font-semibold"><AlertTriangle size={14}/> Pending</span>)}</td><td className="px-4 py-3 text-center"><button onClick={() => onEditStudent(student)} className="flex items-center gap-2 mx-auto px-3 py-1.5 bg-white text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-100 font-semibold text-xs"><Edit size={14} /> {entered ? 'Edit Marks' : 'Add Marks'}</button></td></tr>); })}</tbody></table>) : ( <EmptyState icon={Edit} title="No Students Registered" message="There are no students registered for this examination." /> )}</div>}</div>);
 };
-
 
 // --- Main Parent Component ---
 const ExamCellResultProcessing = () => {
@@ -154,8 +93,8 @@ const ExamCellResultProcessing = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [toasts, setToasts] = useState([]);
-
     const addToast = useCallback((type, message) => { const id = Date.now(); setToasts(prev => [...prev, { id, type, message }]); }, []);
+
 
     useEffect(() => {
         if (view === 'list') {
@@ -174,9 +113,7 @@ const ExamCellResultProcessing = () => {
     }, [view, addToast]);
     
     const handleSelectExam = async (exam) => {
-        setIsLoading(true);
-        setView('entry');
-        setSelectedExam(exam);
+        setIsLoading(true); setView('entry'); setSelectedExam(exam);
         try {
             const response = await fetch(`${API_BASE_URL}/${exam._id}/results/entry`, { credentials: 'include' });
             if (!response.ok) throw new Error("Could not fetch student list.");
@@ -190,12 +127,8 @@ const ExamCellResultProcessing = () => {
                 initialResults[student.studentAcademicId] = subjectMarks;
             });
             setStudentMarks(initialResults);
-        } catch (err) {
-            addToast('error', err.message);
-            setView('list');
-        } finally {
-            setIsLoading(false);
-        }
+        } catch (err) { addToast('error', err.message); setView('list'); } 
+        finally { setIsLoading(false); }
     };
 
     const handleSaveStudentMarks = (studentAcademicId, updatedMarks) => {
@@ -231,19 +164,12 @@ const ExamCellResultProcessing = () => {
         finally { setIsSubmitting(false); }
     };
     
-    const handleBack = () => {
-        setView('list');
-        setSelectedExam(null);
-        setStudents([]);
-        setStudentMarks({});
-        setEditingStudent(null);
-    };
+    const handleBack = () => { setView('list'); setSelectedExam(null); setStudents([]); setStudentMarks({}); setEditingStudent(null); };
 
     return (
-        <div className="font-sans min-h-screen">
+        <div className="font-sans bg-slate-50 min-h-screen p-4 md:p-8">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
             <header className="mb-8"><h1 className="text-3xl font-bold text-slate-900">Result Processing</h1><p className="mt-1 text-slate-600">Enter marks for students for closed examinations.</p></header>
-            
             {view === 'list' ? (
                 isLoading ? <FullPageLoader message="Loading exams ready for processing..." /> :
                 <ExamSelectionList exams={exams} onSelect={handleSelectExam} />
@@ -259,7 +185,6 @@ const ExamCellResultProcessing = () => {
                     isLoading={isLoading}
                 />
             )}
-
             <StudentMarksEntryModal
                 isOpen={!!editingStudent}
                 onClose={() => setEditingStudent(null)}
