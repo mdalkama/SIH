@@ -20,9 +20,7 @@ const FormSelect = ({ label, name, value, onChange, children, ...props }) => (
     </div>
 );
 
-
 const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
-    // Helper to format dates for input fields
     const formatDate = (dateString) => dateString ? new Date(dateString).toISOString().split('T')[0] : '';
 
     const [formData, setFormData] = useState({
@@ -30,11 +28,9 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
         startDate: '', endDate: '', status: 'CREATED',
     });
     
-    // State for courses and timetables
     const [examCourses, setExamCourses] = useState([{ courseCode: '', timetable: [] }]);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Effect to populate form when editing an existing exam
     useEffect(() => {
         if (exam) {
             setFormData({
@@ -47,7 +43,6 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
                 endDate: formatDate(exam.endDate),
                 status: exam.status || 'CREATED',
             });
-            // Also format dates inside the timetable
             const formattedCourses = (exam.courses || []).map(course => ({
                 ...course,
                 timetable: course.timetable.map(slot => ({
@@ -59,30 +54,25 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
         }
     }, [exam]);
 
-    // Function to auto-populate timetable when semester/course changes
     const repopulateTimetable = useCallback((semester, courseId, allCoursesData) => {
         if (!semester || !courseId || !Array.isArray(allCoursesData) || allCoursesData.length === 0) return [];
-        
         const selectedCourseData = allCoursesData.find(c => c.courseId === courseId);
         if (!selectedCourseData) return [];
-        
         const semesterData = selectedCourseData.semesters.find(s => String(s.semesterNumber) === String(semester));
         if (!semesterData) return [];
 
+        // Timetable is now simpler, without credits and maxMarks
         return semesterData.subjects.map(subject => ({
             subjectCode: subject.code,
             subjectName: subject.name,
             examDate: '',
             session: 'FN',
-            credits: subject.credits || 0, 
-            maxMarks: 100, 
         }));
     }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-        // If semester changes, repopulate timetables for all selected courses
         if (name === 'semester') {
             const updatedCourses = examCourses.map(course => ({
                 ...course,
@@ -160,25 +150,16 @@ const ExamForm = ({ exam, onBack, addToast, onSaveSuccess, allCourses }) => {
                                 </div>
                                 {course.timetable && course.timetable.length > 0 && (
                                     <div className="space-y-2 mt-2">
-                                        <div className="hidden md:grid grid-cols-12 gap-2 text-xs font-medium text-slate-500 px-2">
-                                            <div className="col-span-4">Subject</div>
-                                            {/* --- NEW HEADERS --- */}
-                                            <div className="col-span-1 text-center">Credits</div>
-                                            <div className="col-span-1 text-center">Max Marks</div>
+                                        <div className="hidden md:grid grid-cols-10 gap-2 text-xs font-medium text-slate-500 px-2">
+                                            <div className="col-span-6">Subject</div>
                                             <div className="col-span-3">Exam Date</div>
-                                            <div className="col-span-2">Session</div>
+                                            <div className="col-span-1">Session</div>
                                         </div>
                                         {course.timetable.map((tt, tIdx) => (
-                                            <div key={tIdx} className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
-                                                <div className="md:col-span-4 p-2 border border-slate-200 rounded-md bg-white text-sm">{tt.subjectName} <span className="text-slate-400 font-mono">({tt.subjectCode})</span></div>
-                                                
-                                                {/* --- NEW INPUT FIELDS --- */}
-                                                <input type="number" placeholder="Credits" value={tt.credits} onChange={e => handleTimetableChange(cIdx, tIdx, 'credits', e.target.value)} className="md:col-span-1 p-2 border border-slate-300 rounded-lg text-center" required />
-                                                <input type="number" placeholder="Max" value={tt.maxMarks} onChange={e => handleTimetableChange(cIdx, tIdx, 'maxMarks', e.target.value)} className="md:col-span-1 p-2 border border-slate-300 rounded-lg text-center" />
-                                                
+                                            <div key={tIdx} className="grid grid-cols-1 md:grid-cols-10 gap-2 items-center">
+                                                <div className="md:col-span-6 p-2 border border-slate-200 rounded-md bg-white text-sm">{tt.subjectName} <span className="text-slate-400 font-mono">({tt.subjectCode})</span></div>
                                                 <input type="date" value={tt.examDate} onChange={e => handleTimetableChange(cIdx, tIdx, 'examDate', e.target.value)} className="md:col-span-3 p-2 border border-slate-300 rounded-lg" />
-                                                <select value={tt.session} onChange={e => handleTimetableChange(cIdx, tIdx, 'session', e.target.value)} className="md:col-span-2 p-2 border border-slate-300 rounded-lg bg-white"><option value="FN">FN</option><option value="AN">AN</option></select>
-                                                {/* <Trash2 button can be added here if needed */}
+                                                <select value={tt.session} onChange={e => handleTimetableChange(cIdx, tIdx, 'session', e.target.value)} className="md:col-span-1 p-2 border border-slate-300 rounded-lg bg-white"><option value="FN">FN</option><option value="AN">AN</option></select>
                                             </div>
                                         ))}
                                     </div>
