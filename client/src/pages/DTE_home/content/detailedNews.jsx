@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { Calendar, ArrowLeft, Share2, ExternalLink, X } from 'lucide-react'
-import { getNewsById } from '../../../data/newsData'
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Calendar, ArrowLeft, Share2, ExternalLink, X } from 'lucide-react';
+import { getNewsById } from '../../../data/newsData';
+import Header from '../header_dte';
 
 const DetailedNews = () => {
   const { id } = useParams()
@@ -88,31 +89,21 @@ const DetailedNews = () => {
   }
 
   return (
-    <div className="min-h-screen theme-bg">
-      {/* Header with Back Button */}
-      <div className="sticky top-0 z-40 theme-surface border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={goBack}
-              className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors duration-300"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="font-medium">Back to News</span>
-            </button>
-            <button
-              onClick={handleShare}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
-            >
-              <Share2 className="w-4 h-4" />
-              <span>Share</span>
-            </button>
-          </div>
-        </div>
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      <Header />
+      {/* Back Button */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <button
+          onClick={goBack}
+          className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 px-4 py-2 border-2 border-blue-200 dark:border-blue-700 rounded-lg font-medium transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-500"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span>Back to News</span>
+        </button>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Article Header */}
         <div className="mb-8">
           {/* Category Badge */}

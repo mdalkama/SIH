@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PlusCircle, Edit, X, Loader2, Search, ChevronLeft, ChevronRight, Trash2, AlertTriangle, CheckCircle, Info, ArrowLeft, Eye, BookOpen, CalendarDays } from 'lucide-react';
+import ExamForm from './components/ExamForm';
 
 const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/semester-exam';
 const COURSES_API_URL = 'https://sih-4ptm.onrender.com/api/v1/course';
@@ -55,7 +56,8 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirm
 };
 
 // --- Main Component ---
-const UniversityExamManager = ({ onEnterResults }) => {
+// --- CHANGE 1: Removed `onEnterResults` from the props as it's no longer needed ---
+const UniversityExamManager = () => {
     const [view, setView] = useState('list');
     const [allCourses, setAllCourses] = useState([]);
     const [selectedExam, setSelectedExam] = useState(null);
@@ -121,9 +123,9 @@ const UniversityExamManager = ({ onEnterResults }) => {
         <div className="min-h-screen font-sans">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
             <main className="">
-                {view === 'details' && <ExamDetailView exam={selectedExam} onBack={handleBackToList} onEnterResults={onEnterResults} />}
+                {view === 'details' && <ExamDetailView exam={selectedExam} onBack={handleBackToList} />}
                 {view === 'form' && <ExamForm exam={editingExam} onBack={handleBackToList} addToast={addToast} onSaveSuccess={refreshExamList} allCourses={allCourses} />}
-                {view === 'list' && <ExamListView onShowForm={handleShowForm} addToast={addToast} onViewDetails={handleViewDetails} onEnterResults={onEnterResults} />}
+                {view === 'list' && <ExamListView onShowForm={handleShowForm} addToast={addToast} onViewDetails={handleViewDetails} />}
             </main>
         </div>
     );
@@ -131,11 +133,12 @@ const UniversityExamManager = ({ onEnterResults }) => {
 
 
 // --- List View ---
-const ExamListView = ({ onShowForm, addToast, onViewDetails, onEnterResults }) => {
+// --- CHANGE 4: Removed `onEnterResults` from the props ---
+const ExamListView = ({ onShowForm, addToast, onViewDetails }) => {
     const [exams, setExams] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-       const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalDocs: 0 });
+    const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalDocs: 0 });
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [deletingExam, setDeletingExam] = useState(null);
 
@@ -203,7 +206,7 @@ const ExamListView = ({ onShowForm, addToast, onViewDetails, onEnterResults }) =
             <div className="overflow-x-auto">
                 {isLoading ? <div className="p-10 text-center flex justify-center"><Loader2 className="animate-spin text-indigo-600" /></div> :
                     (exams.length > 0 ?
-                        <ExamsTable exams={exams} onEdit={onShowForm} onDelete={setDeletingExam} onStatusUpdate={handleStatusUpdate} onViewDetails={onViewDetails} onEnterResults={onEnterResults} currentPage={pagination.currentPage} pageSize={rowsPerPage} />
+                        <ExamsTable exams={exams} onEdit={onShowForm} onDelete={setDeletingExam} onStatusUpdate={handleStatusUpdate} onViewDetails={onViewDetails} currentPage={pagination.currentPage} pageSize={rowsPerPage} />
                         :
                         <div className="text-center p-16 text-slate-500">
                             <h3 className="text-lg font-semibold">No Exams Found</h3>
@@ -220,7 +223,8 @@ const ExamListView = ({ onShowForm, addToast, onViewDetails, onEnterResults }) =
 
 
 // --- Detail View ---
-const ExamDetailView = ({ exam, onBack, onEnterResults }) => (
+// --- CHANGE 5: Removed `onEnterResults` from props and removed the button from the JSX ---
+const ExamDetailView = ({ exam, onBack }) => (
     <div className="animate-fade-in">
         <button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-600 hover:text-indigo-600 mb-6 font-medium transition-colors">
             <ArrowLeft size={16} /> Back to Exam List
@@ -233,15 +237,7 @@ const ExamDetailView = ({ exam, onBack, onEnterResults }) => (
                 </div>
                 <div className="flex items-center gap-3">
                     <StatusBadge status={exam.status} />
-                    {onEnterResults && exam.status === 'CLOSED' && (
-                        <button
-                            onClick={() => onEnterResults(exam)}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-semibold"
-                            title="Enter Results"
-                        >
-                            <CalendarDays size={16} /> Enter Results
-                        </button>
-                    )}
+                    {/* The "Enter Results" button has been removed from here */}
                 </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-6 text-sm border-t border-slate-200 pt-6">
@@ -267,8 +263,6 @@ const ExamDetailView = ({ exam, onBack, onEnterResults }) => (
 );
 
 
-// --- Form View ---
-
 
 // --- Child & Helper Components ---
 const DataTableToolbar = ({ onSearchChange, onAddClick }) => (
@@ -284,7 +278,9 @@ const DataTableToolbar = ({ onSearchChange, onAddClick }) => (
         </div>
     </div>
 );
-const ExamsTable = ({ exams, onEdit, onDelete, onStatusUpdate, currentPage, pageSize, onViewDetails, onEnterResults }) => (
+
+// --- CHANGE 6: Removed `onEnterResults` from props ---
+const ExamsTable = ({ exams, onEdit, onDelete, onStatusUpdate, currentPage, pageSize, onViewDetails }) => (
     <table className="w-full text-sm">
         <thead className="text-left text-xs text-slate-500 uppercase bg-slate-50">
             <tr>
@@ -306,15 +302,7 @@ const ExamsTable = ({ exams, onEdit, onDelete, onStatusUpdate, currentPage, page
                     <td className="px-6 py-4 text-center"><StatusSelector exam={exam} onUpdate={onStatusUpdate} /></td>
                     <td className="px-6 py-4">
                         <div className="flex justify-center items-center gap-4">
-                            {exam.status === 'CLOSED' && (
-                                <button
-                                    onClick={() => onEnterResults?.(exam)}
-                                    className="text-slate-400 hover:text-emerald-600 transition-colors"
-                                    title="Enter Results"
-                                >
-                                    <CalendarDays size={18} />
-                                </button>
-                            )}
+                            {/* --- CHANGE 7: The 'Enter Results' button has been completely removed from the actions column --- */}
                             <button onClick={() => onViewDetails(exam._id)} className="text-slate-400 hover:text-green-600 transition-colors" title="View Details"><Eye size={18} /></button>
                             <button onClick={() => onEdit(exam)} className="text-slate-400 hover:text-indigo-600 transition-colors" title="Edit"><Edit size={18} /></button>
                             <button onClick={() => onDelete(exam)} className="text-slate-400 hover:text-rose-600 transition-colors" title="Delete"><Trash2 size={18} /></button>
@@ -325,6 +313,7 @@ const ExamsTable = ({ exams, onEdit, onDelete, onStatusUpdate, currentPage, page
         </tbody>
     </table>
 );
+
 const StatusSelector = ({ exam, onUpdate }) => {
     const [isUpdating, setIsUpdating] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
@@ -335,9 +324,11 @@ const StatusSelector = ({ exam, onUpdate }) => {
     if (isUpdating) return <div className="flex justify-center items-center"><Loader2 size={16} className="animate-spin text-indigo-600" /></div>;
     return (<><select value={exam.status} onChange={handleChange} className={`px-3 py-1 text-xs font-semibold rounded-full border-none outline-none appearance-none cursor-pointer ${styles[exam.status]}`} style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}>{STATUSES.map(s => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}</select><ConfirmationModal isOpen={showConfirm} onClose={() => setShowConfirm(false)} onConfirm={handleConfirm} title="Confirm Status Change" message={`Change status to "${nextStatus.replace(/_/g, ' ')}"?`} confirmText="Confirm" /></>);
 };
+
 const Timetable = ({ course }) => (
     <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="text-left text-xs text-slate-500 uppercase bg-slate-100"><tr><th className="px-4 py-3 font-semibold">Date</th><th className="px-4 py-3 font-semibold">Session</th><th className="px-4 py-3 font-semibold">Subject</th></tr></thead><tbody className="divide-y divide-slate-200">{course.timetable && course.timetable.length > 0 ? course.timetable.map(slot => (<tr key={slot.subjectCode || slot._id}><td className="px-4 py-3 w-48 font-medium text-slate-600">{slot.examDate ? new Date(slot.examDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : <span className="text-slate-400">Not set</span>}</td><td className="px-4 py-3 w-32 text-slate-600">{slot.session === 'FN' ? 'Forenoon' : 'Afternoon'}</td><td className="px-4 py-3"><p className="font-semibold text-slate-800">{slot.subjectName}</p><p className="text-xs text-slate-500 font-mono">{slot.subjectCode}</p></td></tr>)) : (<tr><td colSpan="3" className="text-center p-6 text-slate-500">No timetable entries found.</td></tr>)}</tbody></table></div>
 );
+
 const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSizeChange }) => {
     const totalPages = Math.ceil(totalCount / pageSize);
     if (totalCount === 0) return null;
@@ -351,5 +342,3 @@ const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSiz
 };
 
 export default UniversityExamManager;
-
-

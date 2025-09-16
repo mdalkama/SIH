@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Loader2, AlertTriangle, Calendar, BookOpen, Clock, X, Eye, CheckCircle, Info, FileText, UserCheck, Award, ListChecks } from 'lucide-react';
 
+// --- API Endpoints ---
+const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/student-exams';
+
 // --- Helper Components ---
 const Toast = ({ message, type, onClose }) => {
     useEffect(() => { const timer = setTimeout(() => { onClose(); }, 4000); return () => clearTimeout(timer); }, [onClose]);
@@ -13,11 +16,95 @@ const ToastContainer = ({ toasts, setToasts }) => {
 };
 const Modal = ({ isOpen, onClose, title, children }) => {
     if (!isOpen) return null;
-    return (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"><div className="bg-white rounded-xl shadow-xl max-w-4xl w-full" onClick={(e) => e.stopPropagation()}><div className="p-4 border-b flex items-center justify-between"><h2 className="text-xl font-semibold text-gray-900">{title}</h2><button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"><X className="w-5 h-5" /></button></div><div className="p-6 max-h-[70vh] overflow-y-auto">{children}</div></div></div>);
+    return (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"><div className="bg-slate-50 rounded-xl shadow-xl max-w-3xl w-full" onClick={(e) => e.stopPropagation()}><div className="p-4 border-b bg-white rounded-t-xl flex items-center justify-between"><h2 className="text-xl font-semibold text-gray-900">{title}</h2><button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"><X className="w-5 h-5" /></button></div><div className="p-6 max-h-[70vh] overflow-y-auto">{children}</div></div></div>);
 };
 const Skeleton = () => (<div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm animate-pulse"><div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4"><div><div className="h-6 w-32 bg-slate-200 rounded-full mb-3"></div><div className="h-7 w-56 bg-slate-200 rounded-md"></div><div className="h-5 w-32 bg-slate-200 rounded-md mt-2"></div></div><div className="h-10 w-full sm:w-40 bg-slate-200 rounded-lg"></div></div><div className="mt-4 pt-4 border-t border-slate-100 flex flex-wrap gap-x-6 gap-y-2"><div className="h-5 w-40 bg-slate-200 rounded-md"></div><div className="h-5 w-40 bg-slate-200 rounded-md"></div></div></div>);
 const EmptyState = ({ icon: Icon, title, message }) => (<div className="text-center py-16 col-span-full bg-white rounded-xl border-2 border border-slate-200"><Icon className="mx-auto h-12 w-12 text-slate-300" /><h3 className="mt-4 text-lg font-medium text-slate-800">{title}</h3><p className="mt-1 text-sm text-slate-500">{message}</p></div>);
 // --- End Helper Components ---
+
+
+// --- FIX 1: Timetable Display Component ---
+const TimetableDisplay = ({ timetable }) => {
+    if (!timetable || timetable.length === 0) {
+        return <EmptyState icon={Calendar} title="No Timetable Available" message="The timetable for this exam has not been uploaded yet." />;
+    }
+    return (
+        <div className="bg-white rounded-lg border border-gray-300">
+            <table className="w-full text-sm">
+                <thead className="text-left text-xs text-slate-500 uppercase bg-slate-50">
+                    <tr>
+                        <th className="px-4 py-3 font-semibold">Date</th>
+                        <th className="px-4 py-3 font-semibold">Session</th>
+                        <th className="px-4 py-3 font-semibold">Subject</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                    {timetable.map(slot => (
+                        <tr key={slot.subjectCode}>
+                            <td className="px-4 py-3 font-medium text-slate-600 whitespace-nowrap">{new Date(slot.examDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</td>
+                            <td className="px-4 py-3 text-slate-600">{slot.session === 'FN' ? 'Forenoon' : 'Afternoon'}</td>
+                            <td className="px-4 py-3">
+                                <p className="font-semibold text-slate-800">{slot.subjectName}</p>
+                                <p className="text-xs text-slate-500 font-mono">{slot.subjectCode}</p>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+};
+
+// --- FIX 2: Result Display Component ---
+const ResultDisplay = ({ resultData, isLoading }) => {
+    if (isLoading) {
+        return <div className="flex justify-center items-center p-12"><Loader2 className="w-8 h-8 animate-spin text-indigo-600" /></div>;
+    }
+    if (!resultData || !resultData.subjects) {
+        return <EmptyState icon={FileText} title="Result Not Found" message="The result for this exam could not be loaded." />;
+    }
+
+    const overallTotal = resultData.subjects.reduce((acc, subject) => acc + (subject.total || 0), 0);
+    const maxTotal = resultData.subjects.length * 100; // Assuming 100 marks per subject
+
+    return (
+        <div className="space-y-6">
+            <div className="bg-white p-6 rounded-lg border">
+                <table className="w-full text-sm">
+                    <thead className="text-left text-xs text-slate-500 uppercase">
+                        <tr>
+                            <th className="pb-2 font-semibold">Subject</th>
+                            <th className="pb-2 font-semibold text-center">Internal</th>
+                            <th className="pb-2 font-semibold text-center">External</th>
+                            <th className="pb-2 font-semibold text-center">Practical</th>
+                            <th className="pb-2 font-semibold text-center">Total</th>
+                            <th className="pb-2 font-semibold text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                        {resultData.subjects.map(subject => (
+                            <tr key={subject.subjectCode}>
+                                <td className="py-2"><p className="font-semibold text-slate-800">{subject.subjectName}</p><p className="text-xs text-slate-500 font-mono">{subject.subjectCode}</p></td>
+                                <td className="py-2 text-center text-slate-600">{subject.internal}</td>
+                                <td className="py-2 text-center text-slate-600">{subject.external}</td>
+                                <td className="py-2 text-center text-slate-600">{subject.practical}</td>
+                                <td className="py-2 text-center font-bold text-slate-800">{subject.total}</td>
+                                <td className="py-2 text-center"><span className={`px-2 py-0.5 text-xs font-bold rounded-full ${subject.status === 'PASS' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{subject.status}</span></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div className="bg-white p-4 rounded-lg border"><p className="text-sm text-slate-500 mb-1">Total Marks</p><p className="text-xl font-bold text-slate-800">{overallTotal} / {maxTotal}</p></div>
+                <div className="bg-white p-4 rounded-lg border"><p className="text-sm text-slate-500 mb-1">SGPA</p><p className="text-xl font-bold text-slate-800">{resultData.sgpa.toFixed(2)}</p></div>
+                <div className="bg-white p-4 rounded-lg border"><p className="text-sm text-slate-500 mb-1">Overall Result</p><p className={`text-xl font-bold ${resultData.overallResult === 'PASS' ? 'text-emerald-600' : 'text-rose-600'}`}>{resultData.overallResult}</p></div>
+                <div className="bg-white p-4 rounded-lg border"><p className="text-sm text-slate-500 mb-1">Published On</p><p className="text-base font-semibold text-slate-700 pt-1">{new Date(resultData.publishedOn).toLocaleDateString('en-GB')}</p></div>
+            </div>
+        </div>
+    );
+};
+
 
 const StudentExam = () => {
     const [activeTab, setActiveTab] = useState('available');
@@ -35,14 +122,13 @@ const StudentExam = () => {
         setToasts(prev => [...prev, { id, type, message }]);
     }, []);
 
-    // --- THIS IS THE FIX ---
-    // All API calls now point to the /api/v1/exam/... routes as you defined.
     const fetchData = useCallback(async () => {
         setLoading(true);
+        setError('');
         try {
             const [examsRes, regsRes] = await Promise.all([
-                fetch('https://sih-4ptm.onrender.com/api/v1/student-exams/my-exams', { credentials: 'include' }),
-                fetch('https://sih-4ptm.onrender.com/api/v1/student-exams/my-registrations', { credentials: 'include' })
+                fetch(`${API_BASE_URL}/my-exams`, { credentials: 'include' }),
+                fetch(`${API_BASE_URL}/my-registrations`, { credentials: 'include' })
             ]);
             
             const examsResult = await examsRes.json();
@@ -66,8 +152,11 @@ const StudentExam = () => {
     }, [fetchData]);
 
     const handleRegister = async (examId, examName) => {
+        const btn = document.getElementById(`register-btn-${examId}`);
+        if(btn) btn.disabled = true;
+
         try {
-            const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/student-exams/${examId}/register`, {
+            const res = await fetch(`${API_BASE_URL}/${examId}/register`, {
                 method: 'POST', credentials: 'include'
             });
             const result = await res.json();
@@ -76,20 +165,29 @@ const StudentExam = () => {
             fetchData();
         } catch (err) {
             addToast('error', err.message);
+            if(btn) btn.disabled = false;
         }
     };
     
     const handleViewResult = async (exam) => {
         setIsResultLoading(true);
-        setSelectedExamResult({ examName: exam.examName, subjects: [] });
+        setSelectedExamResult({ examName: exam.examName, subjects: [] }); // Open modal immediately with placeholder
         try {
-            const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/student-exams/result/${exam.examId}`, { credentials: 'include' });
+            const res = await fetch(`${API_BASE_URL}/result/${exam.examId}`, { credentials: 'include' });
+            
+            if (res.status === 202) {
+                const result = await res.json();
+                addToast('info', result.message || 'Result not yet published.');
+                setSelectedExamResult(null); // Close modal if not published
+                return;
+            }
+            
             const result = await res.json();
             if (!res.ok) throw new Error(result.message || 'Failed to fetch result.');
-            setSelectedExamResult(result.result);
+            setSelectedExamResult(result.result); // Update modal with full result data
         } catch (err) {
             addToast('error', err.message);
-            setSelectedExamResult(null);
+            setSelectedExamResult(null); // Close modal on error
         } finally {
             setIsResultLoading(false);
         }
@@ -109,6 +207,9 @@ const StudentExam = () => {
         if (loading) {
             return <div className="space-y-6">{[...Array(3)].map((_, i) => <Skeleton key={i} />)}</div>;
         }
+        if (error && exams.length === 0) {
+            return <EmptyState icon={AlertTriangle} title="Something went wrong" message={error} />;
+        }
 
         if (activeTab === 'available') {
             if (exams.length === 0) return <EmptyState icon={BookOpen} title="No Exams Available" message="There are no examination schedules for you at the moment." />;
@@ -124,7 +225,7 @@ const StudentExam = () => {
                                 <p className="text-sm text-slate-500">{exam.examType} • {exam.year}</p>
                             </div>
                             <div className="w-full sm:w-auto flex-shrink-0 space-y-2">
-                                {exam.status === 'OPEN_FOR_REGISTRATION' && !isRegistered && <button onClick={() => handleRegister(exam._id, exam.examName)} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-colors"><UserCheck size={16} /> Register Now</button>}
+                                {exam.status === 'OPEN_FOR_REGISTRATION' && !isRegistered && <button id={`register-btn-${exam._id}`} onClick={() => handleRegister(exam._id, exam.examName)} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-colors disabled:bg-blue-300"><UserCheck size={16} /> Register Now</button>}
                                 {isRegistered && <div className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg font-semibold"><CheckCircle size={16} /> Registered</div>}
                                 <button onClick={() => setSelectedExamTimetable(exam)} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 font-semibold transition-colors"><Eye size={16} /> View Timetable</button>
                             </div>
@@ -137,7 +238,7 @@ const StudentExam = () => {
         if (activeTab === 'registrations') {
             if (registrations.length === 0) return <EmptyState icon={ListChecks} title="No Registrations Found" message="You have not registered for any upcoming exams." />;
             return registrations.map(reg => (
-                 <div key={reg._id} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                 <div key={reg.examId} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                     <div className="flex justify-between items-start">
                         <div>
                             <h2 className="text-xl font-bold text-slate-800">{reg.examName}</h2>
@@ -146,7 +247,7 @@ const StudentExam = () => {
                         <span className="px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">{reg.status}</span>
                     </div>
                      <div className="mt-4 pt-4 border-t border-slate-100 text-sm text-slate-600">
-                        <p>Registered on: <strong>{new Date(reg.registrationDate).toLocaleDateString()}</strong></p>
+                        <p>Registered on: <strong>{new Date(reg.registrationDate).toLocaleDateString('en-GB')}</strong></p>
                         {reg.admitCardNumber && <p className="mt-2">Admit Card: <strong className="text-blue-600 font-mono">{reg.admitCardNumber}</strong></p>}
                      </div>
                 </div>
@@ -188,8 +289,16 @@ const StudentExam = () => {
                 </nav>
             </div>
             <div className="space-y-6">{renderContent()}</div>
-            <Modal isOpen={!!selectedExamTimetable} onClose={() => setSelectedExamTimetable(null)} title={`Timetable for ${selectedExamTimetable?.examName}`}>{/* ... */}</Modal>
-            <Modal isOpen={!!selectedExamResult} onClose={() => setSelectedExamResult(null)} title={`Result for ${selectedExamResult?.examName}`}>{/* ... */}</Modal>
+            
+            {/* --- FIX 3: Pass timetable data to the TimetableDisplay component --- */}
+            <Modal isOpen={!!selectedExamTimetable} onClose={() => setSelectedExamTimetable(null)} title={`Timetable for ${selectedExamTimetable?.examName}`}>
+                <TimetableDisplay timetable={selectedExamTimetable?.timetable} />
+            </Modal>
+            
+            {/* --- FIX 4: Pass result data to the ResultDisplay component --- */}
+            <Modal isOpen={!!selectedExamResult} onClose={() => setSelectedExamResult(null)} title={`Result for ${selectedExamResult?.examName}`}>
+                <ResultDisplay resultData={selectedExamResult} isLoading={isResultLoading} />
+            </Modal>
         </div>
     );
 };

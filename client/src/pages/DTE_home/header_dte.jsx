@@ -370,9 +370,9 @@ const Header = () => {
       </div>
 
       {/* Main Header - Government of Rajasthan */}
-      <header className="theme-surface relative shadow-lg">
+      <header className="relative bg-white dark:bg-gray-900">
         {/* Logo Section */}
-        <div className="theme-surface py-2 sm:py-4 md:py-6 px-2 sm:px-4 md:px-6 border-b border-gray-100 top-0 z-40 backdrop-blur-lg">
+        <div className="py-2 sm:py-4 md:py-6 px-2 sm:px-4 md:px-6 top-0 z-40">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between">
               <Link to="/" className="flex items-center space-x-2 sm:space-x-4 md:space-x-8 hover:opacity-80 transition-opacity duration-300">

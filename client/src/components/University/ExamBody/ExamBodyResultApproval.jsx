@@ -1,48 +1,56 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Loader2, AlertTriangle, CheckCircle, Info, X, ShieldCheck, FileCheck, Calendar } from 'lucide-react';
+import { Loader2, CheckCircle, AlertTriangle, Info, X, Eye, ShieldCheck } from 'lucide-react';
+
+const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/semester-exam';
 
 // --- Helper Components ---
+// Note: It's good practice to move these to a shared 'components/common' folder if used in multiple places.
 const Toast = ({ message, type, onClose }) => {
-  useEffect(() => {
-    const timer = setTimeout(() => { onClose(); }, 4000);
-    return () => clearTimeout(timer);
-  }, [onClose]);
-  const icons = { success: <CheckCircle className="text-emerald-500" />, error: <AlertTriangle className="text-rose-500" />, info: <Info className="text-sky-500" /> };
-  return (<div className={`fixed top-5 right-5 z-[100] flex items-center w-full max-w-xs p-4 rounded-lg shadow-lg bg-white border-l-4 ${type === 'error' ? 'border-rose-500' : 'border-emerald-500'}`} role="alert"><div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-lg">{icons[type]}</div><div className="ml-3 text-sm font-medium text-slate-800">{message}</div><button type="button" className="ml-auto -mx-1.5 -my-1.5 rounded-lg p-1.5 inline-flex h-8 w-8" onClick={onClose}><X className="w-5 h-5 text-slate-400 hover:text-slate-600" /></button></div>);
+    useEffect(() => {
+        const timer = setTimeout(() => { onClose(); }, 4000);
+        return () => clearTimeout(timer);
+    }, [onClose]);
+    const icons = { success: <CheckCircle className="text-emerald-500" />, error: <AlertTriangle className="text-rose-500" />, info: <Info className="text-sky-500" /> };
+    return (<div className="bg-white shadow-lg rounded-lg p-4 flex items-start gap-4 w-96 animate-fade-in-right border-l-4" style={{ borderColor: type === 'error' ? '#f43f5e' : type === 'info' ? '#0ea5e9' : '#10b981' }}><div className="flex-shrink-0">{icons[type]}</div><p className="flex-1 text-sm text-slate-700 font-medium">{message}</p><button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X size={16} /></button></div>);
 };
 
 const ToastContainer = ({ toasts, setToasts }) => {
-  const removeToast = (id) => { setToasts(prev => prev.filter(t => t.id !== id)); };
-  return (<div className="fixed top-6 right-6 z-[100] space-y-3">{toasts.map(toast => (<Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />))}</div>);
+    const removeToast = (id) => setToasts(prev => prev.filter(t => t.id !== id));
+    return (<div className="fixed top-6 right-6 z-[100] space-y-3"> {toasts.map(toast => (<Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />))} </div>);
 };
 
-const Skeleton = () => (
-  <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm animate-pulse">
-    <div className="flex justify-between items-center">
-      <div className="space-y-2">
-        <div className="h-7 w-56 bg-slate-200 rounded-md"></div>
-        <div className="h-5 w-32 bg-slate-200 rounded-md"></div>
-      </div>
-      <div className="h-10 w-32 bg-slate-200 rounded-lg"></div>
-    </div>
-  </div>
-);
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', processing }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+                <div className="p-6">
+                    <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600"><ShieldCheck size={24} /></div>
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-800">{title}</h3>
+                            <p className="text-sm text-slate-500 mt-2">{message}</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="p-4 bg-slate-50 border-t flex justify-end gap-3 rounded-b-lg">
+                    <button onClick={onClose} disabled={processing} className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 disabled:opacity-50 font-semibold">Cancel</button>
+                    <button onClick={onConfirm} disabled={processing} className="px-4 py-2 text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center min-w-[120px] font-semibold">
+                        {processing ? <Loader2 size={18} className="animate-spin" /> : confirmText}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
-const EmptyState = ({ icon: Icon, title, message }) => (
-  <div className="text-center py-20 bg-white rounded-b-xl">
-    <Icon className="mx-auto h-12 w-12 text-slate-300" />
-    <h3 className="mt-4 text-lg font-medium text-slate-800">{title}</h3>
-    <p className="mt-1 text-sm text-slate-500">{message}</p>
-  </div>
-);
-// --- End Helper Components ---
-
-
-const ExamBodyResultApproval = () => {
-    const [examsForApproval, setExamsForApproval] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [publishingId, setPublishingId] = useState(null);
+// --- Main Approval Dashboard Component ---
+const ExamApprovalDashboard = () => {
+    const [pendingExams, setPendingExams] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [selectedExamResults, setSelectedExamResults] = useState(null);
+    const [isViewingResults, setIsViewingResults] = useState(false); // Tracks loading state for the modal
+    const [isPublishing, setIsPublishing] = useState(false); // Tracks loading state for the publish action
     const [toasts, setToasts] = useState([]);
 
     const addToast = useCallback((type, message) => {
@@ -50,97 +58,187 @@ const ExamBodyResultApproval = () => {
         setToasts(prev => [...prev, { id, type, message }]);
     }, []);
 
-    const fetchData = useCallback(async () => {
-        setLoading(true);
+    // Fetches exams with 'RESULT_PROCESSING' status
+    const fetchPendingExams = useCallback(async () => {
+        setIsLoading(true);
         try {
-            const response = await fetch('https://sih-4ptm.onrender.com/api/v1/semester-exam/pending-approval', {
-                credentials: 'include'
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.message || 'Failed to fetch exams for approval.');
-            setExamsForApproval(result.exams || []);
+            const response = await fetch(`${API_BASE_URL}/pending-approval`, { credentials: 'include' });
+            console.log(response)
+            if (!response.ok) throw new Error("Failed to fetch exams pending approval.");
+            const data = await response.json();
+            setPendingExams(data.exams || []);
         } catch (err) {
-            setError(err.message);
             addToast('error', err.message);
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     }, [addToast]);
 
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        fetchPendingExams();
+    }, [fetchPendingExams]);
 
-    const handlePublish = async (examId, examName) => {
-        setPublishingId(examId);
+    // Handles the "Review Results" button click
+    const handleViewResults = async (examId) => {
+        setIsViewingResults(true);
         try {
-            const response = await fetch(`https://sih-4ptm.onrender.com/api/v1/semester-exam/${examId}/publish`, {
-                method: 'PUT',
-                credentials: 'include'
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.message || 'Failed to publish results.');
-            
-            addToast('success', `Results for ${examName} have been published successfully!`);
-            setExamsForApproval(prev => prev.filter(exam => exam._id !== examId));
-
+            const response = await fetch(`${API_BASE_URL}/${examId}/results`, { credentials: 'include' });
+            if (!response.ok) throw new Error("Failed to fetch exam results.");
+            const data = await response.json();
+            setSelectedExamResults(data); // Set state to open the modal with the fetched data
         } catch (err) {
             addToast('error', err.message);
         } finally {
-            setPublishingId(null);
+            setIsViewingResults(false);
         }
     };
-    
-    return (
-        <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
-            {/* <ToastContainer toasts={toasts} setToasts={setToasts} /> */}
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-900">Result Approval</h1>
-                <p className="mt-1 text-slate-600">Review and publish results for examinations that are ready.</p>
-            </header>
 
+    // Handles the "Publish" button click inside the modal
+    const handlePublish = async (examId, examName) => {
+        setIsPublishing(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/${examId}/publish`, {
+                method: 'PUT',
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || 'Failed to publish results.');
+            }
+            addToast('success', `Results for "${examName}" have been published successfully!`);
+            setSelectedExamResults(null); // Close the modal
+            fetchPendingExams(); // Refresh the list of pending exams
+        } catch (err) {
+            addToast('error', err.message);
+        } finally {
+            setIsPublishing(false);
+        }
+    };
+
+    if (isLoading) {
+        return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin text-indigo-600" size={48} /></div>;
+    }
+
+    return (
+        <div className="font-sans">
+            <ToastContainer toasts={toasts} setToasts={setToasts} />
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-                <div className="p-4 border-b border-slate-200">
-                    <h2 className="text-lg font-semibold text-slate-800">Pending Approvals ({examsForApproval.length})</h2>
+                <div className="p-4 border-b">
+                    <h1 className="text-xl font-bold text-slate-800">Exams Pending Final Approval</h1>
+                    <p className="text-sm text-slate-500 mt-1">Review the processed results and publish them for students.</p>
                 </div>
                 <div className="divide-y divide-slate-200">
-                    {loading ? (
-                        [...Array(3)].map((_, i) => <div key={i} className="p-4">{/* <Skeleton/> */}</div>)
-                    ) : error ? (
-                        <div className="p-10 text-center text-red-600">{error}</div>
-                    ) : examsForApproval.length > 0 ? (
-                        examsForApproval.map(exam => {
-                            const isPublishingThis = publishingId === exam._id;
-                            return (
-                                <div key={exam._id} className="p-4 sm:p-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-slate-800">{exam.examName}</h3>
-                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500 mt-1">
-                                            <span className="flex items-center"><ShieldCheck className="w-4 h-4 mr-1.5"/>{exam.examId}</span>
-                                            <span className="flex items-center"><Calendar className="w-4 h-4 mr-1.5"/>Semester {exam.semester}, {exam.year}</span>
-                                        </div>
-                                    </div>
-                                    <button 
-                                        onClick={() => handlePublish(exam._id, exam.examName)}
-                                        disabled={isPublishingThis}
-                                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-colors shadow-sm disabled:bg-green-300"
-                                    >
-                                        {isPublishingThis ? <><Loader2 className="w-4 h-4 animate-spin"/> Publishing...</> : <><FileCheck size={16} /> Publish Results</>}
-                                    </button>
+                    {pendingExams.length > 0 ? (
+                        pendingExams.map(exam => (
+                            <div key={exam._id} className="p-4 flex justify-between items-center hover:bg-slate-50 transition-colors">
+                                <div>
+                                    <p className="font-semibold text-slate-800">{exam.examName}</p>
+                                    <p className="text-sm text-slate-500 font-mono mt-1">{exam.examId} | Sem {exam.semester}, {exam.year}</p>
                                 </div>
-                            );
-                        })
-          ) : (
-            <EmptyState
-              icon={CheckCircle}
-              title="All Clear!"
-              message="There are no exam results currently pending for approval."
-            />
-          )}
+                                <button
+                                    onClick={() => handleViewResults(exam._id)}
+                                    disabled={isViewingResults} // Disable button while another review is loading
+                                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold text-sm disabled:bg-indigo-300"
+                                >
+                                    {isViewingResults ? <Loader2 size={16} className="animate-spin" /> : <Eye size={16} />}
+                                    Review Results
+                                </button>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="p-16 text-center text-slate-500">
+                            <h3 className="text-lg font-semibold">No Exams Awaiting Approval</h3>
+                            <p className="mt-1">All processed results have been published.</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {selectedExamResults && (
+                <ResultsViewerModal
+                    isOpen={!!selectedExamResults}
+                    onClose={() => setSelectedExamResults(null)}
+                    data={selectedExamResults}
+                    onPublish={handlePublish}
+                    isProcessing={isViewingResults}
+                    isPublishing={isPublishing}
+                />
+            )}
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
-export default ExamBodyResultApproval;
+// Modal component for viewing results before publishing
+const ResultsViewerModal = ({ isOpen, onClose, data, onPublish, isProcessing, isPublishing }) => {
+    const [showConfirm, setShowConfirm] = useState(false);
+    
+    if (!isOpen) return null;
+
+    const { examDetails, results } = data;
+
+    const handleConfirmPublish = () => {
+        onPublish(examDetails._id, examDetails.examName);
+        setShowConfirm(false);
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+                <div className="p-4 border-b flex justify-between items-center">
+                    <h2 className="text-lg font-bold text-slate-800">Review Results: {examDetails.examName}</h2>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
+                </div>
+                <div className="p-4 overflow-y-auto">
+                    {isProcessing ? <div className="flex justify-center p-10"><Loader2 className="animate-spin text-indigo-600" size={32}/></div> :
+                        results.length > 0 ? (
+                        <table className="w-full text-sm text-left">
+                           <thead className="text-xs text-slate-500 uppercase bg-slate-50">
+                                <tr>
+                                    <th className="px-4 py-2 font-semibold">Student Name</th>
+                                    <th className="px-4 py-2 font-semibold">Registration No.</th>
+                                    <th className="px-4 py-2 font-semibold text-center">SGPA</th>
+                                    <th className="px-4 py-2 font-semibold text-center">Overall Result</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200">
+                                {results.map(r => (
+                                    <tr key={r.studentAcademicId}>
+                                        <td className="px-4 py-2 font-medium text-slate-700">{r.studentName}</td>
+                                        <td className="px-4 py-2 font-mono text-slate-600">{r.registrationNumber}</td>
+                                        <td className="px-4 py-2 text-center font-semibold">{r.sgpa.toFixed(2)}</td>
+                                        <td className="px-4 py-2 text-center">
+                                            <span className={`px-2 py-1 text-xs font-bold rounded-full ${r.overallResult === 'PASS' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                                                {r.overallResult}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        ) : <p className="text-center text-slate-500 p-8">No results were found for this examination.</p>
+                    }
+                </div>
+                <div className="p-4 bg-slate-50 border-t flex justify-end">
+                    <button
+                        onClick={() => setShowConfirm(true)}
+                        disabled={isPublishing}
+                        className="flex items-center gap-2 px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-semibold disabled:bg-emerald-300"
+                    >
+                        <ShieldCheck size={18} /> Publish Results
+                    </button>
+                </div>
+            </div>
+            <ConfirmationModal 
+                isOpen={showConfirm}
+                onClose={() => setShowConfirm(false)}
+                onConfirm={handleConfirmPublish}
+                title="Confirm Publication"
+                message={`Are you sure you want to publish the results for ${examDetails.examName}? This action is final and will make the results visible to all registered students.`}
+                confirmText="Yes, Publish"
+                processing={isPublishing}
+            />
+        </div>
+    );
+};
+
+export default ExamApprovalDashboard;
