@@ -233,7 +233,7 @@ const ExamApprovalDashboard = () => {
     if (isLoading) { return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin text-indigo-600" size={48} /></div>; }
 
     return (
-        <div className="font-sans p-4 md:p-6">
+        <div className="font-sans">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
                 <div className="p-4 border-b"><h1 className="text-xl font-bold text-slate-800">Exams Pending Final Approval</h1><p className="text-sm text-slate-500 mt-1">Review the processed results and publish them for students.</p></div>

@@ -14,7 +14,7 @@ const ToastContainer = ({ toasts, setToasts }) => {
     return (<div className="fixed top-6 right-6 z-[100] space-y-3"> {toasts.map(toast => (<Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />))} </div>);
 };
 const FullPageLoader = ({ message }) => (<div className="flex flex-col justify-center items-center h-full bg-white rounded-xl py-20"><Loader2 className="animate-spin text-indigo-600" size={48} /><p className="mt-4 text-slate-600">{message}</p></div>);
-const EmptyState = ({ icon: Icon, title, message }) => (<div className="text-center py-20 px-6 bg-white rounded-xl border-2 border-dashed border-slate-200"><Icon className="mx-auto h-12 w-12 text-slate-300" /><h3 className="mt-4 text-lg font-semibold text-slate-800">{title}</h3><p className="mt-1 text-sm text-slate-500">{message}</p></div>);
+const EmptyState = ({ icon: Icon, title, message }) => (<div className="text-center py-20 px-6 bg-white rounded-xl border-slate-200"><Icon className="mx-auto h-12 w-12 text-slate-300" /><h3 className="mt-4 text-lg font-semibold text-slate-800">{title}</h3><p className="mt-1 text-sm text-slate-500">{message}</p></div>);
 
 // --- MODAL FOR SUBJECT MARKS ---
 const StudentMarksEntryModal = ({ isOpen, onClose, student, onSave }) => {
@@ -167,7 +167,7 @@ const ExamCellResultProcessing = () => {
     const handleBack = () => { setView('list'); setSelectedExam(null); setStudents([]); setStudentMarks({}); setEditingStudent(null); };
 
     return (
-        <div className="font-sans bg-slate-50 min-h-screen p-4 md:p-8">
+        <div className="font-sans min-h-screen ">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
             <header className="mb-8"><h1 className="text-3xl font-bold text-slate-900">Result Processing</h1><p className="mt-1 text-slate-600">Enter marks for students for closed examinations.</p></header>
             {view === 'list' ? (

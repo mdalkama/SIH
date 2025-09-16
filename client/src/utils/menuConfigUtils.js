@@ -424,14 +424,6 @@ const menuConfig = {
             role: "UniversityExaminationBody",
         },
         {
-            id: "entrance-policy",
-            label: "Approve Entrance Exam Rules",
-            icon: ClipboardList,
-            path: "/university-exam-body/entrance-policy",
-            component: ExamBodyEntrancePolicy,
-            role: "UniversityExaminationBody",
-        },
-        {
             id: "semester-policy",
             label: "Conduct Semester Exam",
             icon: FileCheck,
