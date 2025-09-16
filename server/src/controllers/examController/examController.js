@@ -19,25 +19,32 @@ const getGradeDetails = (totalMarks, maxMarks = 100) => {
 };
 
 // Yeh main function hai jo poora result calculate karega.
-export const calculateResults = (subjectsWithMarks, examTimetable) => {
+export const calculateResults = async (subjectsWithMarks) => { // Now it's an async function
     let totalCredits = 0;
     let weightedGradePoints = 0;
     let finalOverallResult = 'PASS';
 
-    // Har subject ke liye Grade, Total, Status calculate karo
+    // Get all unique subject codes from the result entry
+    const subjectCodes = subjectsWithMarks.map(sub => sub.subjectCode);
+    
+    // Fetch all subject details from the database in a single query
+    const subjectDetails = await Subject.find({ code: { $in: subjectCodes } }).lean();
+
     const subjectsWithGrades = subjectsWithMarks.map(sub => {
-        const timetableInfo = examTimetable.find(ts => ts.subjectCode === sub.subjectCode);
-        if (!timetableInfo || typeof timetableInfo.credits !== 'number') {
-            throw new Error(`Credit information is missing for subject ${sub.subjectCode}.`);
+        // Find the details for the current subject
+        const details = subjectDetails.find(s => s.code === sub.subjectCode);
+        if (!details) {
+            throw new Error(`Details not found for subject ${sub.subjectCode} in the Subjects collection.`);
         }
 
-        const credits = timetableInfo.credits;
-        const maxMarks = timetableInfo.maxMarks || 100;
+        const credits = details.credits;
+        // Calculate max marks from the Subject model
+        const maxMarks = (details.maxMarks.internal || 0) + (details.maxMarks.external || 0) + (details.maxMarks.practical || 0);
+        
         const totalMarks = (sub.internal || 0) + (sub.external || 0) + (sub.practical || 0);
         
         const { grade, gradePoint, status } = getGradeDetails(totalMarks, maxMarks);
 
-        // Agar ek bhi subject mein FAIL, to overall FAIL
         if (status === 'FAIL') {
             finalOverallResult = 'FAIL';
         }
@@ -53,7 +60,6 @@ export const calculateResults = (subjectsWithMarks, examTimetable) => {
         };
     });
 
-    // Final SGPA calculate karo
     const sgpa = totalCredits > 0 ? (weightedGradePoints / totalCredits) : 0;
 
     return {
@@ -269,13 +275,8 @@ export const addOrUpdateResults = async (req, res) => {
             const studentAcademics = await StudentAcademics.findById(studentAcademicId).session(session);
             if (!studentAcademics) { continue; }
 
-            const courseTimetable = exam.courses.find(c => c.courseCode === studentAcademics.courseId)?.timetable;
-            if (!courseTimetable) {
-                throw new Error(`Timetable with credits not found for course ${studentAcademics.courseId}.`);
-            }
-
-            // --- SGPA CALCULATION YAHAN HOGA ---
-            const { subjects, sgpa, overallResult } = calculateResults(studentMarks, courseTimetable);
+            // --- SGPA CALCULATION (now async) ---
+            const { subjects, sgpa, overallResult } = await calculateResults(studentMarks);
             // ------------------------------------
 
             const newResultRecord = {
@@ -285,9 +286,9 @@ export const addOrUpdateResults = async (req, res) => {
                 courseCode: studentAcademics.courseId,
                 year: exam.year,
                 semester: exam.semester,
-                subjects,       // Automatically calculated
-                sgpa,           // Automatically calculated
-                overallResult,  // Automatically calculated
+                subjects,
+                sgpa,
+                overallResult,
                 publishedOn: new Date()
             };
 
