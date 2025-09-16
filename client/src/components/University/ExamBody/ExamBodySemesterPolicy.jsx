@@ -123,7 +123,6 @@ const UniversityExamManager = () => {
         <div className="min-h-screen font-sans">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
             <main className="">
-                 {/* --- CHANGE 2: Removed `onEnterResults` prop from ExamDetailView --- */}
                 {view === 'details' && <ExamDetailView exam={selectedExam} onBack={handleBackToList} />}
                 {view === 'form' && <ExamForm exam={editingExam} onBack={handleBackToList} addToast={addToast} onSaveSuccess={refreshExamList} allCourses={allCourses} />}
                 {view === 'list' && <ExamListView onShowForm={handleShowForm} addToast={addToast} onViewDetails={handleViewDetails} />}

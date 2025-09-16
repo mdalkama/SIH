@@ -14,73 +14,57 @@ const ToastContainer = ({ toasts, setToasts }) => {
     return (<div className="fixed top-6 right-6 z-[100] space-y-3"> {toasts.map(toast => (<Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />))} </div>);
 };
 const FullPageLoader = ({ message }) => (<div className="flex flex-col justify-center items-center h-full bg-white rounded-xl py-20"><Loader2 className="animate-spin text-indigo-600" size={48} /><p className="mt-4 text-slate-600">{message}</p></div>);
-const EmptyState = ({ icon: Icon, title, message }) => (<div className="text-center py-20 px-6 bg-white rounded-xl border-2 border-dashed border-slate-200"><Icon className="mx-auto h-12 w-12 text-slate-300" /><h3 className="mt-4 text-lg font-semibold text-slate-800">{title}</h3><p className="mt-1 text-sm text-slate-500">{message}</p></div>);
+const EmptyState = ({ icon: Icon, title, message }) => (<div className="text-center py-20 px-6 bg-white rounded-xl border-slate-200"><Icon className="mx-auto h-12 w-12 text-slate-300" /><h3 className="mt-4 text-lg font-semibold text-slate-800">{title}</h3><p className="mt-1 text-sm text-slate-500">{message}</p></div>);
 
-// --- Modal for Entering/Editing a Single Student's Marks ---
+// --- MODAL (SIMPLIFIED: ONLY FOR SUBJECT MARKS) ---
 const StudentMarksEntryModal = ({ isOpen, onClose, student, onSave }) => {
-    const [formData, setFormData] = useState({ subjects: {}, sgpa: '', overallResult: 'PASS' });
+    const [subjectMarks, setSubjectMarks] = useState({});
     
     useEffect(() => {
-        // --- THIS IS THE FIX ---
-        // Check if student AND student.subjects exist before trying to loop.
         if (student && student.subjects) {
-            const subjectMarks = {};
+            const initialMarks = {};
             student.subjects.forEach(sub => {
-                subjectMarks[sub.subjectCode] = {
-                    internal: student.initialMarks?.subjects[sub.subjectCode]?.internal ?? '',
-                    external: student.initialMarks?.subjects[sub.subjectCode]?.external ?? '',
-                    practical: student.initialMarks?.subjects[sub.subjectCode]?.practical ?? ''
+                // --- THIS IS THE FIX ---
+                // The issue was here. It was trying to access `student.initialMarks.subjects`.
+                // The correct path is directly `student.initialMarks`.
+                initialMarks[sub.subjectCode] = {
+                    internal: student.initialMarks?.[sub.subjectCode]?.internal ?? '',
+                    external: student.initialMarks?.[sub.subjectCode]?.external ?? '',
+                    practical: student.initialMarks?.[sub.subjectCode]?.practical ?? ''
                 };
             });
-            setFormData({
-                subjects: subjectMarks,
-                sgpa: student.initialMarks?.sgpa ?? '',
-                overallResult: student.initialMarks?.overallResult ?? 'PASS'
-            });
+            setSubjectMarks(initialMarks);
         }
     }, [student]);
 
-    const handleSubjectChange = (subjectCode, field, value) => {
+    const handleChange = (subjectCode, field, value) => {
         const numValue = value === '' ? '' : Math.max(0, parseInt(value, 10));
-        setFormData(prev => ({
-            ...prev,
-            subjects: {
-                ...prev.subjects,
-                [subjectCode]: { ...prev.subjects[subjectCode], [field]: numValue }
-            }
-        }));
+        setSubjectMarks(prev => ({ ...prev, [subjectCode]: { ...prev[subjectCode], [field]: numValue } }));
     };
 
-    const handleSaveClick = () => {
-        onSave(student.studentAcademicId, formData);
-        onClose();
-    };
-
+    const handleSaveClick = () => { onSave(student.studentAcademicId, subjectMarks); onClose(); };
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-fade-in">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
                 <div className="p-4 border-b flex justify-between items-center">
-                    <div>
-                        <h2 className="text-lg font-bold text-slate-800">Enter Marks</h2>
-                        <p className="text-sm text-slate-500">{student.name} ({student.registrationNumber})</p>
-                    </div>
+                    <h2 className="text-lg font-bold text-slate-800">Enter Marks</h2>
+                    <p className="text-sm text-slate-500">{student.name} ({student.registrationNumber})</p>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
                 </div>
                 <div className="p-6 overflow-y-auto space-y-4">
                     {student.subjects.map(subject => (
                         <div key={subject.subjectCode} className="grid grid-cols-4 items-center gap-4 p-3 border rounded-lg bg-slate-50">
-                            <div className="col-span-1"><p className="font-semibold text-slate-700">{subject.subjectName}</p><p className="text-xs font-mono text-slate-500">{subject.subjectCode}</p></div>
-                            <div className="text-center"><label className="text-xs font-medium text-slate-500">Internal</label><input type="number" value={formData.subjects[subject.subjectCode]?.internal ?? ''} onChange={e => handleSubjectChange(subject.subjectCode, 'internal', e.target.value)} className="w-full mt-1 p-2 border rounded-md text-center" /></div>
-                            <div className="text-center"><label className="text-xs font-medium text-slate-500">External</label><input type="number" value={formData.subjects[subject.subjectCode]?.external ?? ''} onChange={e => handleSubjectChange(subject.subjectCode, 'external', e.target.value)} className="w-full mt-1 p-2 border rounded-md text-center" /></div>
-                            <div className="text-center"><label className="text-xs font-medium text-slate-500">Practical</label><input type="number" value={formData.subjects[subject.subjectCode]?.practical ?? ''} onChange={e => handleSubjectChange(subject.subjectCode, 'practical', e.target.value)} className="w-full mt-1 p-2 border rounded-md text-center" /></div>
+                            <div className="col-span-1">
+                                <p className="font-semibold text-slate-700">{subject.subjectName}</p>
+                                <p className="text-xs font-mono text-slate-500">{subject.subjectCode} ({subject.credits} Credits)</p>
+                            </div>
+                            <div className="text-center"><label className="text-xs font-medium text-slate-500">Internal</label><input type="number" value={subjectMarks[subject.subjectCode]?.internal ?? ''} onChange={e => handleChange(subject.subjectCode, 'internal', e.target.value)} className="w-full mt-1 p-2 border rounded-md text-center" /></div>
+                            <div className="text-center"><label className="text-xs font-medium text-slate-500">External</label><input type="number" value={subjectMarks[subject.subjectCode]?.external ?? ''} onChange={e => handleChange(subject.subjectCode, 'external', e.target.value)} className="w-full mt-1 p-2 border rounded-md text-center" /></div>
+                            <div className="text-center"><label className="text-xs font-medium text-slate-500">Practical</label><input type="number" value={subjectMarks[subject.subjectCode]?.practical ?? ''} onChange={e => handleChange(subject.subjectCode, 'practical', e.target.value)} className="w-full mt-1 p-2 border rounded-md text-center" /></div>
                         </div>
                     ))}
-                    <div className="grid grid-cols-2 gap-4 pt-4 border-t mt-4">
-                        <div><label className="block text-sm font-medium text-slate-700 mb-1">SGPA</label><input type="number" step="0.01" value={formData.sgpa} onChange={e => setFormData(p => ({...p, sgpa: e.target.value}))} className="w-full p-2 border rounded-md" placeholder="e.g., 8.5" /></div>
-                        <div><label className="block text-sm font-medium text-slate-700 mb-1">Overall Result</label><select value={formData.overallResult} onChange={e => setFormData(p => ({...p, overallResult: e.target.value}))} className="w-full p-2 border rounded-md bg-white"><option value="PASS">PASS</option><option value="FAIL">FAIL</option></select></div>
-                    </div>
                 </div>
                 <div className="p-4 bg-slate-100 border-t flex justify-end gap-3">
                     <button onClick={onClose} className="px-4 py-2 bg-white border rounded-lg text-slate-700 hover:bg-slate-200 font-semibold">Cancel</button>
@@ -90,7 +74,6 @@ const StudentMarksEntryModal = ({ isOpen, onClose, student, onSave }) => {
         </div>
     );
 };
-
 
 // --- Component to Select an Exam ---
 const ExamSelectionList = ({ exams, onSelect }) => (
@@ -116,71 +99,48 @@ const ExamSelectionList = ({ exams, onSelect }) => (
     </div>
 );
 
-// --- Component to Show Student List for Marks Entry ---
-const ResultsEntryGrid = ({ exam, students, studentResults, onEditStudent, onSubmit, onBack, isSubmitting, isLoading }) => (
-    <div className="animate-fade-in">
-        <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
-            <div>
-                <button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-600 hover:text-indigo-600 font-medium mb-2 transition-colors">
-                    <ArrowLeft size={16} /> Back to Exam Selection
-                </button>
-                <h2 className="text-2xl font-bold text-slate-800">Marks Entry: {exam?.examName}</h2>
+// --- Component to Show Student List ---
+const ResultsEntryGrid = ({ exam, students, studentMarks, onEditStudent, onSubmit, onBack, isSubmitting, isLoading }) => {
+    const areAllMarksEntered = (marks) => {
+        if (!marks) return false;
+        // Check if every subject has a non-empty string for each mark type
+        return Object.values(marks).every(m => m.internal !== '' && m.external !== '' && m.practical !== '');
+    };
+
+    return (
+        <div className="animate-fade-in">
+             <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
+                <div><button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-600 hover:text-indigo-600 font-medium mb-2 transition-colors"><ArrowLeft size={16} /> Back to Exam Selection</button><h2 className="text-2xl font-bold text-slate-800">Marks Entry: {exam?.examName}</h2></div>
+                {students.length > 0 && (<button onClick={onSubmit} disabled={isSubmitting || isLoading} className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg disabled:bg-emerald-300 flex items-center justify-center font-semibold hover:bg-emerald-700 transition-shadow shadow-sm hover:shadow-md">{isSubmitting ? <><Loader2 size={18} className="animate-spin mr-2" /> Submitting...</> : 'Submit All Results for Approval'}</button>)}
             </div>
-            {students.length > 0 && (
-                <button onClick={onSubmit} disabled={isSubmitting || isLoading} className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg disabled:bg-emerald-300 flex items-center justify-center font-semibold hover:bg-emerald-700 transition-shadow shadow-sm hover:shadow-md">
-                    {isSubmitting ? <><Loader2 size={18} className="animate-spin mr-2" /> Submitting...</> : 'Submit All Results for Approval'}
-                </button>
-            )}
-        </div>
-        
-        {isLoading ? <FullPageLoader message="Loading student list..." /> :
+            {isLoading ? <FullPageLoader message="Loading student list..." /> :
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                {students.length > 0 ? (
-                    <table className="w-full text-sm">
-                        <thead className="text-left text-xs text-slate-500 uppercase bg-slate-50">
-                            <tr>
-                                <th className="px-4 py-3 font-semibold">Student Name</th>
-                                <th className="px-4 py-3 font-semibold">Registration Number</th>
-                                <th className="px-4 py-3 font-semibold text-center">SGPA</th>
-                                <th className="px-4 py-3 font-semibold text-center">Result</th>
-                                <th className="px-4 py-3 font-semibold text-center">Status</th>
-                                <th className="px-4 py-3 font-semibold text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200">
-                            {students.map(student => {
-                                const result = studentResults[student.studentAcademicId];
-                                const areMarksEntered = result && result.sgpa; // Check if sgpa has a value
-                                return (
-                                    <tr key={student.studentAcademicId} className="hover:bg-slate-50/50">
-                                        <td className="px-4 py-3 font-semibold text-slate-800">{student.name}</td>
-                                        <td className="px-4 py-3 text-slate-500 font-mono">{student.registrationNumber}</td>
-                                        <td className="px-4 py-3 text-center font-semibold text-slate-700">{result?.sgpa || <span className="text-slate-400">N/A</span>}</td>
-                                        <td className="px-4 py-3 text-center">
-                                            {result?.sgpa ? (
-                                                <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${result?.overallResult === 'PASS' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{result?.overallResult}</span>
-                                            ) : (
-                                                <span className="text-slate-400">N/A</span>
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-3 text-center">
-                                            {areMarksEntered ? (<span className="flex items-center justify-center gap-1.5 text-green-600 text-xs font-semibold"><CheckCircle size={14}/> Entered</span>) : (<span className="flex items-center justify-center gap-1.5 text-amber-600 text-xs font-semibold"><AlertTriangle size={14}/> Pending</span>)}
-                                        </td>
-                                        <td className="px-4 py-3 text-center">
-                                            <button onClick={() => onEditStudent(student)} className="flex items-center gap-2 mx-auto px-3 py-1.5 bg-white text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-100 font-semibold text-xs">
-                                                <Edit size={14} /> {areMarksEntered ? 'Edit Marks' : 'Add Marks'}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                ) : ( <EmptyState icon={Edit} title="No Students Registered" message="There are no students registered for this examination." /> )}
-            </div>
-        }
-    </div>
-);
+                {students.length > 0 ? (<table className="w-full text-sm">
+                    <thead className="text-left text-xs text-slate-500 uppercase bg-slate-50">
+                        <tr>
+                            <th className="px-4 py-3 font-semibold">Student Name</th>
+                            <th className="px-4 py-3 font-semibold">Registration Number</th>
+                            <th className="px-4 py-3 font-semibold text-center">Marks Status</th>
+                            <th className="px-4 py-3 font-semibold text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                        {students.map(student => {
+                            const marks = studentMarks[student.studentAcademicId];
+                            const entered = areAllMarksEntered(marks);
+                            return (<tr key={student.studentAcademicId} className="hover:bg-slate-50/50">
+                                <td className="px-4 py-3 font-semibold text-slate-800">{student.name}</td>
+                                <td className="px-4 py-3 text-slate-500 font-mono">{student.registrationNumber}</td>
+                                <td className="px-4 py-3 text-center">{entered ? (<span className="flex items-center justify-center gap-1.5 text-green-600 text-xs font-semibold"><CheckCircle size={14}/> Entered</span>) : (<span className="flex items-center justify-center gap-1.5 text-amber-600 text-xs font-semibold"><AlertTriangle size={14}/> Pending</span>)}</td>
+                                <td className="px-4 py-3 text-center"><button onClick={() => onEditStudent(student)} className="flex items-center gap-2 mx-auto px-3 py-1.5 bg-white text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-100 font-semibold text-xs"><Edit size={14} /> {entered ? 'Edit Marks' : 'Add Marks'}</button></td>
+                            </tr>);
+                        })}
+                    </tbody>
+                </table>) : ( <EmptyState icon={Edit} title="No Students Registered" message="There are no students registered for this examination." /> )}
+            </div>}
+        </div>
+    );
+};
 
 
 // --- Main Parent Component ---
@@ -189,7 +149,7 @@ const ExamCellResultProcessing = () => {
     const [exams, setExams] = useState([]);
     const [selectedExam, setSelectedExam] = useState(null);
     const [students, setStudents] = useState([]);
-    const [studentResults, setStudentResults] = useState({});
+    const [studentMarks, setStudentMarks] = useState({});
     const [editingStudent, setEditingStudent] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -227,9 +187,9 @@ const ExamCellResultProcessing = () => {
             (data.students || []).forEach(student => {
                 const subjectMarks = {};
                 student.subjects.forEach(sub => { subjectMarks[sub.subjectCode] = { internal: '', external: '', practical: '' }; });
-                initialResults[student.studentAcademicId] = { subjects: subjectMarks, sgpa: '', overallResult: 'PASS' };
+                initialResults[student.studentAcademicId] = subjectMarks;
             });
-            setStudentResults(initialResults);
+            setStudentMarks(initialResults);
         } catch (err) {
             addToast('error', err.message);
             setView('list');
@@ -238,28 +198,23 @@ const ExamCellResultProcessing = () => {
         }
     };
 
-    const handleSaveStudentMarks = (studentAcademicId, updatedData) => {
-        setStudentResults(prev => ({
-            ...prev,
-            [studentAcademicId]: updatedData
-        }));
+    const handleSaveStudentMarks = (studentAcademicId, updatedMarks) => {
+        setStudentMarks(prev => ({ ...prev, [studentAcademicId]: updatedMarks }));
     };
     
     const handleSubmitResults = async () => {
         setIsSubmitting(true);
         const resultsPayload = students.map(student => {
-            const result = studentResults[student.studentAcademicId];
+            const marks = studentMarks[student.studentAcademicId];
             return {
                 studentAcademicId: student.studentAcademicId,
                 subjects: student.subjects.map(subject => ({
                     subjectCode: subject.subjectCode,
                     subjectName: subject.subjectName,
-                    internal: parseInt(result.subjects[subject.subjectCode]?.internal || 0),
-                    external: parseInt(result.subjects[subject.subjectCode]?.external || 0),
-                    practical: parseInt(result.subjects[subject.subjectCode]?.practical || 0)
-                })),
-                sgpa: parseFloat(result.sgpa || 0),
-                overallResult: result.overallResult || 'PASS'
+                    internal: parseInt(marks[subject.subjectCode]?.internal || 0),
+                    external: parseInt(marks[subject.subjectCode]?.external || 0),
+                    practical: parseInt(marks[subject.subjectCode]?.practical || 0)
+                }))
             };
         });
         try {
@@ -280,17 +235,14 @@ const ExamCellResultProcessing = () => {
         setView('list');
         setSelectedExam(null);
         setStudents([]);
-        setStudentResults({});
+        setStudentMarks({});
         setEditingStudent(null);
     };
 
     return (
         <div className="font-sans min-h-screen">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-900">Result Processing</h1>
-                <p className="mt-1 text-slate-600">Enter marks for students for closed examinations.</p>
-            </header>
+            <header className="mb-8"><h1 className="text-3xl font-bold text-slate-900">Result Processing</h1><p className="mt-1 text-slate-600">Enter marks for students for closed examinations.</p></header>
             
             {view === 'list' ? (
                 isLoading ? <FullPageLoader message="Loading exams ready for processing..." /> :
@@ -299,7 +251,7 @@ const ExamCellResultProcessing = () => {
                 <ResultsEntryGrid
                     exam={selectedExam}
                     students={students}
-                    studentResults={studentResults}
+                    studentMarks={studentMarks}
                     onEditStudent={(student) => setEditingStudent(student)}
                     onSubmit={handleSubmitResults}
                     onBack={handleBack}
@@ -311,7 +263,7 @@ const ExamCellResultProcessing = () => {
             <StudentMarksEntryModal
                 isOpen={!!editingStudent}
                 onClose={() => setEditingStudent(null)}
-                student={editingStudent ? { ...editingStudent, initialMarks: studentResults[editingStudent.studentAcademicId] } : null}
+                student={editingStudent ? { ...editingStudent, initialMarks: studentMarks[editingStudent.studentAcademicId] } : null}
                 onSave={handleSaveStudentMarks}
             />
         </div>
