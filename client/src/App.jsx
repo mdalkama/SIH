@@ -28,7 +28,8 @@ import StudentsCornerPage from "./pages/DTE_home/students/StudentsCornerPage.jsx
 import TendersAuctionsPage from "./pages/DTE_home/tenders/TendersAuctionsPage.jsx";
 import DetailedNews from "./pages/DTE_home/content/detailedNews.jsx";
 import Chatbot from "./pages/DTE_home/Chatbot.jsx";
-import Macet from "./pages/DTE_home/colleges/macet/Macet.jsx";
+import College from "./pages/DTE_home/colleges/college/college";
+
 
 function App() {
   return (
@@ -57,9 +58,10 @@ function App() {
           
           {/* College List Route */}
           <Route path="/colleges" element={<CollegeList />} />
+          <Route path="/colleges/college" element={<College />} />
+          <Route path="/college/:id" element={<College />} />
+          <Route path="/macet" element={<College />} />
           
-          {/* MACET College Routes */}
-          <Route path="/macet/*" element={<Macet />} />
           
           {/* NOC Route */}
           <Route path="/noc" element={<NocPage />} />

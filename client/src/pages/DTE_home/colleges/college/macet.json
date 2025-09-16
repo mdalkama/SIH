@@ -1,0 +1,607 @@
+{
+  "collegeInfo": {
+    "name": "Maulana Azad College of Engineering & Technology",
+    "shortName": "MACET",
+    "logo": "https://1.bp.blogspot.com/-PAhIIGTrAIc/YGQvB1Ode6I/AAAAAAAAOOM/DqjPA77lxYMqjzjWie1jSc2il8avf3m_ACLcBGAsYHQ/s0/download.png",
+    "established": "1987",
+    "type": "Private Minority Institution",
+    "location": "Neora, Patna, Bihar",
+    "website": "https://macet.ac.in"
+  },
+  "header": {
+    "topBar": {
+      "quickLinks": [
+        {
+          "text": "3rd MACET Test Result 2025-26",
+          "url": "https://macet.ac.in/assets/img/Admission/result3rd.pdf"
+        },
+        {
+          "text": "Pay Fee Online",
+          "url": "https://www.onlinesbi.sbi/sbicollect/icollecthome.htm?corpID=2546972"
+        },
+        {
+          "text": "Placement",
+          "url": "https://macet.ac.in/Placement2025.aspx"
+        }
+      ],
+      "socialMedia": [
+        {
+          "platform": "Facebook",
+          "url": "https://www.facebook.com/macet.ac.in",
+          "icon": "facebook"
+        },
+        {
+          "platform": "Twitter",
+          "url": "https://twitter.com/macet_official",
+          "icon": "twitter"
+        },
+        {
+          "platform": "LinkedIn",
+          "url": "https://www.linkedin.com/school/macet-patna/",
+          "icon": "linkedin"
+        }
+      ],
+      "contact": {
+        "email": "info@macet.ac.in",
+        "phone": "9431049755"
+      }
+    },
+    "navbar": {
+      "logo": "/images/macet-logo.png",
+      "collegeName": "Maulana Azad College of Engineering & Technology",
+      "menuItems": [
+        {
+          "title": "Home",
+          "url": "/",
+          "hasDropdown": false
+        },
+        {
+          "title": "About",
+          "url": "#",
+          "hasDropdown": true,
+          "dropdownItems": [
+            {
+              "text": "About Us",
+              "url": "/about"
+            },
+            {
+              "text": "About Millat Education Society",
+              "url": "/about-society"
+            },
+            {
+              "text": "Vision & Mission",
+              "url": "/vision-mission"
+            },
+            {
+              "text": "The Governing Body of MACET",
+              "url": "/governing-body"
+            },
+            {
+              "text": "College Administration",
+              "url": "/administration"
+            }
+          ]
+        },
+        {
+          "title": "Departments",
+          "url": "#",
+          "hasDropdown": true,
+          "dropdownItems": [
+            {
+              "text": "B.Tech Programs",
+              "hasDropdown": true,
+              "dropdownItems": [
+                {
+                  "text": "Computer Science & Engineering",
+                  "url": "/departments/btech-cse"
+                },
+                {
+                  "text": "Computer Science & Engg (AI & ML)",
+                  "url": "/departments/btech-ai-ml"
+                },
+                {
+                  "text": "Computer Science & Engg (Data Science)",
+                  "url": "/departments/btech-data-science"
+                },
+                {
+                  "text": "Civil Engineering",
+                  "url": "/departments/btech-civil"
+                },
+                {
+                  "text": "Mechanical Engineering",
+                  "url": "/departments/btech-mechanical"
+                },
+                {
+                  "text": "Electrical and Electronics Engg.",
+                  "url": "/departments/btech-eee"
+                }
+              ]
+            },
+            {
+              "text": "Diploma Programs",
+              "hasDropdown": true,
+              "dropdownItems": [
+                {
+                  "text": "Computer Science & Engg.",
+                  "url": "/departments/diploma-cse"
+                },
+                {
+                  "text": "Civil Engg.",
+                  "url": "/departments/diploma-civil"
+                },
+                {
+                  "text": "Electrical Engg.",
+                  "url": "/departments/diploma-electrical"
+                }
+              ]
+            },
+            {
+              "text": "Humanities and Sciences",
+              "url": "/departments/humanities"
+            }
+          ]
+        },
+        {
+          "title": "Facilities",
+          "url": "#",
+          "hasDropdown": true,
+          "dropdownItems": [
+            {
+              "text": "Central Library",
+              "url": "/facilities/library"
+            },
+            {
+              "text": "Sports",
+              "url": "/facilities/sports"
+            },
+            {
+              "text": "Transport",
+              "url": "/facilities/transport"
+            },
+            {
+              "text": "Laboratories",
+              "url": "/facilities/labs"
+            },
+            {
+              "text": "Canteen",
+              "url": "/facilities/canteen"
+            },
+            {
+              "text": "Scholarship",
+              "url": "/facilities/scholarship"
+            },
+            {
+              "text": "Language Lab",
+              "url": "/facilities/language-lab"
+            },
+            {
+              "text": "Mentoring System",
+              "url": "/facilities/mentoring"
+            }
+          ]
+        },
+        {
+          "title": "Placement Cell",
+          "url": "#",
+          "hasDropdown": true,
+          "dropdownItems": [
+            {
+              "text": "Training & Placement Cell",
+              "url": "/placement/training"
+            },
+            {
+              "text": "Finishing School",
+              "url": "/placement/finishing-school"
+            },
+            {
+              "text": "Activities",
+              "url": "/placement/activities"
+            },
+            {
+              "text": "Placements",
+              "url": "/placement/placements"
+            },
+            {
+              "text": "Internship Program",
+              "url": "/placement/internship"
+            },
+            {
+              "text": "Some Notable Alumni",
+              "url": "/placement/alumni"
+            },
+            {
+              "text": "Placement Gallery",
+              "url": "/placement/gallery"
+            }
+          ]
+        },
+        {
+          "title": "Admission",
+          "url": "#",
+          "hasDropdown": true,
+          "dropdownItems": [
+            {
+              "text": "About Admission",
+              "url": "/admission/about"
+            },
+            {
+              "text": "Eligibility",
+              "url": "/admission/eligibility"
+            },
+            {
+              "text": "Total Seats",
+              "url": "/admission/seats"
+            },
+            {
+              "text": "Fee Structure",
+              "url": "/admission/fee-structure"
+            },
+            {
+              "text": "Fee Payment Option",
+              "url": "/admission/fee-payment"
+            },
+            {
+              "text": "Third Admission Test Result 2025-26",
+              "url": "/admission/test-result"
+            },
+            {
+              "text": "Documents Required for Admission",
+              "url": "/admission/documents"
+            }
+          ]
+        }
+      ]
+    },
+    "carousel": {
+      "images": [
+        {
+          "src": "https://macet.ac.in/AdminPanel/Admin/Slider_Photo/964667141.jpg",
+          "alt": "MACET Campus View 1",
+          "title": "Welcome to MACET",
+          "description": "Excellence in Technical Education"
+        },
+        {
+          "src": "https://macet.ac.in/AdminPanel/Admin/Slider_Photo/60175472.jpg",
+          "alt": "MACET Alumini Network",
+          "title": "MACET Alumini Network | MACET ",
+          "description": "State-of-the-art facilities for learning"
+        },
+        {
+          "src": "https://macet.ac.in/AdminPanel/Admin/Slider_Photo/96466714Untitled-4.jpg",
+          "alt": "MACET Laboratories",
+          "title": "Advanced Laboratories",
+          "description": "Hands-on learning experience"
+        },
+        {
+          "src": "https://macet.ac.in/AdminPanel/Admin/Slider_Photo/400698816.jpg",
+          "alt": "MACET Placement",
+          "title": "100% Placement Record",
+          "description": "Leading companies recruit our students"
+        }
+      ]
+    }
+  },
+  "aboutUs": {
+    "heroImage": "https://macet.ac.in/AdminPanel/Admin/Slider_Photo/964667141.jpg",
+    "shortDescription": "Maulana Azad College of Engineering & Technology (MACET) is a premier technical institution established in 1987, dedicated to providing quality education in engineering and technology with a focus on innovation, research, and industry-ready graduates.",
+    "detailedContent": {
+      "introduction": "Maulana Azad College of Engineering & Technology (MACET), established in 1987, stands as one of Bihar's most prestigious private technical institutions. Named after the great freedom fighter and educationist Maulana Abul Kalam Azad, the college embodies his vision of modern, scientific education combined with moral values.",
+      "history": "Founded by the Millat Education Society with the noble mission of providing quality technical education to students from all backgrounds, MACET has grown from a small institution to a comprehensive engineering college. Over the past three decades, it has consistently maintained its reputation for academic excellence and has produced thousands of successful engineers who are now contributing to various sectors globally.",
+      "vision": "To be a leading institution in technical education, fostering innovation, research, and entrepreneurship while maintaining the highest standards of academic excellence and ethical values.",
+      "mission": [
+        "To provide quality technical education that meets international standards",
+        "To develop skilled professionals with strong ethical foundations",
+        "To promote research and innovation in emerging technologies",
+        "To foster industry-academia collaboration for practical learning",
+        "To contribute to society through community service and sustainable development"
+      ],
+      "infrastructure": {
+        "campus": "MACET is spread across a sprawling 25-acre campus in Neora, Patna, providing a serene and conducive environment for learning. The campus is well-planned with modern academic blocks, administrative buildings, laboratories, library, hostels, and recreational facilities.",
+        "laboratories": "The college boasts state-of-the-art laboratories equipped with the latest technology and equipment. Each department has dedicated labs for practical training, research, and project work. The labs are regularly updated to keep pace with industry requirements.",
+        "library": "The Central Library houses over 50,000 books, journals, and digital resources. It provides a quiet study environment with modern facilities including digital library access, internet connectivity, and comfortable seating arrangements.",
+        "hostels": "Separate hostel facilities for boys and girls with modern amenities, 24/7 security, mess facilities, and recreational areas to ensure a comfortable stay for outstation students."
+      },
+      "academics": {
+        "programs": "MACET offers both Diploma and B.Tech programs in various engineering disciplines including Computer Science, Civil, Electrical, Mechanical Engineering, and specialized programs in AI & ML and Data Science.",
+        "faculty": "The college has a team of highly qualified and experienced faculty members, many holding Ph.D. degrees from prestigious institutions. The faculty is committed to providing quality education and mentoring students for their overall development.",
+        "curriculum": "The curriculum is designed in consultation with industry experts and is regularly updated to include the latest technological developments. Emphasis is placed on practical learning, project-based education, and skill development.",
+        "research": "MACET encourages research activities among faculty and students. The college has established research centers and collaborates with industries and other institutions for research projects and publications."
+      },
+      "achievements": {
+        "accreditation": "MACET is approved by AICTE and affiliated with Bihar University. The college maintains high academic standards and has received recognition for its quality education.",
+        "placements": "The college has an excellent placement record with top companies like TCS, Infosys, Wipro, Cognizant, and many others recruiting students. The Training and Placement Cell works tirelessly to ensure maximum placement opportunities.",
+        "awards": "MACET has received various awards and recognitions for its contribution to technical education, including excellence in placement, infrastructure development, and academic performance.",
+        "alumni": "The college takes pride in its alumni who are working in prestigious positions in multinational companies, government organizations, and have also established successful startups."
+      },
+      "facilities": {
+        "sports": "Comprehensive sports facilities including cricket ground, football field, basketball court, volleyball court, and indoor games facilities to promote physical fitness and sportsmanship.",
+        "transport": "College-operated bus services connecting various parts of Patna and surrounding areas, ensuring safe and convenient transportation for students and staff.",
+        "canteen": "Hygienic canteen facilities serving nutritious and affordable meals, snacks, and beverages throughout the day.",
+        "medical": "On-campus medical facilities with qualified medical staff to handle health emergencies and provide basic healthcare services.",
+        "wifi": "Campus-wide Wi-Fi connectivity ensuring students and faculty have access to internet resources for academic and research purposes."
+      },
+      "studentLife": {
+        "clubs": "Various technical and cultural clubs including Robotics Club, Coding Club, Literary Society, Music Club, and Drama Club providing platforms for students to explore their interests and talents.",
+        "events": "Regular organization of technical festivals, cultural events, seminars, workshops, and guest lectures by industry experts and academicians.",
+        "mentoring": "Comprehensive mentoring system where each student is assigned a faculty mentor for academic guidance, career counseling, and personal development.",
+        "scholarships": "Merit-based and need-based scholarship programs to support deserving students in their educational journey."
+      }
+    }
+  },
+  "notices": {
+    "title": "Latest Notices & Updates",
+    "items": [
+      {
+        "id": 1,
+        "title": "3rd MACET Test Result 2025-26 Declared",
+        "description": "Results for the 3rd MACET entrance test have been published. Students can check their results online.",
+        "date": "2025-01-15",
+        "category": "Admission",
+        "priority": "high",
+        "url": "https://macet.ac.in/assets/img/Admission/result3rd.pdf",
+        "isNew": true
+      },
+      {
+        "id": 2,
+        "title": "Online Fee Payment Portal Now Active",
+        "description": "Students can now pay their fees online through SBI Collect portal. Multiple payment options available.",
+        "date": "2025-01-10",
+        "category": "Fee",
+        "priority": "high",
+        "url": "https://www.onlinesbi.sbi/sbicollect/icollecthome.htm?corpID=2546972",
+        "isNew": true
+      },
+      {
+        "id": 3,
+        "title": "Placement Drive 2025 - Registration Open",
+        "description": "Final year students can register for the upcoming placement drive. Top companies participating.",
+        "date": "2025-01-08",
+        "category": "Placement",
+        "priority": "medium",
+        "url": "https://macet.ac.in/Placement2025.aspx",
+        "isNew": true
+      },
+      {
+        "id": 4,
+        "title": "Academic Calendar 2025-26 Released",
+        "description": "Complete academic calendar for the session 2025-26 has been published with all important dates.",
+        "date": "2025-01-05",
+        "category": "Academic",
+        "priority": "medium",
+        "url": "https://macet.ac.in/academic-calendar-2025-26.pdf",
+        "isNew": false
+      },
+      {
+        "id": 5,
+        "title": "Library Timing Extended During Exams",
+        "description": "Central library will remain open till 10 PM during examination period for student convenience.",
+        "date": "2025-01-03",
+        "category": "Library",
+        "priority": "low",
+        "url": "https://macet.ac.in/library-notice.pdf",
+        "isNew": false
+      },
+      {
+        "id": 6,
+        "title": "Workshop on Industry 4.0 Technologies",
+        "description": "Three-day workshop on emerging technologies in Industry 4.0. Registration mandatory for final year students.",
+        "date": "2024-12-28",
+        "category": "Workshop",
+        "priority": "medium",
+        "url": "https://macet.ac.in/workshop-industry4.0.pdf",
+        "isNew": false
+      },
+      {
+        "id": 7,
+        "title": "Hostel Admission Process Started",
+        "description": "Online application for hostel admission is now open. Limited seats available on first-come-first-serve basis.",
+        "date": "2024-12-25",
+        "category": "Hostel",
+        "priority": "medium",
+        "url": "https://macet.ac.in/hostel-admission.pdf",
+        "isNew": false
+      },
+      {
+        "id": 8,
+        "title": "Alumni Meet 2025 - Save the Date",
+        "description": "Annual alumni meet scheduled for February 2025. All alumni are cordially invited to participate.",
+        "date": "2024-12-20",
+        "category": "Alumni",
+        "priority": "low",
+        "url": "https://macet.ac.in/alumni-meet-2025.pdf",
+        "isNew": false
+      }
+    ]
+  },
+  "footer": {
+    "about": {
+      "title": "About MACET",
+      "description": "Maulana Azad College of Engineering & Technology is a premier technical institution established in 1987, committed to providing quality education in engineering and technology.",
+      "logo": "/images/macet-logo.png"
+    },
+    "quickLinks": [
+      {
+        "title": "Quick Links",
+        "links": [
+          {
+            "text": "Home",
+            "url": "/"
+          },
+          {
+            "text": "About Us",
+            "url": "/about"
+          },
+          {
+            "text": "Admissions",
+            "url": "/admission"
+          },
+          {
+            "text": "Departments",
+            "url": "/departments"
+          },
+          {
+            "text": "Placements",
+            "url": "/placement"
+          },
+          {
+            "text": "Facilities",
+            "url": "/facilities"
+          }
+        ]
+      }
+    ],
+    "contact": {
+      "title": "Contact Information",
+      "address": {
+        "line1": "Maulana Azad College of Engineering & Technology",
+        "line2": "Neora, Patna - 804453",
+        "line3": "Bihar, India"
+      },
+      "phone": "+91-9431049755",
+      "email": "info@macet.ac.in",
+      "website": "https://macet.ac.in"
+    },
+    "socialMedia": [
+      {
+        "platform": "Facebook",
+        "url": "https://www.facebook.com/macet.ac.in",
+        "icon": "facebook"
+      },
+      {
+        "platform": "Twitter",
+        "url": "https://twitter.com/macet_official",
+        "icon": "twitter"
+      },
+      {
+        "platform": "LinkedIn",
+        "url": "https://www.linkedin.com/school/macet-patna/",
+        "icon": "linkedin"
+      }
+    ],
+    "importantLinks": [
+      {
+        "title": "Important Links",
+        "links": [
+          {
+            "text": "AICTE",
+            "url": "https://www.aicte-india.org/"
+          },
+          {
+            "text": "Bihar University",
+            "url": "https://www.biharu.ac.in/"
+          },
+          {
+            "text": "UGC",
+            "url": "https://www.ugc.ac.in/"
+          },
+          {
+            "text": "NPTEL",
+            "url": "https://nptel.ac.in/"
+          },
+          {
+            "text": "Digital India",
+            "url": "https://digitalindia.gov.in/"
+          }
+        ]
+      }
+    ],
+    "copyright": {
+      "text": "© 2025 Maulana Azad College of Engineering & Technology. All rights reserved.",
+      "year": "2025"
+    }
+  },
+  "leadershipTeam": {
+    "title": "Leadership Team",
+    "members": [
+      {
+        "name": "Prof. (Dr.) Asim Kumar",
+        "designation": "Director, MACET",
+        "image": "https://macet.ac.in/Images/Asim12.jpg",
+        "message": "At Maulana Azad College of Engineering & Technology, we are committed to providing quality technical education and fostering innovation. Our focus is on creating industry-ready professionals who can contribute meaningfully to the technological advancement of our nation.",
+        "highlights": [
+          "25+ Years of Academic Excellence",
+          "Industry-Aligned Curriculum",
+          "State-of-the-Art Infrastructure"
+        ]
+      },
+      {
+        "name": "Dr. Ahmad Abdul Hai",
+        "designation": "President, MACET",
+        "image": "https://macet.ac.in/Images/president.jpg",
+        "message": "As the President of MACET, I envision creating an institution that not only imparts quality education but also nurtures innovation and research. Our goal is to develop future leaders who will make meaningful contributions to society.",
+        "highlights": [
+          "Visionary Leadership",
+          "Focus on Innovation",
+          "Industry Partnerships"
+        ]
+      },
+      {
+        "name": "Mr. Syed Shafiuzzaman Mashhadi",
+        "designation": "Vice President, MACET",
+        "image": "https://macet.ac.in/Images/Vice%20Presedent%20(1).jpeg",
+        "message": "At MACET, we strive to create an environment that fosters academic excellence and holistic development. Our commitment is to provide students with the skills and knowledge needed to excel in their chosen fields.",
+        "highlights": [
+          "Student-Centric Approach",
+          "Academic Excellence",
+          "Holistic Development"
+        ]
+      }
+    ]
+  },
+  "placements": {
+    "title": "Our Placement Partners",
+    "description": "Leading companies that recruit our talented graduates",
+    "companies": [
+      {
+        "id": 1,
+        "name": "Tata Consultancy Services",
+        "logo": "https://dist.neo4j.com/wp-content/uploads/20210830115959/TCS_Logo.png",
+        "category": "IT Services"
+      },
+      {
+        "id": 2,
+        "name": "Infosys",
+        "logo": "https://tse3.mm.bing.net/th/id/OIP.9kukmujb1xhc9T3KB_D-mQHaC3?rs=1&pid=ImgDetMain&o=7&rm=3",
+        "category": "IT Services"
+      },
+      {
+        "id": 3,
+        "name": "Wipro",
+        "logo": "https://www.wipro.com/content/dam/wipro/social-icons/wipro_new_logo.svg",
+        "category": "IT Services"
+      },
+      {
+        "id": 4,
+        "name": "Cognizant",
+        "logo": "https://logos-world.net/wp-content/uploads/2023/03/Cognizant-Logo.png",
+        "category": "IT Services"
+      },
+      {
+        "id": 5,
+        "name": "Accenture",
+        "logo": "https://logos-world.net/wp-content/uploads/2020/06/Accenture-Logo.png",
+        "category": "Consulting"
+      },
+      
+      {
+        "id": 7,
+        "name": "HCL Technologies",
+        "logo": "https://download.logo.wine/logo/HCL_Technologies/HCL_Technologies-Logo.wine.png",
+        "category": "IT Services"
+      },
+      {
+        "id": 8,
+        "name": "Capgemini",
+        "logo": "https://download.logo.wine/logo/Capgemini/Capgemini-Logo.wine.png",
+        "category": "Consulting"
+      }, 
+      { 
+        "id": 9,
+        "name": "Ultratech",
+        "logo": "https://mir-s3-cdn-cf.behance.net/projects/404/120bb8162835811.Y3JvcCwxOTk5LDE1NjQsMCw3OQ.png",
+        "category": "IT Services"
+      }
+      
+    ]
+  }
+}

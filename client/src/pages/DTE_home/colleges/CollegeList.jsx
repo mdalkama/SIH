@@ -643,7 +643,15 @@ const CollegeList = () => {
                     <td className="px-6 py-4 text-right text-sm font-medium">
                       {college.id === 0 ? (
                         <Link
-                          to="/macet"
+                          to="/colleges/college?id=0"
+                          className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                        >
+                          Visit
+                          <ExternalLink className="ml-1 h-3 w-3" />
+                        </Link>
+                      ) : college.id === 1 ? (
+                        <Link
+                          to="/colleges/college?id=1"
                           className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                         >
                           Visit
