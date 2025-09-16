@@ -64,7 +64,7 @@ const RosterPage = () => {
       {/* Hero Section */}
       <div className="relative bg-gradient-to-r from-blue-50 to-blue-100 dark:from-slate-800 dark:to-slate-900 text-gray-800 dark:text-white overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/5"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
           <div className="text-center">
             <motion.h1 
               className="text-4xl md:text-5xl font-bold mb-6 tracking-tight"
