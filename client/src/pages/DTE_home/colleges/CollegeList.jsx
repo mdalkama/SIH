@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Search, MapPin, Phone, Mail, ExternalLink, Filter, Download } from 'lucide-react';
 import Header from '../header_dte';
 import Footer from '../footer';
@@ -14,7 +15,18 @@ const CollegeList = () => {
 
   // Complete DTE Rajasthan college data
   const collegeData = [
+     {
+      id: 0,
+      name: "Maulana Azad College of Engineering and Technology, Neora, Patna",
+      email: "info@maacet.ac.in",
+      contact: "0145-2627501",
+      district: "Patna",
+      address: "Neora, Patna",
+      website: "https://maacet.ac.in",
+      established: "1985"
+     },
     {
+
       id: 1,
       name: "Government Polytechnic College, Ajmer",
       email: "gpcajmer@rajasthan.gov.in",
@@ -629,15 +641,25 @@ const CollegeList = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right text-sm font-medium">
-                      <a
-                        href={college.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                      >
-                        Visit
-                        <ExternalLink className="ml-1 h-3 w-3" />
-                      </a>
+                      {college.id === 0 ? (
+                        <Link
+                          to="/macet"
+                          className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                        >
+                          Visit
+                          <ExternalLink className="ml-1 h-3 w-3" />
+                        </Link>
+                      ) : (
+                        <a
+                          href={college.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                        >
+                          Visit
+                          <ExternalLink className="ml-1 h-3 w-3" />
+                        </a>
+                      )}
                     </td>
                   </motion.tr>
                 ))}
