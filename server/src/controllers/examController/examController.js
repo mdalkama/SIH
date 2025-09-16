@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 import Student from "../../models/studentModel.js";
 import StudentAcademics from "../../models/studentAcademicsModel.js";
 
-
 export const createExam = async (req, res) => {
   try {
     // createdBy should be added from authenticated user's ID
@@ -17,12 +16,10 @@ export const createExam = async (req, res) => {
       .json({ message: "Exam created successfully.", exam: newExam });
   } catch (error) {
     console.error("Error creating exam:", error);
-    res
-      .status(500)
-      .json({
-        message: "Server error during exam creation.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Server error during exam creation.",
+      error: error.message,
+    });
   }
 };
 
@@ -126,7 +123,6 @@ export const deleteExam = async (req, res) => {
   }
 };
 
-
 export const getExamResultsForEntry = async (req, res) => {
   try {
     const { examId } = req.params; // This is the Exam document _id
@@ -141,22 +137,20 @@ export const getExamResultsForEntry = async (req, res) => {
       "currentExamRegistrations.examId": exam.examId,
     })
       .populate("studentId", "name registrationNumber") // Populate student's name and reg no
-      .select("studentId registrationNumber currentExamRegistrations")
+      .select("studentId registrationNumber currentExamRegistrations courseId")
       .lean();
 
     if (!registeredStudents) {
       return res.status(200).json({ success: true, students: [] });
     }
 
-    // Prepare the data for the frontend
     const resultEntryList = registeredStudents.map((student) => {
-      const registration = student.currentExamRegistrations.find(
-        (reg) => reg.examId === exam.examId
-      );
-
+      // Now, student.courseId will have the correct value (e.g., "105")
       const courseInExam = exam.courses.find(
         (c) => c.courseCode === student.courseId
       );
+
+      // If a matching course is found in the exam doc, use its timetable. Otherwise, empty array.
       const subjects = courseInExam ? courseInExam.timetable : [];
 
       return {
@@ -164,6 +158,7 @@ export const getExamResultsForEntry = async (req, res) => {
         studentId: student.studentId._id,
         name: student.studentId.name,
         registrationNumber: student.registrationNumber,
+        // The subjects array will now be correctly populated
         subjects: subjects.map((sub) => ({
           subjectCode: sub.subjectCode,
           subjectName: sub.subjectName,
@@ -176,13 +171,11 @@ export const getExamResultsForEntry = async (req, res) => {
       };
     });
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        examDetails: { examName: exam.examName, examId: exam.examId },
-        students: resultEntryList,
-      });
+    res.status(200).json({
+      success: true,
+      examDetails: { examName: exam.examName, examId: exam.examId },
+      students: resultEntryList,
+    });
   } catch (error) {
     console.error("Error fetching students for result entry:", error);
     res
@@ -193,7 +186,6 @@ export const getExamResultsForEntry = async (req, res) => {
       });
   }
 };
-
 
 export const addOrUpdateResults = async (req, res) => {
   const { examId } = req.params; // Exam document _id
@@ -272,26 +264,21 @@ export const addOrUpdateResults = async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message:
-          "Results have been successfully submitted for processing and approval.",
-      });
+    res.status(200).json({
+      success: true,
+      message:
+        "Results have been successfully submitted for processing and approval.",
+    });
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
     console.error("Error adding/updating results:", error);
-    res
-      .status(500)
-      .json({
-        message: "Server error while processing results.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Server error while processing results.",
+      error: error.message,
+    });
   }
 };
-
 
 export const getExamsForApproval = async (req, res) => {
   try {
@@ -304,54 +291,58 @@ export const getExamsForApproval = async (req, res) => {
     res.status(200).json({ success: true, exams });
   } catch (error) {
     console.error("Error fetching exams for approval:", error);
-    res
-      .status(500)
-      .json({
-        message: "Server error while fetching exams for approval.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Server error while fetching exams for approval.",
+      error: error.message,
+    });
   }
 };
 
 export const getExamResults = async (req, res) => {
-    try {
-        const { examId } = req.params; // Yeh Exam document ka _id hai
+  try {
+    const { examId } = req.params; // Yeh Exam document ka _id hai
 
-        const exam = await Exam.findById(examId).lean();
-        if (!exam) {
-            return res.status(404).json({ message: "Exam not found." });
-        }
-
-        // Un sabhi students ko dhundo jinke paas is exam ka result hai
-        const results = await StudentAcademics.find({
-            'previousResults.examId': exam.examId
-        })
-        .populate('studentId', 'name registrationNumber')
-        .select('studentId registrationNumber previousResults.$') // Sirf relevant result laayega
-        .lean();
-
-        if (!results || results.length === 0) {
-            return res.status(200).json({
-                success: true,
-                examDetails: exam,
-                results: []
-            });
-        }
-
-        // Frontend ke liye results ko format karo
-        const formattedResults = results.map(student => ({
-            studentAcademicId: student._id,
-            studentName: student.studentId.name,
-            registrationNumber: student.registrationNumber,
-            ...student.previousResults[0] // Specific exam ka result object
-        }));
-
-        res.status(200).json({ success: true, examDetails: exam, results: formattedResults });
-
-    } catch (error){
-        console.error("Error fetching exam results:", error);
-        res.status(500).json({ message: "Server error while fetching exam results.", error: error.message });
+    const exam = await Exam.findById(examId).lean();
+    if (!exam) {
+      return res.status(404).json({ message: "Exam not found." });
     }
+
+    // Un sabhi students ko dhundo jinke paas is exam ka result hai
+    const results = await StudentAcademics.find({
+      "previousResults.examId": exam.examId,
+    })
+      .populate("studentId", "name registrationNumber")
+      .select("studentId registrationNumber previousResults.$") // Sirf relevant result laayega
+      .lean();
+
+    if (!results || results.length === 0) {
+      return res.status(200).json({
+        success: true,
+        examDetails: exam,
+        results: [],
+      });
+    }
+
+    // Frontend ke liye results ko format karo
+    const formattedResults = results.map((student) => ({
+      studentAcademicId: student._id,
+      studentName: student.studentId.name,
+      registrationNumber: student.registrationNumber,
+      ...student.previousResults[0], // Specific exam ka result object
+    }));
+
+    res
+      .status(200)
+      .json({ success: true, examDetails: exam, results: formattedResults });
+  } catch (error) {
+    console.error("Error fetching exam results:", error);
+    res
+      .status(500)
+      .json({
+        message: "Server error while fetching exam results.",
+        error: error.message,
+      });
+  }
 };
 
 export const publishResults = async (req, res) => {
@@ -365,11 +356,9 @@ export const publishResults = async (req, res) => {
 
     // Check if the results are in the correct state to be published
     if (exam.status !== "RESULT_PROCESSING") {
-      return res
-        .status(400)
-        .json({
-          message: `Cannot publish results. Exam status is currently "${exam.status}", not "Result Processing".`,
-        });
+      return res.status(400).json({
+        message: `Cannot publish results. Exam status is currently "${exam.status}", not "Result Processing".`,
+      });
     }
 
     // Update the status to PUBLISHED
@@ -382,12 +371,10 @@ export const publishResults = async (req, res) => {
     });
   } catch (error) {
     console.error("Error publishing results:", error);
-    res
-      .status(500)
-      .json({
-        message: "Server error while publishing results.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Server error while publishing results.",
+      error: error.message,
+    });
   }
 };
 
@@ -470,11 +457,9 @@ export const updateStudentMarks = async (req, res) => {
     await session.abortTransaction();
     session.endSession();
     console.error("Error updating student marks:", error);
-    res
-      .status(500)
-      .json({
-        message: "Server error while updating student marks.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Server error while updating student marks.",
+      error: error.message,
+    });
   }
 };

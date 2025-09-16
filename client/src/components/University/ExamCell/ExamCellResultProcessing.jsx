@@ -72,7 +72,7 @@ const ExamCellResultProcessing = () => {
             const response = await fetch(`${API_BASE_URL}/${exam._id}/results/entry`, { credentials: 'include' });
             if (!response.ok) throw new Error("Could not fetch the student list for this exam.");
             const data = await response.json();
-
+            console.log("data", data);
             setStudents(data.students || []);
             setSelectedExam(prev => ({ ...prev, ...data.examDetails }));
 
