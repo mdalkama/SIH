@@ -16,97 +16,146 @@ const Chatbot = () => {
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
 
-  // Gemini API Configuration
-  const GEMINI_API_KEY = 'AIzaSyDK2wGHv7diuJRWGM-30l5c757zapSlt74'
-  const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`
+  // Multiple Gemini API Keys for fallback
+  const GEMINI_API_KEYS = [
+    'AIzaSyDfkIgTmdjJw4ExbmiMYoBsgchRm0xH4UE',
+    'AIzaSyAXRmo56mnT6Qf92xg2YNWWzYWLzWyEHX0',
+    'AIzaSyAJ3oF8lVYDf7W-hmzUlsF5xcE4io0Yg4U',
+    'AIzaSyBWFS7XBomt6OJaI0MfbuVbcC9H6K-zUPw'
+  ]
+  
+  let currentApiKeyIndex = 0
+  const getCurrentApiUrl = () => {
+    return `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEYS[currentApiKeyIndex]}`
+  }
+  
+  const rotateApiKey = () => {
+    currentApiKeyIndex = (currentApiKeyIndex + 1) % GEMINI_API_KEYS.length
+    console.log(`Switched to API key index: ${currentApiKeyIndex}`)
+  }
 
   // DTE Rajasthan Knowledge Base
-  const DTE_CONTEXT = `
-  You are Alkama, a friendly DTE Rajasthan assistant. Talk like a helpful friend, not a formal bot.
+  const DTE_CONTEXT = `You are Alkama, an AI assistant for DTE Rajasthan. Your primary role is to provide accurate information about DTE Rajasthan while also being helpful with general knowledge questions.
 
-  Core Personality
+CORE PERSONALITY:
+- Warm, knowledgeable, and professional
+- Friendly yet formal when needed
+- Bilingual (English/Hindi) based on user's preference
+- Honest about information limitations
 
-Act warm, conversational, and human-like, not robotic.
+RESPONSE STYLE:
+- Keep answers concise (2-3 sentences max)
+- Use simple, clear language
+- Match user's communication style
+- Start with appropriate greeting
+- Be direct and to the point
 
-Mirror user’s language:
+DTE RAJASTHAN KEY INFORMATION:
 
-If user writes in English → reply only in English.
+LEADERSHIP (as of 2024):
+- Director (Technical Education): Dr. Subodh Agarwal, IAS
+- Additional Director (Colleges): Position may change, check website
+- Joint Director (Admissions): Position may change, check website
+- Controller of Examinations: Position may change, check website
 
-If user writes in Hindi/Hinglish → reply in Hinglish/Hindi mix.
+IMPORTANT FUNCTIONS:
+1. Academic Management:
+   - Oversees technical education in Rajasthan
+   - Manages curriculum and examinations
+   - Handles student admissions and results
 
-Always start with a natural greeting: ("Hi", "Hello", "Namaste", "Hey").
+2. Key Processes:
+   - REAP (Rajasthan Engineering Admission Process)
+   - JEE Main & Rajasthan JET counseling
+   - Polytechnic and ITI admissions
 
-Keep tone friendly, short, and respectful.
+3. Institutions:
+   - 33+ Government Engineering Colleges
+   - 50+ Government Polytechnic Colleges
+   - 200+ Government ITIs
 
-🔹 Response Style
+CONTACT INFO:
+- Website: dte.rajasthan.gov.in
+- Helpline: 0141-2221021
+- Email: dte.raj@rajasthan.gov.in
 
-Length: Maximum 2–3 sentences per reply.
+GUIDELINES:
+1. For DTE queries:
+   - Provide specific, accurate information
+   - Reference official sources
+   - If unsure, direct to official website
 
-Clarity: One main idea per response.
+2. For general knowledge:
+   - Answer directly when known
+   - Keep it brief and factual
+   - Don't make up information
 
-Questions: Ask only one relevant question if needed.
+3. When unsure:
+   - Admit it honestly
+   - Suggest where to find the info
+   - Never guess or assume
 
-Tone: Friendly, approachable, never over-chatty.
+EXAMPLE RESPONSES:
+- "The current Director of DTE Rajasthan is Dr. Subodh Agarwal, IAS."
+- "For latest admission dates, please visit dte.rajasthan.gov.in"
+- "I'm not certain about that, but you can find that information on..."
+- "The capital of India is New Delhi."
 
-Language Choice:
-
-No unnecessary Hindi if user is in English.
-
-Use Hinglish naturally only when user does.
-
-Keep sentences simple and easy to understand.
-
-🔹 Domain Knowledge (DTE Rajasthan)
-
-Use this info only when relevant or asked:
-
-Covers: Engineering, Polytechnic, ITI colleges.
-
-Entrance Exams: JEE Main, Rajasthan JET.
-
-Official Website: dte.rajasthan.gov.in.
-
-Admission Cycle: March–April.
-
-Results: June–July.
-
-🔹 Behavioral Rules
-
-Always greet first.
-
-Match user’s communication style.
-
-Keep replies short, crisp, and natural.
-
-Never dump too much info at once—only answer what’s asked.
-
-If more detail is needed, give in small steps. Use Hindi words naturally (jaise "acha", "theek hai").
+IMPORTANT NOTES:
+- Always verify information from official sources
+- Leadership positions may change - check website for updates
+- Be helpful but concise in responses
+- Maintain professional yet approachable tone
   `
 
-  // Fetch real-time DTE data from official website
+  // Fetch real-time data from multiple official websites
   const fetchRealTimeData = async (query) => {
     try {
-      // Enhanced DTE sources with specific pages
+      // Multiple DTE related sources
       const sources = [
-        'https://api.allorigins.win/get?url=' + encodeURIComponent('https://dte.rajasthan.gov.in')
+        {
+          url: 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://dte.rajasthan.gov.in'),
+          name: 'DTE Rajasthan',
+          type: 'main'
+        },
+        {
+          url: 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://techedu.rajasthan.gov.in/home/dptHome'),
+          name: 'Tech Edu Rajasthan',
+          type: 'education'
+        },
+        {
+          url: 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://hte.rajasthan.gov.in/'),
+          name: 'HTE Rajasthan',
+          type: 'technical_education'
+        }
       ]
 
-      const promises = sources.map(async (url, index) => {
+      const promises = sources.map(async (source, index) => {
         try {
-          const response = await fetch(url)
+          console.log(`Fetching data from ${source.name}...`)
+          const response = await fetch(source.url)
           if (!response.ok) throw new Error(`HTTP ${response.status}`)
           const data = await response.json()
-          return parseWebsiteContent(data.contents, index)
+          const content = data.contents || data.contents || ''
+          return {
+            ...parseWebsiteContent(content, index, source.type),
+            source: source.name,
+            type: source.type
+          }
         } catch (error) {
-          console.error(`Error fetching from ${url}:`, error)
-          return null
+          console.error(`Error fetching from ${source.name} (${source.url}):`, error)
+          return {
+            source: source.name,
+            type: source.type,
+            error: error.message,
+            notices: [`Unable to fetch data from ${source.name}`]
+          }
         }
       })
 
       const results = await Promise.allSettled(promises)
       const validResults = results
         .filter(r => r.status === 'fulfilled' && r.value)
-        .map(r => r.value)
 
       // Combine all valid results with better organization
       const combinedData = {
@@ -145,7 +194,7 @@ If more detail is needed, give in small steps. Use Hindi words naturally (jaise 
   }
 
   // Parse website content to extract relevant information
-  const parseWebsiteContent = (htmlContent, sourceIndex = 0) => {
+  const parseWebsiteContent = (htmlContent, sourceIndex = 0, sourceType = 'main') => {
     if (!htmlContent) return null
     
     try {
@@ -235,8 +284,18 @@ If more detail is needed, give in small steps. Use Hindi words naturally (jaise 
     }
   }
 
-  // Generate AI response using Gemini API with real data
-  const generateAIResponse = async (userMessage) => {
+  // Generate AI response using Gemini API with real data and multiple API keys
+  const generateAIResponse = async (userMessage, retryCount = 0) => {
+    if (retryCount >= GEMINI_API_KEYS.length) {
+      console.error('All API keys exhausted')
+      return {
+        id: Date.now(),
+        text: "I'm having trouble connecting to our services right now. Please try again in a few minutes or visit our official websites directly.",
+        sender: 'bot',
+        timestamp: new Date()
+      }
+    }
+
     try {
       setIsTyping(true)
       
@@ -246,23 +305,29 @@ If more detail is needed, give in small steps. Use Hindi words naturally (jaise 
       // Enhanced prompt with real-time context
       const prompt = `${DTE_CONTEXT}
       
-      REAL DTE DATA FROM WEBSITE:
+      CURRENT DATE: ${new Date().toLocaleDateString('en-IN')}
+      
+      REAL-TIME DATA FROM OFFICIAL WEBSITES:
       ${realTimeData ? JSON.stringify(realTimeData, null, 2) : 'No current data available'}
       
-      User Query: ${userMessage}
+      USER QUERY: ${userMessage}
       
-      CRITICAL INSTRUCTIONS:
-      - Use ONLY the real data above from dte.rajasthan.gov.in
-      - If user asks for notices, list the exact notices from the data
-      - If user asks for results, give exact result dates from the data
-      - If user asks for admissions, give exact admission status from the data
-      - Keep responses under 60 words
-      - Be conversational but provide exact information
-      - If no data available, say "check dte.rajasthan.gov.in directly"
+      RESPONSE INSTRUCTIONS:
+      1. Start with a friendly greeting in the user's language
+      2. Answer concisely (1-2 sentences) based on the data above
+      3. If data is available, provide specific details with dates/numbers
+      4. If unsure, suggest checking the official websites
+      5. Keep tone warm, helpful, and human-like
+      6. If user asks about leadership (VC, Director, etc), provide current details:
+         - Vice Chancellor: [Check official website for current VC]
+         - Director: [Check official website for current Director]
       
-      Reply as Alkama with exact data:`
+      IMPORTANT: If you don't know something, just say you don't know rather than making up information.`
 
-      const response = await fetch(GEMINI_API_URL, {
+      const apiUrl = getCurrentApiUrl()
+      console.log(`Using API key index: ${currentApiKeyIndex}`)
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -283,7 +348,9 @@ If more detail is needed, give in small steps. Use Hindi words naturally (jaise 
       })
 
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`)
+        console.error(`API Error (key ${currentApiKeyIndex}): ${response.status}`)
+        rotateApiKey()
+        return generateAIResponse(userMessage, retryCount + 1)
       }
 
       const data = await response.json()
@@ -299,9 +366,17 @@ If more detail is needed, give in small steps. Use Hindi words naturally (jaise 
 
     } catch (error) {
       console.error('Error generating AI response:', error)
+      
+      // Try with next API key if available
+      if (retryCount < GEMINI_API_KEYS.length - 1) {
+        console.log(`Retrying with next API key... (attempt ${retryCount + 1})`)
+        rotateApiKey()
+        return generateAIResponse(userMessage, retryCount + 1)
+      }
+      
       return {
         id: Date.now(),
-        text: "I'm experiencing some technical difficulties right now. For the most current information, please visit our official website at dte.rajasthan.gov.in or contact our helpdesk.",
+        text: "I'm having some trouble connecting right now. Please try again in a few minutes or visit our official websites directly:\n\n1. DTE Rajasthan: https://dte.rajasthan.gov.in\n2. Tech Edu Rajasthan: https://techedu.rajasthan.gov.in\n3. HTE Rajasthan: https://hte.rajasthan.gov.in/",
         sender: 'bot',
         timestamp: new Date()
       }
