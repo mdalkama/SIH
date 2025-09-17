@@ -16,22 +16,38 @@ const Chatbot = () => {
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
 
-  // Multiple Gemini API Keys for fallback
-  const GEMINI_API_KEYS = [
-    'AIzaSyDfkIgTmdjJw4ExbmiMYoBsgchRm0xH4UE',
-    'AIzaSyAXRmo56mnT6Qf92xg2YNWWzYWLzWyEHX0',
-    'AIzaSyAJ3oF8lVYDf7W-hmzUlsF5xcE4io0Yg4U',
-    'AIzaSyBWFS7XBomt6OJaI0MfbuVbcC9H6K-zUPw'
-  ]
+  // Local Knowledge Base
+  const localKnowledgeBase = {
+    greetings: [
+      'Hello! I\'m Alkama, your DTE Rajasthan assistant. How can I help you today?',
+      'Namaste! Main hu Alkama, DTE Rajasthan ka assistant. Aapki kya madad karu?',
+      'Hi there! How can I assist you with DTE Rajasthan today?'
+    ],
+    admission: {
+      'btech': 'B.Tech admissions are through REAP based on JEE Main scores. Visit dte.rajasthan.gov.in for details.',
+      'diploma': 'Diploma admissions are based on 10th/12th marks. Check the official website for the latest schedule.',
+      'iti': 'ITI admissions are conducted twice a year. Visit the official website for current notices.'
+    },
+    results: {
+      'btech': 'B.Tech results are usually declared within 30 days after exams.',
+      'diploma': 'Diploma results are typically announced within 15-20 days after exams.',
+      'iti': 'ITI results are generally declared within a month after exams.'
+    },
+    contact: 'You can contact DTE Rajasthan at:\n- Phone: 0141-2701544\n- Email: dte.rajasthan@rajasthan.gov.in\n- Address: Directorate of Technical Education, J.L.N. Marg, Jaipur - 302017',
+    website: 'Official website: https://dte.rajasthan.gov.in\nCheck the website for latest notifications, results, and admission updates.',
+    default: 'I can help with information about admissions, results, exams, and more. Please ask specific questions.'
+  };
+
+  // API Configuration
+  const GEMINI_API_KEY = 'AIzaSyDYZUAU8JWJDjW5jowt5NYrQTYn4JI4agk';
+  const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
   
-  let currentApiKeyIndex = 0
-  const getCurrentApiUrl = () => {
-    return `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEYS[currentApiKeyIndex]}`
-  }
-  
-  const rotateApiKey = () => {
-    currentApiKeyIndex = (currentApiKeyIndex + 1) % GEMINI_API_KEYS.length
-    console.log(`Switched to API key index: ${currentApiKeyIndex}`)
+  const getApiUrl = () => {
+    if (!GEMINI_API_KEY) {
+      console.error('No Gemini API key configured.');
+      return null;
+    }
+    return GEMINI_API_URL;
   }
 
   // DTE Rajasthan Knowledge Base
@@ -284,16 +300,71 @@ IMPORTANT NOTES:
     }
   }
 
-  // Generate AI response using Gemini API with real data and multiple API keys
-  const generateAIResponse = async (userMessage, retryCount = 0) => {
-    if (retryCount >= GEMINI_API_KEYS.length) {
-      console.error('All API keys exhausted')
+  // Process user message and generate response from local knowledge base
+  const getLocalResponse = (message) => {
+    const msg = message.toLowerCase();
+    
+    // Check for greetings
+    if (/(hi|hello|hey|namaste|hii|hlo|hlw)/.test(msg)) {
+      return localKnowledgeBase.greetings[
+        Math.floor(Math.random() * localKnowledgeBase.greetings.length)
+      ];
+    }
+    
+    // Check for admission related queries
+    if (/(admission|admit|apply|form|registration)/.test(msg)) {
+      if (/(b.?tech|b.?e|b.?e.?|engineering)/.test(msg)) return localKnowledgeBase.admission.btech;
+      if (/(diploma|polytechnic)/.test(msg)) return localKnowledgeBase.admission.diploma;
+      if (/iti/.test(msg)) return localKnowledgeBase.admission.iti;
+      return 'For admissions, please specify the course (B.Tech/Diploma/ITI).';
+    }
+    
+    // Check for result related queries
+    if (/(result|marks|score|grade)/.test(msg)) {
+      if (/(b.?tech|b.?e|b.?e.?|engineering)/.test(msg)) return localKnowledgeBase.results.btech;
+      if (/(diploma|polytechnic)/.test(msg)) return localKnowledgeBase.results.diploma;
+      if (/iti/.test(msg)) return localKnowledgeBase.results.iti;
+      return 'For results, please specify the course (B.Tech/Diploma/ITI).';
+    }
+    
+    // Check for contact information
+    if (/(contact|number|email|address|where|location)/.test(msg)) {
+      return localKnowledgeBase.contact;
+    }
+    
+    // Check for website information
+    if (/(website|site|online|portal|link)/.test(msg)) {
+      return localKnowledgeBase.website;
+    }
+    
+    // Default response
+    return localKnowledgeBase.default;
+  };
+
+  // Generate AI response using Gemini API with real data
+  const generateAIResponse = async (userMessage) => {
+    // First try to get response from local knowledge base
+    const localResponse = getLocalResponse(userMessage);
+    
+    // If we have a good local response, use it
+    if (localResponse && !localResponse.includes('I can help with')) {
       return {
         id: Date.now(),
-        text: "I'm having trouble connecting to our services right now. Please try again in a few minutes or visit our official websites directly.",
+        text: localResponse,
         sender: 'bot',
         timestamp: new Date()
-      }
+      };
+    }
+    
+    // If no good local response, try the API
+    const apiUrl = getApiUrl();
+    if (!apiUrl) {
+      return {
+        id: Date.now(),
+        text: localResponse, // Fallback to local response
+        sender: 'bot',
+        timestamp: new Date()
+      };
     }
 
     try {
@@ -324,9 +395,6 @@ IMPORTANT NOTES:
       
       IMPORTANT: If you don't know something, just say you don't know rather than making up information.`
 
-      const apiUrl = getCurrentApiUrl()
-      console.log(`Using API key index: ${currentApiKeyIndex}`)
-      
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -348,9 +416,8 @@ IMPORTANT NOTES:
       })
 
       if (!response.ok) {
-        console.error(`API Error (key ${currentApiKeyIndex}): ${response.status}`)
-        rotateApiKey()
-        return generateAIResponse(userMessage, retryCount + 1)
+        console.error(`API Error: ${response.status}`)
+        throw new Error(`API request failed with status ${response.status}`)
       }
 
       const data = await response.json()
@@ -365,21 +432,15 @@ IMPORTANT NOTES:
       }
 
     } catch (error) {
-      console.error('Error generating AI response:', error)
+      console.error('Error generating AI response:', error);
       
-      // Try with next API key if available
-      if (retryCount < GEMINI_API_KEYS.length - 1) {
-        console.log(`Retrying with next API key... (attempt ${retryCount + 1})`)
-        rotateApiKey()
-        return generateAIResponse(userMessage, retryCount + 1)
-      }
-      
+      // Fallback to local response if API fails
       return {
         id: Date.now(),
-        text: "I'm having some trouble connecting right now. Please try again in a few minutes or visit our official websites directly:\n\n1. DTE Rajasthan: https://dte.rajasthan.gov.in\n2. Tech Edu Rajasthan: https://techedu.rajasthan.gov.in\n3. HTE Rajasthan: https://hte.rajasthan.gov.in/",
+        text: getLocalResponse(userMessage),
         sender: 'bot',
         timestamp: new Date()
-      }
+      };
     } finally {
       setIsTyping(false)
     }
