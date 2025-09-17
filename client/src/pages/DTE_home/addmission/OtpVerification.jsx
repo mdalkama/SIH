@@ -110,7 +110,7 @@ const OtpVerification = () => {
     
     if (!formData.otp) {
       newErrors.otp = 'OTP is required';
-    } else if (formData.otp !== '1235') {
+    } else if (formData.otp !== '7780') {
       newErrors.otp = 'Invalid OTP. Please enter 1235 for demo';
     }
     
@@ -311,12 +311,7 @@ const OtpVerification = () => {
                   <p className="text-gray-600">
                     OTP sent to +91{formData.phoneNumber.slice(0, -3)}***
                   </p>
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
-                    <div className="flex items-center text-green-800">
-                      <CheckCircle size={20} className="mr-2" />
-                      <span className="font-medium">Use OTP: 1235 for demo</span>
-                    </div>
-                  </div>
+                  
                 </div>
 
                 {/* OTP Input */}
