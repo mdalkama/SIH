@@ -34,8 +34,8 @@ const Chatbot = () => {
     console.log(`Switched to API key index: ${currentApiKeyIndex}`)
   }
 
-  // DTE Rajasthan Knowledge Base with Exam Details
-  const DTE_CONTEXT = `You are Alkama, an AI assistant for DTE Rajasthan. Your primary role is to provide accurate information about DTE Rajasthan's academic calendar, exams, results, and important dates.
+  // DTE Rajasthan Knowledge Base
+  const DTE_CONTEXT = `You are Alkama, an AI assistant for DTE Rajasthan. Your primary role is to provide accurate information about DTE Rajasthan while also being helpful with general knowledge questions.
 
 CORE PERSONALITY:
 - Warm, knowledgeable, and professional
@@ -43,131 +43,78 @@ CORE PERSONALITY:
 - Bilingual (English/Hindi) based on user's preference
 - Honest about information limitations
 
-EXAMINATION INFORMATION (2024-25):
+RESPONSE STYLE:
+- Keep answers concise (2-3 sentences max)
+- Use simple, clear language
+- Match user's communication style
+- Start with appropriate greeting
+- Be direct and to the point
 
-1. B.TECH EXAMINATIONS:
-   - Odd Semester Exams: November-December 2024
-   - Even Semester Exams: April-May 2025
-   - Practical Exams: 1 week before theory exams
-   - Back Paper Exams: July 2025
+DTE RAJASTHAN KEY INFORMATION:
 
-2. DIPLOMA EXAMINATIONS:
-   - 1st/3rd/5th Semester: December 2024
-   - 2nd/4th/6th Semester: May 2025
-   - Back Paper Exams: July 2025
+LEADERSHIP (as of 2024):
+- Director (Technical Education): Dr. Subodh Agarwal, IAS
+- Additional Director (Colleges): Position may change, check website
+- Joint Director (Admissions): Position may change, check website
+- Controller of Examinations: Position may change, check website
 
-3. IMPORTANT DATES:
-   - Exam Form Submission Start: 15th October 2024 (for Nov-Dec exams)
-   - Last Date for Exam Form: 5th November 2024
-   - Date Sheet Release: 15 days before exams
-   - Practical Schedule: 1 week before theory exams
-   - Result Declaration: Within 45 days of last exam
+IMPORTANT FUNCTIONS:
+1. Academic Management:
+   - Oversees technical education in Rajasthan
+   - Manages curriculum and examinations
+   - Handles student admissions and results
 
-4. RESULT DECLARATION (Last Academic Year 2023-24):
-   - Odd Semester Results: January 2024
-   - Even Semester Results: July 2024
-   - Re-evaluation Results: Within 30 days of application
+2. Key Processes:
+   - REAP (Rajasthan Engineering Admission Process)
+   - JEE Main & Rajasthan JET counseling
+   - Polytechnic and ITI admissions
 
-5. NOTICES & UPDATES:
-   - Exam form submission extended till 10th November 2024
-   - Practical exam schedule for B.Tech 3rd/5th/7th sem released
-   - Last date for re-evaluation application: 15th August 2024
-   - Special exam schedule for backlogs: August-September 2024
+3. Institutions:
+   - 33+ Government Engineering Colleges
+   - 50+ Government Polytechnic Colleges
+   - 200+ Government ITIs
 
-6. IMPORTANT LINKS:
-   - Exam Form: exam.dte.rajasthan.gov.in
-   - Results: result.dte.rajasthan.gov.in
-   - Date Sheet: dte.rajasthan.gov.in/exam-schedule
-   - Syllabus: dte.rajasthan.gov.in/syllabus
+CONTACT INFO:
+- Website: dte.rajasthan.gov.in
+- Helpline: 0141-2221021
+- Email: dte.raj@rajasthan.gov.in
 
-7. HELPDESK CONTACTS:
-   - Exam Department: 0141-2221021 (Ext. 221)
-   - Result Helpline: 0141-2221021 (Ext. 225)
-   - Email: exam.dte.rajasthan@rajasthan.gov.in
-   - Office Hours: 10:00 AM - 5:00 PM (Mon-Sat)
+GUIDELINES:
+1. For DTE queries:
+   - Provide specific, accurate information
+   - Reference official sources
+   - If unsure, direct to official website
 
-RESPONSE GUIDELINES:
-1. Always provide the most current exam information
-2. If dates have passed, direct to official website for updates
-3. For result queries, ask for specific semester/year
-4. Include relevant links when available
-5. If unsure, direct to official contacts
+2. For general knowledge:
+   - Answer directly when known
+   - Keep it brief and factual
+   - Don't make up information
+
+3. When unsure:
+   - Admit it honestly
+   - Suggest where to find the info
+   - Never guess or assume
 
 EXAMPLE RESPONSES:
-- "The B.Tech 3rd semester exams are scheduled from 15th November 2024. The detailed date sheet is available at dte.rajasthan.gov.in/exam-schedule"
-- "For re-evaluation of your May 2024 exams, you can apply online at result.dte.rajasthan.gov.in until 15th August 2024."
-- "The last date for exam form submission is 5th November 2024. Late fees may apply after this date."
+- "The current Director of DTE Rajasthan is Dr. Subodh Agarwal, IAS."
+- "For latest admission dates, please visit dte.rajasthan.gov.in"
+- "I'm not certain about that, but you can find that information on..."
+- "The capital of India is New Delhi."
+
+IMPORTANT NOTES:
+- Always verify information from official sources
+- Leadership positions may change - check website for updates
+- Be helpful but concise in responses
+- Maintain professional yet approachable tone
   `
 
-  // Enhanced exam and result data
-  const EXAM_DATA = {
-    currentAcademicYear: '2024-25',
-    semesters: {
-      odd: {
-        name: 'Odd Semester (July-December)',
-        exams: 'November-December 2024',
-        results: 'January 2025',
-        backPaperExam: 'July 2025',
-        forms: {
-          start: '15th October 2024',
-          end: '5th November 2024',
-          lateEnd: '10th November 2024 (with late fee)'
-        }
-      },
-      even: {
-        name: 'Even Semester (January-May)',
-        exams: 'April-May 2025',
-        results: 'June 2025',
-        backPaperExam: 'July 2025',
-        forms: {
-          start: '15th February 2025',
-          end: '5th March 2025',
-          lateEnd: '10th March 2025 (with late fee)'
-        }
-      }
-    },
-    importantDates: [
-      { date: '15th October 2024', event: 'Odd Semester Exam Forms Start' },
-      { date: '5th November 2024', event: 'Last date for exam form submission' },
-      { date: '15th November 2024', event: 'Odd Semester Theory Exams Begin' },
-      { date: '15th January 2025', event: 'Expected Odd Semester Results' },
-      { date: '15th February 2025', event: 'Even Semester Exam Forms Start' },
-      { date: '5th March 2025', event: 'Last date for exam form submission' },
-      { date: '1st April 2025', event: 'Even Semester Theory Exams Begin' },
-      { date: '15th June 2025', event: 'Expected Even Semester Results' },
-      { date: '1st July 2025', event: 'Back Paper Exams Begin' }
-    ],
-    notices: [
-      'Exam form submission extended till 10th November 2024 with late fee of ₹500',
-      'Practical exam schedule for B.Tech 3rd/5th/7th sem released',
-      'Last date for re-evaluation application: 15th August 2024',
-      'Special exam schedule for backlogs: August-September 2024',
-      'Online verification of marks available for all semesters',
-      'New exam pattern details updated on the website',
-      'Guidelines for project submission and viva-voce published'
-    ]
-  };
-
-  // Fetch real-time data from multiple official websites with better error handling
+  // Fetch real-time data from multiple official websites
   const fetchRealTimeData = async (query) => {
     try {
-      // First return the static exam data
-      if (query.toLowerCase().includes('exam') || 
-          query.toLowerCase().includes('result') || 
-          query.toLowerCase().includes('date') ||
-          query.toLowerCase().includes('form') ||
-          query.toLowerCase().includes('schedule')) {
-        return {
-          examData: EXAM_DATA,
-          lastUpdated: new Date().toISOString(),
-          source: 'DTE Rajasthan Exam Department'
-        };
-      }
-      
-      // For other queries, try to fetch from official sources
+      // Multiple DTE related sources
       const sources = [
         {
-          url: 'https://dte.rajasthan.gov.in',
+          url: 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://dte.rajasthan.gov.in'),
           name: 'DTE Rajasthan',
           type: 'main'
         },
@@ -337,85 +284,16 @@ EXAMPLE RESPONSES:
     }
   }
 
-  // Common exam-related queries and responses
-  const handleExamQuery = (query) => {
-    const lowerQuery = query.toLowerCase();
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1; // 1-12
-    
-    // Determine current semester (Odd: July-Dec, Even: Jan-June)
-    const currentSemester = (currentMonth >= 7) ? 'odd' : 'even';
-    const nextSemester = (currentMonth >= 7) ? 'even' : 'odd';
-    const semData = EXAM_DATA.semesters[currentSemester];
-    
-    // Common exam queries
-    if (lowerQuery.includes('exam date') || lowerQuery.includes('exam schedule')) {
-      return `The ${semData.name} exams are scheduled for ${semData.exams}. ` +
-             `Exam forms are accepted from ${semData.forms.start} to ${semData.forms.end}. ` +
-             `Late submissions with fee are accepted until ${semData.forms.lateEnd}.`;
-    }
-    
-    if (lowerQuery.includes('result') || lowerQuery.includes('marks')) {
-      return `The ${semData.name} results are expected by ${semData.results}. ` +
-             `You can check results at result.dte.rajasthan.gov.in. ` +
-             `For re-evaluation, applications are usually accepted within 15 days of result declaration.`;
-    }
-    
-    if (lowerQuery.includes('form') || lowerQuery.includes('apply') || lowerQuery.includes('submission')) {
-      return `For ${semData.name} exams:
-- Forms available from: ${semData.forms.start}
-- Last date: ${semData.forms.end}
-- With late fee: ${semData.forms.lateEnd}
-Apply at: exam.dte.rajasthan.gov.in`;
-    }
-    
-    if (lowerQuery.includes('back paper') || lowerQuery.includes('reattempt')) {
-      return `Back paper exams are typically held in ${EXAM_DATA.semesters.odd.backPaperExam}. ` +
-             `The schedule is usually announced one month before the exams. ` +
-             `Please check the official website for the latest updates.`;
-    }
-    
-    if (lowerQuery.includes('practical') || lowerQuery.includes('viva')) {
-      return `Practical exams are usually conducted 1-2 weeks before the theory exams. ` +
-             `The schedule is announced by your college. ` +
-             `Please check with your college administration for exact dates.`;
-    }
-    
-    if (lowerQuery.includes('date sheet') || lowerQuery.includes('timetable')) {
-      return `The date sheet for ${semData.name} exams will be available at dte.rajasthan.gov.in/exam-schedule ` +
-             `approximately 15 days before the exams begin. ` +
-             `Colleges usually display it on their notice boards as well.`;
-    }
-    
-    return null;
-  };
-
   // Generate AI response using Gemini API with real data and multiple API keys
   const generateAIResponse = async (userMessage, retryCount = 0) => {
-    // First try to handle with predefined responses
-    const predefinedResponse = handleExamQuery(userMessage);
-    if (predefinedResponse) {
-      return {
-        id: Date.now(),
-        text: predefinedResponse,
-        sender: 'bot',
-        timestamp: new Date()
-      };
-    }
-    
     if (retryCount >= GEMINI_API_KEYS.length) {
-      console.error('All API keys exhausted');
+      console.error('All API keys exhausted')
       return {
         id: Date.now(),
-        text: "I'm having trouble connecting to our services right now. Here are some quick links you might find helpful:\n\n" +
-              "• Exam Schedule: dte.rajasthan.gov.in/exam-schedule\n" +
-              "• Results: result.dte.rajasthan.gov.in\n" +
-              "• Exam Forms: exam.dte.rajasthan.gov.in\n\n" +
-              "Please try again later or visit our official website for the latest updates.",
+        text: "I'm having trouble connecting to our services right now. Please try again in a few minutes or visit our official websites directly.",
         sender: 'bot',
         timestamp: new Date()
-      };
+      }
     }
 
     try {
