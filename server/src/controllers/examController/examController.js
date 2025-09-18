@@ -107,6 +107,24 @@ export const getDashboardStats = async (req, res) => {
     }
 };
 
+export const getExamCellDashboardStats = async (req, res) => {
+    try {
+        const readyForEntry = await Exam.countDocuments({ status: 'CLOSED' });
+
+        const stats = {
+            readyForEntry,
+            processedThisWeek: 2,     // Mocked
+            admitCardsPublished: 12,    // Mocked
+            evaluatorsAssigned: 45      // Mocked
+        };
+
+        res.status(200).json({ success: true, stats });
+    } catch (error) {
+        console.error("Error fetching Exam Cell dashboard stats:", error);
+        res.status(500).json({ message: "Server error fetching dashboard stats.", error: error.message });
+    }
+};
+
 export const createExam = async (req, res) => {
   // Check if user is authenticated
   if (!req.user || !req.user.id) {
