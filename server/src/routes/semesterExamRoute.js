@@ -11,7 +11,8 @@ import {
     publishResults,
     updateStudentMarks,
     getExamResults,
-    getDashboardStats
+    getDashboardStats,
+    getExamCellDashboardStats
 } from "../controllers/examController/examController.js";
 import { role } from "../middlewares/authMiddleware.js";
 
@@ -24,6 +25,7 @@ router.put("/:examId/publish",role(['UniversityExaminationBody']),  publishResul
 
 router.get("/pending-approval",role(['UniversityExaminationBody', 'UniversityExamCellStaff']),  getExamsForApproval);
 router.get("/dashboard/stats", role('UniversityExaminationBody'), getDashboardStats);
+router.get("/dashboard/exam-cell-stats", role('UniversityExamCellStaff'), getExamCellDashboardStats);
 
 router.get("/",role(['UniversityExaminationBody', 'UniversityExamCellStaff']),  getAllExams);
 router.get("/:id",role(['UniversityExaminationBody', 'UniversityExamCellStaff']),  getExamById);
