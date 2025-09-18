@@ -447,14 +447,14 @@ const menuConfig = {
             component: ExamBodySeatAllotmentApproval,
             role: "UniversityExaminationBody",
         },
-        // {
-        //     id: "staff-controller",
-        //     label: "Staff Controller",
-        //     icon: UserCog,
-        //     path: "/university-exam-body/staff-controller",
-        //     component: ExamBodyStaffController,
-        //     role: "UniversityExaminationBody",
-        // },
+        {
+            id: "exam-cell-controller",
+            label: "Exam Cell Controller",
+            icon: UserCog,
+            path: "/university-exam-body/exam-cell-controller",
+            component: ExamBodyStaffController,
+            role: "UniversityExaminationBody",
+        },
         {
             id: "my-profile",
             label: "My Profile",

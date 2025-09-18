@@ -280,7 +280,6 @@ const ExamCellResultProcessing = () => {
     return (
         <div className="font-sans">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
-            <header className="mb-8"><h1 className="text-3xl font-bold text-slate-900">Result Processing</h1><p className="mt-1 text-slate-600">Enter marks for students for closed examinations.</p></header>
             
             {view === 'list' ? (
                 isLoading ? <FullPageLoader message="Loading exams ready for processing..." /> :
