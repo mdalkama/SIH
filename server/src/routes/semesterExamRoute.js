@@ -10,7 +10,8 @@ import {
     getExamsForApproval,
     publishResults,
     updateStudentMarks,
-    getExamResults
+    getExamResults,
+    getDashboardStats
 } from "../controllers/examController/examController.js";
 import { role } from "../middlewares/authMiddleware.js";
 
@@ -22,7 +23,7 @@ router.delete("/:id",role(['UniversityExaminationBody']),  deleteExam);
 router.put("/:examId/publish",role(['UniversityExaminationBody']),  publishResults);
 
 router.get("/pending-approval",role(['UniversityExaminationBody', 'UniversityExamCellStaff']),  getExamsForApproval);
-
+router.get("/dashboard/stats", role('UniversityExaminationBody'), getDashboardStats);
 
 router.get("/",role(['UniversityExaminationBody', 'UniversityExamCellStaff']),  getAllExams);
 router.get("/:id",role(['UniversityExaminationBody', 'UniversityExamCellStaff']),  getExamById);
