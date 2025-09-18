@@ -143,9 +143,9 @@ const ExamCellSeatAllotmentExecution = () => {
     useEffect(() => {
         setTimeout(() => {
             setExams([
-                { _id: '1', examName: 'B.Tech 4th Sem Regular Exam 2024', examId: 'ENDSEM2024-SEM4', registeredStudents: 1250 },
-                { _id: '2', examName: 'MBA 2nd Sem Supplementary Exam 2024', examId: 'SUPP2024-SEM2', registeredStudents: 78 },
-                { _id: '3', examName: 'B.Pharm 8th Sem Final Exam 2024', examId: 'ENDSEM2024-SEM8', registeredStudents: 420 },
+                { _id: '1', examName: 'B.Tech 4th Sem Regular Exam 2024', examId: 'ENDSEM2024-SEM4', registeredStudents: 3 },
+                { _id: '2', examName: 'MBA 2nd Sem Supplementary Exam 2024', examId: 'SUPP2024-SEM2', registeredStudents: 4 },
+                { _id: '3', examName: 'B.Pharm 8th Sem Final Exam 2024', examId: 'ENDSEM2024-SEM8', registeredStudents: 2 },
             ]);
             setLoading(false);
         }, 1500);
@@ -161,7 +161,6 @@ const ExamCellSeatAllotmentExecution = () => {
         setSelectedExam(null);
     };
 
-// ... (Rest of the component logic)
 
     if (loading) {
         return <SkeletonLoader />;
@@ -169,11 +168,6 @@ const ExamCellSeatAllotmentExecution = () => {
 
     return (
         <div className="font-sans">
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-900">Seat Allotment Execution</h1>
-                <p className="mt-1 text-slate-600">Generate and manage seating arrangements for upcoming examinations.</p>
-            </header>
-
             {view === 'list' && <ExamSelectionList exams={exams} onSelect={handleSelectExam} />}
             {view === 'allotment' && <AllotmentDetails exam={selectedExam} onBack={handleBack} />}
         </div>

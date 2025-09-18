@@ -119,11 +119,6 @@ const ExamBodySeatAllotmentApproval = () => {
 
     return (
         <div className="font-sans">
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-900">Seat Allotment Approval</h1>
-                <p className="mt-1 text-slate-600">Review and finalize the seating plans submitted by the Examination Cell.</p>
-            </header>
-
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
                 <div className="p-4 border-b">
                     <h2 className="text-lg font-semibold text-slate-800">Pending Approval Queue ({pendingAllotments.length})</h2>

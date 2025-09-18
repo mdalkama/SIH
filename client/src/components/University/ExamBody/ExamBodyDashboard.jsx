@@ -130,10 +130,6 @@ const UniversityExamBodyDashboard = () => {
 
     return (
         <div className="font-sans">
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-900">Examination Body Dashboard</h1>
-                <p className="mt-1 text-slate-600">Welcome! Here's a summary of the current examination activities.</p>
-            </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard icon={Activity} title="Open for Registration" value={stats.openForRegistration ?? 0} color="bg-sky-100 text-sky-600" />
