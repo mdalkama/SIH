@@ -70,6 +70,43 @@ export const calculateResults = async (subjectsWithMarks) => { // Now it's an as
     };
 };
 
+export const getDashboardStats = async (req, res) => {
+    try {
+        // Get the start of the current month
+        const today = new Date();
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+        // Perform multiple count operations in parallel for efficiency
+        const [
+            openForRegistration,
+            resultsPendingApproval,
+            publishedThisMonth,
+            totalStudents
+        ] = await Promise.all([
+            Exam.countDocuments({ status: 'OPEN_FOR_REGISTRATION' }),
+            Exam.countDocuments({ status: 'RESULT_PROCESSING' }),
+            Exam.countDocuments({ 
+                status: 'PUBLISHED',
+                updatedAt: { $gte: startOfMonth } // Checks for exams published in the current month
+            }),
+            Student.countDocuments() // Assuming you want a count of all students
+        ]);
+
+        res.status(200).json({
+            success: true,
+            stats: {
+                openForRegistration,
+                resultsPendingApproval,
+                publishedThisMonth,
+                totalStudents
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+        res.status(500).json({ message: "Server error fetching dashboard stats.", error: error.message });
+    }
+};
+
 export const createExam = async (req, res) => {
   // Check if user is authenticated
   if (!req.user || !req.user.id) {

@@ -482,7 +482,7 @@ const Pagination = ({ currentPage, totalCount, pageSize, onPageChange, onPageSiz
   const summaryStats = useMemo(() => {
     if (!sortedData || sortedData.length === 0) return null;
     if (activeTab === 'semesters') {
-      const totalPending = sortedData.reduce((sum, s) => sum + ((s.tuitionFee + s.examFee + s.otherFee) - s.paid), 0);
+      const totalPending = sortedData.reduce((sum, s) => sum + ((s.fees) - s.paid), 0);
       return { label: 'Total Pending:', value: formatCurrency(totalPending) };
     }
     if (activeTab === 'fines') {
@@ -547,7 +547,7 @@ const SemesterFeeTable = ({ semesters, onPay, formatCurrency, currentPage, rowsP
     </thead>
     <tbody className="divide-y divide-gray-200 text-sm">
       {semesters.map((s, index) => {
-        const totalFee = s.tuitionFee + s.examFee + s.otherFee;
+        const totalFee = s.fees;
         const pending = totalFee - s.paid;
         const itemNumber = (currentPage - 1) * rowsPerPage + index + 1;
         return (
