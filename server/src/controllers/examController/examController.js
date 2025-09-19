@@ -609,3 +609,28 @@ export const getRegisteredStudentsForExam = async (req, res) => {
         res.status(500).json({ message: "Server error.", error: error.message });
     }
 };
+
+export const getPendingSeatAllotments = async (req, res) => {
+    try {
+        const exams = await Exam.find({ status: 'SEAT_ALLOTMENT_DONE' })
+            .select('examName examId semester year') // Select only necessary fields
+            .sort({ createdAt: -1 })
+            .lean();
+            
+        // For each exam, we also need to get the count of registered students
+        const examsWithStudentCount = await Promise.all(exams.map(async (exam) => {
+            const registeredStudents = await StudentAcademics.countDocuments({
+                'currentExamRegistrations.examId': exam.examId
+            });
+            return {
+                ...exam,
+                registeredStudents: registeredStudents
+            };
+        }));
+
+        res.status(200).json({ success: true, allotments: examsWithStudentCount });
+    } catch (error) {
+        console.error("Error fetching pending seat allotments:", error);
+        res.status(500).json({ message: "Server error.", error: error.message });
+    }
+};
