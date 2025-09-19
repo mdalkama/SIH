@@ -4,6 +4,33 @@ import StudentAcademics from "../../models/studentAcademicsModel.js";
 
 // --- For CollegePlacementOfficer ---
 
+export const getPlacementDashboardStats = async (req, res) => {
+    try {
+        const collegeCode = req.user.collegeCode;
+        const [drives, placedStudents, companiesVisited] = await Promise.all([
+            PlacementDrive.find({ collegeCode }),
+            // This is a simplified count. A real-world scenario might be more complex.
+            StudentAcademics.countDocuments({ 'placements.status': 'PLACED', collegeCode }),
+            PlacementDrive.distinct('companyName', { collegeCode })
+        ]);
+
+        const openDrives = drives.filter(d => d.status === 'OPEN').length;
+        const totalApplications = drives.reduce((acc, drive) => acc + (drive.applications?.length || 0), 0);
+
+        res.status(200).json({
+            success: true,
+            stats: {
+                openDrives,
+                placedStudents,
+                companiesVisited: companiesVisited.length,
+                totalApplications
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Server error.", error: error.message });
+    }
+};
+
 /**
  * @description Create a new placement drive
  * @route   POST /api/v1/placements/drives
