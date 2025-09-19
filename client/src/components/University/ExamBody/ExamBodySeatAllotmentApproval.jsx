@@ -4,7 +4,6 @@ import { Loader2, ArrowRight, ShieldCheck, XCircle, FileText, Check, X, Building
 // --- SKELETON LOADER ---
 const SkeletonLoader = () => (
     <div className="animate-pulse">
-        <div className="mb-8"><div className="h-8 w-1/3 bg-slate-200 rounded-md mb-2"></div><div className="h-5 w-1/2 bg-slate-200 rounded-md"></div></div>
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
             <div className="p-4 border-b h-16 bg-slate-100"></div>
             <div className="p-4 space-y-4">

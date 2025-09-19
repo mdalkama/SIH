@@ -33,10 +33,11 @@ const SelectField = ({ label, name, value, onChange, children }) => (
 
 // --- Main Component for Adding Exam Cell Staff ---
 const AddExamCellStaff = () => {
-    const initialState = { name: '', email: '', password: '', staffId: '', gender: 'Male', salary: '', phone: '' };
+    const initialState = { name: '', email: '', password: '', staffId: '', gender: 'male', salary: '', phone: '' };
     const [formData, setFormData] = useState(initialState);
     const [isLoading, setIsLoading] = useState(false);
     const [toast, setToast] = useState(null);
+    console.log(formData)
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -88,9 +89,9 @@ const AddExamCellStaff = () => {
                         <InputField label="Phone Number" name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="Enter 10-digit mobile number" />
                         <InputField label="Salary" name="salary" type="number" value={formData.salary} onChange={handleChange} placeholder="Enter salary amount" />
                         <SelectField label="Gender" name="gender" value={formData.gender} onChange={handleChange}>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
                         </SelectField>
                     </div>
                     <div className="mt-8 pt-6 border-t flex justify-end">
