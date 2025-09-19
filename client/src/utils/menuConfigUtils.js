@@ -166,6 +166,8 @@ import CollegeAdminManageFeedback from "../components/College/CollegeAdmin/Colle
 import StudentComplaintsAndFeedback from "../components/Student/StudentComplaintsAndFeedback.jsx";
 import CollegePlacementDashboard from "../components/College/CollegePlacement/CollegePlacementDashboard.jsx";
 import CollegePlacementStatus from "../components/College/CollegePlacement/CollegePlacementStatus.jsx";
+import StudentPlacementDrives from "../components/Student/StudentPlacementDrives.jsx";
+import CollegeManagePlacement from "../components/College/CollegePlacement/CollegeManagePlacement.jsx";
 
 // 🎯 Roles mapping
 const menuConfig = {
@@ -225,6 +227,14 @@ const menuConfig = {
             icon: ClipboardList,
             path: "/student/complaints-and-feedback",
             component: StudentComplaintsAndFeedback,
+            role: "student",
+        },
+        {
+            id: "placement",
+            label: "Placement",
+            icon: Briefcase,
+            path: "/student/placement",
+            component: StudentPlacementDrives,
             role: "student",
         },
         {
@@ -1106,6 +1116,14 @@ const menuConfig = {
             component: CollegePlacementStatus,
             role: "CollegePlacementOfficer",
         },
+        {
+            id: "manage placements",
+            label: "Manage Placements",
+            icon: BookOpen,
+            path: "/college-placement/manage-placements",
+            component: CollegeManagePlacement,
+            role: "CollegePlacementOfficer",
+        }
     ]
 
 };

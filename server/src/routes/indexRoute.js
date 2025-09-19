@@ -27,6 +27,7 @@ import complaintRoutes from "./complaintRoutes.js";
 import collegeAdminRoutes from "./collegeAdminRoutes.js";
 import feedbackRoutes from "./feedbackRoutes.js";
 import studentExamRoute from "./studentExamRoute.js";
+import placementRoutes from "./placementRoute.js";
 
 
 
@@ -60,6 +61,7 @@ router.use("/admission-college", collegeAdmissionRoute)
 router.use("/manage-college", manageCollegeRoute)
 router.use("/college-course", role(["CollegeAdmin", "CollegeAdmissionDepartment"]), collegeCourseRoute)
 router.use("/admit-student-college", role(["CollegeAdmissionDepartment"]), admitStudentCollegeRoute)
+router.use('/placements', placementRoutes);
 router.get("/my-profile", role(['student', ...staffRoles]), (req, res) => {
     try {
         if(req.user.role === 'student'){
