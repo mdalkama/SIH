@@ -32,15 +32,15 @@ const MeritSection = () => {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto py-2 px-2 sm:px-2 ">
+    <div className="w-full max-w-screen-2xl mx-auto py-1 px-1 sm:px-2 ">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Merit & Rank Details</h1>
         <p className="text-sm sm:text-base text-gray-600 mt-1">View and manage your merit position and rank details</p>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-8">
+      <div className="border-b border-gray-200 mb-6">
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('merit')}
@@ -58,13 +58,13 @@ const MeritSection = () => {
       </div>
 
       {/* Main Content Grid - Reordered for better flow */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left Column - Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4">
           {/* Merit Position Card */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
+            <div className="p-3 sm:p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-2 sm:mb-0">Your Merit Position</h2>
                 <div className="flex items-center space-x-2">
                   <span className="text-xs sm:text-sm text-gray-500">Round 1</span>
@@ -73,7 +73,7 @@ const MeritSection = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-3 sm:mb-4">
                 <div className="bg-blue-50 p-3 rounded-lg">
                   <p className="text-xs text-gray-600">Merit Rank</p>
                   <p className="text-lg sm:text-xl font-bold text-gray-900 mt-1">154</p>
@@ -92,18 +92,18 @@ const MeritSection = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center justify-between pt-3 sm:pt-4 border-t border-gray-100">
+              <div className="flex flex-col sm:flex-row items-center justify-between pt-2 sm:pt-3 border-t border-gray-100">
                 <button className="text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-800 mb-2 sm:mb-0">
                   View Merit Calculation <ChevronRight className="inline h-3 w-3 sm:h-4 sm:w-4" />
                 </button>
                 <div className="flex space-x-1 sm:space-x-2">
-                  <button className="p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-50">
+                  <button className="p-1.5 sm:p-1.5 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-50">
                     <Download className="h-4 w-4" />
                   </button>
-                  <button className="p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-50">
+                  <button className="p-1.5 sm:p-1.5 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-50">
                     <Printer className="h-4 w-4" />
                   </button>
-                  <button className="p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-50">
+                  <button className="p-1.5 sm:p-1.5 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-50">
                     <Share2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -113,14 +113,14 @@ const MeritSection = () => {
 
           {/* Application Preview Card */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
+            <div className="p-3 sm:p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4">
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900">Your Application</h2>
                   <p className="text-xs sm:text-sm text-gray-500 mt-1">Review your submitted application details</p>
                 </div>
                 <div className="mt-2 sm:mt-0">
-                  <button className="group relative flex items-center px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md hover:from-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200">
+                  <button className="group relative flex items-center px-3 sm:px-3.5 py-1.5 sm:py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md hover:from-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200">
                     <Eye className="mr-1.5 h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="relative">Preview Application</span>
                   </button>
@@ -153,26 +153,26 @@ const MeritSection = () => {
         </div>
 
         {/* Right Column - Quick Actions */}
-        <div className="space-y-4 sm:space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+        <div className="space-y-3 sm:space-y-4">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4">
             <h3 className="text-sm font-medium text-gray-900 mb-3 sm:mb-4">Quick Actions</h3>
             <div className="space-y-2">
-              <button className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs sm:text-sm">
+              <button className="w-full flex items-center justify-between px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs sm:text-sm">
                 <span className="font-medium">Download Rank Card</span>
                 <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
               </button>
-              <button className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs sm:text-sm">
+              <button className="w-full flex items-center justify-between px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs sm:text-sm">
                 <span className="font-medium">Raise Correction</span>
                 <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
               </button>
-              <button className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs sm:text-sm">
+              <button className="w-full flex items-center justify-between px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs sm:text-sm">
                 <span className="font-medium">View Cut-off Trends</span>
                 <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
               </button>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4">
             <h3 className="text-sm font-medium text-gray-900 mb-3 sm:mb-4">Important Dates</h3>
             <div className="space-y-3">
               <div>
@@ -193,9 +193,9 @@ const MeritSection = () => {
       </div>
 
       {/* Full Width Merit List - Excel Style */}
-      <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
+      <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4">
             <div>
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Complete Merit List - Round 1</h2>
               <p className="text-xs sm:text-sm text-gray-500 mt-1">
@@ -223,7 +223,7 @@ const MeritSection = () => {
           <div className="overflow-x-auto">
             <div className="min-w-full">
               {/* Table Header */}
-              <div className={`grid gap-2 px-3 py-3 bg-gray-50 rounded-lg text-xs font-medium text-gray-600 border-b border-gray-200 ${
+              <div className={`grid gap-2 px-2.5 py-2.5 bg-gray-50 rounded-lg text-xs font-medium text-gray-600 border-b border-gray-200 ${
                 expandedView ? 'grid-cols-10' : 'grid-cols-6'
               }`}>
                 <div className="col-span-1 text-center">#</div>
@@ -246,7 +246,7 @@ const MeritSection = () => {
                 {(expandedView ? meritData : meritData.slice(0, 6)).map((item, index) => (
                   <div 
                     key={item.id} 
-                    className={`grid gap-2 items-center p-3 hover:bg-gray-50 transition-colors ${
+                    className={`grid gap-2 items-center p-2.5 hover:bg-gray-50 transition-colors ${
                       expandedView ? 'grid-cols-10' : 'grid-cols-6'
                     } ${
                       item.crlRank === 154 
