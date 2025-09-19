@@ -105,7 +105,7 @@ const AllotmentDetails = ({ exam, onBack }) => {
         setTimeout(() => {
             setAllotmentResult({
                 success: true,
-                message: `Successfully allotted seats for all ${registeredStudentsCount} students across ${dummyCenters.length} centers.`,
+                message: `Successfully allotted seats for all students across ${dummyCenters.length} centers.`,
             });
             setIsProcessing(false);
         }, 2500);

@@ -5,9 +5,9 @@ import jwt from "jsonwebtoken";
 // 🟢 Register Staff
 export const registerStaff = async (req, res) => {
     try {
-        const { name, email, phone, password, role, staffId } = req.body;
+        const { name, email, phone, password, role, staffId, gender } = req.body;
 
-        if (!name || !email || !phone || !password || !role || !staffId) {
+        if (!name || !email || !phone || !password || !role || !staffId || !gender) {
             return res.status(400).json({ message: "All fields are required" });
         }
 

@@ -57,7 +57,8 @@ const staffSchema = new Schema(
                 "CollegeHostelWarden",
                 "CollegeAdmissionDepartment",
                 "CollegeLibrarian",
-                "CollegeFinanceBody"
+                "CollegeFinanceBody",
+                "CollegePlacementOfficer"
             ],
             required: true
         },
