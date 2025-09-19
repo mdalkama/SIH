@@ -39,7 +39,6 @@ export const getPlacementDashboardStats = async (req, res) => {
 export const createPlacementDrive = async (req, res) => {
     try {
         const officer = req.user;
-         console.log(officer)
         const driveData = { 
             ...req.body, 
             postedBy: officer.id,
@@ -96,19 +95,12 @@ export const getDriveWithApplications = async (req, res) => {
  */
 export const getAvailableDrivesForStudent = async (req, res) => {
     try {
-        console.log(req.user)
         const student = await Student.findById(req.user.id).select('courseId collegeCode');
-        const studentAcademics = await StudentAcademics.findOne({ studentId: req.user.id }).select('previousResults');
-
-        // Simple CGPA calculation (you can replace with a more robust one)
-        const cgpa = studentAcademics?.previousResults[0]?.sgpa || 0; // Simplified
         
         const availableDrives = await PlacementDrive.find({
             collegeCode: student.collegeCode,
             status: 'OPEN',
-            eligibleCourses: student.courseId,
-            minCGPA: { $lte: cgpa }
-        }).select('-applications'); // Don't send all applications to the student
+        }).select('-applications').lean(); // Don't send all applications to the student
 
         res.status(200).json({ success: true, drives: availableDrives });
     } catch (error) {
