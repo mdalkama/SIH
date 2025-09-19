@@ -15,6 +15,9 @@ import Admission from "./pages/DTE_home/addmission/addmission.jsx";
 import OtpVerification from "./pages/DTE_home/addmission/OtpVerification.jsx";
 import ApplicationWrapper from "./pages/DTE_home/addmission/ApplicationWrapper.jsx";
 import Counselling from "./pages/DTE_home/addmission/counselling/counselling.jsx";
+import AdmissionPortal from "./pages/DTE_home/addmission/admissionPortal.jsx";
+import StatusOtpPage from "./pages/DTE_home/addmission/statusOtp.jsx";
+import ProtectedCounsellingRoute from "./pages/DTE_home/addmission/ProtectedCounsellingRoute.jsx";
 import CollegeList from "./pages/DTE_home/colleges/CollegeList.jsx";
 import NocPage from "./pages/DTE_home/noc/NocPage.jsx";
 import RosterPage from "./pages/DTE_home/roster/RosterPage.jsx";
@@ -40,8 +43,14 @@ function App() {
           {/* Home route - DTE page for normal users */}
           <Route path="/" element={<DTE showChatbot={true} />} />
           
+          {/* Admission Portal - Main Entry Point */}
+          <Route path="/admission" element={<AdmissionPortal />} />
+          
           {/* New Admission Flow - OTP Verification */}
           <Route path="/admission/otp-verification" element={<OtpVerification />} />
+          
+          {/* Status Check Flow - OTP Verification */}
+          <Route path="/status/check" element={<StatusOtpPage />} />
           
           {/* Course-specific Application Routes with Session Management */}
           <Route path="/application/:courseId" element={<ApplicationWrapper />} />
@@ -50,8 +59,12 @@ function App() {
           <Route path="/admission/engineering" element={<Admission admissionType="engineering" />} />
           <Route path="/admission/non-engineering" element={<Admission admissionType="non-engineering" />} />
           
-          {/* Counselling Routes */}
-          <Route path="/counselling/*" element={<Counselling />} />
+          {/* Counselling Routes - Protected */}
+          <Route path="/counselling/*" element={
+            <ProtectedCounsellingRoute>
+              <Counselling />
+            </ProtectedCounsellingRoute>
+          } />
           
           {/* New nested admission routes - redirect to OTP verification */}
           <Route path="/admission/diploma-engineering-first-year" element={<Admission admissionType="diploma-engineering-first-year" />} />

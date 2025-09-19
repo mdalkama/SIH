@@ -91,16 +91,16 @@ const Header = () => {
         { 
           name: 'Diploma Engineering', 
           subitems: [
-            { name: 'First Year Diploma Engineering', path: '/admission/diploma-engineering-first-year' },
-            { name: 'Lateral Entry Diploma Engineering', path: '/admission/diploma-engineering-lateral-entry' }
+            { name: 'First Year Diploma Engineering', path: '/admission?course=diploma-engineering-first-year' },
+            { name: 'Lateral Entry Diploma Engineering', path: '/admission?course=diploma-engineering-lateral-entry' }
           ]
         },
         { 
           name: 'Diploma Non-Engineering', 
           subitems: [
-            { name: 'First Year Diploma Non-Engineering', path: '/admission/diploma-non-engineering-first-year' },
-            { name: 'Second Year Graduate Non-Engineering Courses', path: '/admission/diploma-non-engineering-second-year-graduate' },
-            { name: 'First Year Degree Non-Engineering', path: '/admission/diploma-non-engineering-first-year-degree' }
+            { name: 'First Year Diploma Non-Engineering', path: '/admission?course=diploma-non-engineering-first-year' },
+            { name: 'Second Year Graduate Non-Engineering Courses', path: '/admission?course=diploma-non-engineering-second-year-graduate' },
+            { name: 'First Year Degree Non-Engineering', path: '/admission?course=diploma-non-engineering-first-year-degree' }
           ]
         }
       ]
