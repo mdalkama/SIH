@@ -1,5 +1,91 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { X, Send, Bot, BotMessageSquare , User } from 'lucide-react'
+import { X, Send, Bot, BotMessageSquare, Mic, MicOff } from 'lucide-react'
+
+// Complete DTE Rajasthan Hardcoded Dataset
+const dteData = {
+  admissions: {
+    diploma: {
+      firstYear: {
+        english: "Diploma First Year (Engineering) 2025-26: Application dates 11-14 August 2025, 11:00 AM onwards. Apply via www.dap2025.in. Counseling through centralized online process.",
+        hindi: "डिप्लोमा प्रथम वर्ष (इंजीनियरिंग कोर्स) 2025-26: आवेदन तिथि 11-14 अगस्त 2025, सुबह 11:00 बजे से। www.dap2025.in पर आवेदन करें।"
+      },
+      lateralEntry: {
+        english: "Diploma Lateral Entry (Second Year) 2025-26: Applications open from 20 September 2025. Eligibility: Passed Diploma in relevant branch with minimum 45% marks.",
+        hindi: "डिप्लोमा लेटरल एंट्री (द्वितीय वर्ष) 2025-26: आवेदन 20 सितंबर 2025 से खुले। पात्रता: संबंधित शाखा में डिप्लोमा पास न्यूनतम 45% अंकों के साथ।"
+      }
+    },
+    btech: {
+      firstYear: {
+        english: "B.Tech First Year (Non-Engineering) 2025-26: Applications start from 14 October 2025. Eligibility: 12th pass with PCM, minimum 45% marks. JEE Main score required.",
+        hindi: "B.Tech प्रथम वर्ष (गैर-इंजीनियरिंग) 2025-26: आवेदन 14 अक्टूबर 2025 से शुरू। पात्रता: PCM के साथ 12वीं पास, न्यूनतम 45% अंक। JEE Main स्कोर आवश्यक।"
+      }
+    },
+    generalPrompt: {
+      english: "Which admission are you asking about? B.Tech or Diploma?",
+      hindi: "आप किस प्रकार के प्रवेश के बारे में पूछ रहे हैं? B.Tech या Diploma?"
+    }
+  },
+  results: {
+    diploma_1st_sem: {
+      english: "Diploma 1st Semester Result released on 12 September 2025.",
+      hindi: "डिप्लोमा प्रथम सेमेस्टर का परिणाम 12 सितंबर 2025 को घोषित किया गया।"
+    },
+    diploma_2nd_sem: {
+      english: "Diploma 2nd Semester Result released on 15 September 2025.",
+      hindi: "डिप्लोमा द्वितीय सेमेस्टर का परिणाम 15 सितंबर 2025 को घोषित किया गया।"
+    },
+    btech_1st_sem: {
+      english: "B.Tech 1st Semester Result published on 12 September 2025.",
+      hindi: "B.Tech प्रथम सेमेस्टर का परिणाम 12 सितंबर 2025 को घोषित किया गया।"
+    },
+    revaluation_diploma: {
+      english: "Diploma Revaluation results announced on 18 September 2025.",
+      hindi: "डिप्लोमा पुनर्मूल्यांकन परिणाम 18 सितंबर 2025 को घोषित किया गया।"
+    }
+  },
+  eligibility: {
+    diploma_first_year: {
+      english: "Diploma First Year: 10th pass with minimum 35% marks.",
+      hindi: "डिप्लोमा प्रथम वर्ष: 10वीं पास न्यूनतम 35% अंकों के साथ।"
+    },
+    diploma_lateral_entry: {
+      english: "Diploma Lateral Entry: Passed Diploma in relevant branch with minimum 45% marks.",
+      hindi: "डिप्लोमा लेटरल एंट्री: संबंधित शाखा में डिप्लोमा पास न्यूनतम 45% अंकों के साथ।"
+    },
+    btech_first_year: {
+      english: "B.Tech First Year: 12th pass with Physics, Chemistry, and Mathematics with minimum 45% marks.",
+      hindi: "B.Tech प्रथम वर्ष: 12वीं पास भौतिकी, रसायन विज्ञान, और गणित के साथ न्यूनतम 45% अंकों के साथ।"
+    }
+  },
+  exams: {
+    diploma_3rd_sem: {
+      english: "Diploma 3rd Semester exam scheduled to begin on 10 October 2025.",
+      hindi: "डिप्लोमा तीसरे सेमेस्टर की परीक्षा 10 अक्टूबर 2025 को शुरू होने वाली है।"
+    },
+    btech_odd_sem: {
+      english: "B.Tech Odd Semester Exams commencing from 25 November 2025.",
+      hindi: "B.Tech विषम सेमेस्टर की परीक्षाएं 25 नवंबर 2025 से शुरू हो रही हैं।"
+    },
+    special_exam_form: {
+      english: "Special Exam Form Filling: Last date is 5 October 2025.",
+      hindi: "विशेष परीक्षा फॉर्म भरना: अंतिम तिथि 5 अक्टूबर 2025 है।"
+    }
+  },
+  notices: {
+    latest: {
+      english: "Latest notices: Online form invited for College level I year and II year engineering diploma admissions from 11 to 14/08/2025. Provisional Merit List for Lateral Entry Admissions (Second Year Engineering Courses) 2025-26.",
+      hindi: "नवीनतम सूचनाएं: कॉलेज स्तर के प्रथम वर्ष और द्वितीय वर्ष इंजीनियरिंग डिप्लोमा प्रवेश के लिए 11 से 14/08/2025 तक ऑनलाइन फॉर्म आमंत्रित।"
+    }
+  },
+  greetings: {
+    english: "Hello! I'm Alkama, your DTE Rajasthan student assistant. I can help with admissions, results, eligibility, exams, and notices. What would you like to know?",
+    hindi: "नमस्ते! मैं अल्कामा हूं, आपका DTE राजस्थान छात्र सहायक। मैं प्रवेश, परिणाम, पात्रता, परीक्षा और नोटिस में मदद कर सकता हूं। आप क्या जानना चाहते हैं?"
+  },
+  refusal: {
+    english: "I am sorry, this information is not available. Please visit the official DTE Rajasthan website.",
+    hindi: "मुझे खेद है, यह जानकारी उपलब्ध नहीं है। कृपया आधिकारिक DTE राजस्थान वेबसाइट पर जाएं।"
+  }
+}
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -13,701 +99,270 @@ const Chatbot = () => {
   ])
   const [inputMessage, setInputMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [lastIntent, setLastIntent] = useState(null) // Context state for follow-ups
+  const [contextType, setContextType] = useState(null) // Track if follow-up is for admission or eligibility
+  const [isListening, setIsListening] = useState(false)
+  const [speechSupported, setSpeechSupported] = useState(false)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
+  const recognitionRef = useRef(null)
 
-  // Local Knowledge Base
-  const localKnowledgeBase = {
-    greetings: [
-      'Hello! I\'m Alkama, your DTE Rajasthan assistant. How can I help you today?',
-      'Namaste! Main hu Alkama, DTE Rajasthan ka assistant. Aapki kya madad karu?',
-      'Hi there! How can I assist you with DTE Rajasthan today?'
-    ],
-    admission: {
-      'btech': 'B.Tech admissions are through REAP based on JEE Main scores. Visit dte.rajasthan.gov.in for details.',
-      'diploma': 'Diploma admissions are based on 10th/12th marks. Check the official website for the latest schedule.',
-      'iti': 'ITI admissions are conducted twice a year. Visit the official website for current notices.'
-    },
-    results: {
-      'btech': 'B.Tech results are usually declared within 30 days after exams.',
-      'diploma': 'Diploma results are typically announced within 15-20 days after exams.',
-      'iti': 'ITI results are generally declared within a month after exams.'
-    },
-    contact: 'You can contact DTE Rajasthan at:\n- Phone: 0141-2701544\n- Email: dte.rajasthan@rajasthan.gov.in\n- Address: Directorate of Technical Education, J.L.N. Marg, Jaipur - 302017',
-    website: 'Official website: https://dte.rajasthan.gov.in\nCheck the website for latest notifications, results, and admission updates.',
-    default: 'I can help with information about admissions, results, exams, and more. Please ask specific questions.'
-  };
-
-  // API Configuration
-  const GEMINI_API_KEY = 'AIzaSyDYZUAU8JWJDjW5jowt5NYrQTYn4JI4agk';
-  const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-  
-  const getApiUrl = () => {
-    if (!GEMINI_API_KEY) {
-      console.error('No Gemini API key configured.');
-      return null;
-    }
-    return GEMINI_API_URL;
+  // Language detection
+  const detectLanguage = (text) => {
+    const hindiPattern = /[\u0900-\u097F]/
+    return hindiPattern.test(text) ? 'hindi' : 'english'
   }
 
-  // DTE Rajasthan Knowledge Base
-  const DTE_CONTEXT = `You are Alkama, an AI assistant for DTE Rajasthan. Your primary role is to provide accurate information about DTE Rajasthan while also being helpful with general knowledge questions.
-
-CORE PERSONALITY:
-- Warm, knowledgeable, and professional
-- Friendly yet formal when needed
-- Bilingual (English/Hindi) based on user's preference
-- Honest about information limitations
-
-RESPONSE STYLE:
-- Keep answers concise (2-3 sentences max)
-- Use simple, clear language
-- Match user's communication style
-- Start with appropriate greeting
-- Be direct and to the point
-
-DTE RAJASTHAN KEY INFORMATION:
-
-LEADERSHIP (as of 2024):
-- Director (Technical Education): Dr. Subodh Agarwal, IAS
-- Additional Director (Colleges): Position may change, check website
-- Joint Director (Admissions): Position may change, check website
-- Controller of Examinations: Position may change, check website
-
-IMPORTANT FUNCTIONS:
-1. Academic Management:
-   - Oversees technical education in Rajasthan
-   - Manages curriculum and examinations
-   - Handles student admissions and results
-
-2. Key Processes:
-   - REAP (Rajasthan Engineering Admission Process)
-   - JEE Main & Rajasthan JET counseling
-   - Polytechnic and ITI admissions
-
-3. Institutions:
-   - 33+ Government Engineering Colleges
-   - 50+ Government Polytechnic Colleges
-   - 200+ Government ITIs
-
-CONTACT INFO:
-- Website: dte.rajasthan.gov.in
-- Helpline: 0141-2221021
-- Email: dte.raj@rajasthan.gov.in
-
-GUIDELINES:
-1. For DTE queries:
-   - Provide specific, accurate information
-   - Reference official sources
-   - If unsure, direct to official website
-
-2. For general knowledge:
-   - Answer directly when known
-   - Keep it brief and factual
-   - Don't make up information
-
-3. When unsure:
-   - Admit it honestly
-   - Suggest where to find the info
-   - Never guess or assume
-
-EXAMPLE RESPONSES:
-- "The current Director of DTE Rajasthan is Dr. Subodh Agarwal, IAS."
-- "For latest admission dates, please visit dte.rajasthan.gov.in"
-- "I'm not certain about that, but you can find that information on..."
-- "The capital of India is New Delhi."
-
-IMPORTANT NOTES:
-- Always verify information from official sources
-- Leadership positions may change - check website for updates
-- Be helpful but concise in responses
-- Maintain professional yet approachable tone
-  `
-
-  // Fetch real-time data from multiple official websites
-  const fetchRealTimeData = async (query) => {
-    try {
-      // Multiple DTE related sources
-      const sources = [
-        {
-          url: 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://dte.rajasthan.gov.in'),
-          name: 'DTE Rajasthan',
-          type: 'main'
-        },
-        {
-          url: 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://techedu.rajasthan.gov.in/home/dptHome'),
-          name: 'Tech Edu Rajasthan',
-          type: 'education'
-        },
-        {
-          url: 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://hte.rajasthan.gov.in/'),
-          name: 'HTE Rajasthan',
-          type: 'technical_education'
-        }
-      ]
-
-      const promises = sources.map(async (source, index) => {
-        try {
-          console.log(`Fetching data from ${source.name}...`)
-          const response = await fetch(source.url)
-          if (!response.ok) throw new Error(`HTTP ${response.status}`)
-          const data = await response.json()
-          const content = data.contents || data.contents || ''
-          return {
-            ...parseWebsiteContent(content, index, source.type),
-            source: source.name,
-            type: source.type
-          }
-        } catch (error) {
-          console.error(`Error fetching from ${source.name} (${source.url}):`, error)
-          return {
-            source: source.name,
-            type: source.type,
-            error: error.message,
-            notices: [`Unable to fetch data from ${source.name}`]
-          }
-        }
-      })
-
-      const results = await Promise.allSettled(promises)
-      const validResults = results
-        .filter(r => r.status === 'fulfilled' && r.value)
-
-      // Combine all valid results with better organization
-      const combinedData = {
-        notices: [],
-        admissionStatus: { current: "Check official website", dates: [] },
-        results: { available: false, dates: [], latest: [] },
-        currentDate: new Date().toLocaleDateString('en-IN'),
-        lastUpdated: new Date().toISOString()
+  // Enhanced context-aware intent detection
+  const detectIntent = (text) => {
+    const lower = text.toLowerCase()
+    
+    // Handle context follow-ups first
+    if (lastIntent === 'awaiting_type') {
+      if (/(diploma|polytechnic|डिप्लोमा|पॉलिटेक्निक)/.test(lower)) {
+        if (contextType === 'admission') return 'diploma_admission'
+        if (contextType === 'eligibility') return 'diploma_eligibility'
       }
-
-      validResults.forEach(result => {
-        if (result.notices && result.notices.length > 0) {
-          combinedData.notices.push(...result.notices.slice(0, 5)) // Limit to 5 most relevant
-        }
-        if (result.admissionStatus) {
-          Object.assign(combinedData.admissionStatus, result.admissionStatus)
-        }
-        if (result.results) {
-          Object.assign(combinedData.results, result.results)
-        }
-      })
-
-      // Remove duplicates from notices
-      combinedData.notices = [...new Set(combinedData.notices)]
-
-      return combinedData
-    } catch (error) {
-      console.error('Error fetching real-time data:', error)
-      return {
-        notices: ["Unable to fetch current notices. Please check dte.rajasthan.gov.in"],
-        admissionStatus: { current: "Check dte.rajasthan.gov.in for latest updates" },
-        results: { available: false, status: "Check official website for results" },
-        lastUpdated: new Date().toISOString()
+      if (/(b\.?tech|engineering|इंजीनियरिंग)/.test(lower)) {
+        if (contextType === 'admission') return 'btech_admission'
+        if (contextType === 'eligibility') return 'btech_eligibility'
       }
+    }
+    
+    // Regular intent detection
+    if (/(hi|hello|hey|namaste|नमस्ते)/.test(lower)) return 'greeting'
+    if (/(admission|प्रवेश|दाखिला|form|apply|आवेदन)/.test(lower)) return 'admission'
+    if (/(result|marks|score|परिणाम|रिजल्ट)/.test(lower)) return 'result'
+    if (/(eligibility|qualify|criteria|पात्रता|योग्यता)/.test(lower)) return 'eligibility'
+    if (/(exam|test|परीक्षा)/.test(lower)) return 'exam'
+    if (/(notice|notification|announcement|सूचना|नोटिस)/.test(lower)) return 'notice'
+    return 'unknown'
+  }
+
+  // Enhanced context-aware response generation
+  const generateResponse = (message) => {
+    const lang = detectLanguage(message)
+    const intent = detectIntent(message)
+    const lower = message.toLowerCase()
+
+    switch(intent) {
+      case 'greeting':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.greetings[lang], language: lang }
+
+      case 'admission':
+        // Check if specific type mentioned
+        if (/(diploma|polytechnic|डिप्लोमा|पॉलिटेक्निक)/.test(lower)) {
+          setLastIntent(null)
+          setContextType(null)
+          return { text: dteData.admissions.diploma.firstYear[lang], language: lang }
+        }
+        if (/(b\.?tech|engineering|इंजीनियरिंग)/.test(lower)) {
+          setLastIntent(null)
+          setContextType(null)
+          return { text: dteData.admissions.btech.firstYear[lang], language: lang }
+        }
+        // General admission - ask for clarification
+        setLastIntent('awaiting_type')
+        setContextType('admission')
+        return { text: dteData.admissions.generalPrompt[lang], language: lang }
+
+      case 'diploma_admission':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.admissions.diploma.firstYear[lang], language: lang }
+
+      case 'btech_admission':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.admissions.btech.firstYear[lang], language: lang }
+
+      case 'eligibility':
+        // Check if specific type mentioned
+        if (/(diploma|polytechnic|डिप्लोमा|पॉलिटेक्निक)/.test(lower)) {
+          setLastIntent(null)
+          setContextType(null)
+          if (/(lateral|लेटरल)/.test(lower)) {
+            return { text: dteData.eligibility.diploma_lateral_entry[lang], language: lang }
+          }
+          return { text: dteData.eligibility.diploma_first_year[lang], language: lang }
+        }
+        if (/(b\.?tech|engineering|इंजीनियरिंग)/.test(lower)) {
+          setLastIntent(null)
+          setContextType(null)
+          return { text: dteData.eligibility.btech_first_year[lang], language: lang }
+        }
+        // General eligibility - ask for clarification
+        setLastIntent('awaiting_type')
+        setContextType('eligibility')
+        return { text: dteData.admissions.generalPrompt[lang], language: lang }
+
+      case 'diploma_eligibility':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.eligibility.diploma_first_year[lang], language: lang }
+
+      case 'btech_eligibility':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.eligibility.btech_first_year[lang], language: lang }
+
+      case 'result':
+        setLastIntent(null)
+        setContextType(null)
+        if (/(diploma.*1)/.test(lower)) return { text: dteData.results.diploma_1st_sem[lang], language: lang }
+        if (/(diploma.*2)/.test(lower)) return { text: dteData.results.diploma_2nd_sem[lang], language: lang }
+        if (/(b\.?tech.*1)/.test(lower)) return { text: dteData.results.btech_1st_sem[lang], language: lang }
+        if (/(revaluation|पुनर्मूल्यांकन)/.test(lower)) return { text: dteData.results.revaluation_diploma[lang], language: lang }
+        // General result query - show all
+        return { 
+          text: `${dteData.results.diploma_1st_sem[lang]}\n${dteData.results.diploma_2nd_sem[lang]}\n${dteData.results.btech_1st_sem[lang]}\n${dteData.results.revaluation_diploma[lang]}`, 
+          language: lang 
+        }
+
+      case 'exam':
+        setLastIntent(null)
+        setContextType(null)
+        return { 
+          text: `${dteData.exams.diploma_3rd_sem[lang]}\n${dteData.exams.btech_odd_sem[lang]}\n${dteData.exams.special_exam_form[lang]}`, 
+          language: lang 
+        }
+
+      case 'notice':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.notices.latest[lang], language: lang }
+
+      default:
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.refusal[lang], language: lang }
     }
   }
 
-  // Parse website content to extract relevant information
-  const parseWebsiteContent = (htmlContent, sourceIndex = 0, sourceType = 'main') => {
-    if (!htmlContent) return null
-    
-    try {
-      // Create a temporary DOM element to parse HTML
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(htmlContent, 'text/html')
-      
-      const extractedData = {
-        notices: [],
-        admissionStatus: {},
-        results: { available: false, dates: [], latest: [] }
-      }
-
-      // Enhanced selectors for better data extraction
-      const noticeSelectors = [
-        '.notice', '.notification', '.news', '.announcement', '.latest-news',
-        '[class*="notice"]', '[class*="news"]', '[id*="notice"]', '.marquee',
-        '.updates', '.important', '.alert', '.content-area', '.main-content',
-        'table tr td', '.table-responsive', '.list-group-item', '.card-body'
-      ]
-      
-      // Extract notices with better filtering
-      noticeSelectors.forEach(selector => {
-        const elements = doc.querySelectorAll(selector)
-        elements.forEach(el => {
-          const text = el.textContent?.trim()
-          if (text && text.length > 15 && text.length < 500) {
-            // Enhanced filtering for DTE content
-            const lowerText = text.toLowerCase()
-            const relevantKeywords = [
-              'admission', 'result', 'counseling', 'application', 'exam', 'fee',
-              'dte', 'polytechnic', 'engineering', 'iti', 'diploma', 'b.tech',
-              'notification', 'schedule', 'date', 'last date', 'registration',
-              'merit list', 'cut off', 'seat allotment', 'document verification'
-            ]
-            
-            if (relevantKeywords.some(keyword => lowerText.includes(keyword))) {
-              // Extract dates if present
-              const datePattern = /\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}|\d{1,2}\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s+\d{2,4}/gi
-              const dates = text.match(datePattern)
-              
-              const noticeData = {
-                text: text,
-                dates: dates || [],
-                source: sourceIndex === 0 ? 'DTE Main' : sourceIndex === 2 ? 'Admissions' : sourceIndex === 3 ? 'Results' : 'General'
-              }
-              
-              extractedData.notices.push(noticeData)
-            }
-          }
-        })
-      })
-
-      // Extract admission status with dates
-      const admissionKeywords = ['admission', 'application', 'form', 'apply', 'registration']
-      const allText = doc.body?.textContent?.toLowerCase() || ''
-      
-      // Look for admission dates
-      const datePattern = /\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}|\d{1,2}\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s+\d{2,4}/gi
-      const foundDates = allText.match(datePattern) || []
-      
-      if (admissionKeywords.some(keyword => allText.includes(keyword))) {
-        extractedData.admissionStatus = {
-          status: allText.includes('open') || allText.includes('start') ? 'Open' : 
-                  allText.includes('close') || allText.includes('last date') ? 'Closing Soon' : 'Check Website',
-          dates: foundDates.slice(0, 3), // Limit to 3 most relevant dates
-          lastChecked: new Date().toLocaleString('en-IN')
-        }
-      }
-
-      // Extract result information with dates
-      const resultKeywords = ['result', 'score', 'marks', 'declared', 'published']
-      if (resultKeywords.some(keyword => allText.includes(keyword))) {
-        extractedData.results = {
-          available: allText.includes('declared') || allText.includes('published'),
-          status: allText.includes('declared') ? 'Results Declared' : 'Check for Updates',
-          dates: foundDates.slice(0, 3),
-          latest: extractedData.notices.filter(n => 
-            n.text.toLowerCase().includes('result')).slice(0, 2)
-        }
-      }
-
-      return extractedData
-    } catch (error) {
-      console.error('Content parsing error:', error)
-      return null
-    }
-  }
-
-  // Process user message and generate response from local knowledge base
-  const getLocalResponse = (message) => {
-    const msg = message.toLowerCase();
-    
-    // Check for greetings
-    if (/(hi|hello|hey|namaste|hii|hlo|hlw)/.test(msg)) {
-      return localKnowledgeBase.greetings[
-        Math.floor(Math.random() * localKnowledgeBase.greetings.length)
-      ];
-    }
-    
-    // Check for admission related queries
-    if (/(admission|admit|apply|form|registration)/.test(msg)) {
-      if (/(b.?tech|b.?e|b.?e.?|engineering)/.test(msg)) return localKnowledgeBase.admission.btech;
-      if (/(diploma|polytechnic)/.test(msg)) return localKnowledgeBase.admission.diploma;
-      if (/iti/.test(msg)) return localKnowledgeBase.admission.iti;
-      return 'For admissions, please specify the course (B.Tech/Diploma/ITI).';
-    }
-    
-    // Check for result related queries
-    if (/(result|marks|score|grade)/.test(msg)) {
-      if (/(b.?tech|b.?e|b.?e.?|engineering)/.test(msg)) return localKnowledgeBase.results.btech;
-      if (/(diploma|polytechnic)/.test(msg)) return localKnowledgeBase.results.diploma;
-      if (/iti/.test(msg)) return localKnowledgeBase.results.iti;
-      return 'For results, please specify the course (B.Tech/Diploma/ITI).';
-    }
-    
-    // Check for contact information
-    if (/(contact|number|email|address|where|location)/.test(msg)) {
-      return localKnowledgeBase.contact;
-    }
-    
-    // Check for website information
-    if (/(website|site|online|portal|link)/.test(msg)) {
-      return localKnowledgeBase.website;
-    }
-    
-    // Default response
-    return localKnowledgeBase.default;
-  };
-
-  // Generate AI response using Gemini API with real data
-  const generateAIResponse = async (userMessage) => {
-    // First try to get response from local knowledge base
-    const localResponse = getLocalResponse(userMessage);
-    
-    // If we have a good local response, use it
-    if (localResponse && !localResponse.includes('I can help with')) {
-      return {
-        id: Date.now(),
-        text: localResponse,
-        sender: 'bot',
-        timestamp: new Date()
-      };
-    }
-    
-    // If no good local response, try the API
-    const apiUrl = getApiUrl();
-    if (!apiUrl) {
-      return {
-        id: Date.now(),
-        text: localResponse, // Fallback to local response
-        sender: 'bot',
-        timestamp: new Date()
-      };
-    }
-
-    try {
-      setIsTyping(true)
-      
-      // Fetch real-time data based on user query
-      const realTimeData = await fetchRealTimeData(userMessage)
-      
-      // Enhanced prompt with real-time context
-      const prompt = `${DTE_CONTEXT}
-      
-      CURRENT DATE: ${new Date().toLocaleDateString('en-IN')}
-      
-      REAL-TIME DATA FROM OFFICIAL WEBSITES:
-      ${realTimeData ? JSON.stringify(realTimeData, null, 2) : 'No current data available'}
-      
-      USER QUERY: ${userMessage}
-      
-      RESPONSE INSTRUCTIONS:
-      1. Start with a friendly greeting in the user's language
-      2. Answer concisely (1-2 sentences) based on the data above
-      3. If data is available, provide specific details with dates/numbers
-      4. If unsure, suggest checking the official websites
-      5. Keep tone warm, helpful, and human-like
-      6. If user asks about leadership (VC, Director, etc), provide current details:
-         - Vice Chancellor: [Check official website for current VC]
-         - Director: [Check official website for current Director]
-      
-      IMPORTANT: If you don't know something, just say you don't know rather than making up information.`
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: prompt
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1024,
-          }
-        })
-      })
-
-      if (!response.ok) {
-        console.error(`API Error: ${response.status}`)
-        throw new Error(`API request failed with status ${response.status}`)
-      }
-
-      const data = await response.json()
-      const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || 
-                          "I apologize, but I'm having trouble processing your request right now. Please try again or visit dte.rajasthan.gov.in for the latest information."
-
-      return {
-        id: Date.now(),
-        text: responseText,
-        sender: 'bot',
-        timestamp: new Date()
-      }
-
-    } catch (error) {
-      console.error('Error generating AI response:', error);
-      
-      // Fallback to local response if API fails
-      return {
-        id: Date.now(),
-        text: getLocalResponse(userMessage),
-        sender: 'bot',
-        timestamp: new Date()
-      };
-    } finally {
-      setIsTyping(false)
-    }
-  }
-
-  // Auto scroll to bottom when new message is added
+  // Initialize Speech Recognition
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
-  // Focus input when chat opens
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      setTimeout(() => {
-        inputRef.current?.focus()
-      }, 100)
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      setSpeechSupported(true)
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+      recognitionRef.current = new SpeechRecognition()
+      recognitionRef.current.continuous = false
+      recognitionRef.current.interimResults = false
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript
+        setInputMessage(transcript)
+        setIsListening(false)
+      }
+      recognitionRef.current.onerror = () => setIsListening(false)
+      recognitionRef.current.onend = () => setIsListening(false)
     }
-  }, [isOpen])
+  }, [])
 
-  const handleSendMessage = async () => {
-    if (inputMessage.trim() === '') return
-
-    const newMessage = {
-      id: Date.now(),
+  // Handle sending message with context awareness
+  const handleSend = () => {
+    if (!inputMessage.trim()) return
+    
+    const userMessage = {
+      id: messages.length + 1,
       text: inputMessage,
       sender: 'user',
-      timestamp: new Date()
+      timestamp: new Date(),
+      language: detectLanguage(inputMessage)
     }
-
-    setMessages(prev => [...prev, newMessage])
-    const currentMessage = inputMessage
+    
+    setMessages([...messages, userMessage])
     setInputMessage('')
+    setIsTyping(true)
 
-    // Generate AI response using Gemini API
-    const botResponse = await generateAIResponse(currentMessage)
-    setMessages(prev => [...prev, botResponse])
+    setTimeout(() => {
+      const botResponse = generateResponse(userMessage.text)
+      setMessages(prev => [...prev, { 
+        id: prev.length + 1, 
+        text: botResponse.text, 
+        sender: 'bot', 
+        timestamp: new Date(), 
+        language: botResponse.language 
+      }])
+      setIsTyping(false)
+    }, 800)
   }
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
-    }
+    if (e.key === 'Enter') handleSend()
   }
 
-  const formatTime = (timestamp) => {
-    return timestamp.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
-    })
+  const toggleListening = () => {
+    if (!speechSupported || !recognitionRef.current) return
+    if (isListening) recognitionRef.current.stop()
+    else recognitionRef.current.start()
+    setIsListening(!isListening)
   }
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, isTyping])
 
   return (
-    <>
-      {/* Chatbot Button - Fixed Position */}
-      <div className="fixed bottom-3 sm:bottom-6 right-3 sm:right-6 z-[100]">
-        <div className="relative">
-          {/* Main Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full backdrop-blur-xl border transition-all duration-300 hover:scale-110 shadow-lg flex items-center justify-center group"
-            style={{
-              backgroundColor: "white",
-              borderColor: `var(--theme-glass-border)`,
-              color: `var(--theme-text)`
-            }}
-          >
-            {isOpen ? (
-              <X className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-transform duration-300 group-hover:rotate-90" />
-            ) : (
-                <BotMessageSquare className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-transform duration-300 group-hover:bounce" />
-            )}
-          </button>
-
-          {/* Chat Window */}
-          {isOpen && (
-            <div 
-              className="absolute bottom-12 sm:bottom-16 right-0 w-80 sm:w-96 h-96 sm:h-[500px] backdrop-blur-xl rounded-2xl border shadow-2xl overflow-hidden animate-fade-in-up"
-              style={{
-                background: 'white',
-                borderColor: `var(--theme-glass-border)`
-              }}
+    <div className="fixed bottom-4 right-4 w-80 md:w-96" style={{ zIndex: 1000 }}>
+      {isOpen ? (
+        <div className="bg-white shadow-2xl rounded-xl p-4 flex flex-col h-[500px] border border-gray-200" style={{ zIndex: 1000 }}>
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="font-bold text-lg text-gray-800">Alkama - DTE Assistant</h2>
+            <button 
+              onClick={() => setIsOpen(false)}
+              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
             >
-              {/* Chat Header */}
-              <div 
-                className="p-3 sm:p-4 border-b flex items-center space-x-3"
-                style={{ borderColor: `var(--theme-glass-border)` }}
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto mb-2 bg-gray-50 rounded-lg p-2">
+            {messages.map(msg => (
+              <div key={msg.id} className={`my-2 flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`p-3 rounded-lg max-w-[75%] ${msg.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-white text-gray-800 shadow-sm border'}`}>
+                  <div className="whitespace-pre-line text-sm">{msg.text}</div>
+                </div>
+              </div>
+            ))}
+            {isTyping && <div className="p-2 text-gray-500 text-sm">Alkama is typing...</div>}
+            <div ref={messagesEndRef} />
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              className="flex-1 border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              ref={inputRef}
+              placeholder="Ask about admissions, results, eligibility..."
+            />
+            {speechSupported && (
+              <button 
+                onClick={toggleListening} 
+                className={`p-2 rounded-lg transition-colors ${isListening ? 'bg-red-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
               >
-                <div 
-                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
-                  style={{ 
-                    background: 'transparent',
-                    color: `var(--theme-text)`
-                  }}
-                >
-                  <Bot className="w-4 h-4 sm:w-5 sm:h-5" />
-                </div>
-                <div className="flex-1">
-                  <h3 
-                    className="font-semibold text-sm sm:text-base"
-                    style={{ color: `var(--theme-text)` }}
-                  >
-                    Alkama - DTE Assistant
-                  </h3>
-                  <p 
-                    className="text-xs opacity-70"
-                    style={{ color: `var(--theme-text-secondary)` }}
-                  >
-                    Online • Ready to help
-                  </p>
-                </div>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1 rounded-lg transition-colors hover:bg-white/10 dark:hover:bg-black/20"
-                  style={{ color: `var(--theme-text)` }}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Messages Container */}
-              <div className="flex-1 overflow-y-auto h-64 sm:h-80 p-3 sm:p-4 space-y-3 custom-scrollbar">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[80%] px-3 py-2 rounded-2xl ${
-                        message.sender === 'user'
-                          ? 'bg-blue-500 text-white rounded-br-md'
-                          : 'bg-transparent rounded-bl-md'
-                      }`}
-                      style={{
-                        color: message.sender === 'bot' ? 'var(--theme-text)' : '#ffffff'
-                      }}
-                    >
-                      <div className="flex items-start space-x-2">
-                        {message.sender === 'bot' && (
-                          <Bot className="w-4 h-4 mt-0.5 flex-shrink-0 opacity-70" />
-                        )}
-                        <div className="flex-1">
-                          <p className="text-sm leading-relaxed">{message.text}</p>
-                          <p className="text-xs mt-1 opacity-60">
-                            {formatTime(message.timestamp)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {/* Typing Indicator */}
-                {isTyping && (
-                  <div className="flex justify-start">
-                    <div
-                      className="px-3 py-2 rounded-2xl rounded-bl-md"
-                      style={{ 
-                        background: 'transparent',
-                        color: `var(--theme-text)`
-                      }}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <Bot className="w-4 h-4 opacity-70" />
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-current rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Input Area */}
-              <div 
-                className="p-3 sm:p-4 border-t"
-                style={{ borderColor: `var(--theme-glass-border)` }}
-              >
-                <div className="flex items-center space-x-2">
-                  <div className="flex-1 relative">
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Type your message..."
-                      className="w-full px-3 py-2 rounded-xl border-0 outline-none backdrop-blur-sm text-sm transition-all duration-300"
-                      style={{ 
-                        background: 'transparent',
-                        color: `var(--theme-text)`,
-                        '::placeholder': { color: `var(--theme-text-secondary)` }
-                      }}
-                    />
-                  </div>
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={inputMessage.trim() === '' || isTyping}
-                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white flex items-center justify-center transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
-                  >
-                    <Send className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </button>
+            )}
+            <button 
+              onClick={handleSend} 
+              className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* Click outside to close */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 z-[90]" 
-          onClick={() => setIsOpen(false)}
-        />
+      ) : (
+        <button 
+          onClick={() => setIsOpen(true)} 
+          className="p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 border-2 border-blue-400"
+          style={{ position: 'fixed', bottom: '16px', right: '16px', zIndex: 1000 }}
+        >
+          <BotMessageSquare className="w-6 h-6" />
+        </button>
       )}
-
-      {/* Custom Styles */}
-      <style jsx>{`
-        .custom-scrollbar {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: rgba(156, 163, 175, 0.5);
-          border-radius: 20px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: rgba(156, 163, 175, 0.7);
-        }
-
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px) scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-        
-        .animate-fade-in-up {
-          animation: fade-in-up 0.3s ease-out;
-        }
-
-        /* Enhanced placeholder styling */
-        .custom-scrollbar input::placeholder {
-          color: var(--theme-text-secondary);
-          opacity: 0.7;
-        }
-      `}</style>
-    </>
+    </div>
   )
 }
 

@@ -13,7 +13,7 @@ import {
   ChevronDown,
   ChevronRight
 } from 'lucide-react';
-import { NavLink, Routes, Route, Navigate } from 'react-router-dom';
+import { NavLink, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 
 // Import all components
 import Overview from './overview/overview';
@@ -26,6 +26,8 @@ import AdmitCard from './admitCard/admitCard';
 import Result from './result/result';
 
 const counselling = () => {
+  const [searchParams] = useSearchParams();
+  const applicationId = searchParams.get('applicationId');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
 
@@ -114,7 +116,7 @@ const counselling = () => {
             {menuItems.map((item, index) => (
               <li key={index}>
                 <NavLink
-                  to={item.link}
+                  to={`${item.link}?applicationId=${applicationId}`}
                   className={({ isActive }) =>
                     `group flex items-center p-3 rounded-lg transition-all duration-200 ${
                       isActive
@@ -175,7 +177,12 @@ const counselling = () => {
               </div>
             </div>
             <div className="text-sm sm:text-base font-medium text-[#2c396b] whitespace-nowrap ml-2 sm:ml-4">
-              Admission Counseling Portal
+              <div>Admission Counseling Portal</div>
+              {applicationId && (
+                <div className="text-xs text-gray-600 mt-1">
+                  Application ID: {applicationId}
+                </div>
+              )}
             </div>
           </div>
         </header>
@@ -183,7 +190,7 @@ const counselling = () => {
         {/* Page Content */}
         <div className="flex-1 overflow-y-auto">
           <Routes>
-            <Route path="/" element={<Navigate to="/counselling/overview" replace />} />
+            <Route path="/" element={<Navigate to={`/counselling/overview?applicationId=${applicationId}`} replace />} />
             {menuItems.map((item, index) => (
               <Route 
                 key={index}
