@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search, 
   Plus, 
@@ -11,46 +11,184 @@ import {
   Clock,
   GraduationCap,
   Filter,
-  Building
+  Building,
+  RefreshCw,
+  Eye,
+  Edit,
+  Trash2,
+  Download
 } from 'lucide-react';
+import { useApplicantData } from '../ApplicantDataContext.jsx';
 
 const UpdateOptions = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilters, setSelectedFilters] = useState(['All']);
-  const [programs, setPrograms] = useState([
-    {
-      id: 1,
-      name: 'IIT • B.Tech Computer Science',
-      rank: 'AI Rank: N/A',
-      status: 'Open',
-      type: 'IIT',
-      action: 'add'
-    },
-    {
-      id: 2,
-      name: 'IIT • B.Tech Artificial Intelligence',
-      rank: 'AI Rank: 220',
-      status: 'Open',
-      type: 'IIT',
-      action: 'add'
-    },
-    {
-      id: 3,
-      name: 'NIT • B.Tech Computer Science',
-      rank: 'AI Rank: 340',
-      status: 'Open',
-      type: 'NIT',
-      action: 'remove'
-    },
-    {
-      id: 4,
-      name: 'NIT • B.Tech Information Technology',
-      rank: 'AI Rank: 380',
-      status: 'Open',
-      type: 'NIT',
-      action: 'remove'
+  const [programs, setPrograms] = useState([]);
+  
+  const { 
+    getPersonalInfo, 
+    getExamResults, 
+    getCounsellingStatus, 
+    getCollegePreferences,
+    getNotifications,
+    getAllotmentStatus,
+    updatePersonalInfo,
+    updateExamResults,
+    updateCounsellingStatus,
+    updateCollegePreferences,
+    addCollegePreference,
+    removeCollegePreference,
+    updateCollegePreference,
+    markNotificationAsRead,
+    deleteNotification,
+    processFeePayment,
+    processDocumentVerification,
+    processReporting,
+    addNotification,
+    loading,
+    error 
+  } = useApplicantData();
+
+  const personalInfo = getPersonalInfo();
+  const examResults = getExamResults();
+  const counsellingStatus = getCounsellingStatus();
+  const collegePreferences = getCollegePreferences();
+  const notifications = getNotifications();
+  const allotmentStatus = getAllotmentStatus();
+
+  // Action handlers
+  const handleAddPreference = (program) => {
+    const newPreference = {
+      preferenceOrder: collegePreferences.length + 1,
+      college: program.name.split(' • ')[0],
+      branch: program.name.split(' • ')[1],
+      closingRank: program.rank.split(': ')[1] || 'N/A',
+      status: 'Not Allotted',
+      seats: 0,
+      cutoff: 0
+    };
+    
+    addCollegePreference(newPreference);
+    
+    // Add notification
+    addNotification({
+      id: Date.now(),
+      message: `Added preference: ${program.name}`,
+      time: new Date().toLocaleTimeString(),
+      read: false
+    });
+  };
+
+  const handleRemovePreference = (programId) => {
+    removeCollegePreference(programId - 1); // Adjust for 0-based index
+    
+    // Add notification
+    addNotification({
+      id: Date.now(),
+      message: `Removed preference #${programId}`,
+      time: new Date().toLocaleTimeString(),
+      read: false
+    });
+  };
+
+  const handleSavePreferences = () => {
+    // Simulate saving preferences
+    const updatedPreferences = collegePreferences.map((pref, index) => ({
+      ...pref,
+      preferenceOrder: index + 1
+    }));
+    
+    updateCollegePreferences(updatedPreferences);
+    
+    // Add notification
+    addNotification({
+      id: Date.now(),
+      message: 'Preferences saved successfully',
+      time: new Date().toLocaleTimeString(),
+      read: false
+    });
+    
+    alert('Preferences saved successfully!');
+  };
+
+  const handleResetPreferences = () => {
+    if (confirm('Are you sure you want to reset all preferences? This action cannot be undone.')) {
+      updateCollegePreferences([]);
+      
+      // Add notification
+      addNotification({
+        id: Date.now(),
+        message: 'All preferences have been reset',
+        time: new Date().toLocaleTimeString(),
+        read: false
+      });
+      
+      alert('Preferences have been reset.');
     }
-  ]);
+  };
+
+  const handleDownloadPreferences = () => {
+    const content = `College Preferences\n\nApplicant: ${personalInfo.name}\nApplication ID: ${personalInfo.applicationId}\nTotal Preferences: ${collegePreferences.length}\n\n${collegePreferences.map((pref, index) => `${index + 1}. ${pref.college} • ${pref.branch} (Rank: ${pref.closingRank || 'N/A'})`).join('\n')}\n\nGenerated on: ${new Date().toLocaleString()}`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `college_preferences_${personalInfo.applicationId}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    // Add notification
+    addNotification({
+      id: Date.now(),
+      message: 'College preferences downloaded',
+      time: new Date().toLocaleTimeString(),
+      read: false
+    });
+  };
+
+  const handleMarkAsRead = (notificationId) => {
+    markNotificationAsRead(notificationId);
+  };
+
+  const handleDeleteNotification = (notificationId) => {
+    deleteNotification(notificationId);
+  };
+
+  useEffect(() => {
+    if (collegePreferences.length > 0) {
+      const formattedPrograms = collegePreferences.map((pref, index) => ({
+        id: pref.preferenceOrder,
+        name: `${pref.college} • ${pref.branch}`,
+        rank: `AI Rank: ${pref.closingRank || 'N/A'}`,
+        status: pref.status === 'Allotted' ? 'Allotted' : 'Open',
+        type: pref.college.split(' ')[0],
+        action: pref.status === 'Allotted' ? 'remove' : 'add'
+      }));
+      setPrograms(formattedPrograms);
+    }
+  }, [collegePreferences]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <RefreshCw className="animate-spin h-8 w-8 mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Loading update options data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertCircle className="h-8 w-8 mx-auto mb-4 text-red-600" />
+          <p className="text-red-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   const filters = ['All', 'IIT', 'NIT', 'Govt', 'Private'];
 
@@ -87,7 +225,7 @@ const UpdateOptions = () => {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Eligible Programs</h2>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Round 2 Window</span>
+                <span className="text-sm text-gray-500">Round {counsellingStatus.currentRound} Window</span>
               </div>
             </div>
 
@@ -151,6 +289,13 @@ const UpdateOptions = () => {
                     </div>
                   </div>
                   <button 
+                    onClick={() => {
+                      if (program.action === 'add') {
+                        handleAddPreference(program);
+                      } else {
+                        handleRemovePreference(program.id);
+                      }
+                    }}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                       program.action === 'add'
                         ? 'bg-green-100 text-green-800 hover:bg-green-200'
@@ -175,11 +320,24 @@ const UpdateOptions = () => {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-4 border-t border-gray-100">
-              <button className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <button 
+                onClick={handleResetPreferences}
+                className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
                 <RotateCcw className="h-4 w-4" />
-                <span className="text-sm font-medium">Revert Changes</span>
+                <span className="text-sm font-medium">Reset Preferences</span>
               </button>
-              <button className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button 
+                onClick={handleDownloadPreferences}
+                className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Download className="h-4 w-4" />
+                <span className="text-sm font-medium">Download</span>
+              </button>
+              <button 
+                onClick={handleSavePreferences}
+                className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 <Save className="h-4 w-4" />
                 <span className="font-medium">Save Changes</span>
               </button>
@@ -201,7 +359,7 @@ const UpdateOptions = () => {
                 <p className="text-xs text-gray-600 mb-1">Program</p>
                 <div className="flex items-center gap-2">
                   <GraduationCap className="h-4 w-4 text-gray-500" />
-                  <p className="font-semibold text-gray-900">NTU • B.Tech Computer Science</p>
+                  <p className="font-semibold text-gray-900">{counsellingStatus.allottedCollege} • {counsellingStatus.allottedBranch}</p>
                 </div>
               </div>
               
@@ -209,7 +367,7 @@ const UpdateOptions = () => {
                 <p className="text-xs text-gray-600 mb-1">Window</p>
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-700">Update allowed until 7:00 PM today</p>
+                  <p className="text-sm text-gray-700">Update allowed until {counsellingStatus.feePaymentDeadline?.split(' ')[1] || '7:00 PM'} today</p>
                 </div>
               </div>
             </div>
@@ -264,6 +422,51 @@ const UpdateOptions = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Notifications Section */}
+      <div className="mt-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-sm font-medium text-gray-900">Notifications</h3>
+            <span className="text-xs text-gray-500">{notifications.filter(n => !n.read).length} unread</span>
+          </div>
+          
+          <div className="space-y-3">
+            {notifications.map((notification) => (
+              <div key={notification.id} className={`p-3 rounded-lg border ${!notification.read ? 'bg-blue-50 border-blue-100' : 'bg-white'}`}>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-900">{notification.message}</p>
+                    <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                  </div>
+                  <div className="flex-shrink-0 flex space-x-1 ml-2">
+                    {!notification.read && (
+                      <button
+                        onClick={() => handleMarkAsRead(notification.id)}
+                        className="p-1 text-blue-600 hover:bg-blue-100 rounded-full transition-colors"
+                        title="Mark as read"
+                      >
+                        <Eye className="w-3 h-3" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDeleteNotification(notification.id)}
+                      className="p-1 text-red-600 hover:bg-red-100 rounded-full transition-colors"
+                      title="Delete notification"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            {notifications.length === 0 && (
+              <p className="text-sm text-gray-500 text-center py-4">No notifications</p>
+            )}
           </div>
         </div>
       </div>

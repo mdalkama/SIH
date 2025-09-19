@@ -214,7 +214,7 @@ const DetailedNews = () => {
       )}
 
       {/* Custom Styles */}
-      <style jsx>{`
+      <style>{`
         .article-content h3 {
           font-size: 1.5rem;
           font-weight: 700;

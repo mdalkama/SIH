@@ -12,21 +12,113 @@ import {
   Phone,
   Mail,
   AlertCircle,
-  Shield
+  Shield,
+  Eye,
+  Edit,
+  Trash2
 } from "lucide-react";
+import { useApplicantData } from '../ApplicantDataContext.jsx';
 
 const AdmitCard = () => {
+  const { 
+    getPersonalInfo, 
+    getExamResults, 
+    getCounsellingStatus, 
+    getNotifications,
+    getAllotmentStatus,
+    updatePersonalInfo,
+    updateExamResults,
+    updateCounsellingStatus,
+    updateCollegePreferences,
+    markNotificationAsRead,
+    deleteNotification,
+    processFeePayment,
+    processDocumentVerification,
+    processReporting,
+    addNotification,
+    downloadAdmitCard,
+    printAdmitCard,
+    verifyAdmitCard,
+    loading,
+    error 
+  } = useApplicantData();
+
+  const personalInfo = getPersonalInfo();
+  const examResults = getExamResults();
+  const counsellingStatus = getCounsellingStatus();
+  const notifications = getNotifications();
+  const allotmentStatus = getAllotmentStatus();
+
+  // Action handlers
+  const handleDownloadAdmitCard = () => {
+    downloadAdmitCard({
+      applicationId: personalInfo.applicationId,
+      candidateData: candidateData,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Add notification
+    addNotification({
+      id: Date.now(),
+      message: 'Admit card downloaded successfully',
+      time: new Date().toLocaleTimeString(),
+      read: false
+    });
+  };
+
+  const handlePrintAdmitCard = () => {
+    printAdmitCard({
+      applicationId: personalInfo.applicationId,
+      candidateData: candidateData,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Add notification
+    addNotification({
+      id: Date.now(),
+      message: 'Admit card print job sent',
+      time: new Date().toLocaleTimeString(),
+      read: false
+    });
+  };
+
+  const handleVerifyAdmitCard = () => {
+    verifyAdmitCard({
+      applicationId: personalInfo.applicationId,
+      verificationCode: candidateData.verificationCode,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Add notification
+    addNotification({
+      id: Date.now(),
+      message: 'Admit card verification initiated',
+      time: new Date().toLocaleTimeString(),
+      read: false
+    });
+    
+    alert('Admit card verification initiated. You will receive confirmation shortly.');
+  };
+
+  const handleMarkAsRead = (notificationId) => {
+    markNotificationAsRead(notificationId);
+  };
+
+  const handleDeleteNotification = (notificationId) => {
+    deleteNotification(notificationId);
+  };
+
   const candidateData = {
-    name: "Aarav Singh",
-    applicationId: "APP-24-01928",
-    examCenter: "Delhi • Center 12",
-    reportingTime: "10:00 AM - 12:00 PM",
-    examDate: "22 Aug 2025",
-    gate: "B",
-    seatNo: "D12-47",
-    verificationCode: "8QZ-19K-7F",
+    name: personalInfo.name,
+    applicationId: personalInfo.applicationId,
+    examCenter: counsellingStatus.examCenter || "Delhi • Center 12",
+    reportingTime: counsellingStatus.reportingTime || "10:00 AM - 12:00 PM",
+    examDate: counsellingStatus.examDate || "22 Aug 2025",
+    gate: counsellingStatus.gate || "B",
+    seatNo: counsellingStatus.seatNo || "D12-47",
+    verificationCode: counsellingStatus.verificationCode || "8QZ-19K-7F",
     examTitle: "Counselling Entrance 2025",
-    roundInfo: "Seat Test • Round 2"
+    roundInfo: `Seat Test • Round ${counsellingStatus.currentRound}`
   };
 
   const instructions = [
@@ -55,6 +147,28 @@ const AdmitCard = () => {
   const handleDownload = () => {
     console.log("Downloading PDF...");
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <RefreshCw className="animate-spin h-8 w-8 mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Loading admit card data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertCircle className="h-8 w-8 mx-auto mb-4 text-red-600" />
+          <p className="text-red-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -136,7 +250,7 @@ const AdmitCard = () => {
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button
-                    onClick={handlePrint}
+                    onClick={handlePrintAdmitCard}
                     className="flex items-center justify-center gap-3 px-6 py-3 text-base text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50"
                   >
                     <Printer className="w-5 h-5" />
@@ -144,11 +258,19 @@ const AdmitCard = () => {
                   </button>
                   
                   <button
-                    onClick={handleDownload}
+                    onClick={handleDownloadAdmitCard}
                     className="flex items-center justify-center gap-3 px-6 py-3 text-base text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50"
                   >
                     <Download className="w-5 h-5" />
                     Download PDF
+                  </button>
+                  
+                  <button
+                    onClick={handleVerifyAdmitCard}
+                    className="flex items-center justify-center gap-3 px-6 py-3 text-base text-green-600 border border-green-200 rounded-lg hover:bg-green-50"
+                  >
+                    <Shield className="w-5 h-5" />
+                    Verify
                   </button>
                 </div>
               </div>
@@ -219,6 +341,51 @@ const AdmitCard = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Notifications Section */}
+        <div className="mt-4">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-medium text-gray-900">Notifications</h3>
+              <span className="text-xs text-gray-500">{notifications.filter(n => !n.read).length} unread</span>
+            </div>
+            
+            <div className="space-y-3">
+              {notifications.map((notification) => (
+                <div key={notification.id} className={`p-3 rounded-lg border ${!notification.read ? 'bg-blue-50 border-blue-100' : 'bg-white'}`}>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-900">{notification.message}</p>
+                      <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                    </div>
+                    <div className="flex-shrink-0 flex space-x-1 ml-2">
+                      {!notification.read && (
+                        <button
+                          onClick={() => handleMarkAsRead(notification.id)}
+                          className="p-1 text-blue-600 hover:bg-blue-100 rounded-full transition-colors"
+                          title="Mark as read"
+                        >
+                          <Eye className="w-3 h-3" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDeleteNotification(notification.id)}
+                        className="p-1 text-red-600 hover:bg-red-100 rounded-full transition-colors"
+                        title="Delete notification"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {notifications.length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-4">No notifications</p>
+              )}
             </div>
           </div>
         </div>

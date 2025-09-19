@@ -13,11 +13,151 @@ import {
   User,
   GraduationCap,
   TrendingUp,
-  Shield
+  Shield,
+  RefreshCw,
+  Eye,
+  Edit,
+  Trash2,
+  Download
 } from 'lucide-react';
+import { useApplicantData } from '../ApplicantDataContext.jsx';
 
 const UpwardMovement = () => {
   const [isConfirmed, setIsConfirmed] = useState(false);
+  
+  const { 
+    getPersonalInfo, 
+    getExamResults, 
+    getCounsellingStatus, 
+    getCollegePreferences,
+    getNotifications,
+    getAllotmentStatus,
+    updatePersonalInfo,
+    updateExamResults,
+    updateCounsellingStatus,
+    updateCollegePreferences,
+    submitUpwardMovement,
+    markNotificationAsRead,
+    deleteNotification,
+    processFeePayment,
+    processDocumentVerification,
+    processReporting,
+    addNotification,
+    loading,
+    error 
+  } = useApplicantData();
+
+  const personalInfo = getPersonalInfo();
+  const examResults = getExamResults();
+  const counsellingStatus = getCounsellingStatus();
+  const collegePreferences = getCollegePreferences();
+  const notifications = getNotifications();
+  const allotmentStatus = getAllotmentStatus();
+
+  // Action handlers
+  const handleViewFullPolicy = () => {
+    // Simulate viewing full policy
+    const content = `Upward Movement Policy\n\n1. Eligibility: Only candidates with current allotment can apply\n2. Preferences: Only higher-ranked preferences will be considered\n3. Process: Automatic consideration in subsequent rounds\n4. Upgrade: Once upgraded, previous allotment cannot be reclaimed\n5. Fee: No additional fee required for upward movement\n\nPlease read the complete policy document for detailed rules.`;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`<pre>${content}</pre>`);
+    printWindow.document.close();
+    printWindow.print();
+    
+    // Add notification
+    addNotification({
+      id: Date.now(),
+      message: 'Upward movement policy document viewed',
+      time: new Date().toLocaleTimeString(),
+      read: false
+    });
+  };
+
+  const handleContinueToPreferenceReview = () => {
+    // Scroll to preference review section
+    document.getElementById('preference-review').scrollIntoView({ behavior: 'smooth' });
+    
+    // Add notification
+    addNotification({
+      id: Date.now(),
+      message: 'Navigated to preference review section',
+      time: new Date().toLocaleTimeString(),
+      read: false
+    });
+  };
+
+  const handleEditPreferences = () => {
+    // Simulate editing preferences
+    alert('Redirecting to Update Options section to edit preferences...');
+    
+    // Add notification
+    addNotification({
+      id: Date.now(),
+      message: 'Preference edit requested',
+      time: new Date().toLocaleTimeString(),
+      read: false
+    });
+  };
+
+  const handleSubmitUpwardMovement = () => {
+    if (isConfirmed) {
+      // Submit upward movement using CRUD function
+      submitUpwardMovement({
+        round: counsellingStatus.currentRound,
+        preferences: collegePreferences.filter(pref => pref.preferenceOrder < 5),
+        timestamp: new Date().toISOString()
+      });
+      
+      // Add notification
+      addNotification({
+        id: Date.now(),
+        message: `Upward movement submitted for Round ${counsellingStatus.currentRound + 1}`,
+        time: new Date().toLocaleTimeString(),
+        read: false
+      });
+      
+      // Generate and download receipt
+      const receiptContent = `Upward Movement Receipt\n\nApplicant: ${personalInfo.name}\nApplication ID: ${personalInfo.applicationId}\nCurrent Round: ${counsellingStatus.currentRound}\nNext Round: ${counsellingStatus.currentRound + 1}\nPreferences Submitted: ${collegePreferences.filter(pref => pref.preferenceOrder < 5).length}\nTimestamp: ${new Date().toLocaleString()}\n\nThis is your upward movement submission receipt.`;
+      const blob = new Blob([receiptContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `upward_movement_receipt_round_${counsellingStatus.currentRound + 1}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      alert('Upward movement submitted successfully! Receipt downloaded.');
+    }
+  };
+
+  const handleMarkAsRead = (notificationId) => {
+    markNotificationAsRead(notificationId);
+  };
+
+  const handleDeleteNotification = (notificationId) => {
+    deleteNotification(notificationId);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <RefreshCw className="animate-spin h-8 w-8 mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Loading upward movement data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertCircle className="h-8 w-8 mx-auto mb-4 text-red-600" />
+          <p className="text-red-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-screen-2xl mx-auto py-1 px-1 sm:px-2">
@@ -36,9 +176,9 @@ const UpwardMovement = () => {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Confirm Eligibility</h2>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Round 1</span>
+                <span className="text-sm text-gray-500">Round {counsellingStatus.currentRound}</span>
                 <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-                <span className="text-sm text-blue-600 font-medium">2</span>
+                <span className="text-sm text-blue-600 font-medium">{counsellingStatus.currentRound + 1}</span>
               </div>
             </div>
 
@@ -65,8 +205,8 @@ const UpwardMovement = () => {
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-gray-500" />
                     <div>
-                      <p className="font-semibold text-gray-900">Aarav Sharma</p>
-                      <p className="text-sm text-gray-600">App ID: 23C-1145</p>
+                      <p className="font-semibold text-gray-900">{personalInfo.name}</p>
+                      <p className="text-sm text-gray-600">App ID: {personalInfo.applicationId}</p>
                     </div>
                   </div>
                 </div>
@@ -75,8 +215,8 @@ const UpwardMovement = () => {
                   <div className="flex items-center gap-2">
                     <GraduationCap className="h-4 w-4 text-gray-500" />
                     <div>
-                      <p className="font-semibold text-gray-900">NTU</p>
-                      <p className="text-sm text-gray-600">B.Tech Computer Science</p>
+                      <p className="font-semibold text-gray-900">{counsellingStatus.allottedCollege?.split(',')[0] || 'N/A'}</p>
+                      <p className="text-sm text-gray-600">{counsellingStatus.allottedBranch}</p>
                     </div>
                   </div>
                 </div>
@@ -107,11 +247,17 @@ const UpwardMovement = () => {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <button className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <button 
+                onClick={handleViewFullPolicy}
+                className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
                 <FileText className="h-4 w-4" />
                 <span className="text-sm font-medium">View Full Policy</span>
               </button>
-              <button className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button 
+                onClick={handleContinueToPreferenceReview}
+                className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 <TrendingUp className="h-4 w-4" />
                 <span className="font-medium">Continue to Preference Review</span>
               </button>
@@ -128,20 +274,42 @@ const UpwardMovement = () => {
               <span className="text-xs text-blue-600">Next Round</span>
             </div>
             
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-blue-600"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">Review preferences</p>
-                  <p className="text-xs text-gray-500">Today</p>
+            <div className="space-y-3">
+              {notifications.map((notification) => (
+                <div key={notification.id} className={`p-3 rounded-lg border ${!notification.read ? 'bg-blue-50 border-blue-100' : 'bg-white'}`}>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-900">{notification.message}</p>
+                      <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                    </div>
+                    <div className="flex-shrink-0 flex space-x-1 ml-2">
+                      {!notification.read && (
+                        <button
+                          onClick={() => handleMarkAsRead(notification.id)}
+                          className="p-1 text-blue-600 hover:bg-blue-100 rounded-full transition-colors"
+                          title="Mark as read"
+                        >
+                          <Eye className="w-3 h-3" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDeleteNotification(notification.id)}
+                        className="p-1 text-red-600 hover:bg-red-100 rounded-full transition-colors"
+                        title="Delete notification"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              
+              ))}
+            </div>
+            <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-gray-300"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900">Submit movement</p>
-                  <p className="text-xs text-gray-500">By 6 PM</p>
+                  <p className="text-xs text-gray-500">By {counsellingStatus.feePaymentDeadline?.split(' ')[0] || '6 PM'}</p>
                 </div>
               </div>
               
@@ -149,7 +317,7 @@ const UpwardMovement = () => {
                 <div className="w-2 h-2 rounded-full bg-gray-300"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900">Result publication</p>
-                  <p className="text-xs text-gray-500">Tomorrow</p>
+                  <p className="text-xs text-gray-500">{counsellingStatus.nextRoundDate || 'Coming Soon'}</p>
                 </div>
               </div>
             </div>
@@ -209,41 +377,38 @@ const UpwardMovement = () => {
             <div>
               <h3 className="font-medium text-gray-900 mb-4">Your higher preferences</h3>
               <div className="space-y-3">
-                <div className="p-3 border border-blue-200 bg-blue-50 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-blue-900">IIT • B.Tech CS</p>
-                      <p className="text-sm text-blue-700">Preference #1</p>
+                {collegePreferences
+                  .filter(pref => pref.preferenceOrder < 5) // Show top 4 preferences
+                  .map((pref, index) => (
+                    <div 
+                      key={index} 
+                      className={`p-3 border rounded-lg ${
+                        pref.preferenceOrder <= 2 
+                          ? 'border-blue-200 bg-blue-50' 
+                          : 'border-gray-200 bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className={`font-semibold ${
+                            pref.preferenceOrder <= 2 
+                              ? 'text-blue-900' 
+                              : 'text-gray-700'
+                          }`}>
+                            {pref.college} • {pref.branch}
+                          </p>
+                          <p className={`text-sm ${
+                            pref.preferenceOrder <= 2 
+                              ? 'text-blue-700' 
+                              : 'text-gray-600'
+                          }`}>
+                            Preference #{pref.preferenceOrder}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                
-                <div className="p-3 border border-blue-200 bg-blue-50 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-blue-900">IIT • B.Tech AI</p>
-                      <p className="text-sm text-blue-700">Preference #2</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-3 border border-gray-200 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-gray-700">NIT • B.Tech CS</p>
-                      <p className="text-sm text-gray-600">Preference #3</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-3 border border-gray-200 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-gray-700">NIT • B.Tech IT</p>
-                      <p className="text-sm text-gray-600">Preference #4</p>
-                    </div>
-                  </div>
-                </div>
+                  ))
+                }
               </div>
             </div>
 
@@ -274,11 +439,15 @@ const UpwardMovement = () => {
               </div>
               
               <div className="flex gap-3">
-                <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                <button 
+                  onClick={handleEditPreferences}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
                   <Edit3 className="h-4 w-4" />
                   <span className="text-sm font-medium">Edit Preferences</span>
                 </button>
                 <button 
+                  onClick={handleSubmitUpwardMovement}
                   disabled={!isConfirmed}
                   className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all ${
                     isConfirmed 
