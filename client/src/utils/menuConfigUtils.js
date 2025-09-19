@@ -164,6 +164,8 @@ import CollegeAdminManageCollege from "../components/College/CollegeAdmin/Colleg
 import CollegeAdminManageComplaints from "../components/College/CollegeAdmin/CollegeAdminManageComplaints.jsx";
 import CollegeAdminManageFeedback from "../components/College/CollegeAdmin/CollegeAdminManageFeedback.jsx";
 import StudentComplaintsAndFeedback from "../components/Student/StudentComplaintsAndFeedback.jsx";
+import CollegePlacementDashboard from "../components/College/CollegePlacement/CollegePlacementDashboard.jsx";
+import CollegePlacementStatus from "../components/College/CollegePlacement/CollegePlacementStatus.jsx";
 
 // 🎯 Roles mapping
 const menuConfig = {
@@ -1086,6 +1088,25 @@ const menuConfig = {
             role: "CollegeExaminationBody",
         },
     ],
+
+    CollegePlacementOfficer: [
+        {
+            id: "dashboard",
+            label: "Dashboard",
+            icon: Home,
+            path: "/college-placement/dashboard",
+            component: CollegePlacementDashboard,
+            role: "CollegePlacementOfficer",
+        },
+        {
+            id: "placement-status",
+            label: "Placement Status",
+            icon: User,
+            path: "/college-placement/placement-status",
+            component: CollegePlacementStatus,
+            role: "CollegePlacementOfficer",
+        },
+    ]
 
 };
 

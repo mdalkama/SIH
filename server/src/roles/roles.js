@@ -13,7 +13,8 @@ export const staffRoles = [
     'CollegeLibrarian',
     'CollegeAdmissionDepartment',
     'CollegeFinanceBody',
-    'CollegeExaminationBody'
+    'CollegeExaminationBody',
+    "CollegePlacementOfficer"
 ];
 
 export const studentRoles = [
