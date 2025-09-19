@@ -95,16 +95,32 @@ export const getDriveWithApplications = async (req, res) => {
  */
 export const getAvailableDrivesForStudent = async (req, res) => {
     try {
-        const student = await Student.findById(req.user.id).select('courseId collegeCode');
+        const student = await Student.findById(req.user.id).select('collegeCode');
+        if (!student) {
+            return res.status(404).json({ message: "Student profile not found." });
+        }
         
-        const availableDrives = await PlacementDrive.find({
+        // Fetch all open drives for the student's college
+        const allOpenDrives = await PlacementDrive.find({
             collegeCode: student.collegeCode,
             status: 'OPEN',
-        }).select('-applications').lean(); // Don't send all applications to the student
+        }).lean(); // Use lean for performance
+        
+        // Add the 'hasApplied' flag for the frontend UI
+        const drivesWithStatus = allOpenDrives.map(drive => {
+            const hasApplied = drive.applications.some(app => app.studentId.toString() === req.user.id);
+            const { applications, ...driveWithoutApps } = drive; // Remove sensitive applications array
+            return {
+                ...driveWithoutApps,
+                hasApplied,
+            };
+        });
 
-        res.status(200).json({ success: true, drives: availableDrives });
+        res.status(200).json({ success: true, drives: drivesWithStatus });
+
     } catch (error) {
-        res.status(500).json({ message: "Server error.", error: error.message });
+        console.error("Error fetching available drives for student:", error);
+        res.status(500).json({ message: "Server error while fetching placement drives.", error: error.message });
     }
 };
 
