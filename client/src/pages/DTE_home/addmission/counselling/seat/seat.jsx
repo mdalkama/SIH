@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   MapPin,
   School,
@@ -14,57 +14,146 @@ import {
   AlertCircle,
   Info,
   ChevronRight,
+  RefreshCw,
+  Eye,
+  Edit,
+  Trash2,
+  CreditCard,
+  Shield,
+  MapPin as MapPinIcon
 } from "lucide-react";
+import { useApplicantData } from '../ApplicantDataContext.jsx';
 
 const AllotmentDashboard = () => {
+  const [activeTab, setActiveTab] = useState('allotment');
+  
+  const { 
+    getPersonalInfo, 
+    getExamResults, 
+    getCounsellingStatus, 
+    getCollegePreferences,
+    getNotifications,
+    getAllotmentStatus,
+    markNotificationAsRead,
+    deleteNotification,
+    processFeePayment,
+    processDocumentVerification,
+    processReporting,
+    updateCounsellingStatus,
+    addNotification,
+    loading,
+    error 
+  } = useApplicantData();
+
+  const personalInfo = getPersonalInfo();
+  const examResults = getExamResults();
+  const counsellingStatus = getCounsellingStatus();
+  const collegePreferences = getCollegePreferences();
+  const allotmentStatus = getAllotmentStatus();
+
+  // Action handlers
+  const handleDownloadAllotmentLetter = () => {
+    // Simulate download
+    const link = document.createElement('a');
+    link.href = '#';
+    link.download = `allotment-letter-${personalInfo.applicationId}.pdf`;
+    link.click();
+    
+    addNotification({
+      message: 'Allotment letter downloaded successfully!',
+      type: 'success'
+    });
+  };
+
+  const handlePrintInstructions = () => {
+    window.print();
+    addNotification({
+      message: 'Instructions sent to printer!',
+      type: 'info'
+    });
+  };
+
+  const handleMarkAsRead = (notificationId) => {
+    markNotificationAsRead(notificationId);
+  };
+
+  const handleDeleteNotification = (notificationId) => {
+    deleteNotification(notificationId);
+  };
+
+  const handlePayFee = () => {
+    processFeePayment();
+  };
+
+  const handleVerifyDocuments = () => {
+    processDocumentVerification();
+  };
+
+  const handleReportToCollege = () => {
+    processReporting();
+  };
+
+  const handleViewDetailedHistory = () => {
+    // Simulate opening detailed history
+    alert('Detailed allotment history would open in a new modal/window');
+    
+    addNotification({
+      message: 'Detailed history view opened!',
+      type: 'info'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <RefreshCw className="animate-spin h-8 w-8 mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Loading allotment data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertCircle className="h-8 w-8 mx-auto mb-4 text-red-600" />
+          <p className="text-red-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   const candidateInfo = {
-    name: "Aditi Sharma",
-    applicationId: "APP-78QK9",
-    rank: 154,
-    category: "UR",
-    round: "Round 1"
+    name: personalInfo.name,
+    applicationId: personalInfo.applicationId,
+    rank: examResults.allIndiaRank,
+    category: personalInfo.category,
+    round: `Round ${counsellingStatus.currentRound}`
   };
 
   const allotmentDetails = {
-    institute: "National Tech University",
-    program: "B.Tech Computer Science",
-    location: "Delhi",
-    quota: "All India",
-    reportingDate: "12 Aug, 5:00 PM",
-    status: "Allotted"
+    institute: counsellingStatus.allottedCollege,
+    program: counsellingStatus.allottedBranch,
+    location: "Rajasthan",
+    quota: counsellingStatus.seatType,
+    reportingDate: counsellingStatus.reportingDate,
+    status: counsellingStatus.allotmentStatus
   };
 
-  const notifications = [
-    {
-      id: 1,
-      message: "Institute reporting dates updated",
-      time: "10:24",
-      read: false
-    },
-    {
-      id: 2,
-      message: "Provisional allotment published",
-      time: "09:10",
-      read: false
-    },
-    {
-      id: 3,
-      message: "Upload documents for verification",
-      time: "08:55",
-      read: false
-    }
-  ];
+  const notifications = getNotifications().slice(0, 3); // Show only latest 3 notifications
 
-  const roundHistory = [
-    {
-      round: 1,
-      institute: "National Tech University",
-      program: "B.Tech CSE",
-      action: "Allotted",
-      result: "Pending Decision",
-      status: "current"
-    }
-  ];
+  const roundHistory = collegePreferences
+    .filter(pref => pref.allotmentRound !== null)
+    .map(pref => ({
+      round: pref.allotmentRound,
+      institute: pref.college,
+      program: pref.branch,
+      action: pref.status,
+      result: pref.status === "Allotted" ? "Accepted" : "Pending Decision",
+      status: pref.allotmentRound === counsellingStatus.currentRound ? "current" : "completed"
+    }));
 
   return (
     <div className="w-full">
@@ -153,7 +242,10 @@ const AllotmentDashboard = () => {
                     <h2 className="text-lg font-semibold text-gray-900">Round History</h2>
                     <p className="text-xs sm:text-sm text-gray-500 mt-1">Track your allotment history across rounds</p>
                   </div>
-                  <button className="mt-2 sm:mt-0 flex items-center gap-2 px-3 py-1.5 text-sm text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50">
+                  <button 
+                    onClick={handleViewDetailedHistory}
+                    className="mt-2 sm:mt-0 flex items-center gap-2 px-3 py-1.5 text-sm text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50"
+                  >
                     <FileText size={16} />
                     View Detailed History
                   </button>
@@ -188,13 +280,6 @@ const AllotmentDashboard = () => {
                           </td>
                         </tr>
                       ))}
-                      <tr className="text-gray-400">
-                        <td className="px-4 py-3">2</td>
-                        <td className="px-4 py-3">—</td>
-                        <td className="px-4 py-3">—</td>
-                        <td className="px-4 py-3">—</td>
-                        <td className="px-4 py-3">—</td>
-                      </tr>
                     </tbody>
                   </table>
                 </div>
@@ -235,11 +320,17 @@ const AllotmentDashboard = () => {
               </div>
 
               <div className="space-y-3">
-                <button className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs sm:text-sm">
+                <button 
+                  onClick={handleDownloadAllotmentLetter}
+                  className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs sm:text-sm"
+                >
                   <span className="font-medium">Download Allotment Letter</span>
                   <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
                 </button>
-                <button className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs sm:text-sm">
+                <button 
+                  onClick={handlePrintInstructions}
+                  className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs sm:text-sm"
+                >
                   <span className="font-medium">Print Instructions</span>
                   <Printer className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
                 </button>
@@ -258,12 +349,29 @@ const AllotmentDashboard = () => {
               <div className="space-y-3">
                 {notifications.map((notification) => (
                   <div key={notification.id} className={`p-3 rounded-lg border ${!notification.read ? 'bg-blue-50 border-blue-100' : 'bg-white'}`}>
-                    <p className="text-sm">{notification.message}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-gray-500">{notification.time}</span>
-                      {!notification.read && (
-                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                      )}
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-900">{notification.message}</p>
+                        <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                      </div>
+                      <div className="flex-shrink-0 flex space-x-1 ml-2">
+                        {!notification.read && (
+                          <button 
+                            onClick={() => handleMarkAsRead(notification.id)}
+                            className="p-1 text-blue-600 hover:bg-blue-100 rounded-full transition-colors"
+                            title="Mark as read"
+                          >
+                            <Eye className="w-3 h-3" />
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => handleDeleteNotification(notification.id)}
+                          className="p-1 text-red-600 hover:bg-red-100 rounded-full transition-colors"
+                          title="Delete notification"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -272,19 +380,50 @@ const AllotmentDashboard = () => {
 
             {/* Important Dates Card */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5">
-              <h3 className="text-sm font-medium text-gray-900 mb-4 sm:mb-5">Important Dates</h3>
-              <div className="space-y-3">
+              <h3 className="text-sm font-medium text-gray-900 mb-4 sm:mb-5">Important Dates & Actions</h3>
+              <div className="space-y-4">
                 <div>
-                  <p className="text-xs text-gray-500">Round 1 Freeze</p>
-                  <p className="text-sm font-medium text-gray-900">25 Sep 2024, 5:00 PM</p>
+                  <p className="text-xs text-gray-500">Round {counsellingStatus.currentRound} Freeze</p>
+                  <p className="text-sm font-medium text-gray-900">{counsellingStatus.feePaymentDeadline}</p>
+                  {!counsellingStatus.feesPaid && (
+                    <button
+                      onClick={handlePayFee}
+                      className="mt-2 w-full bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      <span>Pay Fee Now</span>
+                    </button>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Document Verification</p>
-                  <p className="text-sm font-medium text-gray-900">26-27 Sep 2024</p>
+                  <p className="text-sm font-medium text-gray-900">{counsellingStatus.documentVerificationDate}</p>
+                  {!counsellingStatus.documentsVerified && (
+                    <button
+                      onClick={handleVerifyDocuments}
+                      className="mt-2 w-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
+                    >
+                      <Shield className="w-4 h-4" />
+                      <span>Verify Documents</span>
+                    </button>
+                  )}
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Round 2 Results</p>
-                  <p className="text-sm font-medium text-gray-900">30 Sep 2024</p>
+                  <p className="text-xs text-gray-500">Reporting to College</p>
+                  <p className="text-sm font-medium text-gray-900">{counsellingStatus.reportingDate}</p>
+                  {!counsellingStatus.hasReported && counsellingStatus.feesPaid && (
+                    <button
+                      onClick={handleReportToCollege}
+                      className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
+                    >
+                      <MapPinIcon className="w-4 h-4" />
+                      <span>Report to College</span>
+                    </button>
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Round {counsellingStatus.currentRound + 1} Results</p>
+                  <p className="text-sm font-medium text-gray-900">Coming Soon</p>
                 </div>
               </div>
             </div>

@@ -24,99 +24,63 @@ import {
   ExternalLink,
   CheckCircle2,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  RefreshCw,
+  Eye,
+  Edit,
+  Trash2
 } from 'lucide-react';
+import { useApplicantData } from '../ApplicantDataContext.jsx';
 
 const Result = () => {
   const [selectedFilter, setSelectedFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const { 
+    getPersonalInfo, 
+    getExamResults, 
+    getCounsellingStatus, 
+    getCollegePreferences,
+    getNotifications,
+    getAllotmentStatus,
+    updatePersonalInfo,
+    updateExamResults,
+    updateCounsellingStatus,
+    updateCollegePreferences,
+    markNotificationAsRead,
+    deleteNotification,
+    processFeePayment,
+    processDocumentVerification,
+    processReporting,
+    addNotification,
+    downloadResult,
+    printResult,
+    verifyResult,
+    loading,
+    error 
+  } = useApplicantData();
 
-  const collegeResults = [
-    {
-      id: 1,
-      college: 'IIT Delhi',
-      branch: 'Computer Science',
-      totalSeats: 60,
-      totalApplicants: 1200,
-      myRank: 8,
-      cutoffRank: 45,
-      status: 'Qualified',
-      statusColor: 'text-green-600 bg-green-100',
-      icon: CheckCircle2,
-      priority: 1,
-      category: 'IIT'
-    },
-    {
-      id: 2,
-      college: 'IIT Bombay',
-      branch: 'Artificial Intelligence',
-      totalSeats: 40,
-      totalApplicants: 980,
-      myRank: 12,
-      cutoffRank: 35,
-      status: 'Qualified',
-      statusColor: 'text-green-600 bg-green-100',
-      icon: CheckCircle2,
-      priority: 2,
-      category: 'IIT'
-    },
-    {
-      id: 3,
-      college: 'NIT Delhi',
-      branch: 'Computer Science',
-      totalSeats: 120,
-      totalApplicants: 2500,
-      myRank: 45,
-      cutoffRank: 180,
-      status: 'Qualified',
-      statusColor: 'text-green-600 bg-green-100',
-      icon: CheckCircle2,
-      priority: 3,
-      category: 'NIT'
-    },
-    {
-      id: 4,
-      college: 'IIIT Hyderabad',
-      branch: 'Information Technology',
-      totalSeats: 80,
-      totalApplicants: 1800,
-      myRank: 25,
-      cutoffRank: 95,
-      status: 'Qualified',
-      statusColor: 'text-green-600 bg-green-100',
-      icon: CheckCircle2,
-      priority: 4,
-      category: 'IIIT'
-    },
-    {
-      id: 5,
-      college: 'DTU Delhi',
-      branch: 'Electronics & Communication',
-      totalSeats: 100,
-      totalApplicants: 3200,
-      myRank: 156,
-      cutoffRank: 220,
-      status: 'Qualified',
-      statusColor: 'text-green-600 bg-green-100',
-      icon: CheckCircle2,
-      priority: 5,
-      category: 'DTU'
-    },
-    {
-      id: 6,
-      college: 'NSUT Delhi',
-      branch: 'Mechanical Engineering',
-      totalSeats: 90,
-      totalApplicants: 2800,
-      myRank: 245,
-      cutoffRank: 180,
-      status: 'Not Qualified',
-      statusColor: 'text-red-600 bg-red-100',
-      icon: XCircle,
-      priority: 6,
-      category: 'NSUT'
-    }
-  ];
+  const personalInfo = getPersonalInfo();
+  const examResults = getExamResults();
+  const counsellingStatus = getCounsellingStatus();
+  const collegePreferences = getCollegePreferences();
+  const notifications = getNotifications();
+  const allotmentStatus = getAllotmentStatus();
+
+  const collegeResults = collegePreferences.map((pref, index) => ({
+    id: index + 1,
+    college: pref.college,
+    branch: pref.branch,
+    totalSeats: pref.totalSeats || 60,
+    totalApplicants: pref.totalApplicants || 1200,
+    myRank: pref.myRank || (index + 1) * 8,
+    cutoffRank: pref.cutoffRank || 45,
+    status: pref.myRank <= pref.cutoffRank ? 'Qualified' : 'Not Qualified',
+    statusColor: pref.myRank <= pref.cutoffRank ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100',
+    icon: pref.myRank <= pref.cutoffRank ? CheckCircle2 : XCircle,
+    priority: index + 1,
+    category: pref.college ? pref.college.split(' ')[0] : 'College'
+  }));
 
   const filteredResults = collegeResults.filter(result => {
     const matchesFilter = selectedFilter === 'All' || result.status === selectedFilter;
@@ -127,7 +91,84 @@ const Result = () => {
 
   const qualifiedCount = collegeResults.filter(r => r.status === 'Qualified').length;
   const notQualifiedCount = collegeResults.filter(r => r.status === 'Not Qualified').length;
-  const bestRank = Math.min(...collegeResults.map(r => r.myRank));
+  const bestRank = collegeResults.length > 0 ? Math.min(...collegeResults.map(r => r.myRank)) : 'N/A';
+
+  // Action handlers
+  const handleDownloadResult = () => {
+    const content = `Counselling Result\n\nApplicant: ${personalInfo?.name || 'N/A'}\nApplication ID: ${personalInfo?.applicationId || 'N/A'}\nTotal Score: ${examResults?.totalScore || 182}/240\nQualified Colleges: ${qualifiedCount}\nBest Rank: ${bestRank}\n\n${collegeResults.map((result, index) => `${index + 1}. ${result.college} - ${result.branch}\n   Status: ${result.status}\n   Your Rank: ${result.myRank}\n   Cutoff Rank: ${result.cutoffRank}`).join('\n\n')}\n\nGenerated on: ${new Date().toLocaleString()}`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `counselling_result_${personalInfo?.applicationId || 'unknown'}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    // Add notification
+    addNotification({
+      id: Date.now(),
+      message: 'Result downloaded successfully',
+      time: new Date().toLocaleTimeString(),
+      read: false
+    });
+  };
+
+  const handlePrintResult = () => {
+    window.print();
+    
+    // Add notification
+    addNotification({
+      id: Date.now(),
+      message: 'Result sent to printer',
+      time: new Date().toLocaleTimeString(),
+      read: false
+    });
+  };
+
+  const handleVerifyResult = () => {
+    // Simulate result verification
+    const verificationCode = Math.random().toString(36).substring(2, 15).toUpperCase();
+    
+    // Add notification
+    addNotification({
+      id: Date.now(),
+      message: `Result verified. Verification code: ${verificationCode}`,
+      time: new Date().toLocaleTimeString(),
+      read: false
+    });
+    
+    alert(`Result verified successfully!\nVerification Code: ${verificationCode}`);
+  };
+
+  const handleMarkAsRead = (notificationId) => {
+    markNotificationAsRead(notificationId);
+  };
+
+  const handleDeleteNotification = (notificationId) => {
+    deleteNotification(notificationId);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <RefreshCw className="animate-spin h-8 w-8 mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Loading result data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertTriangle className="h-8 w-8 mx-auto mb-4 text-red-600" />
+          <p className="text-red-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-screen-2xl mx-auto py-1 px-1 sm:px-2">
@@ -146,7 +187,7 @@ const Result = () => {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-semibold text-gray-900">Your Result</h2>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Round 2</span>
+                <span className="text-sm text-gray-500">Round {counsellingStatus?.currentRound || 'N/A'}</span>
               </div>
             </div>
 
@@ -156,41 +197,54 @@ const Result = () => {
                 <div className="flex items-center justify-center mb-2">
                   <BarChart3 className="h-5 w-5 text-blue-600" />
                 </div>
-                <div className="text-2xl font-bold text-blue-600">182 / 240</div>
+                <div className="text-2xl font-bold text-blue-600">{examResults?.totalScore || 182} / 240</div>
                 <div className="text-sm text-gray-600">Total Score</div>
               </div>
               <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200">
                 <div className="flex items-center justify-center mb-2">
                   <TrendingUp className="h-5 w-5 text-green-600" />
                 </div>
-                <div className="text-2xl font-bold text-green-600">98.4</div>
+                <div className="text-2xl font-bold text-green-600">{examResults?.percentile || 98.4}</div>
                 <div className="text-sm text-gray-600">Percentile</div>
               </div>
               <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
                 <div className="flex items-center justify-center mb-2">
                   <Award className="h-5 w-5 text-purple-600" />
                 </div>
-                <div className="text-2xl font-bold text-purple-600">AIR 312</div>
+                <div className="text-2xl font-bold text-purple-600">AIR {examResults?.allIndiaRank || examResults?.rank || 312}</div>
                 <div className="text-sm text-gray-600">All India Rank</div>
               </div>
               <div className="text-center p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl border border-emerald-200">
                 <div className="flex items-center justify-center mb-2">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                 </div>
-                <div className="text-lg font-bold text-emerald-600">Qualified</div>
+                <div className="text-lg font-bold text-emerald-600">{examResults?.status || 'Qualified'}</div>
                 <div className="text-sm text-gray-600">Status</div>
               </div>
             </div>
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 mb-6">
-              <button className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <button 
+                onClick={handlePrintResult}
+                className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
                 <Printer className="h-4 w-4" />
                 <span className="text-sm font-medium">Print Scorecard</span>
               </button>
-              <button className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button 
+                onClick={handleDownloadResult}
+                className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 <Download className="h-4 w-4" />
                 <span className="font-medium">Download Scorecard</span>
+              </button>
+              <button 
+                onClick={handleVerifyResult}
+                className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <CheckCircle className="h-4 w-4" />
+                <span className="text-sm font-medium">Verify Result</span>
               </button>
             </div>
           </div>
@@ -363,6 +417,51 @@ const Result = () => {
             </div>
           )}
 
+        </div>
+
+        {/* Notifications Section */}
+        <div className="mt-4">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-medium text-gray-900">Notifications</h3>
+              <span className="text-xs text-gray-500">{notifications.filter(n => !n.read).length} unread</span>
+            </div>
+            
+            <div className="space-y-3">
+              {notifications.map((notification) => (
+                <div key={notification.id} className={`p-3 rounded-lg border ${!notification.read ? 'bg-blue-50 border-blue-100' : 'bg-white'}`}>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-900">{notification.message}</p>
+                      <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                    </div>
+                    <div className="flex-shrink-0 flex space-x-1 ml-2">
+                      {!notification.read && (
+                        <button
+                          onClick={() => handleMarkAsRead(notification.id)}
+                          className="p-1 text-blue-600 hover:bg-blue-100 rounded-full transition-colors"
+                          title="Mark as read"
+                        >
+                          <Eye className="w-3 h-3" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDeleteNotification(notification.id)}
+                        className="p-1 text-red-600 hover:bg-red-100 rounded-full transition-colors"
+                        title="Delete notification"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {notifications.length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-4">No notifications</p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,13 +1,133 @@
 import React, { useState } from "react";
-import { Download, FileText, Clock, CheckCircle, TrendingUp, XCircle } from "lucide-react";
-import ConfirmDecision from "./confirm";
+import { Download, FileText, Clock, CheckCircle, TrendingUp, XCircle, RefreshCw, AlertCircle, Eye, Edit, Trash2 } from "lucide-react";
+import ConfirmDecision from "./confirm.jsx";
+import { useApplicantData } from '../ApplicantDataContext.jsx';
 
 const AllotmentDecision = () => {
   const [selectedDecision, setSelectedDecision] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
+  
+  const { 
+    getPersonalInfo, 
+    getExamResults, 
+    getCounsellingStatus, 
+    getCollegePreferences,
+    getNotifications,
+    getAllotmentStatus,
+    updatePersonalInfo,
+    updateExamResults,
+    updateCounsellingStatus,
+    updateCollegePreferences,
+    submitDecision,
+    markNotificationAsRead,
+    deleteNotification,
+    processFeePayment,
+    processDocumentVerification,
+    processReporting,
+    addNotification,
+    loading,
+    error 
+  } = useApplicantData();
+
+  const personalInfo = getPersonalInfo();
+  const examResults = getExamResults();
+  const counsellingStatus = getCounsellingStatus();
+  const collegePreferences = getCollegePreferences();
+  const notifications = getNotifications();
+  const allotmentStatus = getAllotmentStatus();
+
+  // Action handlers
+  const handleDownloadAllotmentLetter = () => {
+    // Simulate downloading allotment letter
+    const content = `Allotment Letter\n\nApplicant: ${personalInfo.name}\nApplication ID: ${personalInfo.applicationId}\nCollege: ${counsellingStatus.allottedCollege}\nBranch: ${counsellingStatus.allottedBranch}\nRound: ${counsellingStatus.currentRound}\n\nThis is your provisional allotment letter.`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `allotment_letter_round_${counsellingStatus.currentRound}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    // Add notification
+    addNotification({
+      id: Date.now(),
+      message: `Allotment letter for Round ${counsellingStatus.currentRound} downloaded`,
+      time: new Date().toLocaleTimeString(),
+      read: false
+    });
+  };
+
+  const handlePrintInstructions = () => {
+    // Simulate printing instructions
+    const content = `Reporting Instructions\n\n1. Report to: ${counsellingStatus.allottedCollege}\n2. Date: ${counsellingStatus.reportingDate}\n3. Time: 9:00 AM - 5:00 PM\n4. Documents Required: All original documents\n5. Fee Payment: ${counsellingStatus.feesPaid ? 'Completed' : 'Pending'}\n\nPlease report on time with all required documents.`;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`<pre>${content}</pre>`);
+    printWindow.document.close();
+    printWindow.print();
+    
+    // Add notification
+    addNotification({
+      id: Date.now(),
+      message: 'Reporting instructions printed',
+      time: new Date().toLocaleTimeString(),
+      read: false
+    });
+  };
+
+  const handleViewDecisionHistory = () => {
+    // Simulate viewing detailed decision history
+    alert('Viewing detailed decision history...');
+  };
+
+  const handleMarkAsRead = (notificationId) => {
+    markNotificationAsRead(notificationId);
+  };
+
+  const handleDeleteNotification = (notificationId) => {
+    deleteNotification(notificationId);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <RefreshCw className="animate-spin h-8 w-8 mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Loading decision data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertCircle className="h-8 w-8 mx-auto mb-4 text-red-600" />
+          <p className="text-red-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmitDecision = () => {
     if (selectedDecision) {
+      // Submit decision using CRUD function
+      submitDecision({
+        decision: selectedDecision,
+        round: counsellingStatus.currentRound,
+        college: counsellingStatus.allottedCollege,
+        branch: counsellingStatus.allottedBranch,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Add notification
+      addNotification({
+        id: Date.now(),
+        message: `Decision submitted: ${selectedDecision.toUpperCase()} for Round ${counsellingStatus.currentRound}`,
+        time: new Date().toLocaleTimeString(),
+        read: false
+      });
+      
       setShowConfirm(true);
     }
   };
@@ -31,7 +151,7 @@ const AllotmentDecision = () => {
       {/* Header */}
       <div className="mb-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Make Your Decision</h1>
-        <p className="text-sm sm:text-base text-gray-600 mt-1">Choose your action for the allocated seat in Round 1</p>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">Choose your action for the allocated seat in Round {counsellingStatus.currentRound}</p>
       </div>
 
       {/* Main Content Grid */}
@@ -42,7 +162,7 @@ const AllotmentDecision = () => {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Seat Allotment Details</h2>
               <span className="px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded-full font-medium">
-                Round 1
+                Round {counsellingStatus.currentRound}
               </span>
             </div>
 
@@ -51,15 +171,15 @@ const AllotmentDecision = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <p className="text-xs text-gray-600">Allotted Institute</p>
-                  <p className="font-semibold text-gray-900">National Tech University</p>
+                  <p className="font-semibold text-gray-900">{counsellingStatus.allottedCollege}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-600">Program</p>
-                  <p className="font-medium text-gray-900">B.Tech Computer Science</p>
+                  <p className="font-medium text-gray-900">{counsellingStatus.allottedBranch}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-600">Reporting By</p>
-                  <p className="font-semibold text-red-600">12 Aug, 5:00 PM</p>
+                  <p className="font-semibold text-red-600">{counsellingStatus.reportingDate}</p>
                 </div>
               </div>
             </div>
@@ -188,10 +308,18 @@ const AllotmentDecision = () => {
                 {selectedDecision ? 'Submit Decision' : 'Select an Option'}
               </button>
               <div className="flex space-x-2">
-                <button className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                <button 
+                  onClick={handleDownloadAllotmentLetter}
+                  className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  title="Download Allotment Letter"
+                >
                   <Download className="h-4 w-4" />
                 </button>
-                <button className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                <button 
+                  onClick={handlePrintInstructions}
+                  className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  title="Print Instructions"
+                >
                   <FileText className="h-4 w-4" />
                 </button>
               </div>
@@ -232,6 +360,46 @@ const AllotmentDecision = () => {
             </ul>
           </div>
 
+          {/* Notifications */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="text-sm font-medium text-gray-900">Notifications</h3>
+              <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                {notifications.filter(n => !n.read).length} New
+              </span>
+            </div>
+            <div className="space-y-3">
+              {notifications.slice(0, 3).map((notification) => (
+                <div key={notification.id} className={`p-3 rounded-lg border ${!notification.read ? 'bg-blue-50 border-blue-100' : 'bg-white'}`}>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-900">{notification.message}</p>
+                      <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                    </div>
+                    <div className="flex-shrink-0 flex space-x-1 ml-2">
+                      {!notification.read && (
+                        <button 
+                          onClick={() => handleMarkAsRead(notification.id)}
+                          className="p-1 text-blue-600 hover:bg-blue-100 rounded-full transition-colors"
+                          title="Mark as read"
+                        >
+                          <Eye className="w-3 h-3" />
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => handleDeleteNotification(notification.id)}
+                        className="p-1 text-red-600 hover:bg-red-100 rounded-full transition-colors"
+                        title="Delete notification"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Deadline */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4">
             <h3 className="text-sm font-medium text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
@@ -247,10 +415,16 @@ const AllotmentDecision = () => {
               You can change decision until the window closes.
             </p>
             <div className="space-y-2">
-              <button className="w-full flex items-center justify-center gap-2 bg-blue-50 text-blue-600 px-3 py-2 rounded-lg hover:bg-blue-100 text-xs">
+              <button 
+                onClick={handleDownloadAllotmentLetter}
+                className="w-full flex items-center justify-center gap-2 bg-blue-50 text-blue-600 px-3 py-2 rounded-lg hover:bg-blue-100 text-xs"
+              >
                 <Download size={14} /> Download Allotment Letter
               </button>
-              <button className="w-full flex items-center justify-center gap-2 bg-blue-50 text-blue-600 px-3 py-2 rounded-lg hover:bg-blue-100 text-xs">
+              <button 
+                onClick={handlePrintInstructions}
+                className="w-full flex items-center justify-center gap-2 bg-blue-50 text-blue-600 px-3 py-2 rounded-lg hover:bg-blue-100 text-xs"
+              >
                 <FileText size={14} /> Print Instructions
               </button>
             </div>
@@ -266,7 +440,10 @@ const AllotmentDecision = () => {
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Decision History</h2>
               <p className="text-xs sm:text-sm text-gray-500 mt-1">Track your decisions across all counselling rounds</p>
             </div>
-            <button className="mt-2 sm:mt-0 text-blue-600 hover:text-blue-800 font-medium text-sm px-3 py-1 rounded-lg hover:bg-blue-50 transition-all">
+            <button 
+              onClick={handleViewDecisionHistory}
+              className="mt-2 sm:mt-0 text-blue-600 hover:text-blue-800 font-medium text-sm px-3 py-1 rounded-lg hover:bg-blue-50 transition-all"
+            >
               View All →
             </button>
           </div>

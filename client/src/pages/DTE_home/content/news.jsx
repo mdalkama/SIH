@@ -202,7 +202,7 @@ const News = () => {
         )}
 
         {/* Custom Styles */}
-        <style jsx>{`
+        <style>{`
           .news-card {
             min-width: 350px;
             max-width: 350px;

@@ -192,7 +192,7 @@ const AboutDte = () => {
       </div>
       
       {/* Custom CSS for enhanced effects */}
-      <style jsx>{`
+      <style>{`
         .stats-card {
           position: relative;
           overflow: hidden;
