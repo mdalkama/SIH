@@ -567,3 +567,70 @@ export const updateStudentMarks = async (req, res) => {
     });
   }
 };
+
+
+export const getRegisteredStudentsForExam = async (req, res) => {
+    try {
+        const { examId } = req.params; // Ye Exam document ka _id hai
+
+        // 1. Pehle exam dhoondho taaki humein uska unique 'examId' string mil sake
+        const exam = await Exam.findById(examId).lean(); // .lean() for performance
+        if (!exam) {
+            return res.status(404).json({ message: "Exam not found." });
+        }
+
+        // 2. Ab StudentAcademics collection mein un sabhi students ko dhoondho
+        // jinke 'currentExamRegistrations' array mein hamara examId hai.
+        const registeredStudentRecords = await StudentAcademics.find({
+            'currentExamRegistrations.examId': exam.examId
+        })
+        .select('studentId registrationNumber') // Sirf zaroori fields select karo
+        .populate('studentId', 'name email profilePicture'); // Student model se student ka naam, email, etc. laao
+
+        // 3. Data ko saaf-suthre format mein frontend ko bhejo
+        const studentList = registeredStudentRecords.map(record => ({
+            studentAcademicId: record._id,
+            registrationNumber: record.registrationNumber,
+            // .populate() se studentId ab ek object ban gaya hai
+            name: record.studentId.name,
+            email: record.studentId.email,
+            profilePicture: record.studentId.profilePicture
+        }));
+
+        res.status(200).json({
+            success: true,
+            examName: exam.examName,
+            students: studentList,
+            totalRegistered: studentList.length
+        });
+
+    } catch (error) {
+        console.error("Error fetching registered students:", error);
+        res.status(500).json({ message: "Server error.", error: error.message });
+    }
+};
+
+export const getPendingSeatAllotments = async (req, res) => {
+    try {
+        const exams = await Exam.find({ status: 'SEAT_ALLOTMENT_DONE' })
+            .select('examName examId semester year') // Select only necessary fields
+            .sort({ createdAt: -1 })
+            .lean();
+            
+        // For each exam, we also need to get the count of registered students
+        const examsWithStudentCount = await Promise.all(exams.map(async (exam) => {
+            const registeredStudents = await StudentAcademics.countDocuments({
+                'currentExamRegistrations.examId': exam.examId
+            });
+            return {
+                ...exam,
+                registeredStudents: registeredStudents
+            };
+        }));
+
+        res.status(200).json({ success: true, allotments: examsWithStudentCount });
+    } catch (error) {
+        console.error("Error fetching pending seat allotments:", error);
+        res.status(500).json({ message: "Server error.", error: error.message });
+    }
+};

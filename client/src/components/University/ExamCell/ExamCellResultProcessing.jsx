@@ -149,7 +149,7 @@ const ResultsEntryGrid = ({ exam, students, studentMarks, onEditStudent, onSubmi
     return (
         <div className="animate-fade-in">
             <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
-                <div><button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-600 hover:text-indigo-600 font-medium mb-2 transition-colors"><ArrowLeft size={16} /> Back to Exam Selection</button><h2 className="text-2xl font-bold text-slate-800">Marks Entry: {exam?.examName}</h2></div>
+                <div><button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-600 hover:text-indigo-600 font-medium mb-2 transition-colors"><ArrowLeft size={16} /> Back to Exam Selection</button></div>
                 {students.length > 0 && (<button onClick={onSubmit} disabled={isSubmitting || isLoading} className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg disabled:bg-emerald-300 flex items-center justify-center font-semibold hover:bg-emerald-700 shadow-sm">{isSubmitting ? <><Loader2 size={18} className="animate-spin mr-2" /> Submitting...</> : 'Submit All Results for Approval'}</button>)}
             </div>
             
