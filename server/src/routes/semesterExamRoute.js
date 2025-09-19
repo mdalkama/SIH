@@ -12,7 +12,8 @@ import {
     updateStudentMarks,
     getExamResults,
     getDashboardStats,
-    getExamCellDashboardStats
+    getExamCellDashboardStats,
+    getRegisteredStudentsForExam
 } from "../controllers/examController/examController.js";
 import { role } from "../middlewares/authMiddleware.js";
 
@@ -38,5 +39,6 @@ router.get("/:examId/results", role(['UniversityExaminationBody', 'UniversityExa
 
 // --- DEDICATED ROUTE FOR ASSIGNING MARKS TO A SINGLE STUDENT ---
 router.put("/:examId/student/:studentAcademicId/marks",role(['UniversityExamCellStaff']),  updateStudentMarks);
+router.get("/:examId/registered-students", getRegisteredStudentsForExam);
 
 export default router;
