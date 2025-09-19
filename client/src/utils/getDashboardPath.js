@@ -21,6 +21,7 @@ const roleDashboardMap = {
     CollegeAdmissionDepartment: "/college-admission/dashboard",
     CollegeFinanceBody: "/college-finance/dashboard",
     CollegeExaminationBody: "/college-exam/dashboard",
+    CollegePlacementOfficer: "/college-placement/dashboard"
 };
 
 // role se dashboard path return karega
