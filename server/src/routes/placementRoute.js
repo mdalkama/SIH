@@ -5,7 +5,8 @@ import {
     getDriveWithApplications,
     getAvailableDrivesForStudent,
     applyForDrive,
-    getPlacementDashboardStats
+    getPlacementDashboardStats,
+    updatePlacementDrive
 } from '../controllers/placementController/placementController.js';
 import { role } from '../middlewares/authMiddleware.js';
 
@@ -18,6 +19,7 @@ router.route('/drives')
     .get( role('CollegePlacementOfficer'), getAllDrivesForOfficer);
 
 router.get('/drives/:driveId', role('CollegePlacementOfficer'), getDriveWithApplications);
+router.put('/drives/:driveId', role('CollegePlacementOfficer'), updatePlacementDrive);
 router.get('/dashboard/stats', role('CollegePlacementOfficer'), getPlacementDashboardStats);
 
 

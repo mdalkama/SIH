@@ -39,6 +39,7 @@ export const getPlacementDashboardStats = async (req, res) => {
 export const createPlacementDrive = async (req, res) => {
     try {
         const officer = req.user;
+         console.log(officer)
         const driveData = { 
             ...req.body, 
             postedBy: officer.id,
@@ -95,6 +96,7 @@ export const getDriveWithApplications = async (req, res) => {
  */
 export const getAvailableDrivesForStudent = async (req, res) => {
     try {
+        console.log(req.user)
         const student = await Student.findById(req.user.id).select('courseId collegeCode');
         const studentAcademics = await StudentAcademics.findOne({ studentId: req.user.id }).select('previousResults');
 
@@ -149,6 +151,20 @@ export const applyForDrive = async (req, res) => {
 
         res.status(200).json({ success: true, message: `Successfully applied to ${drive.companyName}.` });
 
+    } catch (error) {
+        res.status(500).json({ message: "Server error.", error: error.message });
+    }
+};
+
+export const updatePlacementDrive = async (req, res) => {
+    try {
+        const updatedDrive = await PlacementDrive.findByIdAndUpdate(
+            req.params.driveId,
+            req.body,
+            { new: true, runValidators: true }
+        );
+        if (!updatedDrive) return res.status(404).json({ message: "Drive not found." });
+        res.status(200).json({ success: true, message: "Drive updated successfully.", drive: updatedDrive });
     } catch (error) {
         res.status(500).json({ message: "Server error.", error: error.message });
     }
