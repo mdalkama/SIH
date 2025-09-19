@@ -76,47 +76,46 @@ const Overview = () => {
 
   return (
     <div className="w-full">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-screen-2xl mx-auto py-1 px-1 sm:px-2">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-4">
           <h1 className="text-2xl font-bold text-gray-800">Welcome back, {candidateInfo.name}</h1>
           <p className="text-gray-600">Here's your admission status at a glance</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Left Column - Candidate Info */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4">
             {/* Profile Card */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            <div className="bg-white rounded-xl shadow-sm p-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div className="w-20 h-20 rounded-lg bg-gray-200 flex items-center justify-center">
                   <User className="w-10 h-10 text-gray-400" />
                 </div>
                 <div className="flex-1">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h2 className="text-xl font-semibold">{candidateInfo.name}</h2>
-                      <p className="text-sm text-gray-600">Application ID: {candidateInfo.applicationId}</p>
                       <p className="text-sm text-gray-600">Registration: {candidateInfo.registrationNo}</p>
                       <p className="text-sm text-gray-600">Category: {candidateInfo.category}</p>
                     </div>
-                    <span className="mt-2 sm:mt-0 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                      Profile Complete
-                    </span>
+                    <div className="mt-2 sm:mt-0">
+                      <p className="text-sm text-gray-600 font-medium">Application ID: {candidateInfo.applicationId}</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {candidateInfo.stats.map((stat, index) => (
-                <div key={index} className="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-shadow">
+                <div key={index} className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-start">
                     <div className={`p-2 rounded-lg ${getStatusColor(stat.status)} bg-opacity-10`}>
                       {stat.icon}
                     </div>
-                    <div className="ml-4">
+                    <div className="ml-3">
                       <h3 className="text-sm font-medium text-gray-500">{stat.title}</h3>
                       <p className={`text-xl font-semibold ${getStatusColor(stat.status)}`}>
                         {stat.value}
@@ -134,18 +133,18 @@ const Overview = () => {
           </div>
 
           {/* Right Column - Notifications */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-4">
+          <div className="space-y-4">
+            <div className="bg-white rounded-xl shadow-sm p-4">
+              <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-semibold">Notifications</h3>
                 <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
                   {notifications.filter(n => !n.read).length} New
                 </span>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {notifications.map((notification) => (
-                  <div key={notification.id} className={`p-3 rounded-lg border ${!notification.read ? 'bg-blue-50 border-blue-100' : 'bg-white'}`}>
+                  <div key={notification.id} className={`p-2.5 rounded-lg border ${!notification.read ? 'bg-blue-50 border-blue-100' : 'bg-white'}`}>
                     <p className="text-sm">{notification.message}</p>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-xs text-gray-500">{notification.time}</span>
@@ -158,15 +157,15 @@ const Overview = () => {
               </div>
 
               {/* Time Left */}
-              <div className="mt-6 p-4 bg-gray-900 rounded-lg text-white">
+              <div className="mt-4 p-3 bg-gray-600 rounded-lg text-white border border-gray-500">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium">Time left to freeze/float</p>
-                    <p className="text-xs text-blue-300 mt-1">Next round starts in</p>
+                    <p className="text-xs text-gray-300 mt-1">Next round starts in</p>
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-mono font-bold">22:15:43</p>
-                    <p className="text-xs text-blue-300">Auto-reminder enabled</p>
+                    <p className="text-xs text-gray-300">Auto-reminder enabled</p>
                   </div>
                 </div>
               </div>
