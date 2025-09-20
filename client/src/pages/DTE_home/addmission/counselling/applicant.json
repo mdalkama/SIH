@@ -2,16 +2,16 @@
     "students": {
       "APP821015851112": {
         "personalInfo": {
-          "name": "Razique Ahmad",
+          "name": "Priya Sharma",
           "applicationId": "APP821015851112",
           "registrationNo": "REG2025-08210",
-          "email": "razique41@gmail.com",
+          "email": "priya.sharma@gmail.com",
           "phone": "+91-9876543210",
           "category": "General (UR)",
           "gender": "Male",
           "dateOfBirth": "2005-03-15",
           "profileComplete": true,
-          "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+          "photo": "https://th.bing.com/th/id/OIP.DPmLJbfVwB3d3kFfXTTftgAAAA?w=215&h=194&c=7&r=0&o=5&dpr=1.5&pid=1.7"
         },
         "examResults": {
           "totalScore": 195,
@@ -29,7 +29,7 @@
           }
         },
         "counsellingStatus": {
-          "currentRound": 2,
+          "currentRound": 1,
           "totalRounds": 3,
           "allotmentStatus": "Allotted",
           "allottedCollege": "Government Polytechnic College, Jaipur",
@@ -142,7 +142,7 @@
           },
           {
             "id": 4,
-            "message": "📄 Admit card for Round 2 counselling is now available for download.",
+            "message": "📄 Admit card for Round 1 counselling is now available for download.",
             "time": "14:30",
             "date": "2025-03-18",
             "read": true,
@@ -239,7 +239,7 @@
           }
         },
         "counsellingStatus": {
-          "currentRound": 2,
+          "currentRound": 1,
           "totalRounds": 3,
           "allotmentStatus": "Not Allotted",
           "allottedCollege": null,
@@ -340,7 +340,7 @@
         "notifications": [
           {
             "id": 1,
-            "message": "⏳ Round 2 allotment results will be declared on 25th March 2025.",
+            "message": "⏳ Round 1 allotment results will be declared on 25th March 2025.",
             "time": "11:30",
             "date": "2025-03-20",
             "read": false,
@@ -349,7 +349,7 @@
           },
           {
             "id": 2,
-            "message": "📊 You were not allotted in Round 1. You are eligible for Round 2 counselling.",
+            "message": "📊 You were not allotted in Round 1. You are eligible for Round 1 counselling.",
             "time": "10:15",
             "date": "2025-03-15",
             "read": false,
@@ -367,7 +367,7 @@
           },
           {
             "id": 4,
-            "message": "📄 Admit card for Round 2 counselling is now available for download.",
+            "message": "📄 Admit card for Round 1 counselling is now available for download.",
             "time": "14:30",
             "date": "2025-03-18",
             "read": true,
@@ -432,7 +432,7 @@
           },
           {
             "title": "Current Round",
-            "value": "Round 2",
+            "value": "Round 1",
             "icon": "RefreshCw",
             "status": "in-progress"
           },

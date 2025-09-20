@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Download, 
   CheckCircle, 
@@ -9,16 +9,57 @@ import {
   RefreshCw,
   Shield,
   Info,
-  AlertTriangle
+  AlertTriangle,
+  ArrowUp,
+  Check
 } from 'lucide-react';
+import { useApplicantData } from '../ApplicantDataContext';
 
 const FloatDecision = () => {
+  const { getPersonalInfo, getCounsellingStatus, getCollegePreferences } = useApplicantData();
+  const personalInfo = getPersonalInfo();
+  const counsellingStatus = getCounsellingStatus();
+  const collegePreferences = getCollegePreferences();
+  
+  // Get the allotted college details
+  const allottedCollege = collegePreferences.find(cp => cp.status === 'Allotted');
+  
+  // Get higher preferences (preferences with higher priority than the allotted one)
+  const higherPreferences = collegePreferences.filter(cp => 
+    cp.priority < (allottedCollege?.priority || Infinity)
+  );
+  
+  // State for the selected upgrade option
+  const [selectedUpgradeOption, setSelectedUpgradeOption] = useState('all');
+  
+  // Generate a submission ID
+  const submissionId = `R1-FLOAT-${Math.floor(10000 + Math.random() * 90000)}`;
+  
+  // Get current date and time
+  const currentDate = new Date();
+  const formattedDate = currentDate.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  });
+  
+  // Calculate next round deadline (3 days from now)
+  const nextRoundDeadline = new Date();
+  nextRoundDeadline.setDate(nextRoundDeadline.getDate() + 3);
+  const formattedDeadline = nextRoundDeadline.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
   return (
     <div className="w-full max-w-screen-2xl mx-auto py-1 px-1 sm:px-2">
       {/* Header */}
       <div className="mb-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Accept & Float Confirmed</h1>
-        <p className="text-sm sm:text-base text-gray-600 mt-1">Your float decision has been successfully recorded for Round 1</p>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">Your float decision has been successfully recorded for Round {counsellingStatus.currentRound}</p>
       </div>
 
       {/* Main Content Grid */}
@@ -43,12 +84,14 @@ const FloatDecision = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
               <div>
                 <p className="text-xs text-gray-600 mb-1">Candidate</p>
-                <p className="font-semibold text-gray-900">Aarav Sharma • App ID:</p>
-                <p className="font-semibold text-gray-900">23C-1145</p>
+                <p className="font-semibold text-gray-900">{personalInfo.name} • App ID: {personalInfo.applicationId}</p>
+                <p className="font-semibold text-gray-900">{personalInfo.registrationNo}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-600 mb-1">Current Seat</p>
-                <p className="font-semibold text-gray-900">NTU • B.Tech Computer Science</p>
+                <p className="font-semibold text-gray-900">
+                  {allottedCollege ? `${allottedCollege.college} • ${allottedCollege.branch}` : 'No seat allotted'}
+                </p>
               </div>
             </div>
 
@@ -80,10 +123,7 @@ const FloatDecision = () => {
                 <Download className="h-4 w-4" />
                 <span className="font-medium">Download A&F Receipt (PDF)</span>
               </button>
-              <button className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                <RefreshCw className="h-4 w-4" />
-                <span className="font-medium">Review/Lock Preferences</span>
-              </button>
+             
             </div>
           </div>
 
@@ -99,7 +139,7 @@ const FloatDecision = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-100">
                 <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center text-xs font-bold text-green-700">
-                  ✓
+                  <Check className="h-3 w-3" />
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-gray-900">Higher preferences eligible</p>
@@ -108,11 +148,30 @@ const FloatDecision = () => {
               </div>
               
               <div className="space-y-2 text-sm text-gray-600">
-                <p>1. IIT Metropolis • CSE</p>
-                <p>2. IIT Metropolis • AI</p>
-                <p>3. NIT Central • CSE</p>
-                <p>4. NIT Central • ECE</p>
-                <p className="font-semibold text-gray-900">5. NTU • CSE (Current)</p>
+                {higherPreferences.length > 0 ? (
+                  higherPreferences.map((pref, index) => (
+                    <p key={pref.priority} className="flex items-center gap-2">
+                      <span>{pref.priority}.</span>
+                      <span>{pref.college} • {pref.branch}</span>
+                      {pref.status === 'Allotted' && (
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                          Allotted
+                        </span>
+                      )}
+                    </p>
+                  ))
+                ) : (
+                  <p>No higher preferences available</p>
+                )}
+                {allottedCollege && (
+                  <p className="font-semibold text-gray-900 flex items-center gap-2">
+                    <span>{allottedCollege.priority}.</span>
+                    <span>{allottedCollege.college} • {allottedCollege.branch}</span>
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                      Current
+                    </span>
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -129,17 +188,38 @@ const FloatDecision = () => {
             <p className="text-sm text-gray-600 mb-4">Choose preferred upgrade rounds</p>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 text-center">
-                <p className="font-semibold text-blue-800">Round 2 only</p>
-                <p className="text-xs text-blue-600">Stops after next round</p>
+              <div 
+                className={`p-3 rounded-lg border text-center cursor-pointer transition-colors ${
+                  selectedUpgradeOption === 'next' 
+                    ? 'bg-blue-50 border-blue-200 text-blue-800' 
+                    : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => setSelectedUpgradeOption('next')}
+              >
+                <p className="font-semibold">Round 1 </p>
+                <p className="text-xs">Stops after next round</p>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center">
-                <p className="font-semibold text-gray-700">Round 2-3</p>
-                <p className="text-xs text-gray-600">Consider for two rounds</p>
+              <div 
+                className={`p-3 rounded-lg border text-center cursor-pointer transition-colors ${
+                  selectedUpgradeOption === 'two' 
+                    ? 'bg-blue-50 border-blue-200 text-blue-800' 
+                    : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => setSelectedUpgradeOption('two')}
+              >
+                <p className="font-semibold">Round 1-2</p>
+                <p className="text-xs">Consider for two rounds</p>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center">
-                <p className="font-semibold text-gray-700">Till final round</p>
-                <p className="text-xs text-gray-600">Continue for maximum chance</p>
+              <div 
+                className={`p-3 rounded-lg border text-center cursor-pointer transition-colors ${
+                  selectedUpgradeOption === 'all' 
+                    ? 'bg-blue-50 border-blue-200 text-blue-800' 
+                    : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => setSelectedUpgradeOption('all')}
+              >
+                <p className="font-semibold">Till final round</p>
+                <p className="text-xs">Continue for maximum chance</p>
               </div>
             </div>
 

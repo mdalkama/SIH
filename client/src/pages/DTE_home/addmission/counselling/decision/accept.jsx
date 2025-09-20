@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   Download, 
   Printer, 
@@ -15,14 +15,51 @@ import {
   Clock,
   Info
 } from 'lucide-react';
+import { useApplicantData } from '../ApplicantDataContext';
 
 const AcceptDecision = () => {
+  const { getPersonalInfo, getCounsellingStatus, getCollegePreferences, getCounsellingRounds } = useApplicantData();
+  const personalInfo = getPersonalInfo();
+  const counsellingStatus = getCounsellingStatus();
+  const collegePreferences = getCollegePreferences();
+  const counsellingRounds = getCounsellingRounds();
+  
+  // Get the allotted college details
+  const allottedCollege = collegePreferences.find(cp => cp.status === 'Allotted');
+  
+  // Generate a submission ID
+  const submissionId = `R${counsellingStatus.currentRound}-DEC-${Math.floor(10000 + Math.random() * 90000)}`;
+  
+  // Get current date and time
+  const currentDate = new Date();
+  const formattedDate = currentDate.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  });
+  const formattedTime = currentDate.toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: true 
+  });
+  
+  // Calculate reporting deadline (3 days from now)
+  const reportingDeadline = new Date();
+  reportingDeadline.setDate(reportingDeadline.getDate() + 3);
+  const formattedDeadline = reportingDeadline.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
   return (
     <div className="w-full max-w-screen-2xl mx-auto py-1 px-1 sm:px-2">
       {/* Header */}
       <div className="mb-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Decision Receipt</h1>
-        <p className="text-sm sm:text-base text-gray-600 mt-1">Your acceptance has been successfully recorded for Round 1</p>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">Your acceptance has been successfully recorded for Round {counsellingStatus.currentRound}</p>
       </div>
 
       {/* Main Content Grid */}
@@ -46,7 +83,7 @@ const AcceptDecision = () => {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-semibold text-gray-900">Decision Receipt</h2>
               <span className="px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded-full font-medium">
-                Round 1
+                Round {counsellingStatus.currentRound}
               </span>
             </div>
 
@@ -54,12 +91,12 @@ const AcceptDecision = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
               <div>
                 <p className="text-xs text-gray-600 mb-1">Candidate</p>
-                <p className="font-semibold text-gray-900">Aarav Sharma • App ID:</p>
-                <p className="font-semibold text-gray-900">23C-1145</p>
+                <p className="font-semibold text-gray-900">{personalInfo.name} • App ID: {personalInfo.applicationId}</p>
+                <p className="font-semibold text-gray-900">{personalInfo.registrationNo}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-600 mb-1">Decision</p>
-                <p className="font-semibold text-green-600">Accept & Freeze</p>
+                <p className="font-semibold text-green-600">Accept & Freeze • Round {counsellingStatus.currentRound}</p>
               </div>
             </div>
 
@@ -67,11 +104,11 @@ const AcceptDecision = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
               <div>
                 <p className="text-xs text-gray-600 mb-1">Institute</p>
-                <p className="font-semibold text-gray-900">National Tech University</p>
+                <p className="font-semibold text-gray-900">{allottedCollege?.college || 'Not Allotted'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-600 mb-1">Program</p>
-                <p className="font-semibold text-gray-900">B.Tech Computer Science</p>
+                <p className="font-semibold text-gray-900">{allottedCollege?.branch || 'Not Allotted'}</p>
               </div>
             </div>
 
@@ -79,11 +116,11 @@ const AcceptDecision = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
               <div>
                 <p className="text-xs text-gray-600 mb-1">Submission ID</p>
-                <p className="font-semibold text-gray-900">R1-DEC-78421</p>
+                <p className="font-semibold text-gray-900">{submissionId}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-600 mb-1">Submitted On</p>
-                <p className="font-semibold text-gray-900">10 Aug, 11:24 AM</p>
+                <p className="font-semibold text-gray-900">{formattedDate}, {formattedTime}</p>
               </div>
             </div>
 
@@ -91,7 +128,7 @@ const AcceptDecision = () => {
             <div className="bg-blue-50 rounded-lg p-4 mb-6">
               <h3 className="font-semibold text-gray-900 mb-3">Reporting Instructions</h3>
               <p className="text-sm text-gray-700 mb-3">
-                <strong>Report to NTU Main Campus, Block A by 12 Aug, 5:00 PM with the following:</strong>
+                <strong>Report to {allottedCollege?.college || 'the allotted college'} by {formattedDeadline} with the following:</strong>
               </p>
               <ul className="text-sm text-gray-700 space-y-1">
                 <li className="flex items-start gap-2">

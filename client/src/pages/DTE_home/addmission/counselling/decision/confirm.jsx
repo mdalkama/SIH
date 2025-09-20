@@ -15,11 +15,19 @@ import {
   Shield,
   Info
 } from 'lucide-react';
+import { useApplicantData } from '../ApplicantDataContext';
 import AcceptDecision from './accept';
 import FloatDecision from './float';
 import RejectDecision from './reject';
 
 const ConfirmDecision = ({ decision = 'freeze', onGoBack }) => {
+  const { getPersonalInfo, getCounsellingStatus, getCollegePreferences } = useApplicantData();
+  const personalInfo = getPersonalInfo();
+  const counsellingStatus = getCounsellingStatus();
+  const collegePreferences = getCollegePreferences();
+  
+  // Get the allotted college details
+  const allottedCollege = collegePreferences.find(cp => cp.status === 'Allotted');
   const [agreeToDeclaration, setAgreeToDeclaration] = useState(false);
   const [showAcceptPage, setShowAcceptPage] = useState(false);
   const [showFloatPage, setShowFloatPage] = useState(false);
@@ -157,7 +165,7 @@ const ConfirmDecision = ({ decision = 'freeze', onGoBack }) => {
           <span className="text-sm font-medium">Go Back</span>
         </button>
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Confirm Decision</h1>
-        <p className="text-sm sm:text-base text-gray-600 mt-1">Review and submit your final decision for Round 1</p>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">Review and submit your final decision for Round {counsellingStatus.currentRound || 1}</p>
       </div>
 
       {/* Main Content Grid */}
@@ -175,7 +183,7 @@ const ConfirmDecision = ({ decision = 'freeze', onGoBack }) => {
                 <p className="text-sm text-gray-600">{config.subtitle}</p>
               </div>
               <span className={`ml-auto px-3 py-1 rounded-full text-xs font-medium ${config.badgeColor}`}>
-                Round 1
+                Round {counsellingStatus.currentRound || 1}
               </span>
             </div>
 
@@ -184,21 +192,22 @@ const ConfirmDecision = ({ decision = 'freeze', onGoBack }) => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <p className="text-xs text-gray-600">Candidate</p>
-                  <p className="font-semibold text-gray-900">Aarav Sharma • App ID: 23C-1145</p>
+                  <p className="font-semibold text-gray-900">{personalInfo.name} • App ID: {personalInfo.applicationId}</p>
+                  <p className="font-semibold text-gray-900">{personalInfo.registrationNo}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-600">Allotted Institute</p>
-                  <p className="font-semibold text-gray-900">National Tech University</p>
+                  <p className="font-semibold text-gray-900">{allottedCollege?.college || 'Not Allotted'}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-600">Program</p>
-                  <p className="font-medium text-gray-900">B.Tech Computer Science</p>
+                  <p className="font-medium text-gray-900">{allottedCollege?.branch || 'Not Allotted'}</p>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <div>
                   <p className="text-xs text-gray-600">Reporting Centre</p>
-                  <p className="font-medium text-gray-900">NTU Main Campus, Block A</p>
+                  <p className="font-medium text-gray-900">{allottedCollege?.reportingCentre || 'Not Allotted'}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-600">Reporting By</p>

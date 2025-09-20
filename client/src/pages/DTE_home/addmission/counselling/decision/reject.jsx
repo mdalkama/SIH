@@ -1,25 +1,137 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Download, 
-  AlertTriangle, 
-  Share2,
+  XCircle, 
+  AlertTriangle,
+  Clock,
   RefreshCw,
+  Info,
+  ArrowRight,
+  Calendar,
+  FileText,
+  CheckCircle,
+  Home,
   Search,
+  Share2,
+  ExternalLink,
   HelpCircle,
   Mail,
-  Phone,
-  ExternalLink,
-  FileText,
-  CreditCard
+  Phone
 } from 'lucide-react';
+import { useApplicantData } from '../ApplicantDataContext';
+import { useNavigate } from 'react-router-dom';
 
 const RejectDecision = () => {
+  const { getPersonalInfo, getCounsellingStatus, getCollegePreferences, getCounsellingRounds } = useApplicantData();
+  const personalInfo = getPersonalInfo();
+  const counsellingStatus = getCounsellingStatus();
+  const collegePreferences = getCollegePreferences();
+  // Get counselling rounds with proper error handling
+  const counsellingRounds = () => {
+    try {
+      const rounds = getCounsellingRounds?.();
+      return Array.isArray(rounds) ? rounds : [];
+    } catch (error) {
+      console.error('Error getting counselling rounds:', error);
+      return [];
+    }
+  };
+  
+  // Get the allotted college details with null check
+  const allottedCollege = Array.isArray(collegePreferences) 
+    ? collegePreferences.find(cp => cp?.status === 'Allotted') 
+    : null;
+  
+  // Generate a submission ID with fallback for currentRound
+  const currentRoundNum = counsellingStatus?.currentRound || 1;
+  const submissionId = `R${currentRoundNum}-REJ-${Math.floor(10000 + Math.random() * 90000)}`;
+  
+  // Get current date and time
+  const currentDate = new Date();
+  const formattedDate = currentDate.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  });
+  const formattedTime = currentDate.toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: true 
+  });
+  
+  // Calculate next round details with null checks
+  const currentRound = counsellingRounds().find(r => r?.roundNumber === currentRoundNum) || null;
+  const nextRound = counsellingRounds().find(r => r?.roundNumber === currentRoundNum + 1) || null;
+  
+  // State for confirmation and navigation
+  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedReason, setSelectedReason] = useState('');
   const [additionalDetails, setAdditionalDetails] = useState('');
   const [paymentReference, setPaymentReference] = useState('');
+  const navigate = useNavigate();
+
+  // Handle navigation after successful submission
+  useEffect(() => {
+    if (showSuccessModal) {
+      const timer = setTimeout(() => {
+        navigate('/dte-home'); // Adjust the path to your home page route
+      }, 5000); // Redirect after 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessModal, navigate]);
+
+  const handleSubmitRejection = () => {
+    // Here you would typically submit the rejection to your backend
+    console.log('Submitting rejection with:', {
+      reason: selectedReason,
+      details: additionalDetails,
+      paymentReference
+    });
+    
+    // Show success modal
+    setShowSuccessModal(true);
+    
+    // You might also want to update the application status in your context
+    // updateCounsellingStatus({
+    //   ...counsellingStatus,
+    //   status: 'Rejected',
+    //   rejectionReason: selectedReason
+    // });
+  };
+
+  // Success Modal Component
+  const SuccessModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+        <div className="text-center">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+            <CheckCircle className="h-6 w-6 text-green-600" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mt-3">Rejection Submitted Successfully</h3>
+          <div className="mt-2">
+            <p className="text-sm text-gray-500">
+              Your decision to reject the allotted seat has been recorded. You will be redirected to the home page shortly.
+            </p>
+          </div>
+          <div className="mt-5 flex justify-center">
+            <button
+              type="button"
+              onClick={() => navigate('/dte-home')} // Adjust the path to your home page route
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <Home className="-ml-1 mr-2 h-5 w-5" />
+              Go to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="w-full max-w-screen-2xl mx-auto py-1 px-1 sm:px-2">
+    <div className="w-full max-w-screen-2xl mx-auto py-1 px-1 sm:px-2 relative">
+      {showSuccessModal && <SuccessModal />}
       {/* Header */}
       <div className="mb-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Exit from Counselling Confirmed</h1>
@@ -33,8 +145,8 @@ const RejectDecision = () => {
           {/* Warning Message */}
           <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center mt-0.5">
-                <AlertTriangle className="h-5 w-5 text-orange-600" />
+              <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center text-xs font-bold text-green-700">
+                <CheckCircle className="h-3 w-3" />
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-orange-800 mb-2">You have rejected the allotted seat and exited the process.</h2>
@@ -50,12 +162,14 @@ const RejectDecision = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
               <div>
                 <p className="text-xs text-gray-600 mb-1">Candidate</p>
-                <p className="font-semibold text-gray-900">Aarav Sharma • App ID:</p>
+                <p className="font-semibold text-gray-900">{personalInfo.name} • App ID: {personalInfo.applicationId}</p>
                 <p className="font-semibold text-gray-900">23C-1145</p>
               </div>
               <div>
-                <p className="text-xs text-gray-600 mb-1">Rejected Seat</p>
-                <p className="font-semibold text-gray-900">NTU • B.Tech Computer Science</p>
+                <p className="text-xs text-gray-600 mb-1">Allotted Seat</p>
+                <p className="font-semibold text-gray-900">
+                  {allottedCollege ? `${allottedCollege.college} • ${allottedCollege.branch}` : 'No seat allotted'}
+                </p>
               </div>
             </div>
 
@@ -183,11 +297,17 @@ const RejectDecision = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
-              <button className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                <ExternalLink className="h-4 w-4" />
+              <button 
+                onClick={() => window.close()} // This will close the current tab/window
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                <XCircle className="h-4 w-4" />
                 <span className="font-medium">Exit Portal</span>
               </button>
-              <button className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button 
+                onClick={handleSubmitRejection}
+                className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 <FileText className="h-4 w-4" />
                 <span className="font-medium">Submit Feedback & Request Refund</span>
               </button>
@@ -244,7 +364,10 @@ const RejectDecision = () => {
                   <HelpCircle className="h-4 w-4 text-gray-600" />
                   <p className="text-xs font-medium text-gray-600">Need assistance?</p>
                 </div>
-                <p className="text-sm text-gray-700 mb-2">Our helpdesk can guide you with policy, refunds and re-application.</p>
+                <p className="text-sm text-gray-600 mb-2">
+                  Your seat will be automatically cancelled. You'll be considered for your higher preferences in 
+                  {nextRound ? ` Round ${nextRound.roundNumber}.` : ' subsequent rounds.'}
+                </p>
                 
                 <div className="space-y-2">
                   <div>

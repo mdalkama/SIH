@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   MapPin,
   School,
@@ -23,6 +23,7 @@ import {
   MapPin as MapPinIcon
 } from "lucide-react";
 import { useApplicantData } from '../ApplicantDataContext.jsx';
+import FreezeCountdown from '../components/FreezeCountdown';
 
 const AllotmentDashboard = () => {
   const [activeTab, setActiveTab] = useState('allotment');
@@ -302,12 +303,7 @@ const AllotmentDashboard = () => {
                 </span>
               </div>
 
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3">
-                <div className="text-center">
-                  <p className="text-sm font-medium text-blue-800">Freeze Window</p>
-                  <p className="text-lg font-bold text-blue-900 font-mono">02d : 11h : 24m</p>
-                </div>
-              </div>
+              <FreezeCountdown targetDate={counsellingStatus.feePaymentDeadline} />
 
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg mb-3">
                 <div className="flex items-start gap-2">

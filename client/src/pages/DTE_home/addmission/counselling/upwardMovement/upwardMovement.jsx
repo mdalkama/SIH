@@ -102,7 +102,7 @@ const UpwardMovement = () => {
     if (isConfirmed) {
       // Submit upward movement using CRUD function
       submitUpwardMovement({
-        round: counsellingStatus.currentRound,
+        round: 1,
         preferences: collegePreferences.filter(pref => pref.preferenceOrder < 5),
         timestamp: new Date().toISOString()
       });
@@ -110,18 +110,18 @@ const UpwardMovement = () => {
       // Add notification
       addNotification({
         id: Date.now(),
-        message: `Upward movement submitted for Round ${counsellingStatus.currentRound + 1}`,
+        message: `Upward movement submitted for Round 1`,
         time: new Date().toLocaleTimeString(),
         read: false
       });
       
       // Generate and download receipt
-      const receiptContent = `Upward Movement Receipt\n\nApplicant: ${personalInfo.name}\nApplication ID: ${personalInfo.applicationId}\nCurrent Round: ${counsellingStatus.currentRound}\nNext Round: ${counsellingStatus.currentRound + 1}\nPreferences Submitted: ${collegePreferences.filter(pref => pref.preferenceOrder < 5).length}\nTimestamp: ${new Date().toLocaleString()}\n\nThis is your upward movement submission receipt.`;
+      const receiptContent = `Upward Movement Receipt\n\nApplicant: ${personalInfo.name}\nApplication ID: ${personalInfo.applicationId}\nCurrent Round: 1\nNext Round: 2\nPreferences Submitted: ${collegePreferences.filter(pref => pref.preferenceOrder < 5).length}\nTimestamp: ${new Date().toLocaleString()}\n\nThis is your upward movement submission receipt.`;
       const blob = new Blob([receiptContent], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `upward_movement_receipt_round_${counsellingStatus.currentRound + 1}.txt`;
+      a.download = `upward_movement_receipt_round_1.txt`;
       a.click();
       URL.revokeObjectURL(url);
       
@@ -176,9 +176,9 @@ const UpwardMovement = () => {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Confirm Eligibility</h2>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Round {counsellingStatus.currentRound}</span>
+                <span className="text-sm text-gray-500">Round 1</span>
                 <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-                <span className="text-sm text-blue-600 font-medium">{counsellingStatus.currentRound + 1}</span>
+                <span className="text-sm text-blue-600 font-medium">Round 2</span>
               </div>
             </div>
 
@@ -274,36 +274,7 @@ const UpwardMovement = () => {
               <span className="text-xs text-blue-600">Next Round</span>
             </div>
             
-            <div className="space-y-3">
-              {notifications.map((notification) => (
-                <div key={notification.id} className={`p-3 rounded-lg border ${!notification.read ? 'bg-blue-50 border-blue-100' : 'bg-white'}`}>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-900">{notification.message}</p>
-                      <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-                    </div>
-                    <div className="flex-shrink-0 flex space-x-1 ml-2">
-                      {!notification.read && (
-                        <button
-                          onClick={() => handleMarkAsRead(notification.id)}
-                          className="p-1 text-blue-600 hover:bg-blue-100 rounded-full transition-colors"
-                          title="Mark as read"
-                        >
-                          <Eye className="w-3 h-3" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDeleteNotification(notification.id)}
-                        className="p-1 text-red-600 hover:bg-red-100 rounded-full transition-colors"
-                        title="Delete notification"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-gray-300"></div>
