@@ -100,19 +100,23 @@ export const getAvailableDrivesForStudent = async (req, res) => {
             return res.status(404).json({ message: "Student profile not found." });
         }
         
-        // Fetch all open drives for the student's college
         const allOpenDrives = await PlacementDrive.find({
             collegeCode: student.collegeCode,
             status: 'OPEN',
-        }).lean(); // Use lean for performance
+        }).lean();
         
-        // Add the 'hasApplied' flag for the frontend UI
+        // Add 'hasApplied' and 'applicationStatus' to each drive
         const drivesWithStatus = allOpenDrives.map(drive => {
-            const hasApplied = drive.applications.some(app => app.studentId.toString() === req.user.id);
+            const studentApplication = drive.applications.find(app => app.studentId.toString() === req.user.id);
+            
+            const hasApplied = !!studentApplication;
+            const applicationStatus = studentApplication ? studentApplication.status : null;
+
             const { applications, ...driveWithoutApps } = drive; // Remove sensitive applications array
             return {
                 ...driveWithoutApps,
                 hasApplied,
+                applicationStatus // <-- YEH NAYA FIELD HAI
             };
         });
 
@@ -175,6 +179,25 @@ export const applyForDrive = async (req, res) => {
     }
 };
 
+export const deletePlacementDrive = async (req, res) => {
+    try {
+        const drive = await PlacementDrive.findOne({
+            _id: req.params.driveId,
+            collegeCode: req.user.collegeCode // Security check
+        });
+
+        if (!drive) {
+            return res.status(404).json({ message: "Drive not found or you are not authorized to delete it." });
+        }
+
+        await drive.deleteOne(); // Use deleteOne on the found document
+
+        res.status(200).json({ success: true, message: "Placement drive deleted successfully." });
+    } catch (error) {
+        res.status(500).json({ message: "Server error deleting drive.", error: error.message });
+    }
+};
+
 export const updatePlacementDrive = async (req, res) => {
     try {
         const updatedDrive = await PlacementDrive.findByIdAndUpdate(
@@ -186,5 +209,36 @@ export const updatePlacementDrive = async (req, res) => {
         res.status(200).json({ success: true, message: "Drive updated successfully.", drive: updatedDrive });
     } catch (error) {
         res.status(500).json({ message: "Server error.", error: error.message });
+    }
+};
+
+export const updateApplicationStatus = async (req, res) => {
+    try {
+        const { driveId, studentId } = req.params;
+        const { status } = req.body; // Expecting status like "SHORTLISTED" or "REJECTED"
+
+        if (!status) {
+            return res.status(400).json({ message: "New status is required." });
+        }
+
+        const drive = await PlacementDrive.findOneAndUpdate(
+            {
+                _id: driveId,
+                collegeCode: req.user.collegeCode, // Security check
+                "applications.studentId": studentId
+            },
+            {
+                $set: { "applications.$.status": status } // Update the status of the matched application
+            },
+            { new: true } // Return the updated document
+        );
+
+        if (!drive) {
+            return res.status(404).json({ message: "Drive or student application not found." });
+        }
+
+        res.status(200).json({ success: true, message: "Application status updated successfully.", drive });
+    } catch (error) {
+        res.status(500).json({ message: "Server error updating status.", error: error.message });
     }
 };

@@ -4,43 +4,49 @@ import { X, Send, Bot, BotMessageSquare, Mic, MicOff } from 'lucide-react'
 // Complete DTE Rajasthan Hardcoded Dataset
 const dteData = {
   admissions: {
-    diploma: {
-      firstYear: {
-        english: "Diploma First Year (Engineering) 2025-26: Application dates 11-14 August 2025, 11:00 AM onwards. Apply via www.dap2025.in. Counseling through centralized online process.",
-        hindi: "डिप्लोमा प्रथम वर्ष (इंजीनियरिंग कोर्स) 2025-26: आवेदन तिथि 11-14 अगस्त 2025, सुबह 11:00 बजे से। www.dap2025.in पर आवेदन करें।"
-      },
-      lateralEntry: {
-        english: "Diploma Lateral Entry (Second Year) 2025-26: Applications open from 20 September 2025. Eligibility: Passed Diploma in relevant branch with minimum 45% marks.",
-        hindi: "डिप्लोमा लेटरल एंट्री (द्वितीय वर्ष) 2025-26: आवेदन 20 सितंबर 2025 से खुले। पात्रता: संबंधित शाखा में डिप्लोमा पास न्यूनतम 45% अंकों के साथ।"
-      }
+    diploma_first_year: {
+      english: "Diploma First Year 2025-26: Applications start from 11 August 2025. Eligibility: 10th pass with minimum 35% marks. Online application available on DTE Rajasthan website.",
+      hindi: "डिप्लोमा प्रथम वर्ष 2025-26: आवेदन 11 अगस्त 2025 से शुरू। पात्रता: 10वीं पास न्यूनतम 35% अंकों के साथ। DTE राजस्थान वेबसाइट पर ऑनलाइन आवेदन उपलब्ध।"
     },
-    btech: {
-      firstYear: {
-        english: "B.Tech First Year (Non-Engineering) 2025-26: Applications start from 14 October 2025. Eligibility: 12th pass with PCM, minimum 45% marks. JEE Main score required.",
-        hindi: "B.Tech प्रथम वर्ष (गैर-इंजीनियरिंग) 2025-26: आवेदन 14 अक्टूबर 2025 से शुरू। पात्रता: PCM के साथ 12वीं पास, न्यूनतम 45% अंक। JEE Main स्कोर आवश्यक।"
-      }
+    diploma_lateral_entry: {
+      english: "Diploma Lateral Entry (Second Year) 2025-26: Applications from 14 August 2025. Eligibility: Passed relevant Diploma/ITI with minimum 45% marks.",
+      hindi: "डिप्लोमा लेटरल एंट्री (द्वितीय वर्ष) 2025-26: 14 अगस्त 2025 से आवेदन। पात्रता: संबंधित डिप्लोमा/ITI पास न्यूनतम 45% अंकों के साथ।"
     },
-    generalPrompt: {
-      english: "Which admission are you asking about? B.Tech or Diploma?",
-      hindi: "आप किस प्रकार के प्रवेश के बारे में पूछ रहे हैं? B.Tech या Diploma?"
-    }
   },
   results: {
-    diploma_1st_sem: {
-      english: "Diploma 1st Semester Result released on 12 September 2025.",
-      hindi: "डिप्लोमा प्रथम सेमेस्टर का परिणाम 12 सितंबर 2025 को घोषित किया गया।"
+    diploma: {
+      "1": {
+        english: "Diploma 1st Semester Result released on 12 September 2025.",
+        hindi: "डिप्लोमा प्रथम सेमेस्टर का परिणाम 12 सितंबर 2025 को घोषित किया गया।"
+      },
+      "2": {
+        english: "Diploma 2nd Semester Result released on 15 September 2025.",
+        hindi: "डिप्लोमा द्वितीय सेमेस्टर का परिणाम 15 सितंबर 2025 को घोषित किया गया।"
+      },
+      "3": {
+        english: "Diploma 3rd Semester Result published on 18 September 2025.",
+        hindi: "डिप्लोमा तृतीय सेमेस्टर का परिणाम 18 सितंबर 2025 को घोषित किया गया।"
+      },
+      "4": {
+        english: "Diploma 4th Semester Result declared on 20 September 2025.",
+        hindi: "डिप्लोमा चतुर्थ सेमेस्टर का परिणाम 20 सितंबर 2025 को घोषित किया गया।"
+      },
+      "5": {
+        english: "Diploma 5th Semester Result declared on 22 September 2025.",
+        hindi: "डिप्लोमा पंचम सेमेस्टर का परिणाम 22 सितंबर 2025 को घोषित किया गया।"
+      },
+      "6": {
+        english: "Diploma 6th Semester Result published on 25 September 2025.",
+        hindi: "डिप्लोमा षष्ठ सेमेस्टर का परिणाम 25 सितंबर 2025 को घोषित किया गया।"
+      },
+      revaluation: {
+        english: "Diploma Revaluation Result announced on 28 September 2025.",
+        hindi: "डिप्लोमा पुनर्मूल्यांकन परिणाम 28 सितंबर 2025 को घोषित किया गया।"
+      }
     },
-    diploma_2nd_sem: {
-      english: "Diploma 2nd Semester Result released on 15 September 2025.",
-      hindi: "डिप्लोमा द्वितीय सेमेस्टर का परिणाम 15 सितंबर 2025 को घोषित किया गया।"
-    },
-    btech_1st_sem: {
-      english: "B.Tech 1st Semester Result published on 12 September 2025.",
-      hindi: "B.Tech प्रथम सेमेस्टर का परिणाम 12 सितंबर 2025 को घोषित किया गया।"
-    },
-    revaluation_diploma: {
-      english: "Diploma Revaluation results announced on 18 September 2025.",
-      hindi: "डिप्लोमा पुनर्मूल्यांकन परिणाम 18 सितंबर 2025 को घोषित किया गया।"
+    semesterPrompt: {
+      english: "Which Diploma semester result are you asking about?",
+      hindi: "आप किस डिप्लोमा सेमेस्टर के परिणाम के बारे में पूछ रहे हैं?"
     }
   },
   eligibility: {
@@ -52,23 +58,37 @@ const dteData = {
       english: "Diploma Lateral Entry: Passed Diploma in relevant branch with minimum 45% marks.",
       hindi: "डिप्लोमा लेटरल एंट्री: संबंधित शाखा में डिप्लोमा पास न्यूनतम 45% अंकों के साथ।"
     },
-    btech_first_year: {
-      english: "B.Tech First Year: 12th pass with Physics, Chemistry, and Mathematics with minimum 45% marks.",
-      hindi: "B.Tech प्रथम वर्ष: 12वीं पास भौतिकी, रसायन विज्ञान, और गणित के साथ न्यूनतम 45% अंकों के साथ।"
-    }
   },
   exams: {
-    diploma_3rd_sem: {
-      english: "Diploma 3rd Semester exam scheduled to begin on 10 October 2025.",
-      hindi: "डिप्लोमा तीसरे सेमेस्टर की परीक्षा 10 अक्टूबर 2025 को शुरू होने वाली है।"
+    diploma: {
+      "1": {
+        english: "Diploma 1st Semester exam starts on 1 October 2025.",
+        hindi: "डिप्लोमा प्रथम सेमेस्टर की परीक्षा 1 अक्टूबर 2025 को शुरू होती है।"
+      },
+      "2": {
+        english: "Diploma 2nd Semester exam starts on 15 October 2025.",
+        hindi: "डिप्लोमा द्वितीय सेमेस्टर की परीक्षा 15 अक्टूबर 2025 को शुरू होती है।"
+      },
+      "3": {
+        english: "Diploma 3rd Semester exam starts on 10 October 2025.",
+        hindi: "डिप्लोमा तृतीय सेमेस्टर की परीक्षा 10 अक्टूबर 2025 को शुरू होती है।"
+      },
+      "4": {
+        english: "Diploma 4th Semester exam starts on 20 October 2025.",
+        hindi: "डिप्लोमा चतुर्थ सेमेस्टर की परीक्षा 20 अक्टूबर 2025 को शुरू होती है।"
+      },
+      "5": {
+        english: "Diploma 5th Semester exam starts on 25 October 2025.",
+        hindi: "डिप्लोमा पंचम सेमेस्टर की परीक्षा 25 अक्टूबर 2025 को शुरू होती है।"
+      },
+      "6": {
+        english: "Diploma 6th Semester exam starts on 30 October 2025.",
+        hindi: "डिप्लोमा षष्ठ सेमेस्टर की परीक्षा 30 अक्टूबर 2025 को शुरू होती है।"
+      }
     },
-    btech_odd_sem: {
-      english: "B.Tech Odd Semester Exams commencing from 25 November 2025.",
-      hindi: "B.Tech विषम सेमेस्टर की परीक्षाएं 25 नवंबर 2025 से शुरू हो रही हैं।"
-    },
-    special_exam_form: {
-      english: "Special Exam Form Filling: Last date is 5 October 2025.",
-      hindi: "विशेष परीक्षा फॉर्म भरना: अंतिम तिथि 5 अक्टूबर 2025 है।"
+    semesterPrompt: {
+      english: "Which Diploma semester exam are you asking about?",
+      hindi: "आप किस डिप्लोमा सेमेस्टर की परीक्षा के बारे में पूछ रहे हैं?"
     }
   },
   notices: {
@@ -78,12 +98,24 @@ const dteData = {
     }
   },
   greetings: {
-    english: "Hello! I'm Alkama, your DTE Rajasthan student assistant. I can help with admissions, results, eligibility, exams, and notices. What would you like to know?",
-    hindi: "नमस्ते! मैं अल्कामा हूं, आपका DTE राजस्थान छात्र सहायक। मैं प्रवेश, परिणाम, पात्रता, परीक्षा और नोटिस में मदद कर सकता हूं। आप क्या जानना चाहते हैं?"
+    english: "Hello! I'm Saarthi, your DTE Rajasthan student assistant. I can help with admissions, results, eligibility, exams, and notices. What would you like to know?",
+    hindi: "नमस्ते! मैं सारथी हूं, आपका DTE राजस्थान छात्र सहायक। मैं प्रवेश, परिणाम, पात्रता, परीक्षा और नोटिस में मदद कर सकता हूं। आप क्या जानना चाहते हैं?"
   },
   refusal: {
     english: "I am sorry, this information is not available. Please visit the official DTE Rajasthan website.",
     hindi: "मुझे खेद है, यह जानकारी उपलब्ध नहीं है। कृपया आधिकारिक DTE राजस्थान वेबसाइट पर जाएं।"
+  },
+  semesterNotFound: {
+    english: "Sorry, this semester information is not available. Please check the official DTE Rajasthan website.",
+    hindi: "खेद है, इस सेमेस्टर की जानकारी उपलब्ध नहीं है। कृपया आधिकारिक DTE राजस्थान वेबसाइट देखें।"
+  },
+  btechRestriction: {
+    english: "DTE Rajasthan provides information only for Diploma courses. Please visit the official website for other courses.",
+    hindi: "DTE राजस्थान केवल डिप्लोमा पाठ्यक्रमों की जानकारी प्रदान करता है। अन्य पाठ्यक्रमों के लिए कृपया आधिकारिक वेबसाइट पर जाएं।"
+  },
+  noInfo: {
+    english: "I'm sorry, I don't have that information. Please check the official DTE Rajasthan website.",
+    hindi: "मुझे खेद है, मेरे पास यह जानकारी नहीं है। कृपया आधिकारिक DTE राजस्थान वेबसाइट देखें।"
   }
 }
 
@@ -92,7 +124,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "Hello! I'm Alkama, your DTE Rajasthan assistant. How can I help you today?",
+      text: "Hello! I'm Saarthi, your DTE Rajasthan assistant. How can I help you today?",
       sender: 'bot',
       timestamp: new Date()
     }
@@ -113,19 +145,28 @@ const Chatbot = () => {
     return hindiPattern.test(text) ? 'hindi' : 'english'
   }
 
-  // Enhanced context-aware intent detection
+
+  // Simplified intent detection for Diploma only
   const detectIntent = (text) => {
     const lower = text.toLowerCase()
     
-    // Handle context follow-ups first
-    if (lastIntent === 'awaiting_type') {
-      if (/(diploma|polytechnic|डिप्लोमा|पॉलिटेक्निक)/.test(lower)) {
-        if (contextType === 'admission') return 'diploma_admission'
-        if (contextType === 'eligibility') return 'diploma_eligibility'
-      }
-      if (/(b\.?tech|engineering|इंजीनियरिंग)/.test(lower)) {
-        if (contextType === 'admission') return 'btech_admission'
-        if (contextType === 'eligibility') return 'btech_eligibility'
+    // Check for B.Tech mentions and restrict
+    if (/(b\.?tech|engineering|इंजीनियरिंग)/.test(lower)) {
+      return 'btech_restriction'
+    }
+    
+    // Handle diploma semester selection for exams
+    if (lastIntent === 'awaiting_diploma_exam_sem') {
+      const semMatch = lower.match(/(1st|first|प्रथम|पहला|1|2nd|second|द्वितीय|दूसरा|2|3rd|third|तृतीय|तीसरा|3|4th|fourth|चतुर्थ|चौथा|4|5th|fifth|पंचम|पांचवा|5|6th|sixth|षष्ठ|छठा|6)/)
+      if (semMatch) return `diploma_exam_${extractSemesterNumber(semMatch[0])}`
+    }
+    
+    // Handle diploma semester selection for results
+    if (lastIntent === 'awaiting_diploma_result_sem') {
+      const semMatch = lower.match(/(1st|first|प्रथम|पहला|1|2nd|second|द्वितीय|दूसरा|2|3rd|third|तृतीय|तीसरा|3|4th|fourth|चतुर्थ|चौथा|4|5th|fifth|पंचम|पांचवा|5|6th|sixth|षष्ठ|छठा|6|revaluation|पुनर्मूल्यांकन)/)
+      if (semMatch) {
+        if (/(revaluation|पुनर्मूल्यांकन)/.test(semMatch[0])) return 'diploma_result_revaluation'
+        return `diploma_result_${extractSemesterNumber(semMatch[0])}`
       }
     }
     
@@ -133,10 +174,22 @@ const Chatbot = () => {
     if (/(hi|hello|hey|namaste|नमस्ते)/.test(lower)) return 'greeting'
     if (/(admission|प्रवेश|दाखिला|form|apply|आवेदन)/.test(lower)) return 'admission'
     if (/(result|marks|score|परिणाम|रिजल्ट)/.test(lower)) return 'result'
-    if (/(eligibility|qualify|criteria|पात्रता|योग्यता)/.test(lower)) return 'eligibility'
     if (/(exam|test|परीक्षा)/.test(lower)) return 'exam'
+    if (/(eligibility|qualify|criteria|पात्रता|योग्यता)/.test(lower)) return 'eligibility'
     if (/(notice|notification|announcement|सूचना|नोटिस)/.test(lower)) return 'notice'
     return 'unknown'
+  }
+
+  // Helper function to extract semester number
+  const extractSemesterNumber = (text) => {
+    const lower = text.toLowerCase()
+    if (/(1st|first|प्रथम|पहला|1)/.test(lower)) return '1'
+    if (/(2nd|second|द्वितीय|दूसरा|2)/.test(lower)) return '2'
+    if (/(3rd|third|तृतीय|तीसरा|3)/.test(lower)) return '3'
+    if (/(4th|fourth|चतुर्थ|चौथा|4)/.test(lower)) return '4'
+    if (/(5th|fifth|पंचम|पांचवा|5)/.test(lower)) return '5'
+    if (/(6th|sixth|षष्ठ|छठा|6)/.test(lower)) return '6'
+    return null
   }
 
   // Enhanced context-aware response generation
@@ -168,66 +221,106 @@ const Chatbot = () => {
         setContextType('admission')
         return { text: dteData.admissions.generalPrompt[lang], language: lang }
 
-      case 'diploma_admission':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.admissions.diploma.firstYear[lang], language: lang }
 
-      case 'btech_admission':
+      case 'btech_restriction':
         setLastIntent(null)
         setContextType(null)
-        return { text: dteData.admissions.btech.firstYear[lang], language: lang }
+        return { text: dteData.btechRestriction[lang], language: lang }
+
+      case 'admission':
+        setLastIntent(null)
+        setContextType(null)
+        if (/(lateral|लेटरल)/.test(lower)) {
+          return { text: dteData.admissions.diploma_lateral_entry[lang], language: lang }
+        }
+        return { text: dteData.admissions.diploma_first_year[lang], language: lang }
 
       case 'eligibility':
-        // Check if specific type mentioned
-        if (/(diploma|polytechnic|डिप्लोमा|पॉलिटेक्निक)/.test(lower)) {
-          setLastIntent(null)
-          setContextType(null)
-          if (/(lateral|लेटरल)/.test(lower)) {
-            return { text: dteData.eligibility.diploma_lateral_entry[lang], language: lang }
-          }
-          return { text: dteData.eligibility.diploma_first_year[lang], language: lang }
-        }
-        if (/(b\.?tech|engineering|इंजीनियरिंग)/.test(lower)) {
-          setLastIntent(null)
-          setContextType(null)
-          return { text: dteData.eligibility.btech_first_year[lang], language: lang }
-        }
-        // General eligibility - ask for clarification
-        setLastIntent('awaiting_type')
-        setContextType('eligibility')
-        return { text: dteData.admissions.generalPrompt[lang], language: lang }
-
-      case 'diploma_eligibility':
         setLastIntent(null)
         setContextType(null)
+        if (/(lateral|लेटरल)/.test(lower)) {
+          return { text: dteData.eligibility.diploma_lateral_entry[lang], language: lang }
+        }
         return { text: dteData.eligibility.diploma_first_year[lang], language: lang }
 
-      case 'btech_eligibility':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.eligibility.btech_first_year[lang], language: lang }
-
       case 'result':
+        // General result query - ask for semester directly
+        setLastIntent('awaiting_diploma_result_sem')
+        setContextType('result')
+        return { text: dteData.results.semesterPrompt[lang], language: lang }
+
+      case 'diploma_result_1':
         setLastIntent(null)
         setContextType(null)
-        if (/(diploma.*1)/.test(lower)) return { text: dteData.results.diploma_1st_sem[lang], language: lang }
-        if (/(diploma.*2)/.test(lower)) return { text: dteData.results.diploma_2nd_sem[lang], language: lang }
-        if (/(b\.?tech.*1)/.test(lower)) return { text: dteData.results.btech_1st_sem[lang], language: lang }
-        if (/(revaluation|पुनर्मूल्यांकन)/.test(lower)) return { text: dteData.results.revaluation_diploma[lang], language: lang }
-        // General result query - show all
-        return { 
-          text: `${dteData.results.diploma_1st_sem[lang]}\n${dteData.results.diploma_2nd_sem[lang]}\n${dteData.results.btech_1st_sem[lang]}\n${dteData.results.revaluation_diploma[lang]}`, 
-          language: lang 
-        }
+        return { text: dteData.results.diploma['1'][lang], language: lang }
+
+      case 'diploma_result_2':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.results.diploma['2'][lang], language: lang }
+
+      case 'diploma_result_3':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.results.diploma['3'][lang], language: lang }
+
+      case 'diploma_result_4':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.results.diploma['4'][lang], language: lang }
+
+      case 'diploma_result_5':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.results.diploma['5'][lang], language: lang }
+
+      case 'diploma_result_6':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.results.diploma['6'][lang], language: lang }
+
+      case 'diploma_result_revaluation':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.results.diploma.revaluation[lang], language: lang }
+
 
       case 'exam':
+        // General exam query - ask for semester directly
+        setLastIntent('awaiting_diploma_exam_sem')
+        setContextType('exam')
+        return { text: dteData.exams.semesterPrompt[lang], language: lang }
+
+      case 'diploma_exam_1':
         setLastIntent(null)
         setContextType(null)
-        return { 
-          text: `${dteData.exams.diploma_3rd_sem[lang]}\n${dteData.exams.btech_odd_sem[lang]}\n${dteData.exams.special_exam_form[lang]}`, 
-          language: lang 
-        }
+        return { text: dteData.exams.diploma['1'][lang], language: lang }
+
+      case 'diploma_exam_2':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.exams.diploma['2'][lang], language: lang }
+
+      case 'diploma_exam_3':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.exams.diploma['3'][lang], language: lang }
+
+      case 'diploma_exam_4':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.exams.diploma['4'][lang], language: lang }
+
+      case 'diploma_exam_5':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.exams.diploma['5'][lang], language: lang }
+
+      case 'diploma_exam_6':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.exams.diploma['6'][lang], language: lang }
+
 
       case 'notice':
         setLastIntent(null)
@@ -235,29 +328,74 @@ const Chatbot = () => {
         return { text: dteData.notices.latest[lang], language: lang }
 
       default:
+        // Check if we're in a semester context and semester not found
+        if (lastIntent === 'awaiting_diploma_exam_sem' || lastIntent === 'awaiting_diploma_result_sem') {
+          setLastIntent(null)
+          setContextType(null)
+          return { text: dteData.semesterNotFound[lang], language: lang }
+        }
+        
         setLastIntent(null)
         setContextType(null)
         return { text: dteData.refusal[lang], language: lang }
     }
   }
 
-  // Initialize Speech Recognition
+  // Initialize Speech Recognition and Synthesis with multi-language support
   useEffect(() => {
+    // Check Speech Recognition support
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       setSpeechSupported(true)
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
       recognitionRef.current = new SpeechRecognition()
       recognitionRef.current.continuous = false
       recognitionRef.current.interimResults = false
+      recognitionRef.current.lang = 'en-IN' // Start with English, will auto-detect
       recognitionRef.current.onresult = (event) => {
         const transcript = event.results[0][0].transcript
-        setInputMessage(transcript)
+        const detectedLang = detectLanguage(transcript)
+        
+        // Auto-switch language for next recognition based on detected language
+        if (detectedLang === 'english') {
+          recognitionRef.current.lang = 'en-IN'
+        } else {
+          recognitionRef.current.lang = 'hi-IN'
+        }
+        
+        // Only set text, no audio playback of user's voice
+        setInputMessage(prev => prev + transcript)
         setIsListening(false)
+        
+        // Focus input field after speech recognition completes
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus()
+          }
+        }, 100)
       }
-      recognitionRef.current.onerror = () => setIsListening(false)
-      recognitionRef.current.onend = () => setIsListening(false)
+      recognitionRef.current.onerror = (event) => {
+        console.log('Speech recognition error:', event.error)
+        setIsListening(false)
+        // Focus input field on error
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus()
+          }
+        }, 100)
+      }
+      recognitionRef.current.onend = () => {
+        setIsListening(false)
+        // Focus input field when recognition ends
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus()
+          }
+        }, 100)
+      }
     }
+
   }, [])
+
 
   // Handle sending message with context awareness
   const handleSend = () => {
@@ -277,92 +415,312 @@ const Chatbot = () => {
 
     setTimeout(() => {
       const botResponse = generateResponse(userMessage.text)
-      setMessages(prev => [...prev, { 
-        id: prev.length + 1, 
+      const botMessage = { 
+        id: prev => prev.length + 1, 
         text: botResponse.text, 
         sender: 'bot', 
         timestamp: new Date(), 
         language: botResponse.language 
+      }
+      
+      setMessages(prev => [...prev, {
+        ...botMessage,
+        id: prev.length + 1
       }])
       setIsTyping(false)
+      
+      // No audio playback - only text response
     }, 800)
   }
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') handleSend()
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
+  }
+
+  const handleSendMessage = () => {
+    handleSend()
   }
 
   const toggleListening = () => {
     if (!speechSupported || !recognitionRef.current) return
-    if (isListening) recognitionRef.current.stop()
-    else recognitionRef.current.start()
-    setIsListening(!isListening)
+    
+    try {
+      if (isListening) {
+        // Stop speech recognition - no audio playback of user voice
+        recognitionRef.current.stop()
+        setIsListening(false)
+        // Focus input field after stopping mic so user can type and press Enter
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus()
+          }
+        }, 100)
+      } else {
+        // Start speech recognition - convert speech to text only
+        recognitionRef.current.start()
+        setIsListening(true)
+      }
+    } catch (error) {
+      console.log('Speech recognition toggle error:', error)
+      setIsListening(false)
+      // Focus input field on error too
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus()
+        }
+      }, 100)
+    }
+  }
+
+  const formatTime = (timestamp) => {
+    return new Date(timestamp).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
   }
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isTyping])
 
+  // Focus input field when chatbot opens
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      setTimeout(() => {
+        inputRef.current.focus()
+      }, 300) // Wait for animation to complete
+    }
+  }, [isOpen])
+
   return (
-    <div className="fixed bottom-4 right-4 w-80 md:w-96" style={{ zIndex: 1000 }}>
-      {isOpen ? (
-        <div className="bg-white shadow-2xl rounded-xl p-4 flex flex-col h-[500px] border border-gray-200" style={{ zIndex: 1000 }}>
-          <div className="flex justify-between items-center mb-2">
-            <h2 className="font-bold text-lg text-gray-800">Alkama - DTE Assistant</h2>
-            <button 
-              onClick={() => setIsOpen(false)}
-              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+    <>
+      {/* Chatbot Button - Fixed Position */}
+      <div className="fixed bottom-3 sm:bottom-6 right-3 sm:right-6 z-[100]">
+        <div className="relative">
+          {/* Main Button */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full backdrop-blur-xl border transition-all duration-300 hover:scale-110 shadow-lg flex items-center justify-center group"
+            style={{
+              backgroundColor: "white",
+              borderColor: 'var(--theme-glass-border)',
+              color: 'var(--theme-text)' 
+            }}
+          >
+            {isOpen ? (
+              <X className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-transform duration-300 group-hover:rotate-90" />
+            ) : (
+                <BotMessageSquare className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-transform duration-300 group-hover:bounce" />
+            )}
+          </button>
+
+          {/* Chat Window */}
+          {isOpen && (
+            <div 
+              className="absolute bottom-12 sm:bottom-16 right-0 w-80 sm:w-96 h-96 sm:h-[500px] backdrop-blur-xl rounded-2xl border shadow-2xl overflow-hidden animate-fade-in-up"
+              style={{
+                background: 'white',
+                borderColor: 'var(--theme-glass-border)' 
+              }}
             >
-              <X className="w-5 h-5 text-gray-600" />
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto mb-2 bg-gray-50 rounded-lg p-2">
-            {messages.map(msg => (
-              <div key={msg.id} className={`my-2 flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`p-3 rounded-lg max-w-[75%] ${msg.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-white text-gray-800 shadow-sm border'}`}>
-                  <div className="whitespace-pre-line text-sm">{msg.text}</div>
+              {/* Chat Header */}
+              <div 
+                className="p-3 sm:p-4 border-b flex items-center space-x-3"
+                style={{ borderColor: 'var(--theme-glass-border)' }}
+              >
+                <div 
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
+                  style={{ 
+                    background: 'transparent',
+                    color: 'var(--theme-text)' 
+                  }}
+                >
+                  <Bot className="w-4 h-4 sm:w-5 sm:h-5" />
+                </div>
+                <div className="flex-1">
+                  <h3 
+                    className="font-semibold text-sm sm:text-base"
+                    style={{ color: 'var(--theme-text)' }}
+                  >
+                    Saarthi - DTE Assistant
+                  </h3>
+                  <p 
+                    className="text-xs opacity-70"
+                    style={{ color: 'var(--theme-text-secondary)' }}
+                  >
+                    Online • Ready to help
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-1 rounded-lg transition-colors hover:bg-white/10 dark:hover:bg-black/20"
+                  style={{ color: 'var(--theme-text)' }}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Messages Container */}
+              <div className="flex-1 overflow-y-auto h-64 sm:h-80 p-3 sm:p-4 space-y-3 custom-scrollbar">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[80%] px-3 py-2 rounded-2xl ${
+                        message.sender === 'user'
+                          ? 'bg-blue-500 text-white rounded-br-md'
+                          : 'bg-transparent rounded-bl-md'
+                      }`}
+                      style={{
+                        color: message.sender === 'bot' ? 'var(--theme-text)' : '#ffffff'
+                      }}
+                    >
+                      <div className="flex items-start space-x-2">
+                        {message.sender === 'bot' && (
+                          <Bot className="w-4 h-4 mt-0.5 flex-shrink-0 opacity-70" />
+                        )}
+                        <div className="flex-1">
+                          <p className="text-sm leading-relaxed whitespace-pre-line">{message.text}</p>
+                          <p className="text-xs mt-1 opacity-60">
+                            {formatTime(message.timestamp)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Typing Indicator */}
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div
+                      className="px-3 py-2 rounded-2xl rounded-bl-md"
+                      style={{ 
+                        background: 'transparent',
+                        color: 'var(--theme-text)' 
+                      }}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <Bot className="w-4 h-4 opacity-70" />
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-current rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input Area */}
+              <div 
+                className="p-3 sm:p-4 border-t"
+                style={{ borderColor: 'var(--theme-glass-border)' }}
+              >
+                <div className="flex items-center space-x-2">
+                  <div className="flex-1 relative">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={inputMessage}
+                      onChange={(e) => setInputMessage(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Type your message..."
+                      className="w-full px-3 py-2 rounded-xl border-0 outline-none backdrop-blur-sm text-sm transition-all duration-300"
+                      style={{ 
+                        background: 'transparent',
+                        color: 'var(--theme-text)',
+                        '::placeholder': { color: 'var(--theme-text-secondary)' }
+                      }}
+                    />
+                  </div>
+                  {speechSupported && (
+                    <button
+                      onClick={toggleListening}
+                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl transition-all duration-300 hover:scale-105 flex items-center justify-center ${
+                        isListening 
+                          ? 'bg-red-500 hover:bg-red-600 text-white' 
+                          : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
+                      }`}
+                    >
+                      {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                    </button>
+                  )}
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={inputMessage.trim() === '' || isTyping}
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white flex items-center justify-center transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
-            ))}
-            {isTyping && <div className="p-2 text-gray-500 text-sm">Alkama is typing...</div>}
-            <div ref={messagesEndRef} />
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              className="flex-1 border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              ref={inputRef}
-              placeholder="Ask about admissions, results, eligibility..."
-            />
-            {speechSupported && (
-              <button 
-                onClick={toggleListening} 
-                className={`p-2 rounded-lg transition-colors ${isListening ? 'bg-red-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-              >
-                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              </button>
-            )}
-            <button 
-              onClick={handleSend} 
-              className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
+            </div>
+          )}
         </div>
-      ) : (
-        <button 
-          onClick={() => setIsOpen(true)} 
-          className="p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 border-2 border-blue-400"
-          style={{ position: 'fixed', bottom: '16px', right: '16px', zIndex: 1000 }}
-        >
-          <BotMessageSquare className="w-6 h-6" />
-        </button>
+      </div>
+
+      {/* Click outside to close */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-[90]" 
+          onClick={() => setIsOpen(false)}
+        />
       )}
-    </div>
+
+      {/* Custom Styles */}
+      <style jsx>{`
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: rgba(156, 163, 175, 0.5);
+          border-radius: 20px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(156, 163, 175, 0.7);
+        }
+
+        @keyframes fade-in-up {
+          from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        
+        .animate-fade-in-up {
+          animation: fade-in-up 0.3s ease-out;
+        }
+
+        /* Enhanced placeholder styling */
+        .custom-scrollbar input::placeholder {
+          color: var(--theme-text-secondary);
+          opacity: 0.7;
+        }
+      `}</style>
+    </>
   )
 }
 
