@@ -100,19 +100,23 @@ export const getAvailableDrivesForStudent = async (req, res) => {
             return res.status(404).json({ message: "Student profile not found." });
         }
         
-        // Fetch all open drives for the student's college
         const allOpenDrives = await PlacementDrive.find({
             collegeCode: student.collegeCode,
             status: 'OPEN',
-        }).lean(); // Use lean for performance
+        }).lean();
         
-        // Add the 'hasApplied' flag for the frontend UI
+        // Add 'hasApplied' and 'applicationStatus' to each drive
         const drivesWithStatus = allOpenDrives.map(drive => {
-            const hasApplied = drive.applications.some(app => app.studentId.toString() === req.user.id);
+            const studentApplication = drive.applications.find(app => app.studentId.toString() === req.user.id);
+            
+            const hasApplied = !!studentApplication;
+            const applicationStatus = studentApplication ? studentApplication.status : null;
+
             const { applications, ...driveWithoutApps } = drive; // Remove sensitive applications array
             return {
                 ...driveWithoutApps,
                 hasApplied,
+                applicationStatus // <-- YEH NAYA FIELD HAI
             };
         });
 
