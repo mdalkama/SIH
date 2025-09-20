@@ -242,7 +242,7 @@ export const getUpcomingDrives = async (req, res) => {
     try {
         const upcomingDrives = await PlacementDrive.find({
             collegeCode: req.user.collegeCode,
-            status: 'UPCOMING', // Fetches drives that are scheduled but not yet open
+            status: 'UPCOMING', 
             driveDate: { $gte: new Date() } // Only show drives from today onwards
         })
         .sort({ driveDate: 1 }) // Show the nearest drive first
