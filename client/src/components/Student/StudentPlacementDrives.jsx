@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Loader2, Briefcase, IndianRupee, Calendar, CheckCircle, Info, X, AlertTriangle, Building2, BookCheck, Eye, FileText, Link } from 'lucide-react';
+import { Loader2, Briefcase, IndianRupee, Calendar, CheckCircle, Info, X, AlertTriangle, Building2, BookCheck, Eye, FileText, Link, Star, BookUser } from 'lucide-react';
 
 const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/placements';
 
@@ -28,10 +28,44 @@ const SkeletonLoader = () => (
         ))}
     </div>
 );
+
+// --- THIS IS THE CORRECT, STYLED MODAL ---
 const DriveDetailsModal = ({ isOpen, onClose, drive }) => {
     if (!isOpen) return null;
-    return (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"><div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col"><div className="p-4 border-b flex justify-between items-center"><h2 className="text-lg font-bold text-slate-800">{drive.jobTitle}</h2><p className="text-sm text-slate-500">{drive.companyName}</p><button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100"><X size={20} /></button></div><div className="p-6 overflow-y-auto"><h3 className="font-semibold text-slate-700 mb-2">Job Description</h3><p className="text-sm text-slate-600 whitespace-pre-wrap">{drive.jobDescription}</p><h3 className="font-semibold text-slate-700 mt-6 mb-2">Eligibility</h3><div className="text-sm text-slate-600 space-y-1"><p><span className="font-medium">Courses:</span> {drive.eligibleCourses.join(', ')}</p><p><span className="font-medium">Min CGPA:</span> {drive.minCGPA}</p></div></div><div className="p-4 bg-slate-50 border-t flex justify-end"><button onClick={onClose} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 font-semibold text-sm">Close</button></div></div></div>);
+    return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-slate-50 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+                <div className="p-5 border-b border-slate-300 bg-white flex justify-between items-start">
+                    <div>
+                        <h2 className="text-xl font-bold text-slate-900">{drive.jobTitle}</h2>
+                        <div className="flex items-center gap-2 text-slate-600 mt-1">
+                            <Building2 size={14} />
+                            <span className="font-semibold text-indigo-600">{drive.companyName}</span>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors">
+                        <X size={20} />
+                    </button>
+                </div>
+                <div className="p-6 overflow-y-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-300"><IndianRupee className="w-7 h-7 text-green-500 flex-shrink-0" /><div><p className="text-xs font-semibold text-slate-500 uppercase">Package</p><p className="font-bold text-slate-800">{drive.packageLPA} LPA</p></div></div>
+                        <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-300"><BookUser className="w-7 h-7 text-blue-500 flex-shrink-0" /><div><p className="text-xs font-semibold text-slate-500 uppercase">Eligible Courses</p><p className="font-bold text-slate-800">{drive.eligibleCourses.join(', ')}</p></div></div>
+                        <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-300"><Star className="w-7 h-7 text-amber-500 flex-shrink-0" /><div><p className="text-xs font-semibold text-slate-500 uppercase">Min. CGPA</p><p className="font-bold text-slate-800">{drive.minCGPA}</p></div></div>
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-slate-800 mb-2 text-base">Job Description</h3>
+                        <div className="prose prose-sm text-slate-600 max-w-none bg-white p-4 rounded-md border border-slate-300"><p>{drive.jobDescription}</p></div>
+                    </div>
+                </div>
+                <div className="p-4 bg-white border-t border-slate-300 flex justify-end">
+                    <button onClick={onClose} className="px-5 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 font-semibold text-sm transition-colors">Close</button>
+                </div>
+            </div>
+        </div>
+    );
 };
+
 const ApplyModal = ({ isOpen, onClose, drive, onConfirm, isApplying }) => {
     const [resumeUrl, setResumeUrl] = useState('');
     if (!isOpen) return null;
@@ -39,21 +73,8 @@ const ApplyModal = ({ isOpen, onClose, drive, onConfirm, isApplying }) => {
 };
 
 const ApplicationStatusBadge = ({ status }) => {
-    const styles = {
-        APPLIED: 'bg-blue-100 text-blue-800',
-        SHORTLISTED: 'bg-yellow-100 text-yellow-800',
-        REJECTED: 'bg-red-100 text-red-800',
-        OFFER_ACCEPTED: 'bg-green-100 text-green-800',
-        OFFER_DECLINED: 'bg-orange-100 text-orange-800',
-    };
-    return (
-        <div className="mt-4 pt-4 border-t border-slate-100">
-            <p className="text-xs text-slate-500 font-semibold mb-2">APPLICATION STATUS</p>
-            <span className={`px-3 py-1 text-sm font-semibold rounded-full ${styles[status] || 'bg-slate-100'}`}>
-                {status ? status.replace(/_/g, ' ') : 'N/A'}
-            </span>
-        </div>
-    );
+    const styles = { APPLIED: 'bg-blue-100 text-blue-800', SHORTLISTED: 'bg-yellow-100 text-yellow-800', REJECTED: 'bg-red-100 text-red-800', OFFER_ACCEPTED: 'bg-green-100 text-green-800', OFFER_DECLINED: 'bg-orange-100 text-orange-800' };
+    return (<div className="mt-4 pt-4 border-t border-slate-100"><p className="text-xs text-slate-500 font-semibold mb-2">APPLICATION STATUS</p><span className={`px-3 py-1 text-sm font-semibold rounded-full ${styles[status] || 'bg-slate-100'}`}>{status ? status.replace(/_/g, ' ') : 'N/A'}</span></div>);
 };
 
 // --- MAIN STUDENT PLACEMENT COMPONENT ---
@@ -95,12 +116,7 @@ const StudentPlacementDrives = () => {
         finally { setIsApplying(false); }
     };
 
-    const filteredDrives = useMemo(() => {
-        if (activeTab === 'applied') {
-            return drives.filter(drive => drive.hasApplied);
-        }
-        return drives;
-    }, [drives, activeTab]);
+    const filteredDrives = useMemo(() => { if (activeTab === 'applied') { return drives.filter(drive => drive.hasApplied); } return drives; }, [drives, activeTab]);
     
     if (loading) return <SkeletonLoader />;
     if (error) return <div className="text-center p-10 bg-red-50 text-red-700 rounded-lg">{error}</div>;
@@ -133,16 +149,7 @@ const StudentPlacementDrives = () => {
     return (
         <div className="font-sans">
             <ToastContainer toasts={toasts} setToasts={setToasts} />
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-900">Placement Opportunities</h1>
-                <p className="mt-1 text-slate-600">View and apply for upcoming job opportunities.</p>
-            </header>
-            <div className="mb-6 border-b border-slate-200">
-                <nav className="flex space-x-4">
-                    <button onClick={() => setActiveTab('available')} className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-t-lg transition-colors ${activeTab === 'available' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}><Briefcase size={16} /> Available Drives</button>
-                    <button onClick={() => setActiveTab('applied')} className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-t-lg transition-colors ${activeTab === 'applied' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}><FileText size={16} /> My Applications</button>
-                </nav>
-            </div>
+            <div className="mb-6 border-b border-slate-200"><nav className="flex space-x-4"><button onClick={() => setActiveTab('available')} className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-t-lg transition-colors ${activeTab === 'available' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}><Briefcase size={16} /> Available Drives</button><button onClick={() => setActiveTab('applied')} className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-t-lg transition-colors ${activeTab === 'applied' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}><FileText size={16} /> My Applications</button></nav></div>
             <div className="space-y-4">{filteredDrives.length > 0 ? (filteredDrives.map(drive => renderDriveCard(drive))) : (<div className="text-center py-20 px-6 bg-white rounded-xl border-2 border-dashed border-slate-200">{activeTab === 'available' ? <Briefcase className="mx-auto h-12 w-12 text-slate-300" /> : <FileText className="mx-auto h-12 w-12 text-slate-300" />}<h3 className="mt-4 text-lg font-semibold text-slate-800">{activeTab === 'available' ? 'No Open Drives' : 'No Applications Found'}</h3><p className="mt-1 text-sm text-slate-500">{activeTab === 'available' ? "There are currently no placement drives open for you." : "You have not applied to any drives yet."}</p></div>)}</div>
             <DriveDetailsModal isOpen={!!selectedDrive} onClose={() => setSelectedDrive(null)} drive={selectedDrive} />
             <ApplyModal isOpen={!!applyingDrive} onClose={() => setApplyingDrive(null)} drive={applyingDrive} onConfirm={handleApply} isApplying={isApplying} />
