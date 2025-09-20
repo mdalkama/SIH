@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   FileText, 
@@ -14,13 +14,42 @@ import Footer from '../footer';
 const StatusOtpPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    applicationId: '',
+    applicationId: localStorage.getItem('applicationId') || '',
     email: '',
     otp: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+
+  // Check for existing session on component mount
+  useEffect(() => {
+    const checkSession = () => {
+      const sessionData = localStorage.getItem('counsellingSession');
+      if (sessionData) {
+        try {
+          const { applicationId, expiresAt } = JSON.parse(sessionData);
+          // Redirect to counselling if session is still valid
+          if (expiresAt > Date.now()) {
+            navigate(`/counselling/overview?applicationId=${applicationId}`);
+            return true;
+          } else {
+            // Clear expired session
+            localStorage.removeItem('counsellingSession');
+            localStorage.removeItem('applicationId');
+          }
+        } catch (error) {
+          console.error('Error parsing session data:', error);
+          // Clear invalid session data
+          localStorage.removeItem('counsellingSession');
+          localStorage.removeItem('applicationId');
+        }
+      }
+      return false;
+    };
+
+    checkSession();
+  }, [navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -87,23 +116,32 @@ const StatusOtpPage = () => {
     
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Set session data for protected route
-    const sessionData = {
-      otpVerified: true,
-      applicationId: formData.applicationId,
-      email: formData.email,
-      timestamp: Date.now()
-    };
-    
-    sessionStorage.setItem('statusOtpSession', JSON.stringify(sessionData));
-    
-    setIsLoading(false);
-    
-    // Redirect to counselling with application ID as parameter
-    navigate(`/counselling?applicationId=${formData.applicationId}`);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Set session data for protected route
+      const sessionData = {
+        otpVerified: true,
+        applicationId: formData.applicationId,
+        email: formData.email,
+        timestamp: Date.now(),
+        // Set session to expire in 7 days (7 * 24 * 60 * 60 * 1000 ms)
+        expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000)
+      };
+      
+      // Store in local storage for persistent session
+      localStorage.setItem('counsellingSession', JSON.stringify(sessionData));
+      localStorage.setItem('applicationId', formData.applicationId);
+      
+      // Redirect to counselling page with application ID
+      navigate(`/counselling/overview?applicationId=${formData.applicationId}`);
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      setErrors({ submit: 'Failed to verify OTP. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -223,7 +261,7 @@ const StatusOtpPage = () => {
                   <p className="text-gray-600">
                     OTP sent to {formData.email && `${formData.email.slice(0, 3)}***@${formData.email.split('@')[1]}`}
                   </p>
-                  <p className="text-sm text-blue-600 mt-2">Use OTP: 1235</p>
+                  
                 </div>
 
                 {/* OTP Input */}

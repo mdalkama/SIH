@@ -13,7 +13,7 @@ import {
   ChevronDown,
   ChevronRight
 } from 'lucide-react';
-import { NavLink, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
+import { NavLink, Routes, Route, Navigate, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 
 // Import all components
 import Overview from './overview/overview';
@@ -29,9 +29,52 @@ import { ApplicantDataProvider } from './ApplicantDataContext.jsx';
 
 const counselling = () => {
   const [searchParams] = useSearchParams();
-  const applicationId = searchParams.get('applicationId');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const applicationId = searchParams.get('applicationId') || localStorage.getItem('applicationId');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
+
+  // Check for existing session on component mount
+  useEffect(() => {
+    const sessionData = localStorage.getItem('counsellingSession');
+    if (sessionData) {
+      try {
+        const { applicationId: storedAppId, expiresAt } = JSON.parse(sessionData);
+        
+        // Check if session is expired
+        if (expiresAt > Date.now()) {
+          // If no applicationId in URL, add it
+          if (!searchParams.get('applicationId')) {
+            navigate(`${location.pathname}?applicationId=${storedAppId}`, { replace: true });
+          }
+          return;
+        } else {
+          // Clear expired session
+          localStorage.removeItem('counsellingSession');
+          localStorage.removeItem('applicationId');
+        }
+      } catch (error) {
+        console.error('Error parsing session data:', error);
+        localStorage.removeItem('counsellingSession');
+        localStorage.removeItem('applicationId');
+      }
+    }
+    
+    // If we reach here, either no session or session is invalid/expired
+    if (!applicationId) {
+      navigate('/status/check');
+    }
+  }, [applicationId, navigate, location.pathname, searchParams]);
+  
+  // Handle logout
+  const handleLogout = () => {
+    // Clear local storage
+    localStorage.removeItem('counsellingSession');
+    localStorage.removeItem('applicationId');
+    // Redirect to home page
+    navigate('/');
+  };
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -196,12 +239,7 @@ const counselling = () => {
           {/* Logout Button */}
           <div className="p-4 border-t border-[#1d2646] mt-auto">
             <button 
-              onClick={() => {
-                // Add your logout logic here
-                console.log('Logout clicked');
-                // Example: navigate to login page
-                // navigate('/login');
-              }}
+              onClick={handleLogout}
               className={`w-full flex items-center ${sidebarOpen ? 'justify-start pl-3' : 'justify-center'} space-x-3 py-2.5 text-gray-300 hover:text-white hover:bg-[#1a2238] rounded-lg transition-all duration-200`}
             >
               <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
