@@ -11,6 +11,7 @@ import {
   updateApplicationStatus,
   getUpcomingDrives,
   getRecentPlacements,
+  studentUpdateApplicationStatus,
 } from "../controllers/placementController/placementController.js";
 import { role } from "../middlewares/authMiddleware.js";
 
@@ -56,5 +57,6 @@ router.get(
 // (Requires user to be logged in and have the role 'Student')
 router.get("/student/drives", role("student"), getAvailableDrivesForStudent);
 router.post("/drives/:driveId/apply", role("student"), applyForDrive);
+router.put('/student/applications/:driveId/status', role('Student'), studentUpdateApplicationStatus)
 
 export default router;
