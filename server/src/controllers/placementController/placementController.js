@@ -132,26 +132,36 @@ export const getAvailableDrivesForStudent = async (req, res) => {
 export const applyForDrive = async (req, res) => {
     try {
         const studentId = req.user.id;
-        const drive = await PlacementDrive.findById(req.params.driveId);
+        const { driveId } = req.params;
+        const { resumeUrl } = req.body; 
+
+        // Basic validation for the resume URL
+        if (!resumeUrl || !resumeUrl.startsWith('http')) {
+            return res.status(400).json({ message: "A valid resume link (starting with http) is required." });
+        }
+        
+        const drive = await PlacementDrive.findById(driveId);
 
         if (!drive || drive.status !== 'OPEN') {
             return res.status(400).json({ message: "This drive is not open for applications." });
         }
         
-        // Check if already applied
         if (drive.applications.some(app => app.studentId.toString() === studentId)) {
             return res.status(409).json({ message: "You have already applied for this drive." });
         }
 
         const student = await Student.findById(studentId).select('name registrationNumber');
         const studentAcademics = await StudentAcademics.findOne({ studentId }).select('_id');
+        if(!student || !studentAcademics) {
+            return res.status(404).json({ message: "Student record not found." });
+        }
 
         const newApplication = {
             studentId,
             studentAcademicId: studentAcademics._id,
             name: student.name,
             registrationNumber: student.registrationNumber,
-            // resumeUrl: req.body.resumeUrl // You can add resume upload later
+            resumeUrl: resumeUrl // <-- 2. NAYI APPLICATION MEIN SAVE KARO
         };
 
         drive.applications.push(newApplication);
@@ -160,7 +170,8 @@ export const applyForDrive = async (req, res) => {
         res.status(200).json({ success: true, message: `Successfully applied to ${drive.companyName}.` });
 
     } catch (error) {
-        res.status(500).json({ message: "Server error.", error: error.message });
+        console.error("Error applying for drive:", error);
+        res.status(500).json({ message: "Server error applying for drive.", error: error.message });
     }
 };
 

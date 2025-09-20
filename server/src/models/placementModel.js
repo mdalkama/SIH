@@ -26,11 +26,11 @@ const applicationSchema = new mongoose.Schema(
       ],
       default: "APPLIED",
     },
-    resumeUrl: { type: String }, // Optional: link to student's resume
+
+    resumeUrl: { type: String, required: true }, 
   },
   { _id: false }
 );
-
 const placementDriveSchema = new mongoose.Schema(
   {
     companyName: { type: String, required: true },
@@ -38,7 +38,7 @@ const placementDriveSchema = new mongoose.Schema(
     jobDescription: { type: String, required: true },
     packageLPA: { type: Number, required: true }, // in Lakhs Per Annum
 
-    eligibleCourses: [{ type: String, required: true }], // e.g., ["CSE", "ECE"]
+    eligibleCourses: [{ type: String, required: true }],
     minCGPA: { type: Number, default: 6.0 },
 
     applicationDeadline: { type: Date, required: true },
