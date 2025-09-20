@@ -1,9 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, Building2, Users, FileText, ArrowRight, Loader2, Megaphone, AlertTriangle } from 'lucide-react';
+import { Briefcase, Building2, Users, FileText, ArrowRight, Loader2, Megaphone, AlertTriangle, Calendar, Star } from 'lucide-react';
 
 const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/placements';
 
+// --- SKELETON LOADER COMPONENT ---
+const DashboardSkeleton = () => (
+    <div className="animate-pulse">
+        <div className="mb-8">
+            <div className="h-8 w-1/3 bg-slate-200 rounded-md mb-2"></div>
+            <div className="h-5 w-1/2 bg-slate-200 rounded-md"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[...Array(4)].map((_, i) => <div key={i} className="h-28 bg-slate-100 rounded-xl"></div>)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="h-32 bg-slate-100 rounded-xl"></div>
+            <div className="h-32 bg-slate-100 rounded-xl"></div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 h-64 bg-slate-100 rounded-xl"></div>
+            <div className="h-64 bg-slate-100 rounded-xl"></div>
+        </div>
+    </div>
+);
+
+
+// --- HELPER SUB-COMPONENTS ---
 const StatCard = ({ icon: Icon, title, value, colorClass }) => (
     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
         <div className="flex items-center gap-4">
@@ -23,29 +46,48 @@ const QuickActionButton = ({ icon: Icon, title, description, onClick, color }) =
     </button>
 );
 
+
 const PlacementOfficerDashboard = () => {
     const [stats, setStats] = useState({});
+    const [upcomingDrives, setUpcomingDrives] = useState([]); // <-- NEW STATE
+    const [recentPlacements, setRecentPlacements] = useState([]); // <-- NEW STATE
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchStats = async () => {
+        const fetchDashboardData = async () => {
             setLoading(true);
+            setError(null);
             try {
+                // Fetch real stats
                 const response = await fetch(`${API_BASE_URL}/dashboard/stats`, { credentials: 'include' });
                 if (!response.ok) throw new Error("Failed to load dashboard statistics.");
                 const data = await response.json();
                 setStats(data.stats || {});
+
+                // --- DUMMY DATA FOR NEW FEATURES ---
+                // In a real app, you would have separate API calls for these.
+                setUpcomingDrives([
+                    { id: 1, companyName: 'Tech Innovators Inc.', date: '2024-12-05', role: 'Software Engineer' },
+                    { id: 2, companyName: 'Data Solutions Ltd.', date: '2024-12-08', role: 'Data Analyst' },
+                    { id: 3, companyName: 'NextGen AI', date: '2024-12-12', role: 'Machine Learning Intern' },
+                ]);
+                setRecentPlacements([
+                    { id: 1, studentName: 'Rohan Gupta', companyName: 'Digital Wizards', package: 12.0 },
+                    { id: 2, studentName: 'Anjali Sharma', companyName: 'CloudNetics', package: 9.5 },
+                    { id: 3, studentName: 'Vikram Singh', companyName: 'SecureIT', package: 14.0 },
+                ]);
+
             } catch (err) { setError(err.message); } 
             finally { setLoading(false); }
         };
-        fetchStats();
+        fetchDashboardData();
     }, []);
 
     const handleNavigate = (path) => navigate(path);
 
-    if (loading) return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin text-indigo-600" size={48} /></div>;
+    if (loading) return <DashboardSkeleton />;
     if (error) return <div className="text-center p-10 bg-red-50 text-red-700 rounded-lg"><AlertTriangle className="mx-auto" />{error}</div>;
 
     return (
@@ -60,9 +102,57 @@ const PlacementOfficerDashboard = () => {
                 <StatCard icon={Users} title="Students Placed" value={stats.placedStudents ?? 0} colorClass="bg-green-100 text-green-600" />
                 <StatCard icon={FileText} title="Total Applications" value={stats.totalApplications ?? 0} colorClass="bg-amber-100 text-amber-600" />
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <QuickActionButton icon={Megaphone} title="Manage Placement Drives" description="Create new drives, view applications, and manage statuses." onClick={() => handleNavigate('/college-placement/manage-placements')} color="indigo" />
-                <QuickActionButton icon={Users} title="Student Database" description="View and filter student profiles based on academic performance." onClick={() => handleNavigate('/college-placement/student-database')} color="emerald" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <QuickActionButton icon={Megaphone} title="Manage Placement Drives" description="Create new drives, view applications, and manage statuses." onClick={() => handleNavigate('/college-placement-officer/manage-drives')} color="indigo" />
+                <QuickActionButton icon={Users} title="Student Database" description="View and filter student profiles based on academic performance." onClick={() => handleNavigate('/college-placement-officer/student-database')} color="emerald" />
+            </div>
+
+            {/* --- NEW SECTIONS ADDED HERE --- */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div className="p-4 border-b flex items-center gap-2">
+                        <Calendar className="w-5 h-5 text-slate-500" />
+                        <h2 className="text-lg font-semibold text-slate-800">Upcoming Drives</h2>
+                    </div>
+                    <div className="divide-y divide-slate-200">
+                        {upcomingDrives.length > 0 ? (
+                            upcomingDrives.map(drive => (
+                                <div key={drive.id} className="p-4 flex justify-between items-center hover:bg-slate-50">
+                                    <div>
+                                        <p className="font-semibold text-slate-800">{drive.companyName}</p>
+                                        <p className="text-sm text-slate-500">{drive.role}</p>
+                                    </div>
+                                    <div className="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                                        {new Date(drive.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="p-8 text-center text-slate-500">No upcoming drives scheduled.</p>
+                        )}
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+                     <div className="p-4 border-b flex items-center gap-2">
+                        <Star className="w-5 h-5 text-slate-500" />
+                        <h2 className="text-lg font-semibold text-slate-800">Recent Placements</h2>
+                     </div>
+                    <div className="p-4 space-y-4">
+                        {recentPlacements.map(placement => (
+                            <div key={placement.id} className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center font-bold text-green-600">
+                                    {placement.studentName.split(' ').map(n=>n[0]).join('')}
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-sm text-slate-800">{placement.studentName}</p>
+                                    <p className="text-xs text-slate-500">Placed at {placement.companyName}</p>
+                                </div>
+                                <p className="ml-auto font-semibold text-sm text-slate-600">{placement.package.toFixed(1)} LPA</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
         </div>
     );
