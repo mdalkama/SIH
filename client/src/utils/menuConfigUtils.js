@@ -1123,7 +1123,15 @@ const menuConfig = {
             path: "/college-placement/manage-placements",
             component: CollegeManagePlacement,
             role: "CollegePlacementOfficer",
-        }
+        },
+        {
+            id: "my-profile",
+            label: "My Profile",
+            icon: User,
+            path: "/college-placement/my-profile",
+            component: MyProfile,
+            role: "CollegePlacementOfficer",
+        },
     ]
 
 };
