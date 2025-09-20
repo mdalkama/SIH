@@ -1,47 +1,37 @@
-import React, { useState } from "react";
-import { useNavigate, Outlet } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Outlet, useLocation } from "react-router-dom";
 import getRoleDisplayName from "../../utils/roleUtils.js"
 import menuConfig from "../../utils/menuConfigUtils.js";
-import StudentDashboard from "./components/StudentDashboard.jsx";
-import Loading from "../Loading.jsx"
+import Loading from "../Loading.jsx";
 import { useUser } from "../../context/UserContext.jsx";
 import {
     Menu,
     X,
-    Home,
-    Folder,
-    Users,
-    Settings,
-    Bell,
-    Search,
-    User,
-    ChevronDown,
-    Shield,
-    Plus,
-    Filter,
-    MoreHorizontal,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight,
+    User as UserIcon,
     LogOut,
-    BookOpen,
-    ClipboardList,
-    GraduationCap,
-    Wallet,
-    Building2,
-    Library,
 } from "lucide-react";
 
 const Navbar = () => {
     const navigate = useNavigate();
-    const path = window.location.pathname;
-    const lastSegment = path.split("/").pop();
-    const [activeMenu, setActiveMenu] = useState(lastSegment);
+    const location = useLocation();
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [activeMenu, setActiveMenu] = useState('');
     const { user, setUser, loading } = useUser();
-    console.log(user);
     
+    // Update active menu when location changes
+    useEffect(() => {
+        const path = location.pathname;
+        const lastSegment = path.split("/").pop();
+        setActiveMenu(lastSegment);
+    }, [location]);
 
-
-
-
-
+    const toggleSidebar = () => {
+        setSidebarOpen(!sidebarOpen);
+    };
 
     const handleLogout = async () => {
         try {
@@ -52,7 +42,7 @@ const Navbar = () => {
 
             if (res.ok) {
                 setUser(null);
-                window.location.href = "/login"; // Force reload + redirect
+                window.location.href = "/login";
             } else {
                 console.error("Failed to logout");
             }
@@ -61,103 +51,143 @@ const Navbar = () => {
         }
     };
 
-
     const navigationItems = menuConfig[user?.role] || [];
 
     if (loading) {
-        return <Loading />
+        return <Loading />;
     }
 
-
     return (
-        <div className="h-screen w-screen bg-[#F0F1F3] overflow-hidden flex gap-2 p-0 md:p-2">
-            <div className="h-full shrink-0 w-[250px] hidden rounded-lg overflow-hidden md:flex md:w-[250px] flex-col gap-4 justify-between shadow-md bg-[#0C1526] border-r-[1px] border-gray-300">
-                <div className="flex flex-col gap-2 m-4">
-                    <div className="w-full text-white flex text-xl items-center mb-4 justify-start">
-                        <div className="flex items-start gap-2">
-                            <div className="h-10 w-10 bg-[#D1D5DA] text-[#6A7280] rounded-full flex items-center justify-center">
-                                <User />
-                            </div>
-                            <div className="md:flex hidden flex-col h-10 items-start justify-center">
-                                <div className="text-[#ffffff] font-medium text-nowrap text-[14px]">
-                                    {user?.name || "Md Alkama"}
-                                </div>
-                                <div className="text-[Grey] font-medium text-[14px]">
-                                    {getRoleDisplayName(user?.role) || "Student"}
-                                </div>
-                            </div>
-                            <div className="h-10 w-10 rounded-full md:hidden flex items-center justify-center">
-                                <Menu />
-                            </div>
-                        </div>
-                    </div>
-
-                    {navigationItems.map((item) => {
-                        const Icon = item.icon;
-                        return (
-                            <button
-                                key={item.id}
-                                onClick={() => {
-                                    setActiveMenu(item.id)
-                                    navigate(item.path);
-                                }}
-                                className={`w-full cursor-pointer text-nowrap flex items-center px-3 py-2 text-sm font-medium rounded-full transition-colors
-                                    ${activeMenu === item.id
-                                        ? "bg-[#2B386A] text-[#DEE1E5]"
-                                        : "text-[#DEE1E5] hover:bg-[#2B386A] hover:text-[#DEE1E5]"
-                                    }`}
-                            >
-                                <Icon className="mr-3 h-5 shrink-0 w-5" />
-                                {item.label}
-                            </button>
-                        );
-                    })}
-                </div>
-
-                <div className="flex flex-col justify-between gap-4 bg-[#1D2646] h-[120px] p-4">
-                    <button
-                        onClick={handleLogout}
-                        className="flex px-3 py-2 text-sm cursor-pointer text-[#DEE1E5] font-medium rounded-md justify-center items-center border-1 gap-2"
+        <div className="h-screen w-screen bg-[#F0F1F3] overflow-hidden flex p-0">
+            {/* Sidebar */}
+            <div 
+                className={`h-full bg-[#0C1526] text-white transition-all duration-300 ease-in-out flex flex-col flex-shrink-0 relative ${
+                    sidebarOpen ? 'w-64' : 'w-16'
+                }`}
+            >
+                {/* Collapse/Expand Button - At the top */}
+                <div className="p-3 flex justify-end border-b border-[#1d2646]">
+                    <button 
+                        onClick={toggleSidebar}
+                        className="p-1.5 rounded-lg hover:bg-[#1d2646] text-white flex-shrink-0 transition-colors duration-200"
+                        aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
                     >
-                        Logout <LogOut className="h-3 w-3" />
+                        {sidebarOpen ? <ChevronsLeft size={20} /> : <ChevronsRight size={20} />}
                     </button>
-                    <div className="flex justify-center items-center">
-                        <img
-                            className="w-[80%]"
-                            src="https://mybillbook.in/app//assets/images/secure-safe-v2.svg"
-                            alt=""
-                        />
+                </div>
+                
+                {/* User Profile - Below the collapse button */}
+                <div className="p-4 border-b border-[#1d2646]">
+                    <div className={`flex ${!sidebarOpen ? 'justify-center' : ''} items-center`}>
+                        <div className="h-10 w-10 bg-[#2B386A] text-white rounded-full flex items-center justify-center flex-shrink-0">
+                            <UserIcon size={20} />
+                        </div>
+                        {sidebarOpen && (
+                            <div className="ml-3 overflow-hidden">
+                                <div className="text-sm font-medium text-white truncate">
+                                    {user?.name || "User Name"}
+                                </div>
+                                <div className="text-xs text-gray-400">
+                                    {getRoleDisplayName(user?.role) || "Role"}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
+
+                {/* Navigation Links */}
+                <nav className="flex-1 overflow-y-auto py-4 no-scrollbar mb-20">
+                    <ul className="space-y-1 px-2">
+                        {navigationItems.map((item) => {
+                            const Icon = item.icon;
+                            return (
+                                <li key={item.id}>
+                                    <button
+                                        onClick={() => {
+                                            setActiveMenu(item.id);
+                                            navigate(item.path);
+                                        }}
+                                        className={`group w-full flex items-center p-3 rounded-lg transition-all duration-200 ${
+                                            activeMenu === item.id
+                                                ? 'bg-[#1a2238] text-white shadow-md'
+                                                : 'text-gray-300 hover:bg-[#252f4a] hover:text-white'
+                                        }`}
+                                        title={!sidebarOpen ? item.label : ''}
+                                    >
+                                        <span className="flex-shrink-0">{<Icon className="h-5 w-5" />}</span>
+                                        {sidebarOpen && (
+                                            <span className="ml-3 truncate">
+                                                {item.label}
+                                            </span>
+                                        )}
+                                    </button>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </nav>
+
+                {/* Footer - Fixed at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 bg-[#0C1526] border-t border-[#1d2646] p-4">
+                    {sidebarOpen ? (
+                        <div className="flex flex-col">
+                            <div className="flex-1"></div> {/* Spacer to push logout to bottom */}
+                            <button
+                                onClick={handleLogout}
+                                className="w-full flex items-center justify-center p-2.5 text-sm text-gray-300 hover:bg-[#252f4a] hover:text-white rounded-lg transition-colors duration-200 mt-auto"
+                            >
+                                <LogOut size={18} />
+                                <span className="ml-2">Logout</span>
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={handleLogout}
+                            className="w-full flex items-center justify-center p-2.5 text-sm text-gray-300 hover:bg-[#252f4a] hover:text-white rounded-lg transition-colors duration-200"
+                            title="Logout"
+                        >
+                            <LogOut size={18} />
+                        </button>
+                    )}
+                </div>
+
             </div>
 
-            <div className="h-full w-[100%] bg-white shadow-md rounded-lg overflow-hidden  sm::w-full flex flex-col">
-                {/* nav bar  */}
-                <nav className="flex h-[80px] bg-[#FFFFFF]  z-5 justify-between items-center px-4 sm:px-8 border-b-[1px] border-gray-300">
+            <div className="flex-1 flex flex-col h-full bg-white overflow-hidden">
+                {/* Top Navigation Bar */}
+                <nav className="h-16 bg-white border-b border-gray-200 flex items-center px-4 sm:px-6">
                     <div className="flex items-center">
-                        <img
-                            className="h-[50px]"
-                            src="https://svumshow.com/assets/images/department-logo/pngwing.png"
-                            alt=""
-                        />
-                        <div className="hidden sm:flex flex-col text-[#0F172A] font-medium text-[14px] ml-4">
-                            <div>Goverment Of Rajasthan</div>
-                            <div>Department of Technical Education</div>
+                        <div className="md:hidden mr-4">
+                            <button 
+                                onClick={toggleSidebar}
+                                className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                                aria-label="Toggle sidebar"
+                            >
+                                <ChevronsRight size={24} />
+                            </button>
+                        </div>
+                        <div className="flex items-center">
+                            <img
+                                className="h-10 w-auto"
+                                src="https://svumshow.com/assets/images/department-logo/pngwing.png"
+                                alt="DTE Logo"
+                            />
+                            <div className="hidden sm:flex flex-col ml-3">
+                                <div className="text-sm font-medium text-gray-900">Government of Rajasthan</div>
+                                <div className="text-xs text-gray-500">Department of Technical Education</div>
+                            </div>
                         </div>
                     </div>
-
-                    <div className="flex items-start gap-2">
-                        <div className="h-10 w-10 bg-[#D1D5DA] md:hidden text-[#6A7280] rounded-full flex items-center justify-center">
-                            <User />
-                        </div>
-                        <div className="h-10 w-10 rounded-full md:hidden flex items-center justify-center">
-                            <Menu />
+                    
+                    <div className="ml-auto flex items-center">
+                        <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600">
+                            <UserIcon size={18} />
                         </div>
                     </div>
                 </nav>
 
-                {/* component will render */}
-                <div className="h-[calc(100vh-80px)] w-full overflow-y-scroll bg-white p-6">
+                {/* Main Content */}
+                <div className="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-6 no-scrollbar">
                     <Outlet />
                 </div>
             </div>
