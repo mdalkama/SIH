@@ -32,7 +32,7 @@ router.get('/dashboard/stats', role('CollegePlacementOfficer'), getPlacementDash
 router.put('/drives/:driveId/applications/:studentId', role('CollegePlacementOfficer'), updateApplicationStatus);
 
 router.get('/dashboard/upcoming-drives', role('CollegePlacementOfficer'), getUpcomingDrives);
-router.get('/dashboard/recent-placements', role('CollegePlacementOfficer'), getRecentPlacements;
+router.get('/dashboard/recent-placements', role('CollegePlacementOfficer'), getRecentPlacements);
 
 // --- Routes for Students ---
 // (Requires user to be logged in and have the role 'Student')
