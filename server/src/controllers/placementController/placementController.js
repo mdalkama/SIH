@@ -285,3 +285,35 @@ export const getRecentPlacements = async (req, res) => {
         res.status(500).json({ message: "Server error.", error: error.message });
     }
 };
+
+export const studentUpdateApplicationStatus = async (req, res) => {
+    try {
+        const studentId = req.user.id;
+        const { driveId } = req.params;
+        const { status } = req.body; // Expecting 'OFFER_ACCEPTED' or 'OFFER_DECLINED'
+
+        if (!['OFFER_ACCEPTED', 'OFFER_DECLINED'].includes(status)) {
+            return res.status(400).json({ message: "Invalid status update." });
+        }
+
+        const drive = await PlacementDrive.findOneAndUpdate(
+            {
+                _id: driveId,
+                "applications.studentId": studentId,
+                "applications.status": "SHORTLISTED" // Can only accept/decline if shortlisted
+            },
+            {
+                $set: { "applications.$.status": status }
+            },
+            { new: true }
+        );
+
+        if (!drive) {
+            return res.status(404).json({ message: "Application not found or you are not shortlisted for this drive." });
+        }
+
+        res.status(200).json({ success: true, message: `Offer status updated to ${status}.` });
+    } catch (error) {
+        res.status(500).json({ message: "Server error updating status.", error: error.message });
+    }
+};
