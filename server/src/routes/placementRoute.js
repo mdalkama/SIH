@@ -9,7 +9,8 @@ import {
     updatePlacementDrive,
     deletePlacementDrive,
     updateApplicationStatus,
-    getPlacementStatsByYear
+    getUpcomingDrives,
+    getRecentPlacements,
 } from '../controllers/placementController/placementController.js';
 import { role } from '../middlewares/authMiddleware.js';
 
@@ -27,9 +28,11 @@ router.get('/drives/:driveId', role('CollegePlacementOfficer'), getDriveWithAppl
 router.put('/drives/:driveId', role('CollegePlacementOfficer'), updatePlacementDrive);
 router.get('/dashboard/stats', role('CollegePlacementOfficer'), getPlacementDashboardStats);
 
-router.get('/stats/:year', role('CollegePlacementOfficer'), getPlacementStatsByYear);
 
 router.put('/drives/:driveId/applications/:studentId', role('CollegePlacementOfficer'), updateApplicationStatus);
+
+router.get('/dashboard/upcoming-drives', role('CollegePlacementOfficer'), getUpcomingDrives);
+router.get('/dashboard/recent-placements', role('CollegePlacementOfficer'), getRecentPlacements);
 
 // --- Routes for Students ---
 // (Requires user to be logged in and have the role 'Student')

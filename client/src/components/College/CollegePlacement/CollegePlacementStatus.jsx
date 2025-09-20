@@ -100,9 +100,9 @@ const CollegePlacementStatus = () => {
                 </div>
                 <div className="flex items-center gap-4">
                     <select value={selectedYear} onChange={handleYearChange} className="px-3 py-2 border border-slate-300 rounded-lg bg-white font-semibold">
+                        <option value="2025">2024-2025</option>
                         <option value="2024">2023-2024</option>
                         <option value="2023">2022-2023</option>
-                        <option value="2022">2021-2022</option>
                     </select>
                      <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold">
                         <Download size={16} /> Download Report

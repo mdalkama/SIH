@@ -238,95 +238,50 @@ export const updateApplicationStatus = async (req, res) => {
     }
 };
 
-export const getPlacementStatsByYear = async (req, res) => {
+export const getUpcomingDrives = async (req, res) => {
     try {
-        const year = parseInt(req.params.year);
-        const collegeCode = req.user.collegeCode;
+        const upcomingDrives = await PlacementDrive.find({
+            collegeCode: req.user.collegeCode,
+            status: 'UPCOMING', // Fetches drives that are scheduled but not yet open
+            driveDate: { $gte: new Date() } // Only show drives from today onwards
+        })
+        .sort({ driveDate: 1 }) // Show the nearest drive first
+        .limit(5) // Limit to the next 5 drives
+        .select('companyName jobTitle driveDate');
 
-        // 1. Find all drives for the college in the specified year (based on driveDate)
-        const drives = await PlacementDrive.find({
-            collegeCode,
-            driveDate: {
-                $gte: new Date(`${year}-01-01`),
-                $lt: new Date(`${year + 1}-01-01`)
-            }
-        }).lean();
-
-        if (drives.length === 0) {
-            return res.status(200).json({ success: true, stats: {}, branchData: [] });
-        }
-
-        // 2. Aggregate all applications from these drives
-        let allApplications = [];
-        drives.forEach(drive => {
-            if (drive.applications && drive.applications.length > 0) {
-                // Add companyName and packageLPA to each application for easier processing
-                const applicationsWithDriveInfo = drive.applications.map(app => ({
-                    ...app,
-                    companyName: drive.companyName,
-                    packageLPA: drive.packageLPA
-                }));
-                allApplications.push(...applicationsWithDriveInfo);
-            }
-        });
-
-        // 3. Find unique placed students
-        const placedStudents = allApplications.filter(app => app.status === 'OFFER_ACCEPTED');
-        const uniquePlacedStudentIds = [...new Set(placedStudents.map(app => app.studentId.toString()))];
-
-        // 4. Calculate overall stats
-        const highestPackage = drives.reduce((max, drive) => drive.packageLPA > max ? drive.packageLPA : max, 0);
-        const companiesVisited = [...new Set(drives.map(drive => drive.companyName))].length;
-        
-        // Find total eligible students for that year's batch
-        const totalStudentsInBatch = await Student.countDocuments({
-            collegeCode,
-            yearOfPassing: year
-        });
-        
-        const placementPercentage = totalStudentsInBatch > 0 ? (uniquePlacedStudentIds.length / totalStudentsInBatch) * 100 : 0;
-        
-        const totalPackageSum = placedStudents.reduce((sum, app) => sum + app.packageLPA, 0);
-        const averagePackage = placedStudents.length > 0 ? totalPackageSum / placedStudents.length : 0;
-        
-        // 5. Calculate branch-wise breakdown (this is complex)
-        const courses = await Course.find({ 'semesters.subjects': { $exists: true } }).lean(); // Get all courses with subjects
-        let branchData = [];
-        for (const course of courses) {
-            const studentsInBranch = await Student.find({ collegeCode, courseId: course.courseId, yearOfPassing: year }).select('_id').lean();
-            const studentIdsInBranch = studentsInBranch.map(s => s._id.toString());
-            
-            const placedInBranch = uniquePlacedStudentIds.filter(id => studentIdsInBranch.includes(id));
-            
-            const branchPlacedApps = placedStudents.filter(app => studentIdsInBranch.includes(app.studentId.toString()));
-            const branchPackageSum = branchPlacedApps.reduce((sum, app) => sum + app.packageLPA, 0);
-            const branchAvgPackage = placedInBranch.length > 0 ? branchPackageSum / placedInBranch.length : 0;
-
-            if (studentsInBranch.length > 0) {
-                branchData.push({
-                    branch: course.branch,
-                    total: studentsInBranch.length,
-                    placed: placedInBranch.length,
-                    avgPackage: branchAvgPackage
-                });
-            }
-        }
-        
-        res.status(200).json({
-            success: true,
-            stats: {
-                placementPercentage: placementPercentage.toFixed(1),
-                totalStudents: totalStudentsInBatch,
-                studentsPlaced: uniquePlacedStudentIds.length,
-                averagePackage: averagePackage.toFixed(2),
-                highestPackage: highestPackage.toFixed(2),
-                companiesVisited
-            },
-            branchData
-        });
-
+        res.status(200).json({ success: true, drives: upcomingDrives });
     } catch (error) {
-        console.error("Error fetching placement stats:", error);
+        res.status(500).json({ message: "Server error.", error: error.message });
+    }
+};
+
+export const getRecentPlacements = async (req, res) => {
+    try {
+        // This is a complex query that finds the latest accepted offers
+        const recentPlacements = await PlacementDrive.aggregate([
+            // Filter for drives in the officer's college
+            { $match: { collegeCode: req.user.collegeCode } },
+            // Unwind the applications array
+            { $unwind: "$applications" },
+            // Filter for applications with 'OFFER_ACCEPTED' status
+            { $match: { "applications.status": "OFFER_ACCEPTED" } },
+            // Sort by the application date descending to get the most recent
+            { $sort: { "applications.appliedOn": -1 } },
+            // Limit to the top 5
+            { $limit: 5 },
+            // Project the fields we need
+            {
+                $project: {
+                    _id: "$applications._id",
+                    studentName: "$applications.name",
+                    companyName: "$companyName",
+                    package: "$packageLPA"
+                }
+            }
+        ]);
+
+        res.status(200).json({ success: true, placements: recentPlacements });
+    } catch (error) {
         res.status(500).json({ message: "Server error.", error: error.message });
     }
 };
