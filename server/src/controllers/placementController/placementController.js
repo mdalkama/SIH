@@ -88,11 +88,6 @@ export const getDriveWithApplications = async (req, res) => {
 
 // --- For Students ---
 
-/**
- * @description Get all available placement drives for the logged-in student
- * @route   GET /api/v1/placements/student/drives
- * @access  Student
- */
 export const getAvailableDrivesForStudent = async (req, res) => {
     try {
         const student = await Student.findById(req.user.id).select('collegeCode');
@@ -238,6 +233,86 @@ export const updateApplicationStatus = async (req, res) => {
         }
 
         res.status(200).json({ success: true, message: "Application status updated successfully.", drive });
+    } catch (error) {
+        res.status(500).json({ message: "Server error updating status.", error: error.message });
+    }
+};
+
+export const getUpcomingDrives = async (req, res) => {
+    try {
+        const upcomingDrives = await PlacementDrive.find({
+            collegeCode: req.user.collegeCode,
+            status: 'UPCOMING', 
+            driveDate: { $gte: new Date() } // Only show drives from today onwards
+        })
+        .sort({ driveDate: 1 }) // Show the nearest drive first
+        .limit(5) // Limit to the next 5 drives
+        .select('companyName jobTitle driveDate');
+
+        res.status(200).json({ success: true, drives: upcomingDrives });
+    } catch (error) {
+        res.status(500).json({ message: "Server error.", error: error.message });
+    }
+};
+
+export const getRecentPlacements = async (req, res) => {
+    try {
+        // This is a complex query that finds the latest accepted offers
+        const recentPlacements = await PlacementDrive.aggregate([
+            // Filter for drives in the officer's college
+            { $match: { collegeCode: req.user.collegeCode } },
+            // Unwind the applications array
+            { $unwind: "$applications" },
+            // Filter for applications with 'OFFER_ACCEPTED' status
+            { $match: { "applications.status": "OFFER_ACCEPTED" } },
+            // Sort by the application date descending to get the most recent
+            { $sort: { "applications.appliedOn": -1 } },
+            // Limit to the top 5
+            { $limit: 5 },
+            // Project the fields we need
+            {
+                $project: {
+                    _id: "$applications._id",
+                    studentName: "$applications.name",
+                    companyName: "$companyName",
+                    package: "$packageLPA"
+                }
+            }
+        ]);
+
+        res.status(200).json({ success: true, placements: recentPlacements });
+    } catch (error) {
+        res.status(500).json({ message: "Server error.", error: error.message });
+    }
+};
+
+export const studentUpdateApplicationStatus = async (req, res) => {
+    try {
+        const studentId = req.user.id;
+        const { driveId } = req.params;
+        const { status } = req.body; // Expecting 'OFFER_ACCEPTED' or 'OFFER_DECLINED'
+
+        if (!['OFFER_ACCEPTED', 'OFFER_DECLINED'].includes(status)) {
+            return res.status(400).json({ message: "Invalid status update." });
+        }
+
+        const drive = await PlacementDrive.findOneAndUpdate(
+            {
+                _id: driveId,
+                "applications.studentId": studentId,
+                "applications.status": "SHORTLISTED" // Can only accept/decline if shortlisted
+            },
+            {
+                $set: { "applications.$.status": status }
+            },
+            { new: true }
+        );
+
+        if (!drive) {
+            return res.status(404).json({ message: "Application not found or you are not shortlisted for this drive." });
+        }
+
+        res.status(200).json({ success: true, message: `Offer status updated to ${status}.` });
     } catch (error) {
         res.status(500).json({ message: "Server error updating status.", error: error.message });
     }

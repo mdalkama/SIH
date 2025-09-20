@@ -1108,14 +1108,14 @@ const menuConfig = {
             component: CollegePlacementDashboard,
             role: "CollegePlacementOfficer",
         },
-        {
-            id: "placement-status",
-            label: "Placement Status",
-            icon: User,
-            path: "/college-placement/placement-status",
-            component: CollegePlacementStatus,
-            role: "CollegePlacementOfficer",
-        },
+        // {
+        //     id: "placement-status",
+        //     label: "Placement Status",
+        //     icon: User,
+        //     path: "/college-placement/placement-status",
+        //     component: CollegePlacementStatus,
+        //     role: "CollegePlacementOfficer",
+        // },
         {
             id: "manage placements",
             label: "Manage Placements",
