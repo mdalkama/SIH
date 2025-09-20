@@ -57,6 +57,6 @@ router.get(
 // (Requires user to be logged in and have the role 'Student')
 router.get("/student/drives", role("student"), getAvailableDrivesForStudent);
 router.post("/drives/:driveId/apply", role("student"), applyForDrive);
-router.put('/student/applications/:driveId/status', role('Student'), studentUpdateApplicationStatus)
+router.put('/student/applications/:driveId/status', role('student'), studentUpdateApplicationStatus)
 
 export default router;
