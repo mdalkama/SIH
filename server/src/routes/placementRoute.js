@@ -8,7 +8,8 @@ import {
     getPlacementDashboardStats,
     updatePlacementDrive,
     deletePlacementDrive,
-    updateApplicationStatus
+    updateApplicationStatus,
+    getPlacementStatsByYear
 } from '../controllers/placementController/placementController.js';
 import { role } from '../middlewares/authMiddleware.js';
 
@@ -21,10 +22,12 @@ router.route('/drives')
     .get( role('CollegePlacementOfficer'), getAllDrivesForOfficer)
     .delete(role('CollegePlacementOfficer'), deletePlacementDrive);
 
-    
+
 router.get('/drives/:driveId', role('CollegePlacementOfficer'), getDriveWithApplications);
 router.put('/drives/:driveId', role('CollegePlacementOfficer'), updatePlacementDrive);
 router.get('/dashboard/stats', role('CollegePlacementOfficer'), getPlacementDashboardStats);
+
+router.get('/stats/:year', role('CollegePlacementOfficer'), getPlacementStatsByYear);
 
 router.put('/drives/:driveId/applications/:studentId', role('CollegePlacementOfficer'), updateApplicationStatus);
 
