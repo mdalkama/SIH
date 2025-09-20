@@ -420,49 +420,7 @@ const Result = () => {
         </div>
 
         {/* Notifications Section */}
-        <div className="mt-4">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-sm font-medium text-gray-900">Notifications</h3>
-              <span className="text-xs text-gray-500">{notifications.filter(n => !n.read).length} unread</span>
-            </div>
-            
-            <div className="space-y-3">
-              {notifications.map((notification) => (
-                <div key={notification.id} className={`p-3 rounded-lg border ${!notification.read ? 'bg-blue-50 border-blue-100' : 'bg-white'}`}>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-900">{notification.message}</p>
-                      <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-                    </div>
-                    <div className="flex-shrink-0 flex space-x-1 ml-2">
-                      {!notification.read && (
-                        <button
-                          onClick={() => handleMarkAsRead(notification.id)}
-                          className="p-1 text-blue-600 hover:bg-blue-100 rounded-full transition-colors"
-                          title="Mark as read"
-                        >
-                          <Eye className="w-3 h-3" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDeleteNotification(notification.id)}
-                        className="p-1 text-red-600 hover:bg-red-100 rounded-full transition-colors"
-                        title="Delete notification"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              {notifications.length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">No notifications</p>
-              )}
-            </div>
-          </div>
-        </div>
+       
       </div>
     </div>
   );
