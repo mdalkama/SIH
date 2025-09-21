@@ -130,9 +130,9 @@ const PlacementOfficerDashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <QuickActionButton icon={Megaphone} title="Manage Placement Drives" description="Create new drives, view applications, and manage statuses." onClick={() => handleNavigate('/college-placement-officer/manage-drives')} color="indigo" />
+                <QuickActionButton icon={Megaphone} title="Manage Placement Drives" description="Create new drives, view applications, and manage statuses." onClick={() => handleNavigate('/college-placement/manage-placements')} color="indigo" />
                 {/* --- THIS IS THE FIX --- */}
-                <QuickActionButton icon={Users} title="Student Database" description="View and filter student profiles based on academic performance." onClick={() => handleNavigate('/college-placement-officer/student-database')} color="emerald" />
+                <QuickActionButton icon={Users} title="Student Database" description="View and filter student profiles based on academic performance." onClick={() => handleNavigate('/college-placement/student-database')} color="emerald" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

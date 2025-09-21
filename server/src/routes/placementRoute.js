@@ -12,6 +12,7 @@ import {
   getUpcomingDrives,
   getRecentPlacements,
   studentUpdateApplicationStatus,
+  getAllStudentsForPlacement,
 } from "../controllers/placementController/placementController.js";
 import { role } from "../middlewares/authMiddleware.js";
 
@@ -52,6 +53,8 @@ router.get(
   role("CollegePlacementOfficer"),
   getRecentPlacements
 );
+
+router.get('/placement-list', role('CollegePlacementOfficer'), getAllStudentsForPlacement);
 
 // --- Routes for Students ---
 // (Requires user to be logged in and have the role 'Student')
