@@ -19,24 +19,24 @@ const Header = () => {
   // Carousel images with working URLs
   const carouselImages = [
     {
-      url: 'https://images.unsplash.com/photo-1562774053-701939374585?w=1920&h=600&fit=crop',
-      title: 'Innovation & Research',
+      url: 'https://jankalyanfile.rajasthan.gov.in//Content/UploadFolder/Advertisement/Achievements/2025/Apr/30674_ACH_83b89c30-3a38-4edd-b38a-2876337034f8.jpeg',
+      title: 'Board of Technical Education Office',
       subtitle: 'Advancing Technology for a Better Tomorrow'
     },
     {
-      url: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1920&h=600&fit=crop',
-      title: 'State-of-the-Art Facilities',
-      subtitle: 'Modern Infrastructure for Quality Education'
+      url: 'https://jankalyanfile.rajasthan.gov.in//Content/UploadFolder/Advertisement/Achievements/2025/Jul/30975_ACH_6256e173-c94b-4a1e-94a6-4216a0c0f66a.jpeg',
+      title: 'Rajasthan – Heritage to High-Tech',
+      subtitle: 'Rajasthan’s Journey from Desert to Development'
     },
     {
-      url: 'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=1920&h=600&fit=crop',
-      title: 'Industry Partnerships',
-      subtitle: 'Bridging Academia and Industry'
+      url: 'https://jankalyanfile.rajasthan.gov.in//Content/UploadFolder/Advertisement/Achievements/2025/Apr/30673_ACH_5f2cd40c-3ea0-4399-93a2-11ea2e11ed05.jpeg',
+      title: 'Pravidhik Shiksha Mandal, Rajasthan – Jodhpur',
+      subtitle: 'Where Technical Education Meets Standards, Innovation, and Student Empowerment'
     },
     {
-      url: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1920&h=600&fit=crop',
-      title: 'Digital Innovation',
-      subtitle: 'Leading the Digital Transformation in Education'
+      url: 'https://jankalyanfile.rajasthan.gov.in//Content/UploadFolder/Advertisement/Achievements/2025/Jun/30690_ACH_4c570cfb-41f6-4165-9ff9-561d941d6863.png',
+      title: 'Directorate of Technical Education, Rajasthan – Leadership & Governance',
+      subtitle: 'Guiding Authority for Technical Education, Policy Implementation, and Student-Centric Reforms across Rajasthan'
     }
   ]
 
