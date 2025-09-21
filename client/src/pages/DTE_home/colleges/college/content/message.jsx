@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import macetData from '../macet.json';
+import gpcData from '../gpc.json';
 
 const Message = () => {
   const [searchParams] = useSearchParams();
   const [expandedCard, setExpandedCard] = useState(null);
 
-  // Check if this is MACET (id=0)
+  // Check if this is GPC (id=1)
   const queryId = searchParams.get('id');
-  if (queryId !== '0' || !macetData.leadershipTeam) return null;
+  if (queryId !== '1' || !gpcData.leadershipTeam) return null;
 
-  const { title, members } = macetData.leadershipTeam;
+  const { title, members } = gpcData.leadershipTeam;
 
   const toggleReadMore = (index) => {
     setExpandedCard(expandedCard === index ? null : index);

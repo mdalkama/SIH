@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { GraduationCap, Users, Award, MapPin, Calendar, Star, TrendingUp, BookOpen, ArrowRight } from 'lucide-react';
-import macetData from '../macet.json';
 import gpcData from '../gpc.json';
+import gpcAlwerData from '../gpcAlwer.json';
 
 const About = () => {
   const location = useLocation();
@@ -40,13 +40,13 @@ const About = () => {
   // Get college data based on URL or query parameter
   const getCollegeData = () => {
     const queryId = searchParams.get('id');
-    
-    if (location.pathname.includes('macet') || queryId === '0') {
-      return macetData;
-    } else if (location.pathname.includes('gpc') || queryId === '1') {
+
+    if (location.pathname.includes('gpc') || queryId === '1') {
       return gpcData;
+    } else if (queryId === '2') {
+      return gpcAlwerData;
     }
-    return macetData; // Default fallback
+    return gpcData; // Default fallback
   };
 
   const collegeData = getCollegeData();

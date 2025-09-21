@@ -15,16 +15,7 @@ const CollegeList = () => {
 
   // Complete DTE Rajasthan college data
   const collegeData = [
-     {
-      id: 0,
-      name: "Maulana Azad College of Engineering and Technology, Neora, Patna",
-      email: "info@maacet.ac.in",
-      contact: "0145-2627501",
-      district: "Patna",
-      address: "Neora, Patna",
-      website: "https://maacet.ac.in",
-      established: "1985"
-     },
+     
     {
 
       id: 1,
@@ -637,17 +628,17 @@ const CollegeList = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right text-sm font-medium">
-                      {college.id === 0 ? (
+                      { college.id === 1 ? (
                         <Link
-                          to="/colleges/college?id=0"
+                          to="/colleges/college?id=1"
                           className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                         >
                           Visit
                           <ExternalLink className="ml-1 h-3 w-3" />
                         </Link>
-                      ) : college.id === 1 ? (
+                      ) : college.id === 2 ? (
                         <Link
-                          to="/colleges/college?id=1"
+                          to="/colleges/college?id=2"
                           className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                         >
                           Visit
