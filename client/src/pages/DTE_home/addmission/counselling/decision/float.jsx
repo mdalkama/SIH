@@ -143,7 +143,7 @@ const FloatDecision = () => {
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-gray-900">Higher preferences eligible</p>
-                  <p className="text-xs text-gray-600">You will be considered for preferences above NTU CSE only.</p>
+                  <p className="text-xs text-gray-600">You will be considered for preferences above {allottedCollege?.college} {allottedCollege?.branch} only.</p>
                 </div>
               </div>
               
