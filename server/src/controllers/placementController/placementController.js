@@ -56,39 +56,6 @@ export const getPlacementDashboardStats = async (req, res) => {
   }
 };
 
-export const getAllStudentsForPlacement = async (req, res) => {
-    try {
-        const { search = "" } = req.query;
-        const collegeCode = req.user.collegeCode;
-
-        let query = { collegeCode };
-
-        if (search) {
-            const searchRegex = new RegExp(search, 'i');
-            query.$or = [
-                { name: searchRegex },
-                { registrationNumber: searchRegex }
-            ];
-        }
-
-        const students = await Student.find(query)
-            .sort({ name: 1 })
-            .lean();
-
-        // Optional: Add branch name if you need it.
-        const studentsWithBranch = await Promise.all(students.map(async (student) => {
-            const courseData = await Course.findOne({ courseId: student.courseId }).select('branch').lean();
-            return { ...student, branch: courseData ? courseData.branch : 'N/A' };
-        }));
-
-        res.status(200).json({ success: true, students: studentsWithBranch });
-
-    } catch (error) {
-        console.error("Error fetching students for placement:", error);
-        res.status(500).json({ message: "Server error while fetching students.", error: error.message });
-    }
-};
-
 /**
  * @description Create a new placement drive
  * @route   POST /api/v1/placements/drives

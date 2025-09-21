@@ -46,7 +46,7 @@ router.use('/college-admin', collegeAdminRoutes);
 router.use("/add-college-staff", collegeManageStaffRoute);
 router.use("/hostel", role(['CollegeHostelWarden']), hostelRoute)
 router.use("/student-hostel",role(['student']), studentHostelRoutes);
-router.use("/course",role(['UniversityAdmin', 'UniversityExaminationBody', 'CollegePlacementOfficer']), courseRoute)
+router.use("/course",role(['UniversityAdmin', 'UniversityExaminationBody']), courseRoute)
 router.use("/subject", role(['UniversityAdmin']), subjectRoute)
 router.use("/university", role(['UniversityAdmin']), universityRoute)
 router.use("/add-university-Staff", universityManageStaffRoute)
