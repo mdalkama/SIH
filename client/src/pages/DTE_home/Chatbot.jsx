@@ -5,117 +5,117 @@ import { X, Send, Bot, BotMessageSquare, Mic, MicOff } from 'lucide-react'
 const dteData = {
   admissions: {
     diploma_first_year: {
-      english: "Diploma First Year 2025-26: Applications start from 11 August 2025. Eligibility: 10th pass with minimum 35% marks. Online application available on DTE Rajasthan website.",
-      hindi: "डिप्लोमा प्रथम वर्ष 2025-26: आवेदन 11 अगस्त 2025 से शुरू। पात्रता: 10वीं पास न्यूनतम 35% अंकों के साथ। DTE राजस्थान वेबसाइट पर ऑनलाइन आवेदन उपलब्ध।"
+      english: "Diploma First Year (Engineering) Admission 2025-26: Application Dates: 11–14 August 2025 (11:00 AM onwards). Apply via official portal: www.dap2025.in. Counseling: Centralized online counseling after registration. Document verification: Online upload + original verification at institute reporting.",
+      hindi: "डिप्लोमा प्रथम वर्ष (इंजीनियरिंग) प्रवेश 2025-26: आवेदन तिथियां: 11-14 अगस्त 2025 (सुबह 11:00 बजे से)। आधिकारिक पोर्टल के माध्यम से आवेदन करें: www.dap2025.in। काउंसलिंग: पंजीकरण के बाद केंद्रीयकृत ऑनलाइन काउंसलिंग। दस्तावेज़ सत्यापन: ऑनलाइन अपलोड + संस्थान रिपोर्टिंग पर मूल सत्यापन।"
     },
     diploma_lateral_entry: {
-      english: "Diploma Lateral Entry (Second Year) 2025-26: Applications from 14 August 2025. Eligibility: Passed relevant Diploma/ITI with minimum 45% marks.",
-      hindi: "डिप्लोमा लेटरल एंट्री (द्वितीय वर्ष) 2025-26: 14 अगस्त 2025 से आवेदन। पात्रता: संबंधित डिप्लोमा/ITI पास न्यूनतम 45% अंकों के साथ।"
+      english: "Diploma Lateral Entry (Direct 2nd Year) Admission 2025: Application Dates: 20–25 August 2025. Eligibility: 12th Science (PCM) OR ITI (2 years). Counseling: Online centralized.",
+      hindi: "डिप्लोमा लेटरल एंट्री (प्रत्यक्ष द्वितीय वर्ष) प्रवेश 2025: आवेदन तिथियां: 20-25 अगस्त 2025। पात्रता: 12वीं विज्ञान (PCM) या ITI (2 वर्ष)। काउंसलिंग: ऑनलाइन केंद्रीयकृत।"
     },
   },
   results: {
     diploma: {
       "1": {
-        english: "Diploma 1st Semester Result released on 12 September 2025.",
-        hindi: "डिप्लोमा प्रथम सेमेस्टर का परिणाम 12 सितंबर 2025 को घोषित किया गया।"
+        english: "Diploma 1st Semester Result: Released 12 September 2025.",
+        hindi: "डिप्लोमा प्रथम सेमेस्टर परिणाम: 12 सितंबर 2025 को जारी किया गया।"
       },
       "2": {
-        english: "Diploma 2nd Semester Result released on 15 September 2025.",
-        hindi: "डिप्लोमा द्वितीय सेमेस्टर का परिणाम 15 सितंबर 2025 को घोषित किया गया।"
+        english: "Diploma 2nd Semester Result: Released 15 September 2025.",
+        hindi: "डिप्लोमा द्वितीय सेमेस्टर परिणाम: 15 सितंबर 2025 को जारी किया गया।"
       },
       "3": {
-        english: "Diploma 3rd Semester Result published on 18 September 2025.",
-        hindi: "डिप्लोमा तृतीय सेमेस्टर का परिणाम 18 सितंबर 2025 को घोषित किया गया।"
+        english: "Diploma 3rd Semester Result: Released 18 September 2025.",
+        hindi: "डिप्लोमा तृतीय सेमेस्टर परिणाम: 18 सितंबर 2025 को जारी किया गया।"
       },
       "4": {
-        english: "Diploma 4th Semester Result declared on 20 September 2025.",
-        hindi: "डिप्लोमा चतुर्थ सेमेस्टर का परिणाम 20 सितंबर 2025 को घोषित किया गया।"
+        english: "Diploma 4th Semester Result: Released 22 September 2025.",
+        hindi: "डिप्लोमा चतुर्थ सेमेस्टर परिणाम: 22 सितंबर 2025 को जारी किया गया।"
       },
       "5": {
-        english: "Diploma 5th Semester Result declared on 22 September 2025.",
-        hindi: "डिप्लोमा पंचम सेमेस्टर का परिणाम 22 सितंबर 2025 को घोषित किया गया।"
+        english: "Diploma 5th Semester Result: Released 25 September 2025.",
+        hindi: "डिप्लोमा पंचम सेमेस्टर परिणाम: 25 सितंबर 2025 को जारी किया गया।"
       },
       "6": {
-        english: "Diploma 6th Semester Result published on 25 September 2025.",
-        hindi: "डिप्लोमा षष्ठ सेमेस्टर का परिणाम 25 सितंबर 2025 को घोषित किया गया।"
+        english: "Diploma 6th Semester Result: Released 28 September 2025.",
+        hindi: "डिप्लोमा षष्ठ सेमेस्टर परिणाम: 28 सितंबर 2025 को जारी किया गया।"
       },
       revaluation: {
-        english: "Diploma Revaluation Result announced on 28 September 2025.",
-        hindi: "डिप्लोमा पुनर्मूल्यांकन परिणाम 28 सितंबर 2025 को घोषित किया गया।"
+        english: "Diploma Revaluation Result: Announced 30 September 2025.",
+        hindi: "डिप्लोमा पुनर्मूल्यांकन परिणाम: 30 सितंबर 2025 को घोषित किया गया।"
       }
     },
     semesterPrompt: {
-      english: "Which Diploma semester result are you asking about?",
-      hindi: "आप किस डिप्लोमा सेमेस्टर के परिणाम के बारे में पूछ रहे हैं?"
+      english: "Which semester result are you asking about?",
+      hindi: "आप किस सेमेस्टर के परिणाम के बारे में पूछ रहे हैं?"
     }
   },
   eligibility: {
     diploma_first_year: {
-      english: "Diploma First Year: 10th pass with minimum 35% marks.",
-      hindi: "डिप्लोमा प्रथम वर्ष: 10वीं पास न्यूनतम 35% अंकों के साथ।"
+      english: "Diploma First Year: Must have passed Class 10th with Science & Math. Minimum marks: 35% in qualifying exam.",
+      hindi: "डिप्लोमा प्रथम वर्ष: 10वीं विज्ञान और गणित के साथ उत्तीर्ण होना चाहिए। न्यूनतम अंक: योग्यता परीक्षा में 35%।"
     },
     diploma_lateral_entry: {
-      english: "Diploma Lateral Entry: Passed Diploma in relevant branch with minimum 45% marks.",
-      hindi: "डिप्लोमा लेटरल एंट्री: संबंधित शाखा में डिप्लोमा पास न्यूनतम 45% अंकों के साथ।"
+      english: "Diploma Lateral Entry: Must have passed Class 12th (PCM) OR ITI (2 years). Minimum marks: 35% in qualifying exam.",
+      hindi: "डिप्लोमा लेटरल एंट्री: 12वीं (PCM) या ITI (2 वर्ष) उत्तीर्ण होना चाहिए। न्यूनतम अंक: योग्यता परीक्षा में 35%।"
     },
   },
   exams: {
     diploma: {
       "1": {
-        english: "Diploma 1st Semester exam starts on 1 October 2025.",
-        hindi: "डिप्लोमा प्रथम सेमेस्टर की परीक्षा 1 अक्टूबर 2025 को शुरू होती है।"
+        english: "Diploma 1st Semester Exam: Starts 1 October 2025.",
+        hindi: "डिप्लोमा प्रथम सेमेस्टर परीक्षा: 1 अक्टूबर 2025 को शुरू होती है।"
       },
       "2": {
-        english: "Diploma 2nd Semester exam starts on 15 October 2025.",
-        hindi: "डिप्लोमा द्वितीय सेमेस्टर की परीक्षा 15 अक्टूबर 2025 को शुरू होती है।"
+        english: "Diploma 2nd Semester Exam: Starts 5 October 2025.",
+        hindi: "डिप्लोमा द्वितीय सेमेस्टर परीक्षा: 5 अक्टूबर 2025 को शुरू होती है।"
       },
       "3": {
-        english: "Diploma 3rd Semester exam starts on 10 October 2025.",
-        hindi: "डिप्लोमा तृतीय सेमेस्टर की परीक्षा 10 अक्टूबर 2025 को शुरू होती है।"
+        english: "Diploma 3rd Semester Exam: Starts 10 October 2025.",
+        hindi: "डिप्लोमा तृतीय सेमेस्टर परीक्षा: 10 अक्टूबर 2025 को शुरू होती है।"
       },
       "4": {
-        english: "Diploma 4th Semester exam starts on 20 October 2025.",
-        hindi: "डिप्लोमा चतुर्थ सेमेस्टर की परीक्षा 20 अक्टूबर 2025 को शुरू होती है।"
+        english: "Diploma 4th Semester Exam: Starts 15 October 2025.",
+        hindi: "डिप्लोमा चतुर्थ सेमेस्टर परीक्षा: 15 अक्टूबर 2025 को शुरू होती है।"
       },
       "5": {
-        english: "Diploma 5th Semester exam starts on 25 October 2025.",
-        hindi: "डिप्लोमा पंचम सेमेस्टर की परीक्षा 25 अक्टूबर 2025 को शुरू होती है।"
+        english: "Diploma 5th Semester Exam: Starts 20 October 2025.",
+        hindi: "डिप्लोमा पंचम सेमेस्टर परीक्षा: 20 अक्टूबर 2025 को शुरू होती है।"
       },
       "6": {
-        english: "Diploma 6th Semester exam starts on 30 October 2025.",
-        hindi: "डिप्लोमा षष्ठ सेमेस्टर की परीक्षा 30 अक्टूबर 2025 को शुरू होती है।"
+        english: "Diploma 6th Semester Exam: Starts 25 October 2025.",
+        hindi: "डिप्लोमा षष्ठ सेमेस्टर परीक्षा: 25 अक्टूबर 2025 को शुरू होती है।"
+      },
+      special: {
+        english: "Special Exam Form Filling: Last date 5 October 2025.",
+        hindi: "विशेष परीक्षा फॉर्म भरना: अंतिम तिथि 5 अक्टूबर 2025।"
       }
     },
     semesterPrompt: {
-      english: "Which Diploma semester exam are you asking about?",
-      hindi: "आप किस डिप्लोमा सेमेस्टर की परीक्षा के बारे में पूछ रहे हैं?"
+      english: "Which semester exam are you asking about?",
+      hindi: "आप किस सेमेस्टर की परीक्षा के बारे में पूछ रहे हैं?"
     }
   },
   notices: {
     latest: {
-      english: "Latest notices: Online form invited for College level I year and II year engineering diploma admissions from 11 to 14/08/2025. Provisional Merit List for Lateral Entry Admissions (Second Year Engineering Courses) 2025-26.",
-      hindi: "नवीनतम सूचनाएं: कॉलेज स्तर के प्रथम वर्ष और द्वितीय वर्ष इंजीनियरिंग डिप्लोमा प्रवेश के लिए 11 से 14/08/2025 तक ऑनलाइन फॉर्म आमंत्रित।"
+      english: "Latest Notice (10 Sept 2025): Diploma 1st & 2nd semester results released. Latest Notice (15 Sept 2025): Diploma revaluation forms open till 22 Sept 2025. Latest Notice (20 Sept 2025): Exam timetable for all Diploma semesters published. Latest Notice (25 Sept 2025): Counseling round 2 starts on 27 Sept 2025.",
+      hindi: "नवीनतम सूचना (10 सितंबर 2025): डिप्लोमा प्रथम और द्वितीय सेमेस्टर परिणाम जारी किए गए। नवीनतम सूचना (15 सितंबर 2025): डिप्लोमा पुनर्मूल्यांकन फॉर्म 22 सितंबर 2025 तक खुले हैं। नवीनतम सूचना (20 सितंबर 2025): सभी डिप्लोमा सेमेस्टरों के लिए परीक्षा समय सारणी प्रकाशित। नवीनतम सूचना (25 सितंबर 2025): काउंसलिंग दौर 2, 27 सितंबर 2025 को शुरू होगी।"
     }
   },
   greetings: {
-    english: "Hello! I'm Saarthi, your DTE Rajasthan student assistant. I can help with admissions, results, eligibility, exams, and notices. What would you like to know?",
-    hindi: "नमस्ते! मैं सारथी हूं, आपका DTE राजस्थान छात्र सहायक। मैं प्रवेश, परिणाम, पात्रता, परीक्षा और नोटिस में मदद कर सकता हूं। आप क्या जानना चाहते हैं?"
+    english: "Hello! I am Saarthi - your DTE Rajasthan student assistant. I can help you with admissions, results, exams, notices, and eligibility.",
+    hindi: "नमस्ते! मैं सारथी हूं - आपका DTE राजस्थान छात्र सहायक। मैं आपको प्रवेश, परिणाम, परीक्षा, सूचनाएं और पात्रता में मदद कर सकता हूं।"
+  },
+  howAreYou: {
+    english: "I am fine, thank you! How can I assist you today?",
+    hindi: "मैं ठीक हूं, धन्यवाद! आज मैं आपकी कैसे मदद कर सकता हूं?"
   },
   refusal: {
-    english: "I am sorry, this information is not available. Please visit the official DTE Rajasthan website.",
-    hindi: "मुझे खेद है, यह जानकारी उपलब्ध नहीं है। कृपया आधिकारिक DTE राजस्थान वेबसाइट पर जाएं।"
+    english: "I can only help with DTE Rajasthan Diploma admissions, results, exams, eligibility, and notices. Please visit the official DTE Rajasthan website for more.",
+    hindi: "मैं केवल DTE राजस्थान डिप्लोमा प्रवेश, परिणाम, परीक्षा, पात्रता और सूचनाओं में मदद कर सकता हूं। कृपया अधिक जानकारी के लिए आधिकारिक DTE राजस्थान वेबसाइट पर जाएं।"
   },
   semesterNotFound: {
     english: "Sorry, this semester information is not available. Please check the official DTE Rajasthan website.",
     hindi: "खेद है, इस सेमेस्टर की जानकारी उपलब्ध नहीं है। कृपया आधिकारिक DTE राजस्थान वेबसाइट देखें।"
-  },
-  btechRestriction: {
-    english: "DTE Rajasthan provides information only for Diploma courses. Please visit the official website for other courses.",
-    hindi: "DTE राजस्थान केवल डिप्लोमा पाठ्यक्रमों की जानकारी प्रदान करता है। अन्य पाठ्यक्रमों के लिए कृपया आधिकारिक वेबसाइट पर जाएं।"
-  },
-  noInfo: {
-    english: "I'm sorry, I don't have that information. Please check the official DTE Rajasthan website.",
-    hindi: "मुझे खेद है, मेरे पास यह जानकारी नहीं है। कृपया आधिकारिक DTE राजस्थान वेबसाइट देखें।"
   }
 }
 
@@ -172,11 +172,13 @@ const Chatbot = () => {
     
     // Regular intent detection
     if (/(hi|hello|hey|namaste|नमस्ते)/.test(lower)) return 'greeting'
+    if (/(how are you|कैसे हो|how are you doing|कैसे हो तुम)/.test(lower)) return 'how_are_you'
     if (/(admission|प्रवेश|दाखिला|form|apply|आवेदन)/.test(lower)) return 'admission'
     if (/(result|marks|score|परिणाम|रिजल्ट)/.test(lower)) return 'result'
     if (/(exam|test|परीक्षा)/.test(lower)) return 'exam'
     if (/(eligibility|qualify|criteria|पात्रता|योग्यता)/.test(lower)) return 'eligibility'
     if (/(notice|notification|announcement|सूचना|नोटिस)/.test(lower)) return 'notice'
+    if (/(special|विशेष)/.test(lower) && /(exam|test|परीक्षा|form|फॉर्म)/.test(lower)) return 'special_exam'
     return 'unknown'
   }
 
@@ -204,28 +206,10 @@ const Chatbot = () => {
         setContextType(null)
         return { text: dteData.greetings[lang], language: lang }
 
-      case 'admission':
-        // Check if specific type mentioned
-        if (/(diploma|polytechnic|डिप्लोमा|पॉलिटेक्निक)/.test(lower)) {
-          setLastIntent(null)
-          setContextType(null)
-          return { text: dteData.admissions.diploma.firstYear[lang], language: lang }
-        }
-        if (/(b\.?tech|engineering|इंजीनियरिंग)/.test(lower)) {
-          setLastIntent(null)
-          setContextType(null)
-          return { text: dteData.admissions.btech.firstYear[lang], language: lang }
-        }
-        // General admission - ask for clarification
-        setLastIntent('awaiting_type')
-        setContextType('admission')
-        return { text: dteData.admissions.generalPrompt[lang], language: lang }
-
-
-      case 'btech_restriction':
+      case 'how_are_you':
         setLastIntent(null)
         setContextType(null)
-        return { text: dteData.btechRestriction[lang], language: lang }
+        return { text: dteData.howAreYou[lang], language: lang }
 
       case 'admission':
         setLastIntent(null)
@@ -321,6 +305,10 @@ const Chatbot = () => {
         setContextType(null)
         return { text: dteData.exams.diploma['6'][lang], language: lang }
 
+      case 'special_exam':
+        setLastIntent(null)
+        setContextType(null)
+        return { text: dteData.exams.diploma.special[lang], language: lang }
 
       case 'notice':
         setLastIntent(null)
