@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { Star, Calendar, ExternalLink, X, Download } from 'lucide-react';
-import macetData from '../macet.json';
 import gpcData from '../gpc.json';
+import gpcAlwerData from '../gpcAlwer.json';
 
 const Notices = () => {
   const [isScrolling, setIsScrolling] = useState(true);
@@ -15,13 +15,13 @@ const Notices = () => {
   // Get college data based on URL or query parameter
   const getCollegeData = () => {
     const queryId = searchParams.get('id');
-    
-    if (location.pathname.includes('macet') || queryId === '0') {
-      return macetData;
-    } else if (location.pathname.includes('gpc') || queryId === '1') {
+
+    if (location.pathname.includes('gpc') || queryId === '1') {
       return gpcData;
+    } else if (queryId === '2') {
+      return gpcAlwerData;
     }
-    return macetData; // Default fallback
+    return gpcData; // Default fallback
   };
 
   const collegeData = getCollegeData();

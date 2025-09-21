@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ChevronDown, Menu, X, Users, Globe, User, ChevronLeft, ChevronRight, Mail, Phone } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
-import macetData from '../macet.json';
 import gpcData from '../gpc.json';
+import gpcAlwerData from '../gpcAlwer.json';
 
 const DynamicCollegeHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,12 +20,12 @@ const DynamicCollegeHeader = () => {
   const getCollegeData = () => {
     const queryId = searchParams.get('id');
     
-    if (location.pathname.includes('macet') || id === '0' || queryId === '0') {
-      return macetData;
-    } else if (location.pathname.includes('gpc') || id === '1' || queryId === '1') {
+    if (location.pathname.includes('gpc') || id === '1' || queryId === '1') {
       return gpcData;
+    } else if (location.pathname.includes('gpcalwer') || id === '2' || queryId === '2') {
+      return gpcAlwerData;
     }
-    return macetData; // Default fallback
+    return gpcData; // Default fallback
   };
 
   const collegeData = getCollegeData();

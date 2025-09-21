@@ -2,8 +2,8 @@ import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useLocation, useParams } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin, ExternalLink } from 'lucide-react';
-import macetData from '../macet.json';
 import gpcData from '../gpc.json';
+import gpcAlwerData from '../gpcAlwer.json';
 
 const DynamicCollegeFooter = () => {
   const currentYear = new Date().getFullYear();
@@ -14,13 +14,13 @@ const DynamicCollegeFooter = () => {
   // Get college data based on URL or query parameter
   const getCollegeData = () => {
     const queryId = searchParams.get('id');
-    
-    if (location.pathname.includes('macet') || id === '0' || queryId === '0') {
-      return macetData;
-    } else if (location.pathname.includes('gpc') || id === '1' || queryId === '1') {
+
+    if (location.pathname.includes('gpc') || id === '1' || queryId === '1') {
       return gpcData;
+    } else if (id === '2' || queryId === '2') {
+      return gpcAlwerData;
     }
-    return macetData; // Default fallback
+    return gpcData; // Default fallback
   };
 
   const collegeData = getCollegeData();
