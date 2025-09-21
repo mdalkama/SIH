@@ -79,7 +79,7 @@ const StudentDatabase = () => {
                 minCgpa: filters.minCgpa || 0,
             });
             try {
-                const response = await fetch(`${API_BASE_URL}/students/placement-list?${params.toString()}`, { credentials: 'include' });
+                const response = await fetch(`${API_BASE_URL}/student/placement-list?${params.toString()}`, { credentials: 'include' });
                 if (!response.ok) {
                     const errData = await response.json();
                     throw new Error(errData.message || "Failed to fetch student data.");
