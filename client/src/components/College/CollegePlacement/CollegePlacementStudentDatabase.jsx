@@ -1,15 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Loader2, Search, SlidersHorizontal, X, ChevronLeft, ChevronRight, User, Eye } from 'lucide-react';
 
-const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1'; // Assuming a common base
+const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1';
 
 // --- SKELETON LOADER ---
 const SkeletonLoader = () => (
     <div className="animate-pulse">
-        <div className="h-12 bg-slate-200 rounded-lg mb-4"></div>
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                <div className="h-10 bg-slate-200 rounded-lg"></div>
+                <div className="h-10 bg-slate-200 rounded-lg"></div>
+                <div className="h-10 bg-slate-200 rounded-lg"></div>
+                <div className="h-10 bg-slate-200 rounded-lg"></div>
+            </div>
+        </div>
         <div className="bg-white rounded-xl border border-slate-200">
-            <div className="p-4 border-b h-16 bg-slate-100"></div>
             <div className="p-4 space-y-3">
                 {[...Array(10)].map((_, i) => <div key={i} className="h-10 bg-slate-100 rounded-lg"></div>)}
             </div>
@@ -18,14 +24,27 @@ const SkeletonLoader = () => (
 );
 
 // --- HELPER COMPONENTS ---
-const FilterInput = ({ value, onChange, placeholder, icon: Icon }) => (
+const FilterInput = ({ value, onChange, name, placeholder, icon: Icon, ...props }) => (
     <div className="relative">
         <Icon size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input type="text" value={value} onChange={onChange} placeholder={placeholder} className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg"/>
+        <input 
+            type="text" 
+            name={name} // <-- FIX: Added name attribute
+            value={value} 
+            onChange={onChange} 
+            placeholder={placeholder} 
+            className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg"
+            {...props}
+        />
     </div>
 );
-const FilterSelect = ({ value, onChange, children }) => (
-    <select value={value} onChange={onChange} className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white">
+const FilterSelect = ({ value, onChange, name, children }) => (
+    <select 
+        name={name} // <-- FIX: Added name attribute
+        value={value} 
+        onChange={onChange} 
+        className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white"
+    >
         {children}
     </select>
 );
@@ -33,7 +52,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     if (totalPages <= 1) return null;
     return (
         <div className="p-4 flex justify-end items-center gap-2 text-sm text-slate-600 border-t">
-            <p className="font-medium">Page {currentPage} of {totalPages}</p>
+            <p className="font-medium mr-4">Page {currentPage} of {totalPages}</p>
             <div className="flex gap-1">
                 <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="p-2 border rounded-md disabled:opacity-50"><ChevronLeft size={16} /></button>
                 <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 border rounded-md disabled:opacity-50"><ChevronRight size={16} /></button>
@@ -45,13 +64,13 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 // --- MAIN COMPONENT ---
 const StudentDatabase = () => {
     const [students, setStudents] = useState([]);
-    const [courses, setCourses] = useState([]); // To populate filter dropdown
+    const [courses, setCourses] = useState([]);
     const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalDocs: 0 });
     const [filters, setFilters] = useState({ search: '', courseId: 'all', minCgpa: '' });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const navigate = useNavigate(); // For navigation
 
-    // Fetch list of courses for the filter dropdown
     useEffect(() => {
         const fetchCourses = async () => {
             try {
@@ -66,7 +85,6 @@ const StudentDatabase = () => {
         fetchCourses();
     }, []);
     
-    // Fetch students whenever filters or page changes
     useEffect(() => {
         const fetchStudents = async () => {
             setLoading(true);
@@ -94,7 +112,6 @@ const StudentDatabase = () => {
             }
         };
         
-        // Debounce fetching to avoid too many API calls while typing
         const timer = setTimeout(fetchStudents, 500);
         return () => clearTimeout(timer);
 
@@ -103,20 +120,23 @@ const StudentDatabase = () => {
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters(prev => ({ ...prev, [name]: value }));
-        setPagination(prev => ({ ...prev, currentPage: 1 })); // Reset to page 1 on filter change
+        setPagination(prev => ({ ...prev, currentPage: 1 }));
     };
 
     const clearFilters = () => {
         setFilters({ search: '', courseId: 'all', minCgpa: '' });
         setPagination(prev => ({ ...prev, currentPage: 1 }));
     };
+    
+    // --- FIX: Added navigation handler ---
+    const handleViewProfile = (studentId) => {
+        // In a real app, you would navigate to the student's detailed profile page
+        alert(`Navigating to profile for student ID: ${studentId}`);
+        // Example with react-router: navigate(`/student-profile/${studentId}`);
+    };
 
     return (
         <div className="font-sans">
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-900">Student Database</h1>
-                <p className="mt-1 text-slate-600">Search and filter students for placement drives.</p>
-            </header>
 
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
@@ -150,9 +170,14 @@ const StudentDatabase = () => {
                                     <tr key={student._id} className="hover:bg-slate-50">
                                         <td className="p-3 font-semibold text-slate-700">{student.name}</td>
                                         <td className="p-3 font-mono text-slate-600">{student.registrationNumber}</td>
-                                        <td className="p-3 text-slate-600">{student.branch}</td>
-                                        <td className="p-3 text-center font-bold text-indigo-600">{student.cgpa.toFixed(2)}</td>
-                                        <td className="p-3 text-center"><button className="p-1.5 text-slate-500 hover:bg-slate-200 rounded-md" title="View Full Profile"><Eye size={16}/></button></td>
+                                        <td className="p-3 text-slate-600">{student.branch || 'N/A'}</td>
+                                        <td className="p-3 text-center font-bold text-indigo-600">{student.cgpa ? student.cgpa.toFixed(2) : '0'}</td>
+                                        <td className="p-3 text-center">
+                                            {/* --- FIX: Added onClick handler --- */}
+                                            <button onClick={() => handleViewProfile(student._id)} className="p-1.5 text-slate-500 hover:bg-slate-200 rounded-md" title="View Full Profile">
+                                                <Eye size={16}/>
+                                            </button>
+                                        </td>
                                     </tr>
                                 )) : (
                                     <tr><td colSpan="5" className="text-center p-8 text-slate-500">No students found matching your criteria.</td></tr>
