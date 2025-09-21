@@ -29,6 +29,7 @@ const examSchema = new mongoose.Schema(
             subjectName: { type: String, required: true },
             examDate: { type: Date },
             session: { type: String, enum: ["FN", "AN"], required: true }, // Forenoon/Afternoon
+            evaluator: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', default: null }
           },
         ],
       },

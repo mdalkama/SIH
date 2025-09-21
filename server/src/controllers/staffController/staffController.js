@@ -244,3 +244,17 @@ export const resetPassword = async (req, res) => {
         res.status(500).json({ message: "An error occurred while resetting the password." });
     }
 };
+
+export const getAllStaffForSelection = async (req, res) => {
+    try {
+        // We can filter by roles if needed, e.g., only 'Faculty'
+        const staffList = await Staff.find({}) // Fetch all for now
+            .select('name staffId department') // Select only the necessary fields
+            .sort({ name: 1 });
+
+        res.status(200).json({ success: true, staff: staffList });
+    } catch (error) {
+        console.error("Error fetching staff list:", error);
+        res.status(500).json({ message: "Server error fetching staff list.", error: error.message });
+    }
+};
