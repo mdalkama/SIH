@@ -43,13 +43,8 @@ const DashboardSkeleton = () => (
 const StatCard = ({ icon: Icon, title, value, colorClass }) => (
     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
         <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${colorClass}`}>
-                <Icon className="w-6 h-6" />
-            </div>
-            <div>
-                <p className="text-2xl font-bold text-slate-800">{value}</p>
-                <p className="text-sm font-medium text-slate-500">{title}</p>
-            </div>
+            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${colorClass}`}><Icon className="w-6 h-6" /></div>
+            <div><p className="text-2xl font-bold text-slate-800">{value}</p><p className="text-sm font-medium text-slate-500">{title}</p></div>
         </div>
     </div>
 );
@@ -57,13 +52,8 @@ const StatCard = ({ icon: Icon, title, value, colorClass }) => (
 const QuickActionButton = ({ icon: Icon, title, description, onClick, color }) => (
     <button onClick={onClick} className={`bg-white p-6 rounded-xl border border-slate-200 shadow-sm text-left hover:border-${color}-500 hover:shadow-lg transition-all group`}>
         <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-${color}-100 text-${color}-600`}>
-                <Icon className="w-6 h-6" />
-            </div>
-            <div>
-                <h3 className="text-lg font-bold text-slate-800">{title}</h3>
-                <p className="text-sm text-slate-500">{description}</p>
-            </div>
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-${color}-100 text-${color}-600`}><Icon className="w-6 h-6" /></div>
+            <div><h3 className="text-lg font-bold text-slate-800">{title}</h3><p className="text-sm text-slate-500">{description}</p></div>
             <ArrowRight className="w-5 h-5 ml-auto text-slate-400 group-hover:text-slate-800 transition-transform group-hover:translate-x-1" />
         </div>
     </button>
@@ -141,12 +131,13 @@ const PlacementOfficerDashboard = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <QuickActionButton icon={Megaphone} title="Manage Placement Drives" description="Create new drives, view applications, and manage statuses." onClick={() => handleNavigate('/college-placement-officer/manage-drives')} color="indigo" />
+                {/* --- THIS IS THE FIX --- */}
                 <QuickActionButton icon={Users} title="Student Database" description="View and filter student profiles based on academic performance." onClick={() => handleNavigate('/college-placement-officer/student-database')} color="emerald" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm">
-                    <div className="p-4 border-b flex items-center gap-2"><Calendar className="w-5 h-5 text-slate-500" /><h2 className="text-lg font-semibold text-slate-800">Upcoming Drives</h2></div>
+                    <div className="p-4 border-b border-slate-300 flex items-center gap-2"><Calendar className="w-5 h-5 text-slate-500" /><h2 className="text-lg font-semibold text-slate-800">Upcoming Drives</h2></div>
                     <div className="divide-y divide-slate-200">
                         {upcomingDrives.length > 0 ? (
                             upcomingDrives.map(drive => (
@@ -165,7 +156,7 @@ const PlacementOfficerDashboard = () => {
                 </div>
 
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-                     <div className="p-4 border-b flex items-center gap-2"><Star className="w-5 h-5 text-slate-500" /><h2 className="text-lg font-semibold text-slate-800">Recent Placements</h2></div>
+                     <div className="p-4 border-b border-slate-300 flex items-center gap-2"><Star className="w-5 h-5 text-slate-500" /><h2 className="text-lg font-semibold text-slate-800">Recent Placements</h2></div>
                     <div className="p-4 space-y-4">
                         {recentPlacements.length > 0 ? (
                             recentPlacements.map(placement => (

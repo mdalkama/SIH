@@ -7,15 +7,28 @@ import StudentAcademics from "../../models/studentAcademicsModel.js";
 export const getPlacementDashboardStats = async (req, res) => {
     try {
         const collegeCode = req.user.collegeCode;
-        const [drives, placedStudents, companiesVisited] = await Promise.all([
-            PlacementDrive.find({ collegeCode }),
-            // This is a simplified count. A real-world scenario might be more complex.
-            StudentAcademics.countDocuments({ 'placements.status': 'PLACED', collegeCode }),
-            PlacementDrive.distinct('companyName', { collegeCode })
-        ]);
+        if (!collegeCode) {
+            return res.status(400).json({ message: "Placement Officer must be associated with a college." });
+        }
+
+        const drives = await PlacementDrive.find({ collegeCode });
+        const companiesVisited = [...new Set(drives.map(drive => drive.companyName))];
 
         const openDrives = drives.filter(d => d.status === 'OPEN').length;
         const totalApplications = drives.reduce((acc, drive) => acc + (drive.applications?.length || 0), 0);
+        
+        // --- THIS IS THE FIX ---
+        // We find all unique students who have an 'OFFER_ACCEPTED' status across all drives.
+        const placedStudentIds = new Set();
+        drives.forEach(drive => {
+            drive.applications.forEach(app => {
+                if (app.status === 'OFFER_ACCEPTED') {
+                    placedStudentIds.add(app.studentId.toString());
+                }
+            });
+        });
+        const placedStudents = placedStudentIds.size;
+        // ------------------------
 
         res.status(200).json({
             success: true,
@@ -27,7 +40,8 @@ export const getPlacementDashboardStats = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ message: "Server error.", error: error.message });
+        console.error("Error fetching placement stats:", error);
+        res.status(500).json({ message: "Server error getting stats.", error: error.message });
     }
 };
 
