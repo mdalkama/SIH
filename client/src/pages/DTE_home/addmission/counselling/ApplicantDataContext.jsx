@@ -13,36 +13,64 @@ export const useApplicantData = () => {
 
 export const ApplicantDataProvider = ({ children, applicationId }) => {
   const [applicantInfo, setApplicantInfo] = useState(null);
+  const [applicantData, setApplicantData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const loadApplicantData = () => {
+    const loadApplicantData = async () => {
       try {
         setLoading(true);
-        
-        // Find the applicant by application ID
-        const applicant = applicantData.students[applicationId];
-        
-        if (!applicant) {
-          setError(`Applicant with ID ${applicationId} not found`);
-          return;
+        setError(null);
+
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Load data from public/applicant.json
+        const response = await fetch('/applicant.json');
+        if (!response.ok) {
+          throw new Error('Failed to load applicant data');
         }
 
-        setApplicantInfo(applicant);
-        setError(null);
+        const data = await response.json();
+
+        // Extract student data based on applicationId
+        const studentData = data.students?.[applicationId];
+        const counsellingRounds = data.counsellingRounds || {};
+        const systemInfo = data.systemInfo || {};
+
+        if (studentData) {
+          // Add counselling rounds and system info to student data
+          const completeData = {
+            ...studentData,
+            counsellingRounds,
+            systemInfo
+          };
+
+          setApplicantInfo(completeData);
+          setApplicantData(completeData);
+        } else {
+          throw new Error(`Student data not found for application ID: ${applicationId}`);
+        }
+
       } catch (err) {
-        setError('Failed to load applicant data');
         console.error('Error loading applicant data:', err);
+        setError('Failed to load applicant data');
+        setApplicantInfo(null);
+        setApplicantData(null);
       } finally {
         setLoading(false);
       }
     };
 
+    // Only load data if we have an applicationId
     if (applicationId) {
       loadApplicantData();
+    } else {
+      setLoading(false);
+      setError('No application ID provided');
     }
-  }, [applicationId]);
+  }, []); // Remove applicationId dependency to prevent infinite loops
 
   // Helper functions for data access
   const getPersonalInfo = () => applicantInfo?.personalInfo || {};
@@ -143,13 +171,13 @@ export const ApplicantDataProvider = ({ children, applicationId }) => {
 
   const addNotification = (notification) => {
     const newNotification = {
-      id: Date.now(),
+      id: Date.now() + Math.random(), // Make ID more unique
       message: notification.message,
       time: notification.time || new Date().toLocaleString(),
       read: false,
       type: notification.type || 'info'
     };
-    
+
     setApplicantInfo(prev => ({
       ...prev,
       notifications: [newNotification, ...(prev.notifications || [])]

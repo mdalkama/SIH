@@ -211,7 +211,7 @@ const ConfirmDecision = ({ decision = 'freeze', onGoBack }) => {
                 </div>
                 <div>
                   <p className="text-xs text-gray-600">Reporting By</p>
-                  <p className="font-semibold text-red-600">12 Aug, 5:00 PM</p>
+                  <p className="font-semibold text-red-600">25 Mar, 5:00 PM</p>
                 </div>
               </div>
             </div>
