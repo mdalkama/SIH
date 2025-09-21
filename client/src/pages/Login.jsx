@@ -150,91 +150,145 @@ const Mylogin = () => {
     // forget password
     if (showForgotPassword) {
         return (
-            <div className="min-h-screen flex items-center justify-center relative">
-                {/* Background Image */}
-                <div 
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                    style={{
-                        backgroundImage: 'url(https://hte.rajasthan.gov.in/css_index/images/s1old.jpg)',
-                        opacity: '0.3'
-                    }}
-                ></div>
-                
-                <div className="flex items-center justify-center py-12 px-4 relative z-10">
-                    <div className="w-full max-w-md">
-                        <div className="bg-white border border-gray-300 shadow-lg p-8 relative">
-                            <div className="text-center mb-8">
-                                <button
-                                    onClick={resetForgotPassword}
-                                    className="absolute top-6 left-6 p-2 text-gray-500 hover:text-gray-700 transition-colors"
-                                >
-                                    <ArrowLeft size={20} />
-                                </button>
-                                <div className="w-16 h-16 bg-[#186fc060] border-2 border-[#0D2841] rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Mail className="w-8 h-8 text-[#0D2841]" />
+            <div className="min-h-screen flex flex-col">
+                {/* Header Section - Logo Area Only */}
+                <div className="bg-white border-b border-gray-200 py-4 px-6 shadow-sm">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4 md:space-x-8">
+                                <div className="flex-shrink-0">
+                                    <img
+                                        src="https://svumshow.com/assets/images/department-logo/pngwing.png"
+                                        alt="Government of Rajasthan Logo"
+                                        className="h-12 w-12 md:h-16 md:w-16 lg:h-20 lg:w-20 object-contain"
+                                    />
                                 </div>
-                                <h2 className="text-2xl font-bold text-gray-900 mb-2">Password Recovery</h2>
-                                <p className="text-gray-600 text-sm">
-                                    Enter your registered email address to receive password reset instructions
-                                </p>
+                                <div className="text-left">
+                                    <h1 className="text-xs md:text-sm lg:text-base font-bold text-gray-800 leading-tight mb-1">
+                                        राजस्थान सरकार
+                                    </h1>
+                                    <h2 className="text-xs md:text-sm lg:text-base font-bold text-gray-800 leading-tight mb-2">
+                                        तकनीकी शिक्षा निदेशालय
+                                    </h2>
+                                    <h4 className="text-[10px] md:text-xs lg:text-sm font-semibold text-blue-600">
+                                        Government of Rajasthan - Department of Technical Education
+                                    </h4>
+                                </div>
                             </div>
-
-                            {forgotSuccess ? (
-                                <div className="text-center">
-                                    <div className="w-16 h-16 bg-green-100 border-2 border-green-300 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <Mail className="w-8 h-8 text-green-600" />
-                                    </div>
-                                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Email Sent Successfully</h3>
-                                    <p className="text-gray-600 text-sm mb-6">
-                                        Password reset instructions have been sent to {forgotEmail}
-                                    </p>
-                                    <button
-                                        onClick={resetForgotPassword}
-                                        className="w-full bg-blue-800 text-white py-3 hover:bg-blue-900 transition-colors font-semibold border"
-                                    >
-                                        Return to Login
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="space-y-6">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                            Email Address *
-                                        </label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
-                                            <input
-                                                type="email"
-                                                value={forgotEmail}
-                                                onChange={(e) => setForgotEmail(e.target.value)}
-                                                onKeyPress={handleForgotKeyPress}
-                                                className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 focus:border-blue-800 focus:outline-none transition-all"
-                                                placeholder="Enter your registered email"
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {error && (
-                                        <div className="flex items-center gap-2 p-3 bg-red-50 border-l-4 border-red-500">
-                                            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-                                            <p className="text-red-800 text-sm font-medium">{error}</p>
-                                        </div>
-                                    )}
-
-                                    <button
-                                        type="button"
-                                        onClick={handleForgotPassword}
-                                        disabled={forgotLoading}
-                                        className="w-full bg-[#0D2841] text-white py-3 hover:bg-[#083056] transition-colors font-semibold border disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {forgotLoading ? "Sending Instructions..." : "Send Reset Instructions"}
-                                    </button>
-                                </div>
-                            )}
+                            <div className="flex items-center space-x-2 md:space-x-4">
+                                <img
+                                    src="https://dte.rajasthan.gov.in/assets/img/mono.jpg"
+                                    alt="DTE Mono Logo"
+                                    className="h-10 w-10 md:h-12 md:w-12 lg:h-16 lg:w-16 object-cover rounded-full border border-gray-200"
+                                />
+                                <img
+                                    src="https://dte.rajasthan.gov.in/assets/img/Azadi.png"
+                                    alt="Azadi Ka Amrit Mahotsav"
+                                    className="h-10 md:h-12 lg:h-16 object-contain"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                {/* Back Button Section */}
+                <div className="bg-gray-50 py-3 px-6">
+                    <div className="max-w-7xl mx-auto">
+                        <button
+                            onClick={resetForgotPassword}
+                            className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors duration-200 px-3 py-2 rounded-lg"
+                        >
+                            <ArrowLeft className="w-5 h-5" />
+                            <span className="font-medium">Back to Login</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Main Content Area with Background */}
+                <div className="flex-1 flex relative">
+                    {/* Full Background Image */}
+                    <div
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                        style={{
+                            backgroundImage: 'url(https://hte.rajasthan.gov.in/css_index/images/s1old.jpg)',
+                            opacity: '0.3'
+                        }}
+                    ></div>
+
+                    {/* Centered Reset Password Form */}
+                    <div className="w-full flex items-center justify-center py-12 px-4 relative z-10">
+                        <div className="w-full max-w-md">
+                            <div className="bg-white border border-gray-300 shadow-lg p-8">
+                                <div className="text-center mb-8">
+                                    <div className="w-16 h-16 bg-[#186fc060] border-2 border-[#0D2841] rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Mail className="w-8 h-8 text-[#0D2841]" />
+                                    </div>
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Password Recovery</h2>
+                                    <p className="text-gray-600 text-sm">
+                                        Enter your registered email address to receive password reset instructions
+                                    </p>
+                                </div>
+
+                                {forgotSuccess ? (
+                                    <div className="text-center">
+                                        <div className="w-16 h-16 bg-green-100 border-2 border-green-300 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <Mail className="w-8 h-8 text-green-600" />
+                                        </div>
+                                        <h3 className="text-xl font-semibold text-gray-900 mb-2">Email Sent Successfully</h3>
+                                        <p className="text-gray-600 text-sm mb-6">
+                                            Password reset instructions have been sent to {forgotEmail}
+                                        </p>
+                                        <button
+                                            onClick={resetForgotPassword}
+                                            className="w-full bg-[#0D2841] text-white py-3 hover:bg-[#083056] transition-colors font-semibold border"
+                                        >
+                                            Return to Login
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                                Email Address *
+                                            </label>
+                                            <div className="relative">
+                                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
+                                                <input
+                                                    type="email"
+                                                    value={forgotEmail}
+                                                    onChange={(e) => setForgotEmail(e.target.value)}
+                                                    onKeyPress={handleForgotKeyPress}
+                                                    className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 focus:border-[#0D2841] focus:outline-none transition-all"
+                                                    placeholder="Enter your registered email"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {error && (
+                                            <div className="flex items-center gap-2 p-3 bg-red-50 border-l-4 border-red-500">
+                                                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                                                <p className="text-red-800 text-sm font-medium">{error}</p>
+                                            </div>
+                                        )}
+
+                                        <button
+                                            type="button"
+                                            onClick={handleForgotPassword}
+                                            disabled={forgotLoading}
+                                            className="w-full bg-[#0D2841] text-white py-3 hover:bg-[#083056] transition-colors font-semibold border disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {forgotLoading ? "Sending Instructions..." : "Send Reset Instructions"}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <Footer />
             </div>
         );
     }
@@ -287,7 +341,7 @@ const Mylogin = () => {
                 <div className="max-w-7xl mx-auto">
                     <button
                         onClick={() => navigate('/')}
-                        className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-white"
+                        className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors duration-200 px-3 py-2 rounded-lg"
                     >
                         <ArrowLeft className="w-5 h-5" />
                         <span className="font-medium">Back to Home</span>
