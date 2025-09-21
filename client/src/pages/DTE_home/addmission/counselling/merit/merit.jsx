@@ -317,15 +317,15 @@ const MeritSection = () => {
             <div className="space-y-3">
               <div>
                 <p className="text-xs text-gray-500">Round 1 Freeze</p>
-                <p className="text-sm font-medium text-gray-900">25 Sep 2024, 5:00 PM</p>
+                <p className="text-sm font-medium text-gray-900">30 Mar 2025, 11:59 PM</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Seat Allotment</p>
-                <p className="text-sm font-medium text-gray-900">28 Sep 2024</p>
+                <p className="text-sm font-medium text-gray-900">01 Apr 2025</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Document Verification</p>
-                <p className="text-sm font-medium text-gray-900">29-30 Sep 2024</p>
+                <p className="text-sm font-medium text-gray-900">02-03 Apr 2025</p>
               </div>
             </div>
           </div>
@@ -355,7 +355,7 @@ const MeritSection = () => {
                 Export CSV
               </button>
               <span className="inline-flex items-center px-2 sm:px-3 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                Updated: 19 Sep 2025
+                Updated: 21 Mar 2025
               </span>
             </div>
           </div>
