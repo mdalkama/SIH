@@ -165,7 +165,7 @@ import CollegeAdminManageComplaints from "../components/College/CollegeAdmin/Col
 import CollegeAdminManageFeedback from "../components/College/CollegeAdmin/CollegeAdminManageFeedback.jsx";
 import StudentComplaintsAndFeedback from "../components/Student/StudentComplaintsAndFeedback.jsx";
 import CollegePlacementDashboard from "../components/College/CollegePlacement/CollegePlacementDashboard.jsx";
-import CollegePlacementStatus from "../components/College/CollegePlacement/CollegePlacementStatus.jsx";
+import CollegePlacementStudentDatabase from "../components/College/CollegePlacement/CollegePlacementStudentDatabase.jsx";
 import StudentPlacementDrives from "../components/Student/StudentPlacementDrives.jsx";
 import CollegeManagePlacement from "../components/College/CollegePlacement/CollegeManagePlacement.jsx";
 
@@ -1108,14 +1108,15 @@ const menuConfig = {
             component: CollegePlacementDashboard,
             role: "CollegePlacementOfficer",
         },
-        // {
-        //     id: "placement-status",
-        //     label: "Placement Status",
-        //     icon: User,
-        //     path: "/college-placement/placement-status",
-        //     component: CollegePlacementStatus,
-        //     role: "CollegePlacementOfficer",
-        // },
+        {
+            id: "student-database",
+            label: "Student Database",
+            icon: Users,
+            path: "/college-placement/student-database",
+            component: CollegePlacementStudentDatabase,
+            role: "CollegePlacementOfficer",
+           
+        },
         {
             id: "manage placements",
             label: "Manage Placements",
