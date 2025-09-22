@@ -88,13 +88,13 @@ const DepartmentRulesPage = () => {
 
   const getCategoryBadge = (category) => {
     const categoryClasses = {
-      'Engineering': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-      'Non-Engineering': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-      'Service Rules': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-      'Finance': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-      'Infrastructure': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
-      'Notice': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-      'Guidelines': 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300'
+      'Engineering': 'bg-blue-100 text-blue-800 :bg-blue-900/30 :text-blue-300',
+      'Non-Engineering': 'bg-purple-100 text-purple-800 :bg-purple-900/30 :text-purple-300',
+      'Service Rules': 'bg-green-100 text-green-800 :bg-green-900/30 :text-green-300',
+      'Finance': 'bg-yellow-100 text-yellow-800 :bg-yellow-900/30 :text-yellow-300',
+      'Infrastructure': 'bg-indigo-100 text-indigo-800 :bg-indigo-900/30 :text-indigo-300',
+      'Notice': 'bg-red-100 text-red-800 :bg-red-900/30 :text-red-300',
+      'Guidelines': 'bg-pink-100 text-pink-800 :bg-pink-900/30 :text-pink-300'
     };
     
     return (
@@ -105,11 +105,11 @@ const DepartmentRulesPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 :from-gray-900 :to-gray-800">
       <Header />
       
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-blue-50 to-blue-100 dark:from-slate-800 dark:to-slate-900 text-gray-800 dark:text-white overflow-hidden">
+      <div className="relative bg-gradient-to-r from-blue-50 to-blue-100 :from-slate-800 :to-slate-900 text-gray-800 :text-white overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/5"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
           <motion.div 
@@ -118,14 +118,14 @@ const DepartmentRulesPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium mb-6">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 :bg-blue-900/30 text-blue-700 :text-blue-300 text-sm font-medium mb-6">
               <span className="inline-flex h-2 w-2 rounded-full bg-blue-500 mr-2"></span>
               Department Rules
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
               Department Rules & Regulations
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            <p className="text-lg text-gray-600 :text-gray-300 max-w-3xl mx-auto">
               Access important department rules, regulations, and guidelines
             </p>
           </motion.div>
@@ -142,10 +142,10 @@ const DepartmentRulesPage = () => {
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-3 bg-white/90 dark:bg-gray-800/95 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 rounded-lg 
-                         transition-all duration-200 ease-in-out border border-gray-200 dark:border-gray-700
+              className="block w-full pl-10 pr-3 py-3 bg-white/90 :bg-gray-800/95 text-gray-900 :text-white placeholder-gray-400 :placeholder-gray-400 rounded-lg 
+                         transition-all duration-200 ease-in-out border border-gray-200 :border-gray-700
                          focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/50 focus:outline-none focus:shadow-sm
-                         hover:border-gray-300 dark:hover:border-gray-600"
+                         hover:border-gray-300 :hover:border-gray-600"
               placeholder="Search department rules..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -155,32 +155,32 @@ const DepartmentRulesPage = () => {
         </div>
 
         {/* Rules List */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
+        <div className="bg-white :bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 :border-gray-700">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700/50">
+            <table className="min-w-full divide-y divide-gray-200 :divide-gray-700">
+              <thead className="bg-gray-50 :bg-gray-700/50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 :text-gray-300 uppercase tracking-wider">
                     Rule / Regulation
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 :text-gray-300 uppercase tracking-wider">
                     Category
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 :text-gray-300 uppercase tracking-wider">
                     Last Updated
                   </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 :text-gray-300 uppercase tracking-wider">
                     Action
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white :bg-gray-800 divide-y divide-gray-200 :divide-gray-700">
                 {filteredRules.map((rule) => (
-                  <tr key={rule.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                  <tr key={rule.id} className="hover:bg-gray-50 :hover:bg-gray-700/50 transition-colors">
                     <td className="px-6 py-4 whitespace-normal">
                       <div className="flex items-center">
                         <FileText className="flex-shrink-0 h-5 w-5 text-blue-500 mr-3" />
-                        <span className="text-gray-900 dark:text-white font-medium">
+                        <span className="text-gray-900 :text-white font-medium">
                           {rule.title}
                         </span>
                       </div>
@@ -188,7 +188,7 @@ const DepartmentRulesPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getCategoryBadge(rule.category)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 :text-gray-300">
                       <div className="flex items-center">
                         <Calendar className="flex-shrink-0 h-4 w-4 text-gray-400 mr-2" />
                         {rule.date}
@@ -199,7 +199,7 @@ const DepartmentRulesPage = () => {
                         href={`/documents/department-rules/${rule.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                        className="inline-flex items-center text-blue-600 hover:text-blue-800 :text-blue-400 :hover:text-blue-300"
                       >
                         View Details
                         <ArrowRight className="ml-1 h-4 w-4" />

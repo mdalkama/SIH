@@ -497,11 +497,11 @@ const CollegeList = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 :from-gray-900 :to-gray-800">
       <Header />
       
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-blue-50 to-blue-100 dark:from-slate-800 dark:to-slate-900 text-gray-800 dark:text-white overflow-hidden">
+      <div className="relative bg-gradient-to-r from-blue-50 to-blue-100 :from-slate-800 :to-slate-900 text-gray-800 :text-white overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/5"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
           <motion.div 
@@ -513,7 +513,7 @@ const CollegeList = () => {
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
               Our Vision
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            <p className="text-lg text-gray-600 :text-gray-300 max-w-3xl mx-auto">
               To enhance the competitiveness of State's technical manpower to global standards by imparting high quality & state of art Technical Education and Training to all sections of the society.
             </p>
           </motion.div>
@@ -531,10 +531,10 @@ const CollegeList = () => {
               </div>
               <input
                 type="text"
-                className="block w-full pl-10 pr-3 py-3 bg-white/90 dark:bg-gray-800/95 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 rounded-lg 
-                           transition-all duration-200 ease-in-out border border-gray-200 dark:border-gray-700
+                className="block w-full pl-10 pr-3 py-3 bg-white/90 :bg-gray-800/95 text-gray-900 :text-white placeholder-gray-400 :placeholder-gray-400 rounded-lg 
+                           transition-all duration-200 ease-in-out border border-gray-200 :border-gray-700
                            focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/50 focus:outline-none focus:shadow-sm
-                           hover:border-gray-300 dark:hover:border-gray-600"
+                           hover:border-gray-300 :hover:border-gray-600"
                 placeholder="Search colleges..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -547,10 +547,10 @@ const CollegeList = () => {
                 <Filter className="h-5 w-5 text-gray-400" />
               </div>
               <select
-                className="block w-full pl-10 pr-8 py-3 bg-white/90 dark:bg-gray-800/95 text-gray-900 dark:text-white rounded-lg 
-                           transition-all duration-200 ease-in-out border border-gray-200 dark:border-gray-700
+                className="block w-full pl-10 pr-8 py-3 bg-white/90 :bg-gray-800/95 text-gray-900 :text-white rounded-lg 
+                           transition-all duration-200 ease-in-out border border-gray-200 :border-gray-700
                            focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/50 focus:outline-none focus:shadow-sm
-                           hover:border-gray-300 dark:hover:border-gray-600 appearance-none"
+                           hover:border-gray-300 :hover:border-gray-600 appearance-none"
                 value={selectedDistrict}
                 onChange={(e) => setSelectedDistrict(e.target.value)}
               >
@@ -569,60 +569,60 @@ const CollegeList = () => {
         </div>
 
         {/* College List */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
+        <div className="bg-white :bg-gray-800 rounded-xl shadow-md border border-gray-200 :border-gray-700">
           <div className="w-full">
-            <table className="w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
-              <thead className="bg-gray-50 dark:bg-gray-700/50">
+            <table className="w-full divide-y divide-gray-200 :divide-gray-700 table-fixed">
+              <thead className="bg-gray-50 :bg-gray-700/50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/4">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 :text-gray-300 uppercase tracking-wider w-1/4">
                     College Name
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/6">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 :text-gray-300 uppercase tracking-wider w-1/6">
                     Established
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/5">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 :text-gray-300 uppercase tracking-wider w-1/5">
                     Location
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/5">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 :text-gray-300 uppercase tracking-wider w-1/5">
                     Contact
                   </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/6">
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 :text-gray-300 uppercase tracking-wider w-1/6">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white :bg-gray-800 divide-y divide-gray-200 :divide-gray-700">
                 {currentColleges.map((college, index) => (
                   <motion.tr 
                     key={college.id} 
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                    className="hover:bg-gray-50 :hover:bg-gray-700/50 transition-colors"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2 }}
                   >
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900 dark:text-white whitespace-normal break-words">{college.name}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">Est. {college.established}</div>
+                      <div className="text-sm font-medium text-gray-900 :text-white whitespace-normal break-words">{college.name}</div>
+                      <div className="text-xs text-gray-500 :text-gray-400">Est. {college.established}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 dark:text-white whitespace-normal">{college.established}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">Government</div>
+                      <div className="text-sm text-gray-900 :text-white whitespace-normal">{college.established}</div>
+                      <div className="text-xs text-gray-500 :text-gray-400">Government</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-start">
                         <MapPin className="flex-shrink-0 h-4 w-4 text-blue-400 mr-2 mt-0.5" />
                         <div className="min-w-0">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">{college.district}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 break-words">{college.address}</div>
+                          <div className="text-sm font-medium text-gray-900 :text-white">{college.district}</div>
+                          <div className="text-xs text-gray-500 :text-gray-400 break-words">{college.address}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-start text-sm text-gray-900 dark:text-white">
+                      <div className="flex items-start text-sm text-gray-900 :text-white">
                         <Phone className="flex-shrink-0 h-4 w-4 text-blue-400 mr-2 mt-0.5" />
                         <span className="break-words">{college.contact}</span>
                       </div>
-                      <div className="flex items-start text-sm text-blue-600 dark:text-blue-400">
+                      <div className="flex items-start text-sm text-blue-600 :text-blue-400">
                         <Mail className="flex-shrink-0 h-4 w-4 text-blue-400 mr-2 mt-0.5" />
                         <span className="break-words">{college.email}</span>
                       </div>
@@ -631,7 +631,7 @@ const CollegeList = () => {
                       { college.id === 1 ? (
                         <Link
                           to="/colleges/college?id=1"
-                          className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                          className="inline-flex items-center text-blue-600 hover:text-blue-800 :text-blue-400 :hover:text-blue-300"
                         >
                           Visit
                           <ExternalLink className="ml-1 h-3 w-3" />
@@ -639,7 +639,7 @@ const CollegeList = () => {
                       ) : college.id === 2 ? (
                         <Link
                           to="/colleges/college?id=2"
-                          className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                          className="inline-flex items-center text-blue-600 hover:text-blue-800 :text-blue-400 :hover:text-blue-300"
                         >
                           Visit
                           <ExternalLink className="ml-1 h-3 w-3" />
@@ -649,7 +649,7 @@ const CollegeList = () => {
                           href={college.website}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                          className="inline-flex items-center text-blue-600 hover:text-blue-800 :text-blue-400 :hover:text-blue-300"
                         >
                           Visit
                           <ExternalLink className="ml-1 h-3 w-3" />
@@ -663,21 +663,21 @@ const CollegeList = () => {
           </div>
 
           {/* Pagination */}
-          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/30 border-t border-gray-200 dark:border-gray-700">
+          <div className="px-6 py-4 bg-gray-50 :bg-gray-700/30 border-t border-gray-200 :border-gray-700">
             <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Showing <span className="font-medium text-gray-700 dark:text-gray-200">{indexOfFirstCollege + 1}</span> to {' '}
-                <span className="font-medium text-gray-700 dark:text-gray-200">
+              <div className="text-sm text-gray-500 :text-gray-400">
+                Showing <span className="font-medium text-gray-700 :text-gray-200">{indexOfFirstCollege + 1}</span> to {' '}
+                <span className="font-medium text-gray-700 :text-gray-200">
                   {Math.min(indexOfLastCollege, filteredColleges.length)}
                 </span>{' '}
-                of <span className="font-medium text-gray-700 dark:text-gray-200">{filteredColleges.length}</span> colleges
+                of <span className="font-medium text-gray-700 :text-gray-200">{filteredColleges.length}</span> colleges
               </div>
               <div className="flex space-x-2">
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 
-                             bg-white/90 dark:bg-gray-800/95 hover:bg-gray-50 dark:hover:bg-gray-700/80 disabled:opacity-50 disabled:cursor-not-allowed
+                  className="px-4 py-2 border border-gray-200 :border-gray-700 rounded-lg text-sm font-medium text-gray-700 :text-gray-200 
+                             bg-white/90 :bg-gray-800/95 hover:bg-gray-50 :hover:bg-gray-700/80 disabled:opacity-50 disabled:cursor-not-allowed
                              transition-all duration-200 ease-in-out hover:shadow-sm"
                 >
                   Previous
@@ -685,8 +685,8 @@ const CollegeList = () => {
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(filteredColleges.length / collegesPerPage)))}
                   disabled={indexOfLastCollege >= filteredColleges.length}
-                  className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-white 
-                             bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed
+                  className="px-4 py-2 border border-gray-200 :border-gray-700 rounded-lg text-sm font-medium text-white 
+                             bg-blue-600 hover:bg-blue-700 :bg-blue-700 :hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed
                              transition-all duration-200 ease-in-out hover:shadow-sm"
                 >
                   Next

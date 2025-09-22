@@ -77,10 +77,10 @@ const TendersAuctionsPage = () => {
 
   const getStatusBadge = (status) => {
     const statusClasses = {
-      'Upcoming': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-      'Active': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-      'Closed': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-      'Cancelled': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+      'Upcoming': 'bg-blue-100 text-blue-800 :bg-blue-900/30 :text-blue-300',
+      'Active': 'bg-green-100 text-green-800 :bg-green-900/30 :text-green-300',
+      'Closed': 'bg-gray-100 text-gray-800 :bg-gray-700 :text-gray-300',
+      'Cancelled': 'bg-red-100 text-red-800 :bg-red-900/30 :text-red-300'
     };
     
     return (
@@ -91,11 +91,11 @@ const TendersAuctionsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 :from-gray-900 :to-gray-800">
       <Header />
       
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-blue-50 to-blue-100 dark:from-slate-800 dark:to-slate-900 text-gray-800 dark:text-white overflow-hidden">
+      <div className="relative bg-gradient-to-r from-blue-50 to-blue-100 :from-slate-800 :to-slate-900 text-gray-800 :text-white overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/5"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
           <div className="text-center">
@@ -108,7 +108,7 @@ const TendersAuctionsPage = () => {
               Our Vision
             </motion.h1>
             <motion.p 
-              className="text-xl text-gray-700 dark:text-gray-200 max-w-3xl mx-auto"
+              className="text-xl text-gray-700 :text-gray-200 max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -123,7 +123,7 @@ const TendersAuctionsPage = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Search and Filter */}
-        <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700">
+        <div className="mb-8 bg-white :bg-gray-800 rounded-xl shadow-md p-6 border border-gray-100 :border-gray-700">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="relative flex-1">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -131,10 +131,10 @@ const TendersAuctionsPage = () => {
               </div>
               <input
                 type="text"
-                className="block w-full pl-10 pr-3 py-3 bg-white/90 dark:bg-gray-800/95 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 rounded-lg 
-                           transition-all duration-200 ease-in-out border border-gray-200 dark:border-gray-700
+                className="block w-full pl-10 pr-3 py-3 bg-white/90 :bg-gray-800/95 text-gray-900 :text-white placeholder-gray-400 :placeholder-gray-400 rounded-lg 
+                           transition-all duration-200 ease-in-out border border-gray-200 :border-gray-700
                            focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/50 focus:outline-none focus:shadow-sm
-                           hover:border-gray-300 dark:hover:border-gray-600"
+                           hover:border-gray-300 :hover:border-gray-600"
                 placeholder="Search tenders by reference or date..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -151,15 +151,15 @@ const TendersAuctionsPage = () => {
         </div>
 
         {/* Tenders List */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-700">
-          <div className="px-8 py-5 bg-gradient-to-r from-blue-50 to-blue-50/50 dark:from-slate-800 dark:to-slate-800/80 border-b border-blue-100 dark:border-slate-700">
+        <div className="bg-white :bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-100 :border-gray-700">
+          <div className="px-8 py-5 bg-gradient-to-r from-blue-50 to-blue-50/50 :from-slate-800 :to-slate-800/80 border-b border-blue-100 :border-slate-700">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="p-2.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                <div className="p-2.5 rounded-lg bg-blue-100 :bg-blue-900/30 text-blue-700 :text-blue-400">
                   <FileText className="w-5 h-5" />
                 </div>
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
-                  Active Tenders <span className="text-blue-600 dark:text-blue-400">&</span> Auctions
+                <h2 className="text-2xl font-bold text-slate-800 :text-white tracking-tight">
+                  Active Tenders <span className="text-blue-600 :text-blue-400">&</span> Auctions
                 </h2>
               </div>
               <span className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-full transition-colors duration-200 shadow-sm">
@@ -169,16 +169,16 @@ const TendersAuctionsPage = () => {
           </div>
           
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700/50">
+            <table className="min-w-full divide-y divide-gray-200 :divide-gray-700">
+              <thead className="bg-gray-50 :bg-gray-700/50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 :text-gray-300 uppercase tracking-wider">
                     Tender Reference No.
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 :text-gray-300 uppercase tracking-wider">
                     Status
                   </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 :text-gray-300 uppercase tracking-wider">
                     Last Date
                   </th>
                   <th scope="col" className="relative px-6 py-3">
@@ -186,21 +186,21 @@ const TendersAuctionsPage = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white :bg-gray-800 divide-y divide-gray-200 :divide-gray-700">
                 {filteredTenders.map((tender) => (
                   <tr 
                     key={tender.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                    className="hover:bg-gray-50 :hover:bg-gray-700/50 transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-normal">
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      <div className="text-sm font-medium text-gray-900 :text-white">
                         {tender.tenderReferenceNo}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(tender.status)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500 :text-gray-400">
                       <div className="flex items-center justify-end">
                         <Calendar className="w-4 h-4 mr-2 text-gray-400" />
                         {tender.date}
@@ -209,7 +209,7 @@ const TendersAuctionsPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <a 
                         href="#" 
-                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 flex items-center justify-end"
+                        className="text-blue-600 hover:text-blue-900 :text-blue-400 :hover:text-blue-300 flex items-center justify-end"
                       >
                         View Details
                         <ArrowRight className="w-4 h-4 ml-1" />
@@ -224,28 +224,28 @@ const TendersAuctionsPage = () => {
           {filteredTenders.length === 0 && (
             <div className="text-center py-12">
               <FileText className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No tenders found</h3>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              <h3 className="mt-2 text-sm font-medium text-gray-900 :text-white">No tenders found</h3>
+              <p className="mt-1 text-sm text-gray-500 :text-gray-400">
                 {searchTerm ? 'Try a different search term.' : 'There are currently no active tenders.'}
               </p>
             </div>
           )}
           
-          <div className="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="bg-gray-50 :bg-gray-800/50 px-6 py-4 border-t border-gray-200 :border-gray-700">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500 :text-gray-400">
                 Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredTenders.length}</span> of{' '}
                 <span className="font-medium">{filteredTenders.length}</span> results
               </p>
               <div className="flex space-x-2">
                 <button 
-                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                  className="px-3 py-1 border border-gray-300 :border-gray-600 rounded-md text-sm font-medium text-gray-700 :text-gray-300 bg-white :bg-gray-700 hover:bg-gray-50 :hover:bg-gray-600"
                   disabled
                 >
                   Previous
                 </button>
                 <button 
-                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                  className="px-3 py-1 border border-gray-300 :border-gray-600 rounded-md text-sm font-medium text-gray-700 :text-gray-300 bg-white :bg-gray-700 hover:bg-gray-50 :hover:bg-gray-600"
                   disabled={filteredTenders.length <= 10}
                 >
                   Next
@@ -256,18 +256,18 @@ const TendersAuctionsPage = () => {
         </div>
         
         {/* Additional Information */}
-        <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+        <div className="mt-8 bg-white :bg-gray-800 rounded-xl shadow-md p-6 border border-gray-100 :border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 :text-white mb-4">
             Need Help with Tenders?
           </h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
+          <p className="text-gray-600 :text-gray-300 mb-4">
             For any queries regarding the tendering process or to submit documents, please contact our procurement department.
           </p>
           <div className="flex flex-wrap gap-3">
             <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
               Contact Procurement
             </button>
-            <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg text-sm font-medium transition-colors">
+            <button className="px-4 py-2 border border-gray-300 :border-gray-600 text-gray-700 :text-gray-300 hover:bg-gray-50 :hover:bg-gray-700 rounded-lg text-sm font-medium transition-colors">
               View Tender Guidelines
             </button>
           </div>
