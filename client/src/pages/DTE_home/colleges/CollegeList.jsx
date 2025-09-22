@@ -25,7 +25,8 @@ const CollegeList = () => {
       district: "Ajmer",
       address: "Ajmer, Rajasthan",
       website: "https://share.google/UBelXktowNFKngC79",
-      established: "1963"
+      established: "1963",
+      code: "001"
     },
     {
       id: 2,
@@ -35,7 +36,8 @@ const CollegeList = () => {
       district: "Alwar",
       address: "Alwar, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcalwar",
-      established: "1965"
+      established: "1965",
+      code: "002"
     },
     {
       id: 3,
@@ -45,7 +47,8 @@ const CollegeList = () => {
       district: "Banswara",
       address: "BadiSira, Banswara, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcbagidora",
-      established: "1995"
+      established: "1995",
+      code: "003"   
     },
     {
       id: 4,
@@ -55,7 +58,8 @@ const CollegeList = () => {
       district: "Banswara",
       address: "Banswara, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcbanswara",
-      established: "1998"
+      established: "1998",
+      code: "004"
     },
     {
       id: 5,
@@ -65,7 +69,8 @@ const CollegeList = () => {
       district: "Baran",
       address: "Baran, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcbaran",
-      established: "1998"
+      established: "1998",
+      code: "005"
     },
     {
       id: 6,
@@ -75,7 +80,8 @@ const CollegeList = () => {
       district: "Barmer",
       address: "Barmer, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcbarmer",
-      established: "2000"
+      established: "2000",
+      code: "006"
     },
     {
       id: 7,
@@ -85,7 +91,8 @@ const CollegeList = () => {
       district: "Bhikarai",
       address: "Bhikarai, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcbikaner",
-      established: "2005"
+      established: "2005",
+      code: "007"
     },
     {
       id: 8,
@@ -95,7 +102,8 @@ const CollegeList = () => {
       district: "Bharatpur",
       address: "Bharatpur, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gwpcbharatpur",
-      established: "1985"
+      established: "1985",
+      code: "008"
     },
     {
       id: 9,
@@ -105,7 +113,8 @@ const CollegeList = () => {
       district: "Bhilwara",
       address: "Bhilwara, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcbhilwara",
-      established: "1965"
+      established: "1965",
+      code: "009"
     },
     {
       id: 10,
@@ -115,7 +124,8 @@ const CollegeList = () => {
       district: "Bundi",
       address: "Bundi, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcbundi",
-      established: "1990"
+      established: "1990",
+      code: "010"
     },
     {
       id: 11,
@@ -125,7 +135,8 @@ const CollegeList = () => {
       district: "Chittorgarh",
       address: "Chittorgarh, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcchittorgarh",
-      established: "1988"
+      established: "1988",
+      code: "011"
     },
     {
       id: 12,
@@ -135,7 +146,8 @@ const CollegeList = () => {
       district: "Churu",
       address: "Churu, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcchuru",
-      established: "1992"
+      established: "1992",
+      code: "012"
     },
     {
       id: 13,
@@ -145,7 +157,8 @@ const CollegeList = () => {
       district: "Dausa",
       address: "Dausa, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcdausa",
-      established: "2002"
+      established: "2002",
+      code: "013"
     },
     {
       id: 14,
@@ -155,7 +168,8 @@ const CollegeList = () => {
       district: "Dholpur",
       address: "Dholpur, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/www.gpcdholpur.com",
-      established: "1995"
+      established: "1995",
+      code: "014"
     },
     {
       id: 15,
@@ -165,7 +179,8 @@ const CollegeList = () => {
       district: "Dungarpur",
       address: "Dungarpur, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcdungarpur",
-      established: "1997"
+      established: "1997",
+      code: "015"
     },
     {
       id: 16,
@@ -175,7 +190,8 @@ const CollegeList = () => {
       district: "Hanumangarh",
       address: "Hanumangarh, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpchanumangarh",
-      established: "1999"
+      established: "1999",
+      code: "016"
     },
     {
       id: 17,
@@ -185,7 +201,8 @@ const CollegeList = () => {
       district: "Jaipur",
       address: "Jaipur, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcjaipur",
-      established: "1960"
+      established: "1960",
+      code: "017"
     },
     {
       id: 18,
@@ -195,8 +212,9 @@ const CollegeList = () => {
       district: "Jalore",
       address: "Jalore (Camp Pali), Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcjalore",
-      established: "1985"
-    },
+      established: "1985",
+      code: "018"
+    },  
     {
       id: 19,
       name: "Government Polytechnic College, Jalore",
@@ -205,7 +223,8 @@ const CollegeList = () => {
       district: "Jalore",
       address: "Jalore, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcjalore2",
-      established: "1990"
+      established: "1990",
+      code: "019"
     },
     {
       id: 20,
@@ -215,7 +234,8 @@ const CollegeList = () => {
       district: "Jhalawar",
       address: "Jhalawar, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcjhalawar",
-      established: "1988"
+      established: "1988",
+      code: "020"
     },
     {
       id: 21,
@@ -225,7 +245,8 @@ const CollegeList = () => {
       district: "Jhunjhunu",
       address: "Jhunjhunu, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcjhunjhunu",
-      established: "1992"
+      established: "1992",  
+      code: "021"
     },
     {
       id: 22,
@@ -235,7 +256,8 @@ const CollegeList = () => {
       district: "Jodhpur",
       address: "Jodhpur (Camp Alwar), Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcjodhpur",
-      established: "1962"
+      established: "1962",           
+      code: "022"
     },
     {
       id: 23,
@@ -245,7 +267,8 @@ const CollegeList = () => {
       district: "Kota",
       address: "Kota, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpckota",
-      established: "1964"
+      established: "1964",
+      code: "023"
     },
     {
       id: 24,
@@ -255,7 +278,8 @@ const CollegeList = () => {
       district: "Kotawara",
       address: "Kotawara, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpckotawara",
-      established: "2000"
+      established: "2000",
+      code: "024"
     },
     {
       id: 25,
@@ -265,7 +289,8 @@ const CollegeList = () => {
       district: "Jodhpur",
       address: "Mandore, Jodhpur, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcmandore",
-      established: "1995"
+      established: "1995",
+      code: "025"   
     },
     {
       id: 26,
@@ -275,7 +300,8 @@ const CollegeList = () => {
       district: "Nagaur",
       address: "Nagaur, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcmandore",
-      established: "1998"
+      established: "1998",
+      code: "026"
     },
     {
       id: 27,
@@ -285,7 +311,8 @@ const CollegeList = () => {
       district: "Alwar",
       address: "Neemrana, Alwar, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcneemrana",
-      established: "2005"
+      established: "2005",
+      code: "027"
     },
     {
       id: 28,
@@ -295,7 +322,8 @@ const CollegeList = () => {
       district: "Pali",
       address: "Pali, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcpali",
-      established: "1987"
+      established: "1987",
+      code: "028"   
     },
     {
       id: 29,
@@ -305,7 +333,8 @@ const CollegeList = () => {
       district: "Pratapgarh",
       address: "Pratapgarh, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcpratapgarh",
-      established: "2002"
+      established: "2002",
+      code: "029"
     },
     {
       id: 30,
@@ -315,8 +344,9 @@ const CollegeList = () => {
       district: "Rajsamand",
       address: "Rajsamand, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcrajsamand",
-      established: "1995"
-    },
+      established: "1995",
+      code: "030"
+    },  
     {
       id: 31,
       name: "Government Polytechnic College, Sawai Madhopur",
@@ -325,7 +355,8 @@ const CollegeList = () => {
       district: "Sawai Madhopur",
       address: "Sawai Madhopur, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcsawaimadhopur",
-      established: "1990"
+      established: "1990",
+      code: "031" 
     },
     {
       id: 32,
@@ -335,7 +366,8 @@ const CollegeList = () => {
       district: "Sikar",
       address: "Sikar, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcsikar",
-      established: "1985"
+      established: "1985",
+      code: "032"
     },
     {
       id: 33,
@@ -345,7 +377,8 @@ const CollegeList = () => {
       district: "Sirohi",
       address: "Sirohi, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcsirohi",
-      established: "1992"
+      established: "1992",
+      code: "033"
     },
     {
       id: 34,
@@ -355,7 +388,8 @@ const CollegeList = () => {
       district: "Sriganganagar",
       address: "Sriganganagar, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcsriganganagar",
-      established: "1988"
+      established: "1988",
+      code: "034"
     },
     {
       id: 35,
@@ -365,7 +399,8 @@ const CollegeList = () => {
       district: "Tonk",
       address: "Tonk, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpctonk",
-      established: "1995"
+      established: "1995",
+      code: "035"  
     },
     {
       id: 36,
@@ -375,7 +410,8 @@ const CollegeList = () => {
       district: "Udaipur",
       address: "Udaipur, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gpcudaipur",
-      established: "1970"
+      established: "1970",
+      code: "036"
     },
     {
       id: 37,
@@ -385,7 +421,8 @@ const CollegeList = () => {
       district: "Ajmer",
       address: "Ajmer, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gwpcajmer",
-      established: "1985"
+      established: "1985",
+      code: "037"
     },
     {
       id: 38,
@@ -395,7 +432,8 @@ const CollegeList = () => {
       district: "Bikaner",
       address: "Bikaner, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gwpcbikaner",
-      established: "1990"
+      established: "1990",
+      code: "038"
     },
     {
       id: 39,
@@ -405,7 +443,8 @@ const CollegeList = () => {
       district: "Jhalawar",
       address: "Jhalawar, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gwpcjhalawar",
-      established: "1995"
+      established: "1995",
+      code: "039"
     },
     {
       id: 40,
@@ -415,7 +454,8 @@ const CollegeList = () => {
       district: "Jaipur",
       address: "Jaipur, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gwpcjaipur",
-      established: "1980"
+      established: "1980",
+      code: "040"
     },
     {
       id: 41,
@@ -425,7 +465,8 @@ const CollegeList = () => {
       district: "Jodhpur",
       address: "Jodhpur, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gwpcjodhpur",
-      established: "1988"
+      established: "1988",
+      code: "041"
     },
     {
       id: 42,
@@ -435,7 +476,8 @@ const CollegeList = () => {
       district: "Kota",
       address: "Kota, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gwpckota",
-      established: "1985"
+      established: "1985",
+      code: "042"
     },
     {
       id: 43,
@@ -445,7 +487,8 @@ const CollegeList = () => {
       district: "Udaipur",
       address: "Udaipur, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gwpcudaipur",
-      established: "1992"
+      established: "1992",
+      code: "043"
     },
     {
       id: 44,
@@ -455,7 +498,8 @@ const CollegeList = () => {
       district: "Dausa",
       address: "Lalsot, Dausa, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/gwpclalsot",
-      established: "2000"
+      established: "2000",
+      code: "044"
     },
     {
       id: 45,
@@ -465,7 +509,8 @@ const CollegeList = () => {
       district: "Jodhpur",
       address: "Jodhpur, Rajasthan",
       website: "https://hte.rajasthan.gov.in/college/ttcjodhpur",
-      established: "1975"
+      established: "1975",
+      code: "045"
     }
   ]
 
@@ -602,7 +647,7 @@ const CollegeList = () => {
                   >
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900 :text-white whitespace-normal break-words">{college.name}</div>
-                      <div className="text-xs text-gray-500 :text-gray-400">Est. {college.established}</div>
+                      <div className="text-xs text-gray-500 :text-gray-400">code: {college.code}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-900 :text-white whitespace-normal">{college.established}</div>
