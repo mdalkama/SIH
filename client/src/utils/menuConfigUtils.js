@@ -36,7 +36,7 @@ import {
 } from "lucide-react";
 
 // Student
-import StudentDashboard from "../components/Student/Studentdashboard";
+import StudentDashboard from "../components/Student/StudentDashboard";
 import StudentCourse from "../components/Student/StudentCourse";
 import StudentExams from "../components/Student/StudentExams";
 import StudentLibrary from "../components/Student/StudentLibrary";
