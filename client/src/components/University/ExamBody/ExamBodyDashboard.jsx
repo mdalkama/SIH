@@ -8,7 +8,8 @@ import {
     Loader2,
     ArrowRight,
     Users,
-    AlertTriangle
+    AlertTriangle,
+    UserPlus // Icon for adding staff
 } from 'lucide-react';
 
 const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/semester-exam';
@@ -27,6 +28,8 @@ const DashboardSkeleton = () => (
             <div className="h-28 bg-slate-100 rounded-xl"></div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="h-32 bg-slate-100 rounded-xl"></div>
+            <div className="h-32 bg-slate-100 rounded-xl"></div>
             <div className="h-32 bg-slate-100 rounded-xl"></div>
             <div className="h-32 bg-slate-100 rounded-xl"></div>
         </div>
@@ -75,11 +78,11 @@ const QuickActionButton = ({ icon: Icon, title, description, onClick, color }) =
 
 // --- MAIN FUNCTIONAL DASHBOARD COMPONENT ---
 const UniversityExamBodyDashboard = () => {
-    const [stats, setStats]  = useState({});
+    const [stats, setStats] = useState({});
     const [pendingExams, setPendingExams] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const navigate = useNavigate(); // Hook for navigation
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -110,9 +113,7 @@ const UniversityExamBodyDashboard = () => {
         fetchDashboardData();
     }, []);
 
-    const handleNavigate = (path) => {
-        navigate(path); // Use the navigate function for routing
-    };
+    const handleNavigate = (path) => navigate(path);
 
     if (loading) {
         return <DashboardSkeleton />;
@@ -130,7 +131,11 @@ const UniversityExamBodyDashboard = () => {
 
     return (
         <div className="font-sans">
-
+            <header className="mb-8">
+                <h1 className="text-3xl font-bold text-slate-900">Examination Body Dashboard</h1>
+                <p className="mt-1 text-slate-600">Welcome! Here's a summary of the current examination activities.</p>
+            </header>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard icon={Activity} title="Open for Registration" value={stats.openForRegistration ?? 0} color="bg-sky-100 text-sky-600" />
                 <StatCard icon={ShieldCheck} title="Results Pending Approval" value={stats.resultsPendingApproval ?? 0} color="bg-amber-100 text-amber-600" />
@@ -149,21 +154,35 @@ const UniversityExamBodyDashboard = () => {
                 <QuickActionButton 
                     icon={ShieldCheck} 
                     title="Approve Results" 
-                    description="Review and publish the results submitted by the exam cell."
+                    description="Review and publish results submitted by the Exam Cell."
                     onClick={() => handleNavigate('/university-exam-body/result-approval')}
                     color="emerald"
+                />
+                <QuickActionButton 
+                    icon={Users} 
+                    title="Seat Allotment Approval" 
+                    description="Review and approve seating plans for upcoming exams."
+                    onClick={() => handleNavigate('/university-exam-body/seat-allotment-approval')}
+                    color="red"
+                />
+                <QuickActionButton 
+                    icon={UserPlus} 
+                    title="Create Exam Cell Staff" 
+                    description="Add new staff members to the Examination Cell."
+                    onClick={() => handleNavigate('/university-exam-body/exam-cell-controller')}
+                    color="purple"
                 />
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-                <div className="p-4 border-b flex items-center gap-2">
+                <div className="p-4 border-b border-slate-300 flex items-center gap-2">
                     <AlertTriangle className="w-5 h-5 text-amber-500" />
                     <h2 className="text-lg font-semibold text-slate-800">Pending Approval Queue</h2>
                 </div>
                 <div>
                     {pendingExams.length > 0 ? (
                         pendingExams.map(exam => (
-                            <div key={exam._id} className="p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b last:border-b-0 hover:bg-slate-50 transition-colors">
+                            <div key={exam._id} className="p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-200 last:border-b-0 hover:bg-slate-50 transition-colors">
                                 <div>
                                     <p className="font-semibold text-slate-800">{exam.examName}</p>
                                     <p className="text-sm text-slate-500 font-mono mt-1">{exam.examId} • Sem {exam.semester}, {exam.year}</p>

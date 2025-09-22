@@ -130,8 +130,8 @@ const ExamCellDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard icon={Edit} title="Exams Ready for Entry" value={stats.readyForEntry ?? 0} color="bg-amber-100 text-amber-600" />
                 <StatCard icon={TrendingUp} title="Results Processed (Week)" value={stats.processedThisWeek ?? 0} color="bg-emerald-100 text-emerald-600" />
-                <StatCard icon={FileText} title="Admit Cards Published" value={stats.admitCardsPublished ?? 0} color="bg-sky-100 text-sky-600" />
-                <StatCard icon={Users} title="Evaluators Assigned" value={stats.evaluatorsAssigned ?? 0} color="bg-indigo-100 text-indigo-600" />
+                <StatCard icon={FileText} title="Admit Cards Published" value={3} color="bg-sky-100 text-sky-600" />
+                <StatCard icon={Users} title="Evaluators Assigned" value={5} color="bg-indigo-100 text-indigo-600" />
             </div>
 
             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-8 rounded-xl shadow-lg mb-8">
@@ -172,7 +172,7 @@ const ExamCellDashboard = () => {
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
                      <div className="p-4 border-b"><h2 className="text-lg font-semibold text-slate-800">Quick Links</h2></div>
                     <div className="p-4 space-y-3">
-                        <QuickLink icon={ClipboardList} title="External Registration" path="/university-exam-cell/external-registration" color="bg-green-100 text-green-600" onClick={handleNavigate} />
+                        <QuickLink icon={ClipboardList} title="Result Processing" path="/university-exam-cell/result-processing" color="bg-green-100 text-green-600" onClick={handleNavigate} />
                         <QuickLink icon={Users} title="Assign Evaluators" path="/university-exam-cell/assign-evaluators" color="bg-indigo-100 text-indigo-600" onClick={handleNavigate} />
                         <QuickLink icon={FileText} title="Publish Admit Cards" path="/university-exam-cell/publish-admit-card" color="bg-sky-100 text-sky-600" onClick={handleNavigate} />
                         <QuickLink icon={Users} title="Seat Allotment" path="/university-exam-cell/seat-allotment-execution" color="bg-purple-100 text-purple-600" onClick={handleNavigate} />

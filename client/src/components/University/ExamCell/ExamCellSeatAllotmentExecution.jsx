@@ -6,10 +6,6 @@ const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/semester-exam';
 // --- SKELETON LOADER COMPONENT ---
 const SkeletonLoader = () => (
     <div className="animate-pulse">
-        <header className="mb-8">
-            <div className="h-8 w-1/3 bg-slate-200 rounded-md mb-2"></div>
-            <div className="h-5 w-1/2 bg-slate-200 rounded-md"></div>
-        </header>
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
             <div className="p-4 border-b h-16 bg-slate-100"></div>
             <div className="p-4 space-y-4">

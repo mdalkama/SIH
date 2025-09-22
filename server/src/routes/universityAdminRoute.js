@@ -1,6 +1,7 @@
 import express from "express";
 import { role } from "../middlewares/authMiddleware.js";
 import { addStaffByRole } from "../controllers/addUniversityStaff/addUniversityStaff.js";
+import { getUniversityDashboardStats } from "../controllers/universityAdminController/universityAdminController.js";
 
 const router = express.Router();
 
@@ -25,5 +26,7 @@ router.post("/university-exam-cell-staff", role(["UniversityExaminationBody"]), 
     next();
 }, addStaffByRole);
 
+
+router.get('/dashboard-stats', role(['UniversityAdmin']), getUniversityDashboardStats);
 
 export default router;

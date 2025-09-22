@@ -8,9 +8,8 @@ import {
   BookPlus,
   BookUp,
   ServerCrash,
-  UserCircle,
   Library,
-  BookDownIcon,
+  BookDown,
 } from 'lucide-react';
 
 // --- Configuration ---
@@ -21,26 +20,34 @@ const ui = {
   card: "bg-white rounded-2xl ring-1 ring-slate-200/60 shadow-sm",
 };
 
-const KpiCard = ({ icon, title, value, description, colorClass = "text-blue-600" }) => (
-  <div className={`${ui.card} p-5 flex items-start gap-4`}>
-    <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center bg-slate-100 ${colorClass}`}>{icon}</div>
-    <div>
-      <p className="text-sm text-slate-500">{title}</p>
-      <p className="text-2xl font-bold text-slate-800">{value}</p>
-      <p className="text-xs text-slate-400 mt-1">{description}</p>
+// --- FIX IS HERE: icon prop renamed to Icon (with a capital I) ---
+const KpiCard = ({ icon: Icon, title, value, description, colorClass = "text-blue-600" }) => (
+    <div className={`${ui.card} p-5 flex items-start gap-4`}>
+        <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center bg-slate-100 ${colorClass}`}>
+            {/* --- FIX IS HERE: Render it as a component <Icon /> --- */}
+            <Icon size={20} />
+        </div>
+        <div>
+            <p className="text-sm text-slate-500">{title}</p>
+            <p className="text-2xl font-bold text-slate-800">{value}</p>
+            <p className="text-xs text-slate-400 mt-1">{description}</p>
+        </div>
     </div>
-  </div>
 );
 
-const QuickAction = ({ icon, title, description, href }) => (
-  <a href={href} className="flex items-center gap-4 p-4 rounded-lg hover:bg-slate-50 transition-colors group">
-    <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center bg-slate-100 text-slate-600">{icon}</div>
-    <div className="flex-1">
-      <p className="font-semibold text-slate-800">{title}</p>
-      <p className="text-sm text-slate-500">{description}</p>
-    </div>
-    <ArrowUpRight size={18} className="text-slate-400 group-hover:text-blue-600 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-  </a>
+// --- FIX IS HERE: icon prop renamed to Icon (with a capital I) ---
+const QuickAction = ({ icon: Icon, title, description, href }) => (
+    <a href={href} className="flex items-center gap-4 p-4 rounded-lg hover:bg-slate-50 transition-colors group">
+        <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center bg-slate-100 text-slate-600">
+            {/* --- FIX IS HERE: Render it as a component <Icon /> --- */}
+            <Icon size={20} />
+        </div>
+        <div className="flex-1">
+            <p className="font-semibold text-slate-800">{title}</p>
+            <p className="text-sm text-slate-500">{description}</p>
+        </div>
+        <ArrowUpRight size={18} className="text-slate-400 group-hover:text-blue-600 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+    </a>
 );
 
 const DashboardSkeleton = () => (
@@ -155,57 +162,31 @@ const CollegeLibrarianDashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard icon={<Book size={20} />} title="Total Books" value={stats.totalUniqueBooks} description="Unique titles in collection" colorClass="text-blue-600" />
-        <KpiCard icon={<BookCopy size={20} />} title="Total Copies" value={stats.totalCopies} description="All physical copies" colorClass="text-indigo-600" />
-        <KpiCard icon={<Users size={20} />} title="Books Issued" value={stats.issuedCopies} description="Currently with students" colorClass="text-green-600" />
-        <KpiCard icon={<Clock size={20} />} title="Overdue Books" value={stats.overdueCopies} description="Past the due date" colorClass="text-red-600" />
+        {/* --- FIX IS HERE: Pass the component itself, not a JSX element --- */}
+        <KpiCard icon={Book} title="Total Books" value={stats.totalUniqueBooks} description="Unique titles in collection" colorClass="text-blue-600" />
+        <KpiCard icon={BookCopy} title="Total Copies" value={stats.totalCopies} description="All physical copies" colorClass="text-indigo-600" />
+        <KpiCard icon={Users} title="Books Issued" value={stats.issuedCopies} description="Currently with students" colorClass="text-green-600" />
+        <KpiCard icon={Clock} title="Overdue Books" value={stats.overdueCopies} description="Past the due date" colorClass="text-red-600" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Librarian & Library Info Card */}
         <div className={`${ui.card} lg:col-span-2`}>
-          <div className="p-5 border-b border-slate-100 flex items-center gap-3">
-             <UserCircle size={20} className="text-slate-500" />
-             <h3 className="font-semibold text-slate-800">Librarian Profile</h3>
-          </div>
-          <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-slate-500">Name</p>
-              <p className="font-medium text-slate-800">{profile?.name || 'Not Available'}</p>
+            <div className="p-5 border-b border-slate-100 flex items-center gap-3"><Library size={20} className="text-slate-500" /><h3 className="font-semibold text-slate-800">Library & Profile Info</h3></div>
+            <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div><p className="text-slate-500">Name</p><p className="font-medium text-slate-800">{profile?.name || 'N/A'}</p></div>
+                <div><p className="text-slate-500">Email</p><p className="font-medium text-slate-800">{profile?.email || 'N/A'}</p></div>
+                <div><p className="text-slate-500">Role</p><p className="font-medium text-slate-800 capitalize">{profile?.role || 'Librarian'}</p></div>
+                <div><p className="text-slate-500">College Code</p><p className="font-medium text-slate-800">{profile?.collegeCode || 'N/A'}</p></div>
             </div>
-             <div>
-              <p className="text-slate-500">Email</p>
-              <p className="font-medium text-slate-800">{profile?.email || 'Not Available'}</p>
-            </div>
-             <div>
-              <p className="text-slate-500">Role</p>
-              <p className="font-medium text-slate-800 capitalize">{profile?.role || 'Librarian'}</p>
-            </div>
-          </div>
-
-          <div className="p-5 border-t border-slate-100 flex items-center gap-3">
-             <Library size={20} className="text-slate-500" />
-             <h3 className="font-semibold text-slate-800">Library Info</h3>
-          </div>
-           <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-             <div>
-              <p className="text-slate-500">College Code</p>
-              <p className="font-medium text-slate-800">{profile?.collegeCode || 'Not Available'}</p>
-            </div>
-             <div>
-              <p className="text-slate-500">Library Status</p>
-              <p className="font-medium text-green-600">Active</p>
-            </div>
-          </div>
         </div>
 
-        {/* Quick Actions */}
         <div className={`${ui.card} lg:col-span-1`}>
            <div className="p-5 border-b border-slate-100"><h3 className="font-semibold text-slate-800">Quick Actions</h3></div>
           <div className="p-3 space-y-1">
-            <QuickAction href="/college-librarian/issue-book" icon={<BookUp size={20} />} title="Issue a Book" description="Find a student and issue a book copy." />
-            <QuickAction href="/college-librarian/track-return" icon={<BookDownIcon size={20} />} title="Track & Return" description="View a student's record or return a book." />
-            <QuickAction href="/college-librarian/add-book" icon={<BookPlus size={20} />} title="Add New Book" description="Add a new title to your library collection." />
+            {/* --- FIX IS HERE: Pass the component itself, not a JSX element --- */}
+            <QuickAction href="/college-librarian/issue-book" icon={BookUp} title="Issue a Book" description="Find a student and issue a book copy." />
+            <QuickAction href="/college-librarian/track-return" icon={BookDown} title="Track & Return" description="View a student's record or return a book." />
+            <QuickAction href="/college-librarian/add-book" icon={BookPlus} title="Add New Book" description="Add a new title to your library collection." />
           </div>
         </div>
       </div>

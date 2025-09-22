@@ -28,6 +28,7 @@ import collegeAdminRoutes from "./collegeAdminRoutes.js";
 import feedbackRoutes from "./feedbackRoutes.js";
 import studentExamRoute from "./studentExamRoute.js";
 import placementRoutes from "./placementRoute.js";
+import universityAdminRoute from "./universityAdminRoute.js";
 
 
 
@@ -49,6 +50,7 @@ router.use("/student-hostel",role(['student']), studentHostelRoutes);
 router.use("/course",role(['UniversityAdmin', 'UniversityExaminationBody', 'CollegePlacementOfficer']), courseRoute)
 router.use("/subject", role(['UniversityAdmin']), subjectRoute)
 router.use("/university", role(['UniversityAdmin']), universityRoute)
+router.use("/university-admin", universityAdminRoute)
 router.use("/add-university-Staff", universityManageStaffRoute)
 router.use("/library", role(['CollegeLibrarian']), libraryRoute)
 router.use("/student-library", role(['student']), studentLibraryRoute);

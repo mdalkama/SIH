@@ -6,10 +6,6 @@ const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1';
 // --- SKELETON LOADER COMPONENT ---
 const SkeletonLoader = () => (
     <div className="animate-pulse">
-        <header className="mb-8">
-            <div className="h-8 w-1/3 bg-slate-200 rounded-md mb-2"></div>
-            <div className="h-5 w-1/2 bg-slate-200 rounded-md"></div>
-        </header>
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
             <div className="p-4 border-b h-16 bg-slate-100"></div>
             <div className="p-4 space-y-4">
@@ -197,10 +193,6 @@ const ExamCellAssignEvaluators = () => {
 
     return (
         <div className="font-sans">
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-900">Assign Evaluators</h1>
-                <p className="mt-1 text-slate-600">Assign faculty members to subjects for paper evaluation.</p>
-            </header>
             
             {view === 'list' && <ExamSelectionList exams={exams} onSelect={handleSelectExam} />}
             {view === 'assignment' && <AssignmentGrid exam={selectedExam} onBack={handleBack} availableEvaluators={availableEvaluators} />}
