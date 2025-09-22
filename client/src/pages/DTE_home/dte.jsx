@@ -19,7 +19,7 @@ const DTE = () => {
       {/* Footer at the bottom */}
       <Footer />
       
-      {/* Theme Switcher - Fixed Position */}
+      
       <ThemeSwitcher />
       
       {/* Chatbot - Always visible */}

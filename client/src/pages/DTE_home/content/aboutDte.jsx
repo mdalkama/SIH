@@ -137,8 +137,8 @@ const AboutDte = () => {
             <h2 className="text-3xl font-bold theme-text mb-6">
               Our Vision
             </h2>
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 mb-6 border-l-4 border-blue-500">
-              <p className="text-lg font-medium text-blue-800 dark:text-blue-200 leading-relaxed italic">
+            <div className="bg-blue-50  rounded-lg p-6 mb-6 border-l-4 border-blue-500">
+              <p className="text-lg font-medium text-blue-800  leading-relaxed italic">
                 "To enhance the competitiveness of State's technical manpower to global standards by imparting high quality & state of art Technical Education and Training to all sections of the society."
               </p>
             </div>
@@ -170,21 +170,21 @@ const AboutDte = () => {
               DTE at a Glance
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="stats-card bg-white dark:bg-slate-700/80 rounded-3xl p-3 text-center transform hover:scale-95 transition-all duration-300 shadow-xl hover:shadow-inner cursor-pointer border border-gray-100 dark:border-slate-600/60">
-                <div className="text-2xl sm:text-3xl font-bold text-gray-700  mb-1">{counts.institutions}+</div>
-                <p className="text-xs font-medium text-gray-600 ">Institutions</p>
+              <div className="stats-card bg-white rounded-3xl p-3 text-center transform hover:scale-95 transition-all duration-300 shadow-xl hover:shadow-inner">
+                <div className="text-2xl sm:text-3xl font-bold text-gray-700 mb-1">{counts.institutions}+</div>
+                <p className="text-xs font-medium text-gray-600">Institutions</p>
               </div>
-              <div className="stats-card bg-white dark:bg-slate-700/80 rounded-3xl p-3 text-center transform hover:scale-95 transition-all duration-300 shadow-xl hover:shadow-inner cursor-pointer border border-gray-100 dark:border-slate-600/60">
-                <div className="text-2xl sm:text-3xl font-bold text-gray-700  mb-1">{counts.students.toLocaleString()}+</div>
-                <p className="text-xs font-medium text-gray-600 ">Students</p>
+              <div className="stats-card bg-white rounded-3xl p-3 text-center transform hover:scale-95 transition-all duration-300 shadow-xl hover:shadow-inner">
+                <div className="text-2xl sm:text-3xl font-bold text-gray-700 mb-1">{counts.students.toLocaleString()}+</div>
+                <p className="text-xs font-medium text-gray-600">Students</p>
               </div>
-              <div className="stats-card bg-white dark:bg-slate-700/80 rounded-3xl p-3 text-center transform hover:scale-95 transition-all duration-300 shadow-xl hover:shadow-inner cursor-pointer border border-gray-100 dark:border-slate-600/60">
-                <div className="text-2xl sm:text-3xl font-bold text-gray-700  mb-1">{counts.programs}+</div>
-                <p className="text-xs font-medium text-gray-600 ">Programs</p>
+              <div className="stats-card bg-white rounded-3xl p-3 text-center transform hover:scale-95 transition-all duration-300 shadow-xl hover:shadow-inner">
+                <div className="text-2xl sm:text-3xl font-bold text-gray-700 mb-1">{counts.programs}+</div>
+                <p className="text-xs font-medium text-gray-600">Programs</p>
               </div>
-              <div className="stats-card bg-white dark:bg-slate-700/80 rounded-3xl p-3 text-center transform hover:scale-95 transition-all duration-300 shadow-xl hover:shadow-inner cursor-pointer border border-gray-100 dark:border-slate-600/60">
-                <div className="text-2xl sm:text-3xl font-bold text-gray-700  mb-1">{counts.placement}%</div>
-                <p className="text-xs font-medium text-gray-600 ">Placement Rate</p>
+              <div className="stats-card bg-white rounded-3xl p-3 text-center transform hover:scale-95 transition-all duration-300 shadow-xl hover:shadow-inner">
+                <div className="text-2xl sm:text-3xl font-bold text-gray-700 mb-1">{counts.placement}%</div>
+                <p className="text-xs font-medium text-gray-600">Placement Rate</p>
               </div>
             </div>
           </div>
@@ -194,55 +194,28 @@ const AboutDte = () => {
       {/* Custom CSS for enhanced effects */}
       <style>{`
         .stats-card {
-          position: relative;
-          overflow: hidden;
           background: rgba(255, 255, 255, 0.9);
           backdrop-filter: blur(10px);
           box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.08);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
-        .theme-dark .stats-card {
+
+        .theme- .stats-card {
           background: rgba(51, 65, 85, 0.8);
           backdrop-filter: blur(10px);
           box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 5px 15px rgba(0, 0, 0, 0.3);
         }
-        
+
         /* Hover effect - inward pressed feeling */
         .stats-card:hover {
           transform: scale(0.95) translateY(2px);
           box-shadow: inset 0 8px 20px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.1);
         }
-        
-        .theme-dark .stats-card:hover {
+
+        .theme- .stats-card:hover {
           box-shadow: inset 0 8px 20px rgba(0, 0, 0, 0.6), 0 5px 10px rgba(0, 0, 0, 0.4);
         }
-        
-        /* Active state - even more pressed */
-        .stats-card:active {
-          transform: scale(0.92) translateY(4px) !important;
-          box-shadow: inset 0 12px 25px rgba(0, 0, 0, 0.25), 0 2px 5px rgba(0, 0, 0, 0.1) !important;
-        }
-        
-        .theme-dark .stats-card:active {
-          box-shadow: inset 0 12px 25px rgba(0, 0, 0, 0.8), 0 2px 5px rgba(0, 0, 0, 0.5) !important;
-        }
-        
-        .stats-card::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.08), transparent);
-          transition: left 0.5s ease;
-        }
-        
-        .stats-card:hover::before {
-          left: 100%;
-        }
-        
+
         /* Clean minimal styling like IIT Bombay */
         .stats-card {
           min-height: 140px;

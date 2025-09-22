@@ -89,13 +89,13 @@ const DetailedNews = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white ">
       <Header />
       {/* Back Button */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <button
           onClick={goBack}
-          className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 px-4 py-2 border-2 border-blue-200 dark:border-blue-700 rounded-lg font-medium transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-500"
+          className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 :text-blue-400 :hover:text-blue-300 px-4 py-2 border-2 border-blue-200 :border-blue-700 rounded-lg font-medium transition-all duration-300 hover:border-blue-400 :hover:border-blue-500"
         >
           <ArrowLeft className="w-5 h-5" />
           <span>Back to News</span>
@@ -135,7 +135,7 @@ const DetailedNews = () => {
             {newsItem.tags.map((tag, index) => (
               <span
                 key={index}
-                className="px-3 py-1 bg-gray-100 dark:bg-gray-800 theme-text-secondary text-sm rounded-full"
+                className="px-3 py-1 bg-gray-100 :bg-gray-800 theme-text-secondary text-sm rounded-full"
               >
                 #{tag}
               </span>
@@ -170,7 +170,7 @@ const DetailedNews = () => {
         </div>
 
         {/* Article Footer */}
-        <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-12 pt-8 border-t border-gray-200 :border-gray-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <span className="theme-text-secondary text-sm">Share this article:</span>

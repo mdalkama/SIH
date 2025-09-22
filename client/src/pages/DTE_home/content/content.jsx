@@ -30,10 +30,10 @@ const home = () => {
                 className="w-full h-32 object-contain rounded-lg mx-auto"
               />
             </div>
-            <h3 className="text-xs font-bold text-gray-800 dark:text-gray-200 mb-1 leading-snug h-8 flex items-center justify-center">
+            <h3 className="text-xs font-bold text-gray-800 :text-gray-200 mb-1 leading-snug h-8 flex items-center justify-center">
               Hon'ble Chief Minister
             </h3>
-            <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap overflow-hidden text-ellipsis">
+            <p className="text-sm font-semibold text-blue-600 :text-blue-400 whitespace-nowrap overflow-hidden text-ellipsis">
               Shri Bhajan Lal Sharma
             </p>
           </div>
@@ -47,10 +47,10 @@ const home = () => {
                 className="w-full h-32 object-contain rounded-lg mx-auto"
               />
             </div>
-            <h3 className="text-xs font-bold text-gray-800 dark:text-gray-200 mb-1 leading-snug h-8 flex items-center justify-center">
+            <h3 className="text-xs font-bold text-gray-800 :text-gray-200 mb-1 leading-snug h-8 flex items-center justify-center">
               Hon'ble Dy. CM & Minister of Technical Education
             </h3>
-            <p className="text-sm font-semibold text-green-600 dark:text-green-400 whitespace-nowrap overflow-hidden text-ellipsis">
+            <p className="text-sm font-semibold text-green-600 :text-green-400 whitespace-nowrap overflow-hidden text-ellipsis">
               Dr. Prem Chand Bairwa
             </p>
           </div>
@@ -64,10 +64,10 @@ const home = () => {
                 className="w-full h-32 object-contain rounded-lg mx-auto"
               />
             </div>
-            <h3 className="text-xs font-bold text-gray-800 dark:text-gray-200 mb-1 leading-snug h-8 flex items-center justify-center">
+            <h3 className="text-xs font-bold text-gray-800 :text-gray-200 mb-1 leading-snug h-8 flex items-center justify-center">
               Additional Chief Secretary, Higher & Tech. Education
             </h3>
-            <p className="text-sm font-semibold text-purple-600 dark:text-purple-400 whitespace-nowrap overflow-hidden text-ellipsis">
+            <p className="text-sm font-semibold text-purple-600 :text-purple-400 whitespace-nowrap overflow-hidden text-ellipsis">
               Shri Kuldeep Ranka
             </p>
           </div>
@@ -81,10 +81,10 @@ const home = () => {
                 className="w-full h-32 object-contain rounded-lg mx-auto"
               />
             </div>
-            <h3 className="text-xs font-bold text-gray-800 dark:text-gray-200 mb-1 leading-snug h-8 flex items-center justify-center">
+            <h3 className="text-xs font-bold text-gray-800 :text-gray-200 mb-1 leading-snug h-8 flex items-center justify-center">
               Director, Technical Education (Polytechnic)
             </h3>
-            <p className="text-sm font-semibold text-orange-600 dark:text-orange-400 whitespace-nowrap overflow-hidden text-ellipsis">
+            <p className="text-sm font-semibold text-orange-600 :text-orange-400 whitespace-nowrap overflow-hidden text-ellipsis">
               Shri Rajesh Kumar Sharma
             </p>
           </div>
