@@ -26,16 +26,16 @@ export const getUniversityDashboardStats = async (req, res) => {
 
     // --- Mock Data for elements that require more complex models ---
     const financials = {
-      totalRevenueYTD: 52450000,
-      pendingFees: 8975000,
-      operationalExpenses: 12320000,
+      totalRevenueYTD: 320000,
+      pendingFees: 132000,
+      operationalExpenses: 1233000,
     };
     const enrollmentTrends = [
-      { year: "2021", count: 21500 },
-      { year: "2022", count: 22800 },
-      { year: "2023", count: 23900 },
-      { year: "2024", count: 25100 },
-      { year: "2025", count: totalStudents }, // Use real data for the current year
+      { year: "2021", count: 0 },
+      { year: "2022", count: 1 },
+      { year: "2023", count: 2 },
+      { year: "2024", count: 3 },
+      { year: "2025", count: totalStudents }, 
     ];
     const activeSessions = [
       {
