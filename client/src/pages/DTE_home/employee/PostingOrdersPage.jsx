@@ -140,7 +140,7 @@ const PostingOrdersPage = () => {
       <Header />
       
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-blue-50 to-blue-100 :from-slate-800 :to-slate-900 text-gray-800 :text-white overflow-hidden">
+      {/* <div className="relative bg-gradient-to-r from-blue-50 to-blue-100 :from-slate-800 :to-slate-900 text-gray-800 :text-white overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/5"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
           <motion.div 
@@ -161,7 +161,7 @@ const PostingOrdersPage = () => {
             </p>
           </motion.div>
         </div>
-      </div>
+      </div> */}
 
       {/* Main Content */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
