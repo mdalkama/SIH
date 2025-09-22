@@ -83,7 +83,7 @@ const ThemeSwitcher = () => {
   return (
     <>
       {/* Theme Switcher Button - Fixed Position */}
-      <div className="fixed bottom-6 left-6 z-[100]">
+      <div className="fixed bottom-6 left-6 z-[100] hidden">
         <div className="relative">
           {/* Main Button */}
           <button
