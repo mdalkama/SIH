@@ -7,14 +7,13 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(() => {
   const enableHttps = process.env.VITE_HTTPS === 'true'
   return {
+    base: '/',        
     plugins: [
-      react({
-        jsxRuntime: 'automatic'
-      }), 
+      react({ jsxRuntime: 'automatic' }),
       tailwindcss()
     ],
     server: {
-      https: enableHttps ? true : false,
+      https: enableHttps || false,
       proxy: {
         '/api/v1': {
           target: 'https://sih-4ptm.onrender.com',
@@ -25,3 +24,4 @@ export default defineConfig(() => {
     }
   }
 })
+
