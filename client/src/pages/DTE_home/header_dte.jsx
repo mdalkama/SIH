@@ -216,7 +216,7 @@ const Header = () => {
   const handleDropdownLeave = () => {
     const timeout = setTimeout(() => {
       setActiveDropdown(null)
-    }, 1500) // 1500ms delay before closing (increased for better stability)
+    }, 400) // 1500ms delay before closing (increased for better stability)
     setHoverTimeout(timeout)
   }
 
