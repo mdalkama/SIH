@@ -307,7 +307,7 @@ const Notice = () => {
             >
               <div className="p-6 space-y-4">
                 {notices.map((notice) => (
-                  <div key={notice.id} className="notice-item border-b border-gray-100 dark:border-gray-700 pb-4 last:border-b-0 hover:shadow-md rounded-lg px-3 py-3 cursor-pointer">
+                  <div key={notice.id} className="notice-item border-b border-gray-100 :border-gray-700 pb-4 last:border-b-0 hover:shadow-md rounded-lg px-3 py-3 cursor-pointer">
                     <div className="flex items-start space-x-3">
                       {notice.isImportant && (
                         <span className="w-4 h-4 text-yellow-500 mt-1 flex-shrink-0">⭐</span>
@@ -360,7 +360,7 @@ const Notice = () => {
             >
               <div className="p-6 space-y-6">
                 {events.map((event) => (
-                  <div key={event.id} className="notice-item border-b border-gray-100 dark:border-gray-700 pb-6 last:border-b-0 hover:shadow-md rounded-lg px-3 py-3 cursor-pointer">
+                  <div key={event.id} className="notice-item border-b border-gray-100 :border-gray-700 pb-6 last:border-b-0 hover:shadow-md rounded-lg px-3 py-3 cursor-pointer">
                     <h3 className="font-semibold theme-text mb-2 leading-relaxed">
                       {event.title}
                     </h3>
@@ -431,7 +431,7 @@ const Notice = () => {
             >
               <div className="p-6 space-y-4">
                 {academicNotices.map((notice) => (
-                  <div key={notice.id} className="notice-item border-b border-gray-100 dark:border-gray-700 pb-4 last:border-b-0 hover:shadow-md rounded-lg px-3 py-3 cursor-pointer">
+                  <div key={notice.id} className="notice-item border-b border-gray-100 :border-gray-700 pb-4 last:border-b-0 hover:shadow-md rounded-lg px-3 py-3 cursor-pointer">
                     <div className="flex items-start space-x-3">
                       {notice.isImportant && (
                         <span className="w-4 h-4 text-yellow-500 mt-1 flex-shrink-0">⭐</span>
@@ -482,12 +482,12 @@ const Notice = () => {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
           }
           
-          .theme-dark .notice-card {
+          .theme- .notice-card {
             box-shadow: 0 15px 20px -3px rgba(0, 0, 0, 0.4), 0 6px 8px -2px rgba(0, 0, 0, 0.2) !important;
           }
           
-          /* Individual notice item hover effects - Custom CSS for dark mode */
-          .theme-dark .notice-item:hover {
+          /* Individual notice item hover effects - Custom CSS for  mode */
+          .theme- .notice-item:hover {
             background-color: rgba(51, 65, 85, 0.7) !important; /* slate-700 with opacity */
             border-color: rgba(71, 85, 105, 0.8) !important; /* slate-600 with opacity */
           }
@@ -508,7 +508,7 @@ const Notice = () => {
         <div className="fixed inset-0  flex items-center justify-center z-50 p-4">
           <div 
             ref={modalRef}
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto transform transition-all"
+            className="bg-white :bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto transform transition-all"
           >
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
@@ -517,7 +517,7 @@ const Notice = () => {
                 </h3>
                 <button 
                   onClick={closeModal}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white p-1 -mr-2"
+                  className="text-gray-500 hover:text-gray-700 :text-gray-300 :hover:text-white p-1 -mr-2"
                 >
                   <X size={24} />
                 </button>
@@ -525,10 +525,10 @@ const Notice = () => {
               
               <div className="space-y-4">
                 {selectedItem.type !== 'event' && (
-                  <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
+                  <div className="flex items-center space-x-2 text-sm text-gray-600 :text-gray-300">
                     <span>Date: {selectedItem.date}</span>
                     {selectedItem.isImportant && (
-                      <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full dark:bg-yellow-900 dark:text-yellow-200">
+                      <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full :bg-yellow-900 :text-yellow-200">
                         Important
                       </span>
                     )}
@@ -537,22 +537,22 @@ const Notice = () => {
 
                 {selectedItem.type === 'event' && (
                   <div className="space-y-2 text-sm">
-                    <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
+                    <div className="flex items-center space-x-2 text-gray-600 :text-gray-300">
                       <span>🗓️ {selectedItem.startDate} - {selectedItem.endDate}</span>
                     </div>
-                    <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
+                    <div className="flex items-center space-x-2 text-gray-600 :text-gray-300">
                       <span>📍 {selectedItem.location}</span>
                     </div>
                   </div>
                 )}
 
-                <div className="prose dark:prose-invert max-w-none">
-                  <p className="text-gray-700 dark:text-gray-300">
+                <div className="prose :prose-invert max-w-none">
+                  <p className="text-gray-700 :text-gray-300">
                     {selectedItem.content || selectedItem.description}
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="pt-4 border-t border-gray-200 :border-gray-700">
                   <div className="flex flex-wrap gap-3">
                     {(selectedItem.pdfUrl || (selectedItem.type !== 'event' && selectedItem.type !== 'academic')) && (
                       <a
