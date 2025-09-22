@@ -52,11 +52,11 @@ const NocPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 :from-gray-900 :to-gray-800">
       <Header />
       
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-blue-50 to-blue-100 dark:from-slate-800 dark:to-slate-900 text-gray-800 dark:text-white overflow-hidden">
+      <div className="relative bg-gradient-to-r from-blue-50 to-blue-100 :from-slate-800 :to-slate-900 text-gray-800 :text-white overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/5"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
           <motion.div 
@@ -68,7 +68,7 @@ const NocPage = () => {
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
               Our Vision
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            <p className="text-lg text-gray-600 :text-gray-300 max-w-3xl mx-auto">
               To enhance the competitiveness of State's technical manpower to global standards by imparting high quality & state of art Technical Education and Training to all sections of the society.
             </p>
           </motion.div>
@@ -84,10 +84,10 @@ const NocPage = () => {
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-3 bg-white/90 dark:bg-gray-800/95 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 rounded-lg 
-                         transition-all duration-200 ease-in-out border border-gray-200 dark:border-gray-700
+              className="block w-full pl-10 pr-3 py-3 bg-white/90 :bg-gray-800/95 text-gray-900 :text-white placeholder-gray-400 :placeholder-gray-400 rounded-lg 
+                         transition-all duration-200 ease-in-out border border-gray-200 :border-gray-700
                          focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/50 focus:outline-none focus:shadow-sm
-                         hover:border-gray-300 dark:hover:border-gray-600"
+                         hover:border-gray-300 :hover:border-gray-600"
               placeholder="Search NOC documents..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -97,26 +97,26 @@ const NocPage = () => {
         </div>
 
         {/* NOC Documents Table */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
+        <div className="bg-white :bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 :border-gray-700">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700/50">
+            <table className="min-w-full divide-y divide-gray-200 :divide-gray-700">
+              <thead className="bg-gray-50 :bg-gray-700/50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 :text-gray-300 uppercase tracking-wider">
                     Order Particulars
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 :text-gray-300 uppercase tracking-wider">
                     Order No. and Date
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white :bg-gray-800 divide-y divide-gray-200 :divide-gray-700">
                 {filteredNocData.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <tr key={index} className="hover:bg-gray-50 :hover:bg-gray-700/50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 :text-gray-100">
                       {item.orderParticulars}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 :text-gray-100">
                       {item.orderNoAndDate}
                     </td>
                   </tr>
@@ -126,7 +126,7 @@ const NocPage = () => {
           </div>
 
           {/* Apply Button */}
-          <div className="px-6 py-6 bg-gray-50 dark:bg-gray-700 text-center">
+          <div className="px-6 py-6 bg-gray-50 :bg-gray-700 text-center">
             <a
               href="https://rajnoc.rajasthan.gov.in/"
               target="_blank"
