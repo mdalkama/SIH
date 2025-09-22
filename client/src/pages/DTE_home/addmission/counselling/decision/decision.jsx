@@ -407,7 +407,7 @@ const AllotmentDecision = () => {
             </h3>
             <div className="text-center mb-3">
               <div className="bg-red-50 rounded-lg p-3">
-                <p className="text-lg font-bold text-red-600 mb-1">02d : 11h : 24m</p>
+                <p className="text-lg font-bold text-red-600 mb-1">05d : 11h : 24m</p>
                 <p className="text-xs text-gray-600">Decision window</p>
               </div>
             </div>

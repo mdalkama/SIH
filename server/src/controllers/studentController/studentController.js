@@ -335,3 +335,88 @@ export const resetPassword = async (req, res) => {
         res.status(500).json({ message: "An error occurred while resetting the password." });
     }
 };
+
+export const getAllStudentsForPlacement = async (req, res) => {
+    try {
+        const { page = 1, limit = 10, search = '', courseId = 'all', minCgpa = 0 } = req.query;
+        const collegeCode = req.user.collegeCode;
+
+        // Base query for students in the officer's college
+        let matchQuery = { collegeCode };
+
+        if (search) {
+            const searchRegex = new RegExp(search, 'i');
+            matchQuery.$or = [
+                { name: searchRegex },
+                { registrationNumber: searchRegex }
+            ];
+        }
+
+        if (courseId !== 'all') {
+            matchQuery.courseId = courseId;
+        }
+
+        const aggregationPipeline = [
+            { $match: matchQuery },
+            {
+                $lookup: {
+                    from: "studentacademics",
+                    localField: "_id",
+                    foreignField: "studentId",
+                    as: "academics"
+                }
+            },
+            { $unwind: { path: "$academics", preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: "courses",
+                    localField: "courseId",
+                    foreignField: "courseId",
+                    as: "courseInfo"
+                }
+            },
+             { $unwind: { path: "$courseInfo", preserveNullAndEmptyArrays: true } },
+            {
+                $addFields: {
+                    // This is a simplified CGPA calculation (latest SGPA)
+                    cgpa: { $ifNull: [{ $arrayElemAt: ["$academics.previousResults.sgpa", -1] }, 0] }
+                }
+            },
+            { $match: { cgpa: { $gte: parseFloat(minCgpa) } } },
+            {
+                $project: {
+                    name: 1,
+                    registrationNumber: 1,
+                    courseId: 1,
+                    branch: "$courseInfo.branch",
+                    cgpa: 1,
+                    // You can add placement status here later
+                }
+            }
+        ];
+
+        // Get total count for pagination
+        const countPipeline = [...aggregationPipeline, { $count: 'total' }];
+        const totalDocsArr = await Student.aggregate(countPipeline);
+        const totalDocs = totalDocsArr[0]?.total || 0;
+
+        // Get paginated data
+        const students = await Student.aggregate([
+            ...aggregationPipeline,
+            { $sort: { name: 1 } },
+            { $skip: (page - 1) * limit },
+            { $limit: parseInt(limit) }
+        ]);
+        
+        res.status(200).json({
+            success: true,
+            students,
+            totalPages: Math.ceil(totalDocs / limit),
+            currentPage: parseInt(page),
+            totalDocs
+        });
+    } catch (error) {
+        console.error("Error fetching students for placement:", error);
+        res.status(500).json({ message: "Server error.", error: error.message });
+    }
+};

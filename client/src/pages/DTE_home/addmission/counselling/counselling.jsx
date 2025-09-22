@@ -13,32 +13,88 @@ import {
   ChevronDown,
   ChevronRight
 } from 'lucide-react';
-import { NavLink, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
+import { NavLink, Routes, Route, Navigate, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 
 // Import all components
-import Overview from './overview/overview';
-import Merit from './merit/merit';
-import SeatAllotment from './seat/seat';
-import Decision from './decision/decision';
-import UpwardMovement from './upwardMovement/upwardMovement';
-import UpdateOptions from './updateOptions/updateOptions';
-import AdmitCard from './admitCard/admitCard';
-import Result from './result/result';
+import Overview from './overview/overview.jsx';
+import Merit from './merit/merit.jsx';
+import SeatAllotment from './seat/seat.jsx';
+import Decision from './decision/decision.jsx';
+import UpwardMovement from './upwardMovement/upwardMovement.jsx';
+import UpdateOptions from './updateOptions/updateOptions.jsx';
+import AdmitCard from './admitCard/admitCard.jsx';
+import Result from './result/result.jsx';
 import CountdownTimer from './components/CountdownTimer.jsx';
 import { ApplicantDataProvider } from './ApplicantDataContext.jsx';
 
 const counselling = () => {
   const [searchParams] = useSearchParams();
-  const applicationId = searchParams.get('applicationId');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const applicationId = searchParams.get('applicationId') || localStorage.getItem('applicationId');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
+
+  // Check for existing session on component mount
+  useEffect(() => {
+    const sessionData = localStorage.getItem('counsellingSession');
+    const currentAppId = searchParams.get('applicationId') || localStorage.getItem('applicationId');
+
+    if (sessionData) {
+      try {
+        const { applicationId: storedAppId, expiresAt } = JSON.parse(sessionData);
+
+        // Check if session is expired
+        if (expiresAt > Date.now()) {
+          // If no applicationId in URL but we have a stored one, add it
+          if (!searchParams.get('applicationId') && storedAppId) {
+            navigate(`${location.pathname}?applicationId=${storedAppId}`, { replace: true });
+            return;
+          }
+        } else {
+          // Clear expired session
+          localStorage.removeItem('counsellingSession');
+          localStorage.removeItem('applicationId');
+        }
+      } catch (error) {
+        console.error('Error parsing session data:', error);
+        localStorage.removeItem('counsellingSession');
+        localStorage.removeItem('applicationId');
+      }
+    }
+
+    // If no valid application ID, redirect to status check
+    if (!currentAppId) {
+      navigate('/status/check');
+    }
+  }, []); // Remove dependencies to prevent infinite loops
+  
+  // Handle logout
+  const handleLogout = () => {
+    // Clear local storage
+    localStorage.removeItem('counsellingSession');
+    localStorage.removeItem('applicationId');
+    // Redirect to home page
+    navigate('/');
+  };
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  const toggleSubmenu = (menu) => {
-    setActiveSubmenu(activeSubmenu === menu ? null : menu);
+  const renderComponent = (componentName) => {
+    const components = {
+      Overview: <Overview applicationId={applicationId} />,
+      Merit: <Merit applicationId={applicationId} />,
+      SeatAllotment: <SeatAllotment applicationId={applicationId} />,
+      Decision: <Decision applicationId={applicationId} />,
+      UpwardMovement: <UpwardMovement applicationId={applicationId} />,
+      UpdateOptions: <UpdateOptions applicationId={applicationId} />,
+      AdmitCard: <AdmitCard applicationId={applicationId} />,
+      Result: <Result applicationId={applicationId} />
+    };
+
+    return components[componentName] || <div>Component not found</div>;
   };
 
   // Global countdown timers
@@ -62,8 +118,8 @@ const counselling = () => {
         }
       }
       
-      // Fee payment countdown (March 22, 2025, 23:59:59)
-      const feeDeadlineDate = new Date('2025-03-22T23:59:59');
+      // Fee payment countdown (March 28, 2025, 23:59:59)
+      const feeDeadlineDate = new Date('2025-03-28T23:59:59');
       const feeDiff = feeDeadlineDate - now;
       
       if (feeDiff > 0) {
@@ -98,49 +154,49 @@ const counselling = () => {
       title: 'Overview',
       icon: <LayoutDashboard size={20} />,
       link: '/counselling/overview',
-      component: <Overview applicationId={applicationId} />
+      component: 'Overview'
     },
     {
       title: 'Merit',
       icon: <BarChart2 size={20} />,
       link: '/counselling/merit',
-      component: <Merit applicationId={applicationId} />
+      component: 'Merit'
     },
     {
       title: 'Seat Allotment',
       icon: <Users size={20} />,
       link: '/counselling/seat-allotment',
-      component: <SeatAllotment applicationId={applicationId} />
+      component: 'SeatAllotment'
     },
     {
       title: 'Decision',
       icon: <CheckCircle size={20} />,
       link: '/counselling/decision',
-      component: <Decision applicationId={applicationId} />
+      component: 'Decision'
     },
     {
       title: 'Upward Movement',
       icon: <ArrowUp size={20} />,
       link: '/counselling/upward-movement',
-      component: <UpwardMovement applicationId={applicationId} />
+      component: 'UpwardMovement'
     },
     {
       title: 'Update Options',
       icon: <Edit size={20} />,
       link: '/counselling/update-options',
-      component: <UpdateOptions applicationId={applicationId} />
+      component: 'UpdateOptions'
     },
     {
       title: 'Admit Card',
       icon: <FileText size={20} />,
       link: '/counselling/admit-card',
-      component: <AdmitCard applicationId={applicationId} />
+      component: 'AdmitCard'
     },
     {
       title: 'Result',
       icon: <Award size={20} />,
       link: '/counselling/result',
-      component: <Result applicationId={applicationId} />
+      component: 'Result'
     }
   ];
 
@@ -196,12 +252,7 @@ const counselling = () => {
           {/* Logout Button */}
           <div className="p-4 border-t border-[#1d2646] mt-auto">
             <button 
-              onClick={() => {
-                // Add your logout logic here
-                console.log('Logout clicked');
-                // Example: navigate to login page
-                // navigate('/login');
-              }}
+              onClick={handleLogout}
               className={`w-full flex items-center ${sidebarOpen ? 'justify-start pl-3' : 'justify-center'} space-x-3 py-2.5 text-gray-300 hover:text-white hover:bg-[#1a2238] rounded-lg transition-all duration-200`}
             >
               <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -249,19 +300,73 @@ const counselling = () => {
           <div className="flex-1 overflow-y-auto">
             <Routes>
               <Route path="/" element={<Navigate to={`/counselling/overview?applicationId=${applicationId}`} replace />} />
-              {menuItems.map((item, index) => (
-                <Route 
-                  key={index}
-                  path={item.link.replace('/counselling', '')}
-                  element={
-                    <div className="p-4 sm:p-6">
-                      {item.component}
-                    </div>
-                  }
-                />
-              ))}
+              <Route
+                path="/overview"
+                element={
+                  <div className="p-4 sm:p-6">
+                    <Overview applicationId={applicationId} />
+                  </div>
+                }
+              />
+              <Route
+                path="/merit"
+                element={
+                  <div className="p-4 sm:p-6">
+                    <Merit applicationId={applicationId} />
+                  </div>
+                }
+              />
+              <Route
+                path="/seat-allotment"
+                element={
+                  <div className="p-4 sm:p-6">
+                    <SeatAllotment applicationId={applicationId} />
+                  </div>
+                }
+              />
+              <Route
+                path="/decision"
+                element={
+                  <div className="p-4 sm:p-6">
+                    <Decision applicationId={applicationId} />
+                  </div>
+                }
+              />
+              <Route
+                path="/upward-movement"
+                element={
+                  <div className="p-4 sm:p-6">
+                    <UpwardMovement applicationId={applicationId} />
+                  </div>
+                }
+              />
+              <Route
+                path="/update-options"
+                element={
+                  <div className="p-4 sm:p-6">
+                    <UpdateOptions applicationId={applicationId} />
+                  </div>
+                }
+              />
+              <Route
+                path="/admit-card"
+                element={
+                  <div className="p-4 sm:p-6">
+                    <AdmitCard applicationId={applicationId} />
+                  </div>
+                }
+              />
+              <Route
+                path="/result"
+                element={
+                  <div className="p-4 sm:p-6">
+                    <Result applicationId={applicationId} />
+                  </div>
+                }
+              />
             </Routes>
           </div>
+{/* // ... (rest of the code remains the same) */}
         </div>
       </div>
     </ApplicantDataProvider>

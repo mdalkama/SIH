@@ -1,0 +1,534 @@
+{
+    "collegeInfo": {
+      "name": "Government Polytechnic College, Alwar",
+      "shortName": "GPC Alwar",
+      "logo": "https://hte.rajasthan.gov.in/dept//dte/board_of_technical_education,_rajasthan/government_polytechnic_college,alwar/uploads/images/logo/smallLogo2.jpg",
+      "established": "1961",
+      "type": "Government Institution",
+      "location": "Alwar, Rajasthan",
+      "website": "https://hte.rajasthan.gov.in/college/gpcalwar",
+      "affiliation": "Board of Technical Education, Rajasthan, Jodhpur",
+      "approval": "All India Council for Technical Education (AICTE), New Delhi"
+    },
+    "header": {
+      "topBar": {
+        "quickLinks": [
+          {
+            "text": "Login",
+            "url": "https://sso.rajasthan.gov.in/signin"
+          },
+          {
+            "text": "Screen Reader Access",
+            "url": "#"
+          },
+          {
+            "text": "DTE Admissions 2025-26",
+            "url": "https://dteapp.hte.rajasthan.gov.in/dte_admission/admission/index/1"
+          },
+          {
+            "text": "Direct Admissions",
+            "url": "http://www.dap2025.in/"
+          }
+        ],
+        "contact": {
+          "email": "gpcalwar@rajasthan.gov.in",
+          "phone": "0144-2332980"
+        }
+      },
+      "navbar": {
+        "logo": "https://hte.rajasthan.gov.in/dept//dte/board_of_technical_education,_rajasthan/government_polytechnic_college,alwar/uploads/images/logo/smallLogo2.jpg",
+        "collegeName": "Government Polytechnic College, Alwar",
+        "menuItems": [
+          {
+            "title": "Home",
+            "url": "/",
+            "hasDropdown": false
+          },
+          {
+            "title": "About",
+            "url": "#",
+            "hasDropdown": true,
+            "dropdownItems": [
+              {
+                "text": "About College",
+                "url": "/about"
+              },
+              {
+                "text": "Vision & Mission",
+                "url": "/vision-mission"
+              },
+              {
+                "text": "Principal's Message",
+                "url": "/principal-message"
+              },
+              {
+                "text": "College Administration",
+                "url": "/administration"
+              },
+              {
+                "text": "Faculty",
+                "url": "/faculty"
+              }
+            ]
+          },
+          {
+            "title": "Departments",
+            "url": "#",
+            "hasDropdown": true,
+            "dropdownItems": [
+              {
+                "text": "Electrical Engineering",
+                "url": "/departments/electrical"
+              },
+              {
+                "text": "Electronics Engineering",
+                "url": "/departments/electronics"
+              },
+              {
+                "text": "Mechanical Engineering",
+                "url": "/departments/mechanical"
+              },
+              {
+                "text": "Mechanical Automobile Engineering",
+                "url": "/departments/mechanical-automobile"
+              },
+              {
+                "text": "Civil Engineering",
+                "url": "/departments/civil"
+              },
+              {
+                "text": "Computer Science Engineering",
+                "url": "/departments/computer-science"
+              }
+            ]
+          },
+          {
+            "title": "Admissions",
+            "url": "#",
+            "hasDropdown": true,
+            "dropdownItems": [
+              {
+                "text": "Admission Process",
+                "url": "/admissions/process"
+              },
+              {
+                "text": "Eligibility Criteria",
+                "url": "/admissions/eligibility"
+              },
+              {
+                "text": "Fee Structure",
+                "url": "/admissions/fee-structure"
+              },
+              {
+                "text": "Vacant Seats",
+                "url": "/admissions/vacant-seats"
+              },
+              {
+                "text": "Direct Admissions",
+                "url": "/admissions/direct"
+              },
+              {
+                "text": "Lateral Entry",
+                "url": "/admissions/lateral-entry"
+              }
+            ]
+          },
+          {
+            "title": "Facilities",
+            "url": "#",
+            "hasDropdown": true,
+            "dropdownItems": [
+              {
+                "text": "Library",
+                "url": "/facilities/library"
+              },
+              {
+                "text": "Laboratories",
+                "url": "/facilities/labs"
+              },
+              {
+                "text": "Workshop",
+                "url": "/facilities/workshop"
+              },
+              {
+                "text": "Hostel",
+                "url": "/facilities/hostel"
+              },
+              {
+                "text": "Sports",
+                "url": "/facilities/sports"
+              },
+              {
+                "text": "Canteen",
+                "url": "/facilities/canteen"
+              }
+            ]
+          },
+          {
+            "title": "Academics",
+            "url": "#",
+            "hasDropdown": true,
+            "dropdownItems": [
+              {
+                "text": "Academic Calendar",
+                "url": "/academics/calendar"
+              },
+              {
+                "text": "Syllabus",
+                "url": "/academics/syllabus"
+              },
+              {
+                "text": "Examination",
+                "url": "/academics/examination"
+              },
+              {
+                "text": "Results",
+                "url": "/academics/results"
+              },
+              {
+                "text": "Revaluation Rules",
+                "url": "/academics/revaluation"
+              }
+            ]
+          },
+          {
+            "title": "News & Events",
+            "url": "/news-events",
+            "hasDropdown": false
+          },
+          {
+            "title": "Gallery",
+            "url": "/gallery",
+            "hasDropdown": false
+          }
+        ]
+      },
+      "carousel": {
+        "images": [
+          {
+            "src": "https://hte.rajasthan.gov.in/dept//dte/board_of_technical_education,_rajasthan/government_polytechnic_college,alwar/uploads/images/banner/staff.jpg",
+            "alt": "GPC Alwar Staff",
+            "title": "Government Polytechnic College, Alwar",
+            "description": "Excellence in Technical Education since 1961"
+          },
+          {
+            "src": "https://hte.rajasthan.gov.in/dept//dte/board_of_technical_education,_rajasthan/government_polytechnic_college,alwar/uploads/images/banner/Har-Ghar-Tiranga_Web-banner.png",
+            "alt": "GPC Alwar Har Ghar Tiranga",
+            "title": "Har Ghar Tiranga Initiative",
+            "description": "Proudly participating in national initiatives"
+          },
+          {
+            "src": "https://hte.rajasthan.gov.in/dept//dte/board_of_technical_education,_rajasthan/government_polytechnic_college,alwar/uploads/images/banner/5ccd91e2-5d6f-4424-9926-bb28a661d8ff_bnr.jpg",
+            "alt": "GPC Alwar Infrastructure",
+            "title": "Modern Infrastructure",
+            "description": "State-of-the-art facilities for quality education"
+          },
+          {
+            "src": "https://hte.rajasthan.gov.in/dept//dte/board_of_technical_education,_rajasthan/government_polytechnic_college,alwar/uploads/images/banner/PHOTO-2025-08-21-12-18-51.jpg",
+            "alt": "GPC Alwar Campus Life",
+            "title": "Campus Life",
+            "description": "Vibrant campus environment for holistic development"
+          }
+        ]
+      }
+    },
+    "aboutUs": {
+      "heroImage": "https://hte.rajasthan.gov.in/dept/dte/board_of_technical_education,_rajasthan/government_polytechnic_college,alwar/uploads/images/photo_gallery/IMG-20170630-WA0001%20(2).jpg",
+      "shortDescription": "Government Polytechnic College, Alwar (GPC Alwar) is a premier government technical institution established in 1961, affiliated with the Board of Technical Education, Rajasthan, and approved by AICTE, dedicated to providing quality technical education and producing skilled professionals for industry and society.",
+      "detailedContent": {
+        "introduction": "Government Polytechnic College, Alwar, established in 1961, stands as one of Rajasthan's most prestigious government technical institutions. Located in the historic city of Alwar, the college has been a beacon of technical education for over six decades, consistently maintaining its reputation for academic excellence and producing skilled professionals who contribute significantly to various industries across the nation.",
+        "history": "Founded in 1961 under the Department of Technical Education, Government of Rajasthan, GPC Alwar was established with the vision of providing quality technical education to students from all socio-economic backgrounds. The college has witnessed tremendous growth over the years, expanding its infrastructure, academic programs, and facilities to meet the evolving needs of the industry and society.",
+        "vision": "To be a center of excellence in technical education, fostering innovation, research, and entrepreneurship while maintaining the highest standards of academic integrity and contributing to the socio-economic development of the region and nation.",
+        "mission": [
+          "To provide quality technical education that is accessible, affordable, and relevant to industry needs",
+          "To develop competent and ethical professionals with strong technical and soft skills",
+          "To promote research, innovation, and entrepreneurship among students and faculty",
+          "To establish strong industry-academia partnerships for practical learning and placement opportunities",
+          "To contribute to society through community engagement and sustainable development initiatives"
+        ],
+        "infrastructure": {
+          "campus": "GPC Alwar is situated on a well-planned campus in the heart of Alwar city, providing easy accessibility and a conducive learning environment. The campus houses modern academic buildings, well-equipped laboratories, workshops, library, administrative offices, and student facilities.",
+          "laboratories": "The college boasts modern laboratories equipped with the latest technology and equipment for each department. These labs provide hands-on training in various engineering disciplines and are regularly updated to keep pace with technological advancements and industry requirements.",
+          "workshops": "State-of-the-art workshops with modern machinery and tools provide practical training to students. The workshops are designed to give students real-world experience in manufacturing processes, maintenance, and technical operations.",
+          "library": "The Central Library houses an extensive collection of books, journals, magazines, and digital resources. It provides a quiet study environment with modern facilities including computer terminals, internet access, and comfortable reading areas.",
+          "hostels": "Separate hostel facilities for boys and girls with modern amenities, 24/7 security, mess facilities, and recreational areas ensure a comfortable stay for students coming from distant places."
+        },
+        "academics": {
+          "programs": "GPC Alwar offers diploma programs in various engineering disciplines including Electrical Engineering, Electronics Engineering, Mechanical Engineering, Mechanical Automobile Engineering, Civil Engineering, and Computer Science Engineering.",
+          "faculty": "The college has a dedicated team of highly qualified and experienced faculty members who are committed to providing quality education. Many faculty members hold advanced degrees and have significant industry experience, bringing practical knowledge to the classroom.",
+          "curriculum": "The curriculum is designed as per the guidelines of the Board of Technical Education, Rajasthan, and is regularly updated to include the latest technological developments. The focus is on practical learning, skill development, and industry readiness.",
+          "examination": "The college follows a semester-based examination system with continuous assessment through internal examinations, assignments, and practical evaluations to ensure comprehensive learning and assessment."
+        },
+        "achievements": {
+          "accreditation": "GPC Alwar is approved by AICTE (All India Council for Technical Education) and affiliated with the Board of Technical Education, Rajasthan, Jodhpur. The college maintains high academic standards and has received recognition for its quality education.",
+          "placements": "The college has a good placement record with students being recruited by various government and private organizations. The Training and Placement Cell actively works to provide placement opportunities and career guidance to students.",
+          "awards": "GPC Alwar has received various awards and recognitions from the government and educational bodies for its contribution to technical education and student development.",
+          "alumni": "The college takes pride in its alumni who are working in various prestigious positions in government departments, public sector undertakings, private companies, and have also established successful enterprises."
+        },
+        "facilities": {
+          "sports": "Comprehensive sports facilities including playground for cricket, football, volleyball, basketball, and indoor games facilities to promote physical fitness and overall personality development of students.",
+          "canteen": "Hygienic canteen facilities providing nutritious and affordable meals, snacks, and beverages to students and staff throughout the day.",
+          "medical": "Basic medical facilities are available on campus to handle health emergencies and provide primary healthcare services to students and staff.",
+          "transport": "The college is well-connected by public transportation, and students can easily commute from various parts of Alwar city.",
+          "internet": "Campus-wide internet connectivity ensures students and faculty have access to online resources for academic and research purposes."
+        },
+        "departments": {
+          "electrical": "The Electrical Engineering department offers comprehensive training in power systems, electrical machines, control systems, and renewable energy technologies with modern laboratories and experienced faculty.",
+          "electronics": "Electronics Engineering department focuses on electronic circuits, communication systems, embedded systems, and digital electronics with state-of-the-art labs and industry-relevant curriculum.",
+          "mechanical": "Mechanical Engineering department provides training in manufacturing processes, thermal engineering, machine design, and automotive technology with well-equipped workshops and laboratories.",
+          "civil": "Civil Engineering department covers structural engineering, construction technology, surveying, and environmental engineering with practical training in modern construction techniques.",
+          "computerScience": "Computer Science Engineering department offers training in programming, software development, database management, and emerging technologies with modern computer labs and experienced faculty.",
+          "automobile": "Mechanical Automobile Engineering department specializes in automotive technology, vehicle design, and maintenance with specialized workshops and industry-relevant training."
+        },
+        "studentLife": {
+          "activities": "Various co-curricular and extracurricular activities including technical festivals, cultural events, seminars, workshops, and guest lectures by industry experts and academicians.",
+          "clubs": "Student clubs and societies for technical, cultural, and sports activities providing platforms for students to explore their interests and develop leadership skills.",
+          "scholarships": "Various government scholarship schemes available for deserving students including SC/ST scholarships, merit scholarships, and fee reimbursement schemes.",
+          "counseling": "Academic and career counseling services to guide students in their educational journey and career planning."
+        }
+      }
+    },
+    "notices": {
+      "title": "Latest Notices & Updates",
+      "items": [
+        {
+          "id": 1,
+          "title": "Admission Notice for Diploma Courses 2025-26",
+          "description": "Online application for admission to various diploma courses has started. Last date for application submission is 31st March 2025.",
+          "date": "2025-01-15",
+          "category": "Admission",
+          "priority": "high",
+          "url": "https://hte.rajasthan.gov.in/college/gpcalwar/admission-notice-2025.pdf",
+          "isNew": true
+        },
+        {
+          "id": 2,
+          "title": "Fee Structure for Academic Session 2025-26",
+          "description": "Revised fee structure for all diploma courses has been published. Students can pay fees online through government portal.",
+          "date": "2025-01-12",
+          "category": "Fee",
+          "priority": "high",
+          "url": "https://hte.rajasthan.gov.in/college/gpcalwar/fee-structure-2025.pdf",
+          "isNew": true
+        },
+        {
+          "id": 3,
+          "title": "Campus Placement Drive 2025",
+          "description": "Leading companies will visit campus for recruitment. Final year students must register by 20th January 2025.",
+          "date": "2025-01-10",
+          "category": "Placement",
+          "priority": "medium",
+          "url": "https://hte.rajasthan.gov.in/college/gpcalwar/placement-drive-2025.pdf",
+          "isNew": true
+        },
+        {
+          "id": 4,
+          "title": "Winter Vacation Schedule",
+          "description": "College will remain closed from 25th December 2024 to 5th January 2025 for winter vacation.",
+          "date": "2024-12-20",
+          "category": "Holiday",
+          "priority": "medium",
+          "url": "https://hte.rajasthan.gov.in/college/gpcalwar/winter-vacation-notice.pdf",
+          "isNew": false
+        },
+        {
+          "id": 5,
+          "title": "Industrial Training Program",
+          "description": "6-month industrial training program for final year students. Registration open till 15th January 2025.",
+          "date": "2024-12-18",
+          "category": "Training",
+          "priority": "medium",
+          "url": "https://hte.rajasthan.gov.in/college/gpcalwar/industrial-training.pdf",
+          "isNew": false
+        },
+        {
+          "id": 6,
+          "title": "Library New Books Arrival",
+          "description": "Latest technical books and journals have been added to the central library. Students can issue from 10th January 2025.",
+          "date": "2024-12-15",
+          "category": "Library",
+          "priority": "low",
+          "url": "https://hte.rajasthan.gov.in/college/gpcalwar/library-new-books.pdf",
+          "isNew": false
+        },
+        {
+          "id": 7,
+          "title": "Sports Week 2025 Registration",
+          "description": "Annual sports week will be organized in February 2025. Students interested in participating should register.",
+          "date": "2024-12-12",
+          "category": "Sports",
+          "priority": "low",
+          "url": "https://hte.rajasthan.gov.in/college/gpcalwar/sports-week-2025.pdf",
+          "isNew": false
+        },
+        {
+          "id": 8,
+          "title": "Scholarship Application for SC/ST Students",
+          "description": "Government scholarship applications are now open for SC/ST students. Apply before 31st January 2025.",
+          "date": "2024-12-10",
+          "category": "Scholarship",
+          "priority": "high",
+          "url": "https://hte.rajasthan.gov.in/college/gpcalwar/scholarship-scst.pdf",
+          "isNew": false
+        },
+        {
+          "id": 9,
+          "title": "Technical Symposium 'TechFest 2025'",
+          "description": "Annual technical symposium will be held in March 2025. Paper submission deadline is 15th February 2025.",
+          "date": "2024-12-08",
+          "category": "Event",
+          "priority": "medium",
+          "url": "https://hte.rajasthan.gov.in/college/gpcalwar/techfest-2025.pdf",
+          "isNew": false
+        },
+        {
+          "id": 10,
+          "title": "Hostel Facility Information",
+          "description": "Separate hostel facilities available for boys and girls. Application process and fee details published.",
+          "date": "2024-12-05",
+          "category": "Hostel",
+          "priority": "medium",
+          "url": "https://hte.rajasthan.gov.in/college/gpcalwar/hostel-information.pdf",
+          "isNew": false
+        }
+      ]
+    },
+    "footer": {
+      "about": {
+        "title": "About GPC Alwar",
+        "description": "Government Polytechnic College, Alwar is a premier technical institution established in 1961 under the Department of Technical Education, Government of Rajasthan. Approved by AICTE and affiliated to Board of Technical Education, Rajasthan.",
+        "logo": "https://hte.rajasthan.gov.in/dept//dte/board_of_technical_education,_rajasthan/government_polytechnic_college,alwar/uploads/images/logo/smallLogo2.jpg"
+      },
+      "quickLinks": [
+        {
+          "title": "Quick Links",
+          "links": [
+            {
+              "text": "Home",
+              "url": "/"
+            },
+            {
+              "text": "About Us",
+              "url": "/about"
+            },
+            {
+              "text": "Admissions",
+              "url": "/admissions"
+            },
+            {
+              "text": "Departments",
+              "url": "/departments"
+            },
+            {
+              "text": "Facilities",
+              "url": "/facilities"
+            },
+            {
+              "text": "News & Events",
+              "url": "/news-events"
+            }
+          ]
+        }
+      ],
+      "departments": [
+        {
+          "title": "Departments",
+          "links": [
+            {
+              "text": "Electrical Engineering",
+              "url": "/departments/electrical"
+            },
+            {
+              "text": "Electronics Engineering",
+              "url": "/departments/electronics"
+            },
+            {
+              "text": "Mechanical Engineering",
+              "url": "/departments/mechanical"
+            },
+            {
+              "text": "Civil Engineering",
+              "url": "/departments/civil"
+            },
+            {
+              "text": "Computer Science Engineering",
+              "url": "/departments/computer-science"
+            },
+            {
+              "text": "Mechanical Automobile Engineering",
+              "url": "/departments/mechanical-automobile"
+            }
+          ]
+        }
+      ],
+      "contact": {
+        "title": "Contact Information",
+        "address": {
+          "line1": "Government Polytechnic College, Alwar",
+          "line2": "Alwar - 301001",
+          "line3": "Rajasthan, India"
+        },
+        "phone": "0144-2332980",
+        "email": "gpcalwar@rajasthan.gov.in",
+        "website": "https://hte.rajasthan.gov.in/college/gpcalwar"
+      },
+      "importantLinks": [
+        {
+          "title": "Important Links",
+          "links": [
+            {
+              "text": "AICTE",
+              "url": "https://www.aicte-india.org/"
+            },
+            {
+              "text": "Board of Technical Education, Rajasthan",
+              "url": "https://hte.rajasthan.gov.in/"
+            },
+            {
+              "text": "Department of Technical Education",
+              "url": "https://dte.rajasthan.gov.in/"
+            },
+            {
+              "text": "Government of Rajasthan",
+              "url": "https://rajasthan.gov.in/"
+            },
+            {
+              "text": "Digital India",
+              "url": "https://digitalindia.gov.in/"
+            },
+            {
+              "text": "NPTEL",
+              "url": "https://nptel.ac.in/"
+            }
+          ]
+        }
+      ],
+      "schemes": [
+        {
+          "title": "Government Schemes",
+          "links": [
+            {
+              "text": "Vidhya Sambal Yojana",
+              "url": "/schemes/vidhya-sambal"
+            },
+            {
+              "text": "Scholarship Schemes",
+              "url": "/schemes/scholarships"
+            },
+            {
+              "text": "Fee Reimbursement",
+              "url": "/schemes/fee-reimbursement"
+            },
+            {
+              "text": "Student Welfare",
+              "url": "/schemes/student-welfare"
+            }
+          ]
+        }
+      ],
+      "copyright": {
+        "text": "© 2025 Government Polytechnic College, Alwar. All rights reserved.",
+        "year": "2025"
+      }
+    }
+  }

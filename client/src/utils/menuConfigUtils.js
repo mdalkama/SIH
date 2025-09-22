@@ -165,7 +165,7 @@ import CollegeAdminManageComplaints from "../components/College/CollegeAdmin/Col
 import CollegeAdminManageFeedback from "../components/College/CollegeAdmin/CollegeAdminManageFeedback.jsx";
 import StudentComplaintsAndFeedback from "../components/Student/StudentComplaintsAndFeedback.jsx";
 import CollegePlacementDashboard from "../components/College/CollegePlacement/CollegePlacementDashboard.jsx";
-import CollegePlacementStatus from "../components/College/CollegePlacement/CollegePlacementStatus.jsx";
+import CollegePlacementStudentDatabase from "../components/College/CollegePlacement/CollegePlacementStudentDatabase.jsx";
 import StudentPlacementDrives from "../components/Student/StudentPlacementDrives.jsx";
 import CollegeManagePlacement from "../components/College/CollegePlacement/CollegeManagePlacement.jsx";
 
@@ -503,38 +503,38 @@ const menuConfig = {
         //     component: ExamCellConductSemesterExam,
         //     role: "UniversityExamCellStaff",
         // },
-        // {
-        //     id: "assign-evaluators",
-        //     label: "Assign Evaluators",
-        //     icon: PenLine,
-        //     path: "/university-exam-cell/assign-evaluators",
-        //     component: ExamCellAssignEvaluators,
-        //     role: "UniversityExamCellStaff",
-        // },
-        // {
-        //     id: "collect-marks",
-        //     label: "Collect External Marks",
-        //     icon: GraduationCap,
-        //     path: "/university-exam-cell/collect-marks",
-        //     component: ExamCellCollectMarks,
-        //     role: "UniversityExamCellStaff",
-        // },
-        // {
-        //     id: "external-registration",
-        //     label: "External Exam Registration",
-        //     icon: ClipboardList,
-        //     path: "/university-exam-cell/external-registration",
-        //     component: ExamCellExternalRegistration,
-        //     role: "UniversityExamCellStaff",
-        // },
-        // {
-        //     id: "publish-admit-card",
-        //     label: "Publish Admit Card",
-        //     icon: FileText,
-        //     path: "/university-exam-cell/publish-admit-card",
-        //     component: ExamCellPublishAdmitCard,
-        //     role: "UniversityExamCellStaff",
-        // },
+        {
+            id: "assign-evaluators",
+            label: "Assign Evaluators",
+            icon: PenLine,
+            path: "/university-exam-cell/assign-evaluators",
+            component: ExamCellAssignEvaluators,
+            role: "UniversityExamCellStaff",
+        },
+        {
+            id: "collect-marks",
+            label: "Collect External Marks",
+            icon: GraduationCap,
+            path: "/university-exam-cell/collect-marks",
+            component: ExamCellCollectMarks,
+            role: "UniversityExamCellStaff",
+        },
+        {
+            id: "external-registration",
+            label: "External Exam Registration",
+            icon: ClipboardList,
+            path: "/university-exam-cell/external-registration",
+            component: ExamCellExternalRegistration,
+            role: "UniversityExamCellStaff",
+        },
+        {
+            id: "publish-admit-card",
+            label: "Publish Admit Card",
+            icon: FileText,
+            path: "/university-exam-cell/publish-admit-card",
+            component: ExamCellPublishAdmitCard,
+            role: "UniversityExamCellStaff",
+        },
         {
             id: "result-processing",
             label: "Result Processing",
@@ -1109,12 +1109,13 @@ const menuConfig = {
             role: "CollegePlacementOfficer",
         },
         {
-            id: "placement-status",
-            label: "Placement Status",
-            icon: User,
-            path: "/college-placement/placement-status",
-            component: CollegePlacementStatus,
+            id: "student-database",
+            label: "Student Database",
+            icon: Users,
+            path: "/college-placement/student-database",
+            component: CollegePlacementStudentDatabase,
             role: "CollegePlacementOfficer",
+           
         },
         {
             id: "manage placements",

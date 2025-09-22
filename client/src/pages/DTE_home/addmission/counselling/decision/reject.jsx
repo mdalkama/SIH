@@ -163,7 +163,7 @@ const RejectDecision = () => {
               <div>
                 <p className="text-xs text-gray-600 mb-1">Candidate</p>
                 <p className="font-semibold text-gray-900">{personalInfo.name} • App ID: {personalInfo.applicationId}</p>
-                <p className="font-semibold text-gray-900">23C-1145</p>
+                <p className="font-semibold text-gray-900">{personalInfo.registrationNo}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-600 mb-1">Allotted Seat</p>

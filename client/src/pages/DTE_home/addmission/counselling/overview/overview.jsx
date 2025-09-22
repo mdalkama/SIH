@@ -242,26 +242,7 @@ const Overview = () => {
 
               {/* Live Countdown Timers */}
               <div className="space-y-3">
-                {counsellingStatus.feePaymentDeadline && (
-                  <div className="relative">
-                    <CountdownTimer
-                      targetDate={counsellingStatus.feePaymentDeadline}
-                      title="Fee Payment Deadline"
-                      description="Complete your fee payment to secure your allotted seat"
-                      type={counsellingStatus.feesPaid ? 'completed' : 'deadline'}
-                    />
-                    {!counsellingStatus.feesPaid && (
-                      <button
-                        onClick={handlePayFee}
-                        className="mt-2 w-full bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
-                      >
-                        <CreditCard className="w-4 h-4" />
-                        <span>Pay Fee Now</span>
-                      </button>
-                    )}
-                  </div>
-                )}
-                
+               
                 {counsellingStatus.reportingDate && !counsellingStatus.hasReported && (
                   <div className="relative">
                     <CountdownTimer
@@ -325,12 +306,12 @@ const Overview = () => {
                 </div>
                 
                 {/* Next Round Timer */}
-                <CountdownTimer
+                {/* <CountdownTimer
                   targetDate="2025-03-30T23:59:59"
                   title="Next Round Starts"
                   description="Time left to freeze/float options for next counselling round"
                   type="deadline"
-                />
+                /> */}
               </div>
             </div>
           </div>

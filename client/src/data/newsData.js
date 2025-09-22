@@ -32,8 +32,8 @@ export const newsData = [
       
       <p>This initiative aligns with the government's vision of promoting innovation and entrepreneurship among young minds, preparing them for the challenges of tomorrow's technology-driven world.</p>
     `,
-    image: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=800&h=600&fit=crop",
-    date: "15 Dec 2024",
+    image: "https://shekunj.s3.amazonaws.com/media/blog_images/Website_Banner_22_nrNWmOc.png",
+    date: "15 Dec 2025",
     category: "Events",
     readTime: "3 min read",
     author: "DTE Rajasthan",
@@ -74,8 +74,8 @@ export const newsData = [
       
       <p>The project, with a total investment of ₹500 crores, is scheduled to be completed by 2026, with the first batch of students expected to commence their studies in the academic year 2026-27.</p>
     `,
-    image: "https://images.unsplash.com/photo-1562774053-701939374585?w=800&h=600&fit=crop",
-    date: "12 Dec 2024",
+    image: "https://image-static.collegedunia.com/public/reviewPhotos/392262/IMG_0251.jpeg",
+    date: "12 Dec 2025",
     category: "Education",
     readTime: "5 min read",
     author: "DTE Rajasthan",
@@ -120,7 +120,7 @@ export const newsData = [
       <p>The program aims to achieve 90% placement rate for participating students and significantly improve their starting salaries through enhanced skill development and industry exposure.</p>
     `,
     image: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&h=600&fit=crop",
-    date: "10 Dec 2024",
+    date: "10 Dec 2025",
     category: "Industry",
     readTime: "4 min read",
     author: "DTE Rajasthan",
@@ -177,7 +177,7 @@ export const newsData = [
       <p>This digital transformation initiative represents a ₹100 crore investment in educational technology, positioning Rajasthan as a leader in digital education innovation.</p>
     `,
     image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=600&fit=crop",
-    date: "08 Dec 2024",
+    date: "08 Dec 2025",
     category: "Technology",
     readTime: "6 min read",
     author: "DTE Rajasthan",
@@ -232,8 +232,8 @@ export const newsData = [
       
       <p>The ceremony was attended by over 300 researchers, faculty members, and industry representatives, highlighting the growing importance of research and innovation in technical education.</p>
     `,
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop",
-    date: "05 Dec 2024",
+    image: "https://asiafricaonline.com/wp-content/uploads/2022/09/rajashtan-academic-excellence-award-convention.jpg",
+    date: "05 Dec 2025",
     category: "Research",
     readTime: "4 min read",
     author: "DTE Rajasthan",
@@ -302,7 +302,7 @@ export const newsData = [
       <p>This comprehensive skill development expansion positions Rajasthan's technical graduates at the forefront of emerging technologies, ensuring they are well-prepared for the jobs of tomorrow.</p>
     `,
     image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=800&h=600&fit=crop",
-    date: "03 Dec 2024",
+    date: "03 Dec 2025",
     category: "Skills",
     readTime: "5 min read",
     author: "DTE Rajasthan",

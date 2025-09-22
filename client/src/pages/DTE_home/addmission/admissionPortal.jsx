@@ -103,7 +103,7 @@ const AdmissionPortal = () => {
                 
                 <button
                   onClick={handleNewAdmission}
-                  className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center justify-center font-semibold"
+                  className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center justify-center font-semibold cursor-pointer"
                 >
                   Apply for New Admission
                   <ArrowRight size={20} className="ml-2" />
@@ -141,7 +141,7 @@ const AdmissionPortal = () => {
                 
                 <button
                   onClick={handleCheckStatus}
-                  className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center font-semibold"
+                  className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center font-semibold cursor-pointer"
                 >
                   Check Application Status
                   <ArrowRight size={20} className="ml-2" />

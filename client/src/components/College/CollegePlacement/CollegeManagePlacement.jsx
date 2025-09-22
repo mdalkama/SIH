@@ -1,28 +1,106 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Loader2, PlusCircle, Eye, Edit, Users, X, Save, Link, Check, XCircle, Trash2, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Loader2, PlusCircle, Eye, Edit, Users, X, Save, Link, Check, XCircle, Trash2, AlertTriangle, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const API_BASE_URL = 'https://sih-4ptm.onrender.com/api/v1/placements';
 
 // --- Helper Components ---
-const Toast = ({ message, type, onClose }) => { React.useEffect(() => { const timer = setTimeout(onClose, 4000); return () => clearTimeout(timer); }, [onClose]); const isError = type === 'error'; return (<div className={`fixed top-5 right-5 z-[100] flex items-center p-4 rounded-lg shadow-lg bg-white border-l-4 ${isError ? 'border-red-500' : 'border-green-500'}`}><div className={`text-lg ${isError ? 'text-red-500' : 'text-green-500'}`}>{isError ? <AlertTriangle /> : <Check />}</div><p className="ml-3 text-sm font-medium text-slate-800">{message}</p></div>); };
-const FormInput = ({ label, name, ...props }) => (<div><label htmlFor={name} className="block text-sm font-medium text-slate-700 mb-1">{label}</label><input id={name} name={name} {...props} className="w-full px-3 py-2 border border-slate-300 rounded-lg" required /></div>);
-const FormTextarea = ({ label, name, ...props }) => (<div><label htmlFor={name} className="block text-sm font-medium text-slate-700 mb-1">{label}</label><textarea id={name} name={name} {...props} rows="4" className="w-full px-3 py-2 border border-slate-300 rounded-lg" required></textarea></div>);
-const FormSelect = ({ label, name, ...props }) => (<div><label htmlFor={name} className="block text-sm font-medium text-slate-700 mb-1">{label}</label><select id={name} name={name} {...props} className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white" required></select></div>);
-const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, processing }) => { if (!isOpen) return null; return (<div className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4"><div className="bg-white rounded-lg w-full max-w-md"><div className="p-6 text-center"><AlertTriangle className="mx-auto h-12 w-12 text-red-500" /><h3 className="mt-4 text-lg font-semibold">{title}</h3><p className="mt-2 text-sm text-slate-500">{message}</p></div><div className="p-4 bg-slate-50 flex justify-center gap-4"><button onClick={onClose} disabled={processing} className="px-4 py-2 border rounded-lg">Cancel</button><button onClick={onConfirm} disabled={processing} className="px-4 py-2 bg-red-600 text-white rounded-lg flex items-center">{processing ? <Loader2 className="animate-spin" size={18}/> : 'Yes, Delete'}</button></div></div></div>); };
+const Toast = ({ message, type, onClose }) => {
+    React.useEffect(() => {
+        const timer = setTimeout(onClose, 4000);
+        return () => clearTimeout(timer);
+    }, [onClose]);
+    const isError = type === 'error';
+    return (
+        <div className={`fixed top-5 right-5 z-[100] flex items-center p-4 rounded-lg shadow-lg bg-white border-l-4 ${isError ? 'border-red-500' : 'border-green-500'}`}>
+            <div className={`text-lg ${isError ? 'text-red-500' : 'text-green-500'}`}>{isError ? <AlertTriangle /> : <Check />}</div>
+            <p className="ml-3 text-sm font-medium text-slate-800">{message}</p>
+        </div>
+    );
+};
+
+const FormInput = ({ label, name, ...props }) => (
+    <div>
+        <label htmlFor={name} className="block text-sm font-medium text-slate-700 mb-1">{label}</label>
+        <input id={name} name={name} {...props} className="w-full px-3 py-2 border border-slate-300 rounded-lg" required />
+    </div>
+);
+
+const FormTextarea = ({ label, name, ...props }) => (
+    <div>
+        <label htmlFor={name} className="block text-sm font-medium text-slate-700 mb-1">{label}</label>
+        <textarea id={name} name={name} {...props} rows="4" className="w-full px-3 py-2 border border-slate-300 rounded-lg" required></textarea>
+    </div>
+);
+
+const FormSelect = ({ label, name, ...props }) => (
+    <div>
+        <label htmlFor={name} className="block text-sm font-medium text-slate-700 mb-1">{label}</label>
+        <select id={name} name={name} {...props} className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white" required></select>
+    </div>
+);
+
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, processing }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 bg-black/60 z-[60] flex justify-center items-center p-4">
+            <div className="bg-white rounded-lg w-full max-w-md">
+                <div className="p-6 text-center">
+                    <AlertTriangle className="mx-auto h-12 w-12 text-red-500" />
+                    <h3 className="mt-4 text-lg font-semibold">{title}</h3>
+                    <p className="mt-2 text-sm text-slate-500">{message}</p>
+                </div>
+                <div className="p-4 bg-slate-50 flex justify-center gap-4">
+                    <button onClick={onClose} disabled={processing} className="px-4 py-2 border rounded-lg">Cancel</button>
+                    <button onClick={onConfirm} disabled={processing} className="px-4 py-2 bg-red-600 text-white rounded-lg flex items-center min-w-[120px] justify-center">
+                        {processing ? <Loader2 className="animate-spin" size={18}/> : 'Yes, Delete'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const DriveFormModal = ({ isOpen, onClose, onSave, drive, isSaving }) => {
-	const [formData, setFormData] = useState({});
-	useEffect(() => {
-		if (drive) {
-			setFormData({ ...drive, eligibleCourses: drive.eligibleCourses.join(', '), applicationDeadline: drive.applicationDeadline ? new Date(drive.applicationDeadline).toISOString().split('T')[0] : '' });
-		} else {
-			setFormData({ companyName: '', jobTitle: '', jobDescription: '', packageLPA: '', eligibleCourses: '', minCGPA: '', applicationDeadline: '', status: 'UPCOMING' });
-		}
-	}, [drive]);
-	const handleChange = (e) => { const { name, value } = e.target; setFormData(p => ({ ...p, [name]: value })); };
-	const handleSubmit = (e) => { e.preventDefault(); const payload = { ...formData, packageLPA: Number(formData.packageLPA), minCGPA: Number(formData.minCGPA), eligibleCourses: formData.eligibleCourses.split(',').map(s => s.trim().toUpperCase()) }; onSave(payload, drive?._id); };
-	if (!isOpen) return null;
-	return (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4"><div className="bg-white rounded-lg shadow-xl w-full max-w-2xl"><form onSubmit={handleSubmit}><div className="p-4 border-b flex justify-between items-center"><h2 className="text-lg font-bold text-slate-800">{drive ? 'Edit' : 'Create'} Placement Drive</h2><button type="button" onClick={onClose}><X className="text-slate-500" /></button></div><div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto"><FormInput label="Company Name" name="companyName" value={formData.companyName} onChange={handleChange} /><FormInput label="Job Title" name="jobTitle" value={formData.jobTitle} onChange={handleChange} /><div className="md:col-span-2"><FormTextarea label="Job Description" name="jobDescription" value={formData.jobDescription} onChange={handleChange} /></div><FormInput label="Package (LPA)" name="packageLPA" type="number" step="0.1" value={formData.packageLPA} onChange={handleChange} /><FormInput label="Min CGPA" name="minCGPA" type="number" step="0.1" value={formData.minCGPA} onChange={handleChange} /><FormInput label="Eligible Courses (comma-separated)" name="eligibleCourses" value={formData.eligibleCourses} onChange={handleChange} placeholder="e.g., CSE, ECE" /><FormInput label="Application Deadline" name="applicationDeadline" type="date" value={formData.applicationDeadline} onChange={handleChange} /><FormSelect label="Status" name="status" value={formData.status} onChange={handleChange}><option value="UPCOMING">Upcoming</option><option value="OPEN">Open</option><option value="CLOSED">Closed</option><option value="COMPLETED">Completed</option></FormSelect></div><div className="p-4 bg-slate-50 border-t flex justify-end gap-3"><button type="button" onClick={onClose} disabled={isSaving} className="px-4 py-2 bg-white border rounded-lg hover:bg-slate-100 font-semibold">Cancel</button><button type="submit" disabled={isSaving} className="px-4 py-2 bg-indigo-600 text-white rounded-lg flex items-center gap-2 font-semibold">{isSaving ? <><Loader2 className="animate-spin" size={16} /> Saving...</> : <><Save size={16} /> Save Drive</>}</button></div></form></div></div>);
+    const [formData, setFormData] = useState({});
+    useEffect(() => {
+        const formatDate = (dateStr) => dateStr ? new Date(dateStr).toISOString().split('T')[0] : '';
+        if (drive) {
+            setFormData({ ...drive, eligibleCourses: drive.eligibleCourses.join(', '), applicationDeadline: formatDate(drive.applicationDeadline), driveDate: formatDate(drive.driveDate) });
+        } else {
+            setFormData({ companyName: '', jobTitle: '', jobDescription: '', packageLPA: '', eligibleCourses: '', minCGPA: '', applicationDeadline: '', driveDate: '', status: 'UPCOMING' });
+        }
+    }, [drive]);
+    const handleChange = (e) => { const { name, value } = e.target; setFormData(p => ({ ...p, [name]: value })); };
+    const handleSubmit = (e) => { e.preventDefault(); const payload = { ...formData, packageLPA: Number(formData.packageLPA), minCGPA: Number(formData.minCGPA), eligibleCourses: formData.eligibleCourses.split(',').map(s => s.trim().toUpperCase()) }; onSave(payload, drive?._id); };
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl">
+                <form onSubmit={handleSubmit}>
+                    <div className="p-4 border-b flex justify-between items-center"><h2 className="text-lg font-bold text-slate-800">{drive ? 'Edit' : 'Create'} Placement Drive</h2><button type="button" onClick={onClose}><X className="text-slate-500" /></button></div>
+                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto">
+                        <FormInput label="Company Name" name="companyName" value={formData.companyName} onChange={handleChange} />
+                        <FormInput label="Job Title" name="jobTitle" value={formData.jobTitle} onChange={handleChange} />
+                        <div className="md:col-span-2"><FormTextarea label="Job Description" name="jobDescription" value={formData.jobDescription} onChange={handleChange} /></div>
+                        <FormInput label="Package (LPA)" name="packageLPA" type="number" step="0.1" value={formData.packageLPA} onChange={handleChange} />
+                        <FormInput label="Min CGPA" name="minCGPA" type="number" step="0.1" value={formData.minCGPA} onChange={handleChange} />
+                        <div className="md:col-span-2"><FormInput label="Eligible Courses (comma-separated)" name="eligibleCourses" value={formData.eligibleCourses} onChange={handleChange} placeholder="e.g., CSE, ECE" /></div>
+                        <div className="md:col-span-2 grid md:grid-cols-3 gap-4">
+                            <FormInput label="Drive Date" name="driveDate" type="date" value={formData.driveDate} onChange={handleChange} required />
+                            <FormInput label="Application Deadline" name="applicationDeadline" type="date" value={formData.applicationDeadline} onChange={handleChange} required />
+                            <FormSelect label="Status" name="status" value={formData.status} onChange={handleChange}>
+                                <option value="UPCOMING">Upcoming</option><option value="OPEN">Open</option><option value="CLOSED">Closed</option><option value="COMPLETED">Completed</option>
+                            </FormSelect>
+                        </div>
+                    </div>
+                    <div className="p-4 bg-slate-50 border-t flex justify-end gap-3">
+                        <button type="button" onClick={onClose} disabled={isSaving} className="px-4 py-2 bg-white border rounded-lg hover:bg-slate-100 font-semibold">Cancel</button>
+                        <button type="submit" disabled={isSaving} className="px-4 py-2 bg-indigo-600 text-white rounded-lg flex items-center gap-2 font-semibold">{isSaving ? <><Loader2 className="animate-spin" size={16} /> Saving...</> : <><Save size={16} /> Save Drive</>}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
 };
 
 const ApplicationsModal = ({ isOpen, onClose, drive, onStatusUpdate }) => {
@@ -30,12 +108,73 @@ const ApplicationsModal = ({ isOpen, onClose, drive, onStatusUpdate }) => {
     const getStatusColor = (status) => {
         switch (status) { case 'APPLIED': return 'bg-blue-100 text-blue-800'; case 'SHORTLISTED': return 'bg-yellow-100 text-yellow-800'; case 'OFFER_ACCEPTED': return 'bg-green-100 text-green-800'; case 'REJECTED': return 'bg-red-100 text-red-800'; default: return 'bg-slate-100 text-slate-800'; }
     };
-    return (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4"><div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col"><div className="p-4 border-b flex justify-between items-center"><h2 className="text-lg font-bold text-slate-800">Student Applications</h2><p className="text-sm text-slate-500">{drive?.jobTitle} at {drive?.companyName}</p><button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600"><X /></button></div><div className="p-6 overflow-y-auto">{drive?.applications?.length > 0 ? (<table className="w-full text-sm">
-        <thead className="text-left bg-slate-50 text-slate-600 text-xs uppercase"><tr><th className="p-3 font-semibold">Student Name</th><th className="p-3 font-semibold">Registration No.</th><th className="p-3 font-semibold text-center">Resume</th><th className="p-3 font-semibold text-center">Status</th><th className="p-3 font-semibold text-center">Actions</th></tr></thead>
-        <tbody className="divide-y divide-slate-200">{drive.applications.map(app => (<tr key={app.studentId} className="hover:bg-slate-50"><td className="p-3 font-medium text-slate-800">{app.name}</td><td className="p-3 font-mono text-slate-500">{app.registrationNumber}</td><td className="p-3 text-center"><a href={app.resumeUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-blue-600 hover:underline font-semibold text-xs"><Link size={14}/> View Resume</a></td><td className="p-3 text-center"><span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(app.status)}`}>{app.status.replace('_', ' ')}</span></td><td className="p-3"><div className="flex justify-center gap-2"><button onClick={() => onStatusUpdate(drive._id, app.studentId, 'SHORTLISTED')} title="Shortlist" className="p-1.5 text-green-500 hover:bg-green-100 rounded-md"><Check size={16}/></button><button onClick={() => onStatusUpdate(drive._id, app.studentId, 'REJECTED')} title="Reject" className="p-1.5 text-red-500 hover:bg-red-100 rounded-md"><XCircle size={16}/></button></div></td></tr>))}</tbody>
-    </table>) : (<p className="text-center p-8 text-slate-500">No applications have been received for this drive yet.</p>)}</div><div className="p-4 bg-slate-50 border-t flex justify-end"><button type="button" onClick={onClose} className="px-4 py-2 bg-slate-200 rounded-lg font-semibold hover:bg-slate-300 text-sm">Close</button></div></div></div>);
+    return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+                <div className="p-4 border-b border-slate-300 flex justify-between items-center"><h2 className="text-lg font-bold text-slate-800">Student Applications</h2><p className="text-sm text-slate-500">{drive?.jobTitle} at {drive?.companyName}</p><button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600"><X /></button></div>
+                <div className="p-6 overflow-y-auto">
+                    {drive?.applications?.length > 0 ? (
+                        <table className="w-full text-sm">
+                            <thead className="text-left bg-slate-50 text-slate-600 text-xs uppercase"><tr><th className="p-3 font-semibold">Student Name</th><th className="p-3 font-semibold">Registration No.</th><th className="p-3 font-semibold text-center">Resume</th><th className="p-3 font-semibold text-center">Status</th><th className="p-3 font-semibold text-center">Actions</th></tr></thead>
+                            <tbody className="divide-y divide-slate-200">
+                                {drive.applications.map(app => (
+                                    <tr key={app.studentId} className="hover:bg-slate-50">
+                                        <td className="p-3 font-medium text-slate-800">{app.name}</td>
+                                        <td className="p-3 font-mono text-slate-500">{app.registrationNumber}</td>
+                                        <td className="p-3 text-center"><a href={app.resumeUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-blue-600 hover:underline font-semibold text-xs"><Link size={14}/> View Resume</a></td>
+                                        <td className="p-3 text-center"><span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(app.status)}`}>{app.status.replace('_', ' ')}</span></td>
+                                        <td className="p-3">
+                                            <div className="flex justify-center gap-2">
+                                                <button onClick={() => onStatusUpdate(drive._id, app.studentId, 'SHORTLISTED')} title="Shortlist" className="p-1.5 text-green-500 hover:bg-green-100 rounded-md"><Check size={16}/></button>
+                                                <button onClick={() => onStatusUpdate(drive._id, app.studentId, 'REJECTED')} title="Reject" className="p-1.5 text-red-500 hover:bg-red-100 rounded-md"><XCircle size={16}/></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (<p className="text-center p-8 text-slate-500">No applications have been received for this drive yet.</p>)}
+                </div>
+                <div className="p-4 bg-slate-50 border-t border-slate-300 flex justify-end">
+                    <button type="button" onClick={onClose} className="px-4 py-2 bg-slate-200 rounded-lg font-semibold hover:bg-slate-300 text-sm">Close</button>
+                </div>
+            </div>
+        </div>
+    );
 };
 
+const DataTableToolbar = ({ searchTerm, onSearchChange, statusFilter, onStatusChange }) => (
+    <div className="p-4 border-b border-slate-200 flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div className="relative w-full md:w-auto md:flex-grow">
+            <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input type="text" value={searchTerm} onChange={onSearchChange} placeholder="Search by company or job title..." className="w-full md:w-80 pl-10 pr-4 py-2 border border-slate-300 rounded-lg"/>
+        </div>
+        <div className="flex items-center gap-2 w-full md:w-auto">
+            <label className="text-sm font-medium text-slate-600">Status:</label>
+            <select value={statusFilter} onChange={onStatusChange} className="px-3 py-2 border border-slate-300 rounded-lg bg-white w-full md:w-auto">
+                <option value="ALL">All</option><option value="UPCOMING">Upcoming</option><option value="OPEN">Open</option><option value="CLOSED">Closed</option><option value="COMPLETED">Completed</option>
+            </select>
+        </div>
+    </div>
+);
+
+const Pagination = ({ currentPage, totalPages, onPageChange, pageSize, onPageSizeChange, totalRecords, startIndex, endIndex }) => {
+    return (
+        <div className="p-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-600 border-t border-slate-200">
+            <div className="flex items-center gap-2">
+                <span>Rows per page:</span>
+                <select value={pageSize} onChange={e => { onPageSizeChange(Number(e.target.value)); }} className="p-1.5 border border-slate-300 rounded-md bg-white">
+                    <option value="10">10</option><option value="20">20</option><option value="50">50</option>
+                </select>
+            </div>
+            {totalRecords > 0 && <p className="font-medium">Showing {startIndex + 1} to {Math.min(endIndex, totalRecords)} of {totalRecords} entries</p>}
+            {totalPages > 1 && <div className="flex gap-2"><button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="p-2 border rounded-md disabled:opacity-50"><ChevronLeft size={16} /></button><button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 border rounded-md disabled:opacity-50"><ChevronRight size={16} /></button></div>}
+        </div>
+    );
+};
+
+
+// --- MAIN MANAGE DRIVES COMPONENT ---
 const ManagePlacementDrives = () => {
 	const [drives, setDrives] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -46,63 +185,43 @@ const ManagePlacementDrives = () => {
 	const [isSaving, setIsSaving] = useState(false);
     const [toast, setToast] = useState(null);
     const [deletingDrive, setDeletingDrive] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('ALL');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     const addToast = (type, message) => setToast({type, message});
 	const fetchDrives = useCallback(async () => { setLoading(true); setError(null); try { const response = await fetch(`${API_BASE_URL}/drives`, { credentials: 'include' }); if (!response.ok) throw new Error("Failed to fetch drives."); const data = await response.json(); setDrives(data.drives || []); } catch (err) { setError(err.message); } finally { setLoading(false); } }, []);
 	useEffect(() => { fetchDrives(); }, [fetchDrives]);
 
-	const handleSaveDrive = async (driveData, driveId) => {
-		setIsSaving(true);
-		const url = driveId ? `${API_BASE_URL}/drives/${driveId}` : `${API_BASE_URL}/drives`;
-		const method = driveId ? 'PUT' : 'POST';
-		try {
-			const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(driveData), credentials: 'include' });
-			if (!response.ok) { const err = await response.json(); throw new Error(err.message || "Failed to save drive."); }
-            addToast('success', `Drive ${driveId ? 'updated' : 'created'} successfully!`);
-			setIsFormOpen(false);
-			fetchDrives();
-		} catch (err) { addToast('error', err.message); }
-		finally { setIsSaving(false); }
-	};
-    
-    const handleDeleteDrive = async () => {
-        if (!deletingDrive) return;
-        setIsSaving(true);
-        try {
-            const response = await fetch(`${API_BASE_URL}/drives/${deletingDrive._id}`, { method: 'DELETE', credentials: 'include' });
-            if (!response.ok) { const err = await response.json(); throw new Error(err.message || "Failed to delete drive."); }
-            addToast('success', 'Drive deleted successfully!');
-            setDeletingDrive(null);
-            fetchDrives();
-        } catch(err) { addToast('error', err.message); }
-        finally { setIsSaving(false); }
-    };
-
-    const handleUpdateStatus = async (driveId, studentId, newStatus) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/drives/${driveId}/applications/${studentId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }), credentials: 'include' });
-            if (!response.ok) { const err = await response.json(); throw new Error(err.message || "Failed to update status."); }
-            const data = await response.json();
-            setSelectedDrive(data.drive);
-            addToast('success', "Student status updated!");
-        } catch (err) {
-            addToast('error', err.message);
-        }
-    };
-
+	const handleSaveDrive = async (driveData, driveId) => { setIsSaving(true); const url = driveId ? `${API_BASE_URL}/drives/${driveId}` : `${API_BASE_URL}/drives`; const method = driveId ? 'PUT' : 'POST'; try { const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(driveData), credentials: 'include' }); if (!response.ok) { const err = await response.json(); throw new Error(err.message || "Failed to save drive."); } addToast('success', `Drive ${driveId ? 'updated' : 'created'} successfully!`); setIsFormOpen(false); fetchDrives(); } catch (err) { addToast('error', err.message); } finally { setIsSaving(false); } };
+    const handleDeleteDrive = async () => { if (!deletingDrive) return; setIsSaving(true); try { const response = await fetch(`${API_BASE_URL}/drives/${deletingDrive._id}`, { method: 'DELETE', credentials: 'include' }); if (!response.ok) { const err = await response.json(); throw new Error(err.message || "Failed to delete drive."); } addToast('success', 'Drive deleted successfully!'); setDeletingDrive(null); fetchDrives(); } catch(err) { addToast('error', err.message); } finally { setIsSaving(false); } };
+    const handleUpdateStatus = async (driveId, studentId, newStatus) => { try { const response = await fetch(`${API_BASE_URL}/drives/${driveId}/applications/${studentId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }), credentials: 'include' }); if (!response.ok) { const err = await response.json(); throw new Error(err.message || "Failed to update status."); } const data = await response.json(); setSelectedDrive(data.drive); addToast('success', "Student status updated!"); } catch (err) { addToast('error', err.message); } };
 	const openForm = (drive = null) => { setSelectedDrive(drive); setIsFormOpen(true); };
-	const openApps = async (drive) => {
-		try {
-			const response = await fetch(`${API_BASE_URL}/drives/${drive._id}`, { credentials: 'include' });
-			if (!response.ok) throw new Error("Failed to fetch application details.");
-			const data = await response.json();
-			setSelectedDrive(data.drive);
-			setIsAppsOpen(true);
-		} catch (err) { addToast('error', err.message); }
-	};
+	const openApps = async (drive) => { try { const response = await fetch(`${API_BASE_URL}/drives/${drive._id}`, { credentials: 'include' }); if (!response.ok) throw new Error("Failed to fetch application details."); const data = await response.json(); setSelectedDrive(data.drive); setIsAppsOpen(true); } catch (err) { addToast('error', err.message); } };
+
+    const filteredDrives = useMemo(() => {
+        return drives.filter(drive => {
+            if (statusFilter !== 'ALL' && drive.status !== statusFilter) { return false; }
+            if (!searchTerm) { return true; }
+            const lowerSearch = searchTerm.toLowerCase();
+            return drive.companyName.toLowerCase().includes(lowerSearch) || drive.jobTitle.toLowerCase().includes(lowerSearch);
+        });
+    }, [drives, searchTerm, statusFilter]);
+
+    const paginatedDrives = useMemo(() => {
+        const startIndex = (currentPage - 1) * pageSize;
+        return filteredDrives.slice(startIndex, startIndex + pageSize);
+    }, [filteredDrives, currentPage, pageSize]);
+
+    useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter, pageSize]);
 
 	if (loading) return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin text-indigo-600" size={48} /></div>;
 	if (error) return <div className="text-center p-10 bg-red-50 text-red-700 rounded-lg">{error}</div>;
+
+    const getStatusColor = (status) => {
+        switch (status) { case 'OPEN': return 'bg-green-100 text-green-800'; case 'UPCOMING': return 'bg-blue-100 text-blue-800'; case 'CLOSED': return 'bg-red-100 text-red-800'; case 'COMPLETED': return 'bg-slate-100 text-slate-800'; default: return 'bg-slate-100 text-slate-800'; }
+    };
 
 	return (
 		<div className="font-sans">
@@ -112,25 +231,28 @@ const ManagePlacementDrives = () => {
 				<button onClick={() => openForm()} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold"><PlusCircle size={18} /> Create Drive</button>
 			</header>
 			<div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-				<table className="w-full text-sm">
-					<thead className="bg-slate-50 text-slate-500 uppercase text-xs">
-						<tr><th className="p-3 font-semibold text-left">Company</th><th className="p-3 font-semibold text-left">Job Title</th><th className="p-3 font-semibold text-left">Package</th><th className="p-3 font-semibold text-center">Applications</th><th className="p-3 font-semibold text-center">Status</th><th className="p-3 font-semibold text-center">Actions</th></tr>
-					</thead>
-					<tbody className="divide-y divide-slate-200">
-						{drives.map(drive => (
-							<tr key={drive._id} className="hover:bg-slate-50">
-								<td className="p-3 font-semibold text-slate-700">{drive.companyName}</td><td className="p-3 text-slate-600">{drive.jobTitle}</td><td className="p-3 font-mono font-semibold text-green-600">{drive.packageLPA} LPA</td><td className="p-3 text-center font-semibold text-blue-600">{drive.applications?.length || 0}</td><td className="p-3 text-center"><span className={`px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700`}>{drive.status}</span></td>
-								<td className="p-3">
-                                    <div className="flex justify-center gap-2">
-                                        <button onClick={() => openApps(drive)} className="p-1.5 hover:bg-slate-200 rounded-md" title="View Applications"><Users size={16}/></button>
-                                        <button onClick={() => openForm(drive)} className="p-1.5 hover:bg-slate-200 rounded-md" title="Edit Drive"><Edit size={16}/></button>
-                                        <button onClick={() => setDeletingDrive(drive)} className="p-1.5 text-red-500 hover:bg-red-100 rounded-md" title="Delete Drive"><Trash2 size={16}/></button>
-                                    </div>
-                                </td>
-							</tr>
-						))}
-					</tbody>
-				</table>
+                <DataTableToolbar searchTerm={searchTerm} onSearchChange={(e) => setSearchTerm(e.target.value)} statusFilter={statusFilter} onStatusChange={(e) => setStatusFilter(e.target.value)} />
+				<div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead className="bg-slate-50 text-slate-500 uppercase text-xs">
+                            <tr><th className="p-3 font-semibold text-left">Company</th><th className="p-3 font-semibold text-left">Job Title</th><th className="p-3 font-semibold text-left">Package</th><th className="p-3 font-semibold text-center">Applications</th><th className="p-3 font-semibold text-center">Status</th><th className="p-3 font-semibold text-center">Actions</th></tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                            {paginatedDrives.length > 0 ? (
+                                paginatedDrives.map(drive => (
+                                    <tr key={drive._id} className="hover:bg-slate-50">
+                                        <td className="p-3 font-semibold text-slate-700">{drive.companyName}</td><td className="p-3 text-slate-600">{drive.jobTitle}</td><td className="p-3 font-mono font-semibold text-green-600">{drive.packageLPA} LPA</td><td className="p-3 text-center font-semibold text-blue-600">{drive.applications?.length || 0}</td>
+                                        <td className="p-3 text-center"><span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(drive.status)}`}>{drive.status}</span></td>
+                                        <td className="p-3"><div className="flex justify-center gap-2"><button onClick={() => openApps(drive)} className="p-1.5 hover:bg-slate-200 rounded-md" title="View Applications"><Users size={16}/></button><button onClick={() => openForm(drive)} className="p-1.5 hover:bg-slate-200 rounded-md" title="Edit Drive"><Edit size={16}/></button><button onClick={() => setDeletingDrive(drive)} className="p-1.5 text-red-500 hover:bg-red-100 rounded-md" title="Delete Drive"><Trash2 size={16}/></button></div></td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr><td colSpan="6" className="text-center p-8 text-slate-500">No drives found matching your criteria.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                <Pagination currentPage={currentPage} totalPages={Math.ceil(filteredDrives.length / pageSize)} onPageChange={setCurrentPage} pageSize={pageSize} onPageSizeChange={setPageSize} totalRecords={filteredDrives.length} startIndex={(currentPage - 1) * pageSize} endIndex={(currentPage - 1) * pageSize + pageSize} />
 			</div>
 			<DriveFormModal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} onSave={handleSaveDrive} drive={selectedDrive} isSaving={isSaving} />
 			<ApplicationsModal isOpen={isAppsOpen} onClose={() => setIsAppsOpen(false)} drive={selectedDrive} onStatusUpdate={handleUpdateStatus}/>
