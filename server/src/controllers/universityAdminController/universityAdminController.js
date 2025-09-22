@@ -34,7 +34,7 @@ export const getUniversityDashboardStats = async (req, res) => {
       { year: "2021", count: 0 },
       { year: "2022", count: 1 },
       { year: "2023", count: 2 },
-      { year: "2024", count: 3 },
+      { year: "2024", count: 0 },
       { year: "2025", count: totalStudents }, 
     ];
     const activeSessions = [
@@ -42,13 +42,13 @@ export const getUniversityDashboardStats = async (req, res) => {
         id: "sess_003",
         name: "Spring 2026 Admissions",
         status: "Active",
-        endDate: "2026-02-20",
+        endDate: "2025-11-20",
       },
       {
         id: "sess_004",
         name: "Fall 2026 B.Tech Admissions",
         status: "Upcoming",
-        startDate: "2026-08-01",
+        startDate: "2026-01-02",
       },
     ];
     // Fetch recent affiliations from the College model

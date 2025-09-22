@@ -138,7 +138,7 @@ const UniversityDashboard = () => {
                         <DashboardSection title="Admission Sessions">
                             <div className="space-y-4">
                                 {dashboardData.activeSessions.map(session => (
-                                    <div key={session.id} className="p-3 bg-gray-50 rounded-lg border">
+                                    <div key={session.id} className="p-3 bg-gray-50 rounded-lg border border-slate-300">
                                         <p className="font-semibold text-gray-800">{session.name}</p>
                                         <div className="flex justify-between items-center mt-1">
                                             <StatusBadge status={session.status} />
