@@ -228,34 +228,39 @@ export const getMyAcademics = async (req, res) => {
 export const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: "Email address is required." });
+        }
+        
         const student = await Student.findOne({ email });
 
         if (!student) {
-            return res.status(404).json({ message: "No student found with that email address." });
+            console.log(`Password reset attempt for non-existent student email: ${email}`);
+            return res.status(200).json({ success: true, message: "If a user with that email exists, a password reset link has been sent." });
         }
 
         // 1. Generate a secure, random reset token
         const resetToken = crypto.randomBytes(32).toString("hex");
 
-        // 2. Hash the token and set it in the database
+        // 2. Hash the token for database storage (more secure)
         student.passwordResetToken = crypto
             .createHash("sha256")
             .update(resetToken)
             .digest("hex");
         
-        // 3. Set an expiry time (e.g., 10 minutes from now)
+        // 3. Set an expiry time (10 minutes from now)
         student.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-        await student.save({ validateBeforeSave: false }); // Save the token fields
+        // Save the new token fields without running other validations
+        await student.save({ validateBeforeSave: false });
 
-        // 4. Create the reset URL for the email
-        const resetURL = `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`;
+        const resetURL = `http://localhost:5173/reset-password?token=${resetToken}&role=student`;
 
         // 5. Send the email using nodemailer
         const transporter = nodemailer.createTransport({
             host: process.env.EMAIL_HOST,
             port: process.env.EMAIL_PORT,
-            secure: false, // true for 465, false for other ports
+            secure: false, 
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS,
@@ -263,47 +268,53 @@ export const forgotPassword = async (req, res) => {
         });
 
         const mailOptions = {
-            from: `"sih" <${process.env.EMAIL_USER}>`,
+            from: `"Your App Name" <${process.env.EMAIL_USER}>`, // Replace "Your App Name"
             to: student.email,
-            subject: "Password Reset Request",
+            subject: "Password Reset Request for Your Student Account",
             html: `
+                <p>Hello ${student.name},</p>
                 <p>You requested a password reset for your account.</p>
                 <p>Please click the link below to set a new password. This link is valid for 10 minutes.</p>
-                <a href="${resetURL}" target="_blank">Reset Your Password</a>
-                <p>If you did not request this, please ignore this email.</p>
+                <a href="${resetURL}" target="_blank" style="background-color: #007bff; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Reset Your Password</a>
+                <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>
             `,
         };
 
         await transporter.sendMail(mailOptions);
 
-        res.status(200).json({ success: true, message: "Password reset token sent to email." });
+        res.status(200).json({ success: true, message: "Password reset instructions sent to your email." });
 
     } catch (err) {
-        // Clear token fields if something goes wrong
+        console.error("FORGOT PASSWORD ERROR:", err);
+        // On error, clear the token fields to allow the user to try again without issues.
         if (req.body.email) {
-            const student = await Student.findOne({ email: req.body.email });
-            if (student) {
-                student.passwordResetToken = undefined;
-                student.passwordResetExpires = undefined;
-                await student.save({ validateBeforeSave: false });
+            try {
+                const studentToClean = await Student.findOne({ email: req.body.email });
+                if (studentToClean) {
+                    studentToClean.passwordResetToken = undefined;
+                    studentToClean.passwordResetExpires = undefined;
+                    await studentToClean.save({ validateBeforeSave: false });
+                }
+            } catch (cleanupError) {
+                console.error("Error during token cleanup:", cleanupError);
             }
         }
-        console.error("FORGOT PASSWORD ERROR:", err);
-        res.status(500).json({ message: "An error occurred while sending the email." });
+        res.status(500).json({ message: "An error occurred while sending the email. Please try again later." });
     }
 };
 
 
 export const resetPassword = async (req, res) => {
     try {
+        // FIX #3: The token now comes from the URL path, not query params
         const { token } = req.params;
         const { password } = req.body;
 
-        if (!password) {
-            return res.status(400).json({ message: "Password is required." });
+        if (!password || password.length < 6) {
+            return res.status(400).json({ message: "Password is required and must be at least 6 characters long." });
         }
 
-        // 1. Hash the incoming token to find the matching user in the DB
+        // 1. Hash the incoming token from the URL to match the one in the DB
         const hashedToken = crypto
             .createHash("sha256")
             .update(token)
@@ -312,17 +323,17 @@ export const resetPassword = async (req, res) => {
         // 2. Find the user by the hashed token and check if it's not expired
         const student = await Student.findOne({
             passwordResetToken: hashedToken,
-            passwordResetExpires: { $gt: Date.now() }, // Check if token is still valid
+            passwordResetExpires: { $gt: Date.now() }, // $gt means "greater than"
         });
 
         if (!student) {
-            return res.status(400).json({ message: "Token is invalid or has expired." });
+            return res.status(400).json({ message: "Token is invalid or has expired. Please request a new one." });
         }
 
-        // 3. Set the new password
+        // 3. Set the new password and hash it
         student.password = await bcrypt.hash(password, 10);
         
-        // 4. Clear the reset token fields
+        // 4. Clear the reset token fields after successful reset
         student.passwordResetToken = undefined;
         student.passwordResetExpires = undefined;
 
