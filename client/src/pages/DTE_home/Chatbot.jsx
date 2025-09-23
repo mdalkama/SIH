@@ -717,34 +717,46 @@ const Chatbot = () => {
 
     try {
       const botResponse = await generateResponse(userMessage.text)
-      const botMessage = { 
-        id: prev => prev.length + 1, 
-        text: botResponse.text, 
-        sender: 'bot', 
-        timestamp: new Date(), 
-        language: botResponse.language,
-        source: botResponse.source
-      }
       
-      setMessages(prev => [...prev, {
-        ...botMessage,
-        id: prev.length + 1
-      }])
-      setIsTyping(false)
+      // Calculate realistic typing delay based on response length
+      const responseLength = botResponse.text.length
+      const baseDelay = 1000 // Minimum 1 second delay
+      const typingSpeed = 50 // Characters per second (realistic typing speed)
+      const calculatedDelay = Math.min(baseDelay + (responseLength / typingSpeed) * 1000, 4000) // Max 4 seconds
       
-      // No audio playback - only text response
+      // Add realistic typing delay
+      setTimeout(() => {
+        const botMessage = { 
+          id: prev => prev.length + 1, 
+          text: botResponse.text, 
+          sender: 'bot', 
+          timestamp: new Date(), 
+          language: botResponse.language,
+          source: botResponse.source
+        }
+        
+        setMessages(prev => [...prev, {
+          ...botMessage,
+          id: prev.length + 1
+        }])
+        setIsTyping(false)
+      }, calculatedDelay)
+      
     } catch (error) {
       console.error('Error generating response:', error)
-      // Fallback error message
-      const errorMessage = {
-        id: messages.length + 2,
-        text: "Sorry, I'm having trouble responding right now. Please try again!",
-        sender: 'bot',
-        timestamp: new Date(),
-        language: 'english'
-      }
-      setMessages(prev => [...prev, errorMessage])
-      setIsTyping(false)
+      
+      // Add delay even for error messages to maintain consistency
+      setTimeout(() => {
+        const errorMessage = {
+          id: messages.length + 2,
+          text: "Sorry, I'm having trouble responding right now. Please try again!",
+          sender: 'bot',
+          timestamp: new Date(),
+          language: 'english'
+        }
+        setMessages(prev => [...prev, errorMessage])
+        setIsTyping(false)
+      }, 1500) // 1.5 second delay for error messages
     }
   }
 
