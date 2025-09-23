@@ -103,7 +103,6 @@ const Preview = ({
   }, [declarationChecked, validateAllFields, showAlert]);
 
   const handlePayment = useCallback(async () => {
-    console.log("1. Starting payment process...");
     setPaymentProcessing(true);
 
     try {
@@ -125,31 +124,23 @@ const Preview = ({
         formDataToSend.append(key, uploadedFiles[key]);
       }
 
-      console.log("2. Sending application data (as FormData) to backend...");
-
       // 4. Send the request using FormData
       const submitResponse = await fetch(`${APPLICATION_API_URL}/submit`, {
         method: 'POST',
         body: formDataToSend,
       });
 
-      console.log("3. Received response from /submit endpoint. Status:", submitResponse.status);
-
       const submitData = await submitResponse.json();
-      console.log("4. Parsed JSON response from /submit:", submitData);
 
       if (!submitResponse.ok) {
         throw new Error(submitData.message || "Failed to create payment order from server.");
       }
 
       const { order, key_id } = submitData;
-      console.log(order, key_id);
 
       if (!order || !key_id) {
         throw new Error("Server response is missing 'order' or 'key_id'. Cannot proceed with payment.");
       }
-
-      console.log("5. Order created successfully. Razorpay Order ID:", order.id);
 
       const options = {
         key: key_id,
@@ -192,8 +183,6 @@ const Preview = ({
           color: "#1e40af",
         },
       };
-
-      console.log("6. Opening Razorpay popup with options...");
 
       if (!window.Razorpay) {
         throw new Error("Razorpay script has not loaded. Please check your internet connection and refresh the page.");
