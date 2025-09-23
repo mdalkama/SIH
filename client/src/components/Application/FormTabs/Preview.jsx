@@ -102,37 +102,67 @@ const Preview = ({
     setShowPaymentPopup(true);
   }, [declarationChecked, validateAllFields, showAlert]);
 
-  // Payment handler
   const handlePayment = useCallback(async () => {
+    console.log("1. Starting payment process...");
     setPaymentProcessing(true);
+
     try {
+      // 1. Create a FormData object
+      const formDataToSend = new FormData();
+
+      // 2. Append all text fields from formData
+      for (const key in formData) {
+        // Handle arrays (like optionChoices) properly
+        if (Array.isArray(formData[key])) {
+          formDataToSend.append(key, JSON.stringify(formData[key]));
+        } else {
+          formDataToSend.append(key, formData[key]);
+        }
+      }
+
+      // 3. Append all files from uploadedFiles
+      for (const key in uploadedFiles) {
+        formDataToSend.append(key, uploadedFiles[key]);
+      }
+
+      console.log("2. Sending application data (as FormData) to backend...");
+
+      // 4. Send the request using FormData
       const submitResponse = await fetch(`${APPLICATION_API_URL}/submit`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, uploadedFiles }), // Send all form and file data
+        // DO NOT set the 'Content-Type' header. 
+        // The browser will automatically set it to 'multipart/form-data' with the correct boundary.
+        body: formDataToSend,
       });
 
+      console.log("3. Received response from /submit endpoint. Status:", submitResponse.status);
+
       const submitData = await submitResponse.json();
+      console.log("4. Parsed JSON response from /submit:", submitData);
+
       if (!submitResponse.ok) {
-        throw new Error(submitData.message || "Could not save your application. Please try again.");
+        throw new Error(submitData.message || "Failed to create payment order from server.");
       }
 
       const { order, key_id } = submitData;
 
-      // Step 2: Open the Razorpay payment popup using the order details from the backend.
+      if (!order || !key_id) {
+        throw new Error("Server response is missing 'order' or 'key_id'. Cannot proceed with payment.");
+      }
+
+      console.log("5. Order created successfully. Razorpay Order ID:", order.id);
+
       const options = {
         key: key_id,
         amount: order.amount,
         currency: "INR",
         name: "DTE Rajasthan",
         description: "Application Form Fee",
-        image: "https://svumshow.com/assets/images/department-logo/pngwing.png", // Your logo
+        image: "https://svumshow.com/assets/images/department-logo/pngwing.png",
         order_id: order.id,
-
-        // This handler function is called after the user completes the payment.
         handler: async function (response) {
-          // Step 3: Send the payment details to your backend for verification.
-          // This is another new public endpoint.
+          console.log("7. Payment successful on Razorpay. Verifying on backend...");
+
           const verifyResponse = await fetch(`${APPLICATION_API_URL}/verify-payment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -145,11 +175,10 @@ const Preview = ({
 
           const verifyData = await verifyResponse.json();
           if (!verifyResponse.ok || !verifyData.success) {
-            // This error means payment was made but couldn't be saved on the server. CRITICAL.
-            throw new Error(verifyData.message || "Payment verification failed on server. Please contact support.");
+            throw new Error(verifyData.message || "Payment verification failed on server.");
           }
 
-          // If verification is successful on the backend
+          console.log("8. Verification successful!");
           setPaymentCompleted(true);
           setShowPaymentPopup(false);
           if (onPaymentComplete) onPaymentComplete();
@@ -165,24 +194,26 @@ const Preview = ({
         },
       };
 
+      console.log("6. Opening Razorpay popup with options...");
+
+      if (!window.Razorpay) {
+        throw new Error("Razorpay script has not loaded. Please check your internet connection and refresh the page.");
+      }
+
       const rzp = new window.Razorpay(options);
 
-      // This handles cases where the user closes the popup or the payment fails on Razorpay's end.
       rzp.on('payment.failed', function (response) {
-        console.error("Razorpay payment failed:", response.error);
-        showAlert(
-          'Payment Failed',
-          `Reason: ${response.error.description || 'The payment could not be completed'}. Please try again.`,
-          'error'
-        );
-        setPaymentProcessing(false); // Re-enable the pay button
+        console.error("Razorpay payment.failed event:", response.error);
+        showAlert('Payment Failed', `Reason: ${response.error.description}. Please try again.`, 'error');
+        setPaymentProcessing(false);
       });
 
       rzp.open();
 
     } catch (err) {
+      console.error("!!! ERROR during payment process:", err);
       showAlert('An Error Occurred', err.message, 'error');
-      setPaymentProcessing(false); // Re-enable the pay button if the initial API call fails
+      setPaymentProcessing(false);
     }
   }, [formData, uploadedFiles, onPaymentComplete, showAlert]);
 
@@ -316,8 +347,8 @@ const Preview = ({
               onClick={() => handleEdit(2)}
               disabled={isFormDisabled}
               className={`flex items-center justify-center space-x-1 text-xs px-2 py-1 rounded transition-colors self-start sm:self-auto ${isFormDisabled
-                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                  : 'bg-gray-600 text-white hover:bg-gray-700'
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                : 'bg-gray-600 text-white hover:bg-gray-700'
                 }`}
             >
               <Edit size={12} />
@@ -584,9 +615,9 @@ const Preview = ({
         >
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in fade-in duration-300">
             <div className={`p-4 text-white ${alertMessage.type === 'success' ? 'bg-gradient-to-r from-green-500 to-green-600' :
-                alertMessage.type === 'error' ? 'bg-gradient-to-r from-red-500 to-red-600' :
-                  alertMessage.type === 'warning' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' :
-                    'bg-gradient-to-r from-blue-500 to-blue-600'
+              alertMessage.type === 'error' ? 'bg-gradient-to-r from-red-500 to-red-600' :
+                alertMessage.type === 'warning' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' :
+                  'bg-gradient-to-r from-blue-500 to-blue-600'
               }`}>
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">{alertMessage.title}</h3>
@@ -606,9 +637,9 @@ const Preview = ({
                 <button
                   onClick={() => setShowCustomAlert(false)}
                   className={`px-4 py-2 text-white text-sm font-medium rounded-lg transition-all duration-200 ${alertMessage.type === 'success' ? 'bg-green-500 hover:bg-green-600' :
-                      alertMessage.type === 'error' ? 'bg-red-500 hover:bg-red-600' :
-                        alertMessage.type === 'warning' ? 'bg-yellow-500 hover:bg-yellow-600' :
-                          'bg-blue-500 hover:bg-blue-600'
+                    alertMessage.type === 'error' ? 'bg-red-500 hover:bg-red-600' :
+                      alertMessage.type === 'warning' ? 'bg-yellow-500 hover:bg-yellow-600' :
+                        'bg-blue-500 hover:bg-blue-600'
                     }`}
                 >
                   ठीक / OK

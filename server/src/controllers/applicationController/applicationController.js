@@ -12,20 +12,43 @@ const razorpay = new Razorpay({
 // Controller 1: Submit Application and Create Order
 export const submitApplicationAndCreateOrder = async (req, res) => {
   try {
-    const applicationData = req.body; // Contains formData and uploadedFiles
+    // With multer, text fields are in req.body, and files are in req.files
+    const textData = req.body;
+    const files = req.files;
 
+    // --- Placeholder for Real File Upload Logic ---
+    // In a real application, you would upload files to a cloud service like S3 or Cloudinary
+    // and get back URLs to store in the database.
+    const uploadedFilesData = {};
+    if (files) {
+      for (const [key, fileArray] of Object.entries(files)) {
+        const file = fileArray[0]; // multer provides an array
+        // Example: await uploadToCloudinary(file.buffer);
+        uploadedFilesData[key] = {
+          url: `uploads/${file.originalname}`, // Placeholder URL
+          name: file.originalname,
+          mimetype: file.mimetype,
+          size: file.size,
+        };
+      }
+    }
+    // --- End of Placeholder Logic ---
+
+    // Combine the text data from the form with the processed file data
+    const applicationData = { ...textData, uploadedFiles: uploadedFilesData };
+    
     // Save the initial application with a 'PENDING_PAYMENT' status
     const newApplication = new Application(applicationData);
     await newApplication.save();
 
     // Create Razorpay order
-    const APPLICATION_FEE = 100; // Your fixed fee
+    const APPLICATION_FEE = 100;
     const options = {
       amount: APPLICATION_FEE * 100,
       currency: "INR",
       receipt: `receipt_appl_${newApplication._id}`,
       notes: {
-        applicationId: newApplication._id.toString(), // Pass the new application's ID
+        applicationId: newApplication._id.toString(),
       },
     };
 
@@ -43,10 +66,13 @@ export const submitApplicationAndCreateOrder = async (req, res) => {
       applicationId: newApplication._id,
     });
   } catch (err) {
-    console.error("Error submitting application:", err);
-    res
-      .status(500)
-      .json({ success: false, message: "Could not submit application." });
+    // Provide more detailed error logging on the server
+    console.error("Error in submitApplicationAndCreateOrder:", err);
+    res.status(500).json({ 
+        success: false, 
+        message: "Could not submit application. Server error.",
+        error: err.message // Optionally send error message in dev mode
+    });
   }
 };
 
