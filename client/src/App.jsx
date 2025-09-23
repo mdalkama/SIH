@@ -33,6 +33,7 @@ import TendersAuctionsPage from "./pages/DTE_home/tenders/TendersAuctionsPage.js
 import DetailedNews from "./pages/DTE_home/content/detailedNews.jsx";
 import Chatbot from "./pages/DTE_home/Chatbot.jsx";
 import College from "./pages/DTE_home/colleges/college/college";
+import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 
 
 function App() {
@@ -42,6 +43,8 @@ function App() {
         <Routes>
           {/* Home route - DTE page for normal users */}
           <Route path="/" element={<DTE showChatbot={true} />} />
+
+          <Route path="/reset-password" element={<ResetPasswordPage/>} />
           
           {/* Admission Portal - Main Entry Point */}
           <Route path="/admission" element={<AdmissionPortal />} />

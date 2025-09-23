@@ -1,6 +1,8 @@
 import Staff from "../../models/staffModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
+import nodemailer from "nodemailer";
 
 // 🟢 Register Staff
 export const registerStaff = async (req, res) => {
@@ -189,7 +191,7 @@ export const forgotPassword = async (req, res) => {
 
         await staff.save({ validateBeforeSave: false }); // Save the token fields
 
-        const resetURL = `http://localhost:3000/reset-password?token=${resetToken}&role=staff`;
+        const resetURL = `http://localhost:5173/reset-password?token=${resetToken}&role=staff`;
 
         // 5. Send the email using nodemailer (ensure your .env has email config)
         const transporter = nodemailer.createTransport({
@@ -203,7 +205,7 @@ export const forgotPassword = async (req, res) => {
         });
 
         const mailOptions = {
-            from: `"Your App Name" <${process.env.EMAIL_USER}>`,
+            from: `"sih" <${process.env.EMAIL_USER}>`,
             to: staff.email,
             subject: "Password Reset Request for Staff Account",
             html: `
