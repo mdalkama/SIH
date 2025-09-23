@@ -3,43 +3,35 @@ import Header from '../header_dte';
 import Footer from '../footer';
 import { Search, FileText, ExternalLink, Award, GraduationCap, FileCheck, FileArchive, FileSpreadsheet, FileSignature, FileQuestion, File, FileType } from 'lucide-react';
 
-// Import PDFs
-import studentTransferPdf from '../../../assets/9339.pdf';
-import branchChangePdf from '../../../assets/8126.pdf';
-import equivalencyPdf from '../../../assets/12th Equivalency-1.pdf';
-import kcsyDateExtendPdf from '../../../assets/Date extend for Kalpana CSVY.pdf';
-import kcsyPdf from '../../../assets/KCSVY.pdf';
-import kcsyManualPdf from '../../../assets/kalpana chawla scooty vitran yojana G2C.pdf';
-import womenReservationPdf from '../../../assets/Reservation of Women.pdf';
 
 const StudentsCornerPage = () => {
   const studentsData = [
     {
       orderParticulars: "Student College Transfer Order",
       orderNoAndDate: "F5(Trans)/DTE/E-2/2025-26/9339 dtd 27.08.2025",
-      pdfLink: studentTransferPdf
+      pdfLink: "https://dte.rajasthan.gov.in/assets/docs/Std_Crnr/9339.pdf"
     },
     {
       orderParticulars: "Branch Change Order (First Year Passed Session 2024-25 Students)",
       orderNoAndDate: "F5(3)/DTE/E-2/2025-26/8126 dtd 30.07.2025",
-      pdfLink: branchChangePdf
+      pdfLink: "https://dte.rajasthan.gov.in/assets/docs/Std_Crnr/8126.pdf"
     },
     {
       orderParticulars: "Circular for 12th Equivalency after Diploma",
       orderNoAndDate: "P.3(5) Edu-5/2020 (RAJKAI 00451)",
-      pdfLink: equivalencyPdf
+      pdfLink: "https://dte.rajasthan.gov.in/assets/docs/Std_Crnr/12th%20Equivalency-1.pdf"
     },
     {
       orderParticulars: "Date Extend for Registration in Kalpana Chawla Scooty Vitran Yojana (15-02-2025)",
       orderNoAndDate: "",
       isNew: true,
-      pdfLink: kcsyDateExtendPdf
+      pdfLink: "https://dte.rajasthan.gov.in/assets/docs/Std_Crnr/KCSVY.pdf"
     },
     {
       orderParticulars: "Date Extend for Registration in Kalpana Chawla Scooty Vitran Yojana (7-02-2025)",
       orderNoAndDate: "",
       isNew: true,
-      pdfLink: kcsyDateExtendPdf
+      pdfLink: "https://dte.rajasthan.gov.in/assets/docs/Std_Crnr/KCSVY.pdf"
     },
     {
       orderParticulars: "Registration For Kalpana Chawla Scooty Vitran Yojana",
@@ -52,7 +44,7 @@ const StudentsCornerPage = () => {
       orderParticulars: "Manual For The Kalpana Chawla Scooty Vitran Yojana",
       orderNoAndDate: "",
       isNew: true,
-      pdfLink: kcsyManualPdf
+      pdfLink: "https://dte.rajasthan.gov.in/assets/docs/Std_Crnr/kalpana%20chawla%20scooty%20vitran%20yojana%20G2C.pdf"
     },
     {
       orderParticulars: "Placement Portal",
@@ -71,7 +63,7 @@ const StudentsCornerPage = () => {
     {
       orderParticulars: "Amendment in Reservation of Women Admission",
       orderNoAndDate: "P.1(1)/TE/2023 Part-1 Dtd 31.01.2024",
-      pdfLink: womenReservationPdf
+      pdfLink: "https://dte.rajasthan.gov.in/assets/docs/Std_Crnr/Reservation%20of%20Women.pdf"
     },
     {
       orderParticulars: "Fee Related Office Order No.215",

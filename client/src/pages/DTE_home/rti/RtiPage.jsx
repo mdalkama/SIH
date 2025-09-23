@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Search, FileText, Calendar, Download, ArrowRight } from 'lucide-react';
 import Header from '../header_dte';
 import Footer from '../footer';
-import handbookPdf from '../../../assets/Handbook RTI.pdf';
+
 
 const RtiPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -110,7 +110,7 @@ const RtiPage = () => {
                       <div className="flex items-center">
                         <FileText className="flex-shrink-0 h-5 w-5 text-blue-500 mr-3" />
                         <a 
-                          href={handbookPdf}
+                          href="https://dte.rajasthan.gov.in/assets/docs/RTI/Handbook%20RTI.pdf"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 :text-blue-400 hover:underline font-medium"

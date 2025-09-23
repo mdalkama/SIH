@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronDown, Menu, X, Users, Globe, User, ChevronLeft, ChevronRight } from 'lucide-react';
-import contactPersonsPdf from '../../assets/Contact Persons DTE Updated.pdf';
+
 import { useLocation } from 'react-router-dom'
 
 const Header = () => {
@@ -68,7 +68,7 @@ const Header = () => {
   const navigate = useNavigate();
 
   const handleContactUsClick = () => {
-    window.open(contactPersonsPdf, '_blank');
+    window.open("https://dte.rajasthan.gov.in/assets/docs/About_us/Contact%20Persons%20DTE%20Updated.pdf", '_blank');
   };
 
   const navigationItems = [
