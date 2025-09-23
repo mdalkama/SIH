@@ -1,13 +1,15 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { Edit, X, CreditCard } from "lucide-react";
 
-const Preview = ({ 
-  formData = {}, 
-  uploadedFiles = {}, 
-  isSubmitting = false, 
-  setActiveTab, 
-  onPaymentComplete, 
-  isFormDisabled = false 
+const APPLICATION_API_URL = 'https://sih-4ptm.onrender.com/api/v1/application';
+
+const Preview = ({
+  formData = {},
+  uploadedFiles = {},
+  isSubmitting = false,
+  setActiveTab,
+  onPaymentComplete,
+  isFormDisabled = false
 }) => {
   // State management
   const [declarationChecked, setDeclarationChecked] = useState(false);
@@ -16,10 +18,10 @@ const Preview = ({
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [showCustomAlert, setShowCustomAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState({ title: '', message: '', type: 'info' });
-  
+
   // Application fees calculation
   const applicationFees = useMemo(() => 100, []);
-  
+
   // Final Data Log - Only after complete form submission
   useEffect(() => {
     if (paymentCompleted) {
@@ -51,7 +53,7 @@ const Preview = ({
       }, 1000);
     }
   }, [paymentCompleted, formData, uploadedFiles, applicationFees]);
-  
+
   // Custom Alert Function 
   const showAlert = useCallback((title, message, type = 'info') => {
     setAlertMessage({ title, message, type });
@@ -104,27 +106,86 @@ const Preview = ({
   const handlePayment = useCallback(async () => {
     setPaymentProcessing(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      setPaymentCompleted(true);
-      setShowPaymentPopup(false);
-      
-      if (onPaymentComplete) onPaymentComplete();
+      const submitResponse = await fetch(`${APPLICATION_API_URL}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, uploadedFiles }), // Send all form and file data
+      });
 
-      showAlert(
-        'भुगतान सफल / Payment Successful',
-        'आपका भुगतान सफलतापूर्वक पूरा हो गया! / Your payment has been completed successfully!',
-        'success'
-      );
-    } catch {
-      showAlert(
-        'भुगतान त्रुटि / Payment Error',
-        'भुगतान प्रक्रिया में समस्या आई। कृपया पुनः प्रयास करें। / Payment process failed. Please try again.',
-        'error'
-      );
-    } finally {
-      setPaymentProcessing(false);
+      const submitData = await submitResponse.json();
+      if (!submitResponse.ok) {
+        throw new Error(submitData.message || "Could not save your application. Please try again.");
+      }
+
+      const { order, key_id } = submitData;
+
+      // Step 2: Open the Razorpay payment popup using the order details from the backend.
+      const options = {
+        key: key_id,
+        amount: order.amount,
+        currency: "INR",
+        name: "DTE Rajasthan",
+        description: "Application Form Fee",
+        image: "https://svumshow.com/assets/images/department-logo/pngwing.png", // Your logo
+        order_id: order.id,
+
+        // This handler function is called after the user completes the payment.
+        handler: async function (response) {
+          // Step 3: Send the payment details to your backend for verification.
+          // This is another new public endpoint.
+          const verifyResponse = await fetch(`${APPLICATION_API_URL}/verify-payment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
+          });
+
+          const verifyData = await verifyResponse.json();
+          if (!verifyResponse.ok || !verifyData.success) {
+            // This error means payment was made but couldn't be saved on the server. CRITICAL.
+            throw new Error(verifyData.message || "Payment verification failed on server. Please contact support.");
+          }
+
+          // If verification is successful on the backend
+          setPaymentCompleted(true);
+          setShowPaymentPopup(false);
+          if (onPaymentComplete) onPaymentComplete();
+          showAlert('Payment Successful', 'Your application has been submitted successfully!', 'success');
+        },
+        prefill: {
+          name: formData.applicantName,
+          email: formData.email,
+          contact: formData.mobile,
+        },
+        theme: {
+          color: "#1e40af",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+
+      // This handles cases where the user closes the popup or the payment fails on Razorpay's end.
+      rzp.on('payment.failed', function (response) {
+        console.error("Razorpay payment failed:", response.error);
+        showAlert(
+          'Payment Failed',
+          `Reason: ${response.error.description || 'The payment could not be completed'}. Please try again.`,
+          'error'
+        );
+        setPaymentProcessing(false); // Re-enable the pay button
+      });
+
+      rzp.open();
+
+    } catch (err) {
+      showAlert('An Error Occurred', err.message, 'error');
+      setPaymentProcessing(false); // Re-enable the pay button if the initial API call fails
     }
-  }, [onPaymentComplete, showAlert]);
+  }, [formData, uploadedFiles, onPaymentComplete, showAlert]);
+
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
@@ -149,9 +210,8 @@ const Preview = ({
             <button
               onClick={() => handleEdit(0)}
               disabled={isFormDisabled}
-              className={`flex items-center justify-center space-x-1 text-xs px-2 py-1 rounded transition-colors self-start sm:self-auto ${
-                isFormDisabled ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-white/20 text-white hover:bg-white/30'
-              }`}
+              className={`flex items-center justify-center space-x-1 text-xs px-2 py-1 rounded transition-colors self-start sm:self-auto ${isFormDisabled ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-white/20 text-white hover:bg-white/30'
+                }`}
             >
               <Edit size={12} />
               <span>Edit</span>
@@ -255,11 +315,10 @@ const Preview = ({
             <button
               onClick={() => handleEdit(2)}
               disabled={isFormDisabled}
-              className={`flex items-center justify-center space-x-1 text-xs px-2 py-1 rounded transition-colors self-start sm:self-auto ${
-                isFormDisabled 
-                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+              className={`flex items-center justify-center space-x-1 text-xs px-2 py-1 rounded transition-colors self-start sm:self-auto ${isFormDisabled
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
                   : 'bg-gray-600 text-white hover:bg-gray-700'
-              }`}
+                }`}
             >
               <Edit size={12} />
               <span>Edit</span>
@@ -311,7 +370,7 @@ const Preview = ({
                     </tr>
                   ))
                 ) : (
-                  <>  
+                  <>
                     <tr className="border-t">
                       <td className="px-2 py-2 sm:px-4 sm:py-3 border">1</td>
                       <td className="px-2 py-2 sm:px-4 sm:py-3 border">(001) Govt. Polytechnic College, Ajmer</td>
@@ -400,9 +459,9 @@ const Preview = ({
             <h4 className="font-semibold text-gray-700 text-sm sm:text-base">घोषणा</h4>
           </div>
           <div className="flex items-start space-x-2 sm:space-x-3">
-            <input 
-              type="checkbox" 
-              id="declaration" 
+            <input
+              type="checkbox"
+              id="declaration"
               checked={declarationChecked}
               onChange={(e) => setDeclarationChecked(e.target.checked)}
               className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
@@ -430,7 +489,7 @@ const Preview = ({
 
       {/* Payment Popup */}
       {showPaymentPopup && (
-        <div 
+        <div
           className="fixed inset-0 flex items-center justify-center z-50"
           style={{
             backdropFilter: 'blur(8px)',
@@ -454,7 +513,7 @@ const Preview = ({
               </div>
               <p className="text-sm text-blue-100 mt-1">Please pay the application form fee for proceeding in the application status</p>
             </div>
-            
+
             <div className="p-4">
               <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mb-4">
                 <div className="bg-gray-100 px-4 py-2">
@@ -491,10 +550,10 @@ const Preview = ({
                   </table>
                 </div>
               </div>
-              
+
               <div className="flex space-x-3 justify-center">
                 <button
-                  onClick={handlePayment}
+                  onClick={handlePayment} /* This now calls the real payment logic */
                   disabled={paymentProcessing}
                   className="px-4 py-2 bg-[#10b981] text-white text-sm font-medium rounded-lg hover:bg-[#059669] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center"
                 >
@@ -515,7 +574,7 @@ const Preview = ({
 
       {/* Custom Alert */}
       {showCustomAlert && (
-        <div 
+        <div
           className="fixed inset-0 flex items-center justify-center z-50"
           style={{
             backdropFilter: 'blur(8px)',
@@ -524,12 +583,11 @@ const Preview = ({
           }}
         >
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in fade-in duration-300">
-            <div className={`p-4 text-white ${
-              alertMessage.type === 'success' ? 'bg-gradient-to-r from-green-500 to-green-600' :
-              alertMessage.type === 'error' ? 'bg-gradient-to-r from-red-500 to-red-600' :
-              alertMessage.type === 'warning' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' :
-              'bg-gradient-to-r from-blue-500 to-blue-600'
-            }`}>
+            <div className={`p-4 text-white ${alertMessage.type === 'success' ? 'bg-gradient-to-r from-green-500 to-green-600' :
+                alertMessage.type === 'error' ? 'bg-gradient-to-r from-red-500 to-red-600' :
+                  alertMessage.type === 'warning' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' :
+                    'bg-gradient-to-r from-blue-500 to-blue-600'
+              }`}>
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">{alertMessage.title}</h3>
                 <button
@@ -540,19 +598,18 @@ const Preview = ({
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6">
               <p className="text-gray-700 text-sm leading-relaxed">{alertMessage.message}</p>
-              
+
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => setShowCustomAlert(false)}
-                  className={`px-4 py-2 text-white text-sm font-medium rounded-lg transition-all duration-200 ${
-                    alertMessage.type === 'success' ? 'bg-green-500 hover:bg-green-600' :
-                    alertMessage.type === 'error' ? 'bg-red-500 hover:bg-red-600' :
-                    alertMessage.type === 'warning' ? 'bg-yellow-500 hover:bg-yellow-600' :
-                    'bg-blue-500 hover:bg-blue-600'
-                  }`}
+                  className={`px-4 py-2 text-white text-sm font-medium rounded-lg transition-all duration-200 ${alertMessage.type === 'success' ? 'bg-green-500 hover:bg-green-600' :
+                      alertMessage.type === 'error' ? 'bg-red-500 hover:bg-red-600' :
+                        alertMessage.type === 'warning' ? 'bg-yellow-500 hover:bg-yellow-600' :
+                          'bg-blue-500 hover:bg-blue-600'
+                    }`}
                 >
                   ठीक / OK
                 </button>
@@ -564,7 +621,7 @@ const Preview = ({
 
       {/* Payment Success Popup */}
       {paymentCompleted && (
-        <div 
+        <div
           className="fixed inset-0 flex items-center justify-center z-50"
           style={{
             backdropFilter: 'blur(8px)',
@@ -584,7 +641,7 @@ const Preview = ({
               <h3 className="text-2xl font-bold mb-2">Payment Successful!</h3>
               <p className="text-green-100">Your application has been submitted successfully.</p>
             </div>
-            
+
             <div className="p-6">
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
                 <div className="flex items-center">
@@ -600,7 +657,7 @@ const Preview = ({
                   </div>
                 </div>
               </div>
-              
+
               <div className="text-center">
                 <p className="text-gray-600 text-sm mb-6">Thank you for submitting your application. You will receive a confirmation email shortly.</p>
                 <button
