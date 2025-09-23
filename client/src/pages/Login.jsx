@@ -107,6 +107,7 @@ const Mylogin = () => {
     const handleForgotPassword = async () => {
         setForgotLoading(true);
         setError("");
+        setForgotSuccess(false);
 
         try {
             const res = await fetch(`https://sih-4ptm.onrender.com/api/v1/${role}/forgot-password`, {
