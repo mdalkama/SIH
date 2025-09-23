@@ -87,10 +87,6 @@ const CollegeFinanceVerifyPayment = () => {
 
     return (
         <div className="font-sans">
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-900">Verify Online Payments</h1>
-                <p className="mt-1 text-slate-600">Review and reconcile online payments received through payment gateways.</p>
-            </header>
 
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
                 {/* Toolbar */}
