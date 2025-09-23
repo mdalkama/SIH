@@ -68,7 +68,7 @@ export const getAllColleges = async (req, res) => {
 
         const colleges = await College.find(query)
             .populate('admin', 'name staffId')
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: 1 });
 
         const count = await College.countDocuments(query);
 
