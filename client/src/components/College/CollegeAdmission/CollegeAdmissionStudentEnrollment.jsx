@@ -65,7 +65,7 @@ export default function AdmissionForm() {
         setCourses(data?.college?.courses || []); // Handle cases where API might return null
       } catch (error) {
         console.error("Course fetch error:", error);
-        alert(`Error fetching courses: ${error.message}`);
+        // alert(`Error fetching courses: ${error.message}`);
       } finally {
         setLoadingCourses(false);
       }

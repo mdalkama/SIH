@@ -1,10 +1,35 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Building, BookOpen, Users, UserCog, Loader2, AlertTriangle, IndianRupee, TrendingUp } from 'lucide-react';
-import { useUser } from '../../../context/UserContext'; // Import the useUser hook
+import {
+    Building, BookOpen, Users, UserCog, Loader2, AlertTriangle, IndianRupee, TrendingUp
+} from 'lucide-react';
+import { useUser } from '../../../context/UserContext';
 
 const API_BASE_URL = "https://sih-4ptm.onrender.com/api/v1/university-admin";
 
-// --- Helper Components ---
+// --- NEW SKELETON LOADER COMPONENT ---
+const DashboardSkeleton = () => (
+    <div className="animate-pulse">
+        <header className="mb-8">
+            <div className="h-8 w-1/3 bg-slate-200 rounded-lg mb-2"></div>
+            <div className="h-5 w-1/2 bg-slate-200 rounded-md"></div>
+        </header>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[...Array(4)].map((_, i) => <div key={i} className="h-28 bg-slate-200 rounded-xl"></div>)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+                <div className="h-80 bg-slate-200 rounded-xl"></div>
+                <div className="h-64 bg-slate-200 rounded-xl"></div>
+            </div>
+            <div className="space-y-8">
+                <div className="h-64 bg-slate-200 rounded-xl"></div>
+                <div className="h-48 bg-slate-200 rounded-xl"></div>
+            </div>
+        </div>
+    </div>
+);
+
+// --- Helper Components (No changes from your original code) ---
 const LoadingSpinner = () => (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50/50">
         <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
@@ -94,8 +119,10 @@ const UniversityDashboard = () => {
 
     const formatCurrency = (amount) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(amount);
 
+    // --- THIS IS THE ONLY CHANGE ---
+    // Show the new SkeletonLoader when loading, instead of the simple spinner
     if (loading || userLoading) {
-        return <LoadingSpinner />;
+        return <DashboardSkeleton />;
     }
 
     if (error) {

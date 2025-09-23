@@ -2,10 +2,45 @@ import React, { useState, useEffect } from 'react';
 import { Edit, X, Loader2, AlertTriangle, CheckCircle, Info, Save } from 'lucide-react';
 import ProfileEditForm from './components/ProfileEditForm';
 
-
-
-// API Endpoint
 const UNIVERSITY_API_URL = 'https://sih-4ptm.onrender.com/api/v1/university/main';
+
+// --- NEW SKELETON LOADER COMPONENT ---
+const ProfileSkeleton = () => (
+    <div className="animate-pulse">
+        <div className="flex justify-between items-center mb-6">
+            <div className="h-9 w-48 bg-slate-200 rounded-lg"></div>
+            <div className="h-10 w-32 bg-slate-200 rounded-lg"></div>
+        </div>
+        <div className="space-y-6">
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                <div className="flex items-center gap-6">
+                    <div className="w-24 h-24 rounded-full bg-slate-200"></div>
+                    <div>
+                        <div className="h-8 w-64 bg-slate-200 rounded-md mb-2"></div>
+                        <div className="h-6 w-40 bg-slate-200 rounded-md"></div>
+                    </div>
+                </div>
+            </div>
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                <div className="h-6 w-1/4 bg-slate-200 rounded-md mb-4"></div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="h-12 bg-slate-100 rounded-lg"></div>
+                    <div className="h-12 bg-slate-100 rounded-lg"></div>
+                    <div className="h-12 bg-slate-100 rounded-lg"></div>
+                </div>
+            </div>
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                <div className="h-6 w-1/4 bg-slate-200 rounded-md mb-4"></div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="h-12 bg-slate-100 rounded-lg"></div>
+                    <div className="h-12 bg-slate-100 rounded-lg"></div>
+                    <div className="h-12 bg-slate-100 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
 
 // --- Main Profile Page Component ---
 const UniversityProfilePage = () => {
@@ -30,7 +65,6 @@ const UniversityProfilePage = () => {
                     throw new Error(errorData.message || 'Failed to fetch university profile.');
                 }
                 const responseData = await response.json();
-                // FIX: Correctly access the nested 'data' object from the API response
                 setUniversityData(responseData);
             } catch (err) {
                 addToast('error', err.message);
@@ -42,8 +76,15 @@ const UniversityProfilePage = () => {
     }, []);
 
 
-    if (isLoading && !universityData) {
-        return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin text-blue-600" size={48} /></div>;
+    // --- INTEGRATE SKELETON LOADER ---
+    if (isLoading) {
+        return (
+            <div className="font-sans">
+                <div className="max-w-7xl mx-auto">
+                    <ProfileSkeleton />
+                </div>
+            </div>
+        );
     }
 
     if (!universityData) {
@@ -102,7 +143,6 @@ const ProfileView = ({ data }) => {
                     </div>
                 </div>
             </div>
-
             <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-800 border-gray-300 border-b pb-3 mb-4">Leadership</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -111,7 +151,6 @@ const ProfileView = ({ data }) => {
                     <InfoField label="Registrar" value={data.chancellorAndVC?.registrarName} />
                 </div>
             </div>
-
             <div className="bg-white p-6 rounded-lg border-gray-200 border shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-800 border-gray-300 border-b pb-3 mb-4">Contact & Location</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -121,7 +160,6 @@ const ProfileView = ({ data }) => {
                     <InfoField label="Address" value={`${data.location?.address || ''}, ${data.location?.city || ''}, ${data.location?.state || ''} - ${data.location?.pincode || ''}`.replace(/ ,| - $/, '').trim()} />
                 </div>
             </div>
-
             <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-800  border-gray-300 border-b pb-3 mb-4">Financial & Legal</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
