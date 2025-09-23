@@ -210,7 +210,7 @@ const FeesDashboard = () => {
 
             const options = {
                 key: orderData.key_id, amount: orderData.order.amount,
-                name: "Your College Name", description: `Payment for ${fee.type}`,
+                name: "Maulana Azad College of Engineering and Technology", currency: "INR", description: `Payment for ${fee.type}`,
                 order_id: orderData.order.id,
                 handler: async function (response) {
                     try {

@@ -165,10 +165,6 @@ const CollegeAdmissionManageApplications = () => {
 
     return (
         <div className="font-sans">
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-900">Manage Admission Applications</h1>
-                <p className="mt-1 text-slate-600">Review, approve, or reject student admission applications.</p>
-            </header>
 
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
                 <div className="p-4 border-b border-slate-200 flex flex-col md:flex-row gap-4">

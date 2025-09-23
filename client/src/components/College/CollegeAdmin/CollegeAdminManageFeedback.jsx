@@ -81,10 +81,6 @@ const CollegeAdminManageFeedback = () => {
 
     return (
         <div className="min-h-screen">
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-900">Feedback Inbox</h1>
-                <p className="mt-1 text-slate-600">Review all feedback submitted by students and staff.</p>
-            </header>
 
             <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm mb-6">
                 <div className="flex flex-wrap gap-2">
