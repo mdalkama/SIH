@@ -85,8 +85,75 @@ const UniversityCollegeManager = () => {
     const openDeleteModal = (college) => { setDeletingCollege(college); setIsDeleteModalOpen(true); };
     const closeModal = () => { if (isLoading) return; setIsModalOpen(false); setEditingCollege(null); };
     const closeDeleteModal = () => { setIsDeleteModalOpen(false); setDeletingCollege(null); };
-    const handleSaveCollege = async (collegeData, adminData) => { /* ... (user's existing logic) ... */ };
-    const handleDeleteCollege = async () => { /* ... (user's existing logic) ... */ };
+    const handleSaveCollege = async (collegeData, adminData) => {
+        setIsLoading(true);
+        try {
+            let response;
+            const universityId = "68c126f6d78ab505fb0a5143";
+
+            if (editingCollege) {
+                response = await fetch(`${API_BASE_URL}/${editingCollege._id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(collegeData),
+                    credentials: 'include'
+                });
+            } else {
+                response = await fetch(API_BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ collegeData, adminData, universityId }),
+                    credentials: 'include'
+                });
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'An error occurred.');
+            }
+
+            const result = await response.json();
+            const updatedOrNewCollege = result.college || result.data;
+
+            // Update the master 'allColleges' list
+            if (editingCollege) {
+                setAllColleges(allColleges.map(c => c._id === editingCollege._id ? updatedOrNewCollege : c));
+                addToast('success', `${updatedOrNewCollege.name} updated successfully.`);
+            } else {
+                setAllColleges(prev => [updatedOrNewCollege, ...prev]);
+                addToast('success', `${updatedOrNewCollege.name} created successfully.`);
+            }
+
+            closeModal();
+        } catch (err) {
+            addToast('error', err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };    
+    const handleDeleteCollege = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/${deletingCollege._id}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to delete college.');
+            }
+
+            addToast('info', `${deletingCollege.name} has been deleted.`);
+            // Update the master 'allColleges' list
+            setAllColleges(allColleges.filter(c => c._id !== deletingCollege._id));
+            closeDeleteModal();
+        } catch (err) {
+            addToast('error', err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
     const stats = useMemo(() => { const dataToCount = allColleges; return { total: dataToCount.length, active: dataToCount.filter(c => c.status === "Active").length, pending: dataToCount.filter(c => c.status === "Pending Approval").length, inactive: dataToCount.filter(c => c.status === "Inactive").length, }; }, [allColleges]);
 
     if (isPageLoading) {

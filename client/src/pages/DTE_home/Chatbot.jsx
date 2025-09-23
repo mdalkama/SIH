@@ -416,7 +416,7 @@ const Chatbot = () => {
   const getDatasetResponse = (intent, lang, lower) => {
 
     switch(intent) {
-      case 'greeting':
+      case 'greeting': {
         setLastIntent(null)
         setContextType(null)
         const greetingText = lang === 'english' 
@@ -425,8 +425,9 @@ const Chatbot = () => {
           ? "नमस्ते, मैं सारथी हूँ, DTE राजस्थान का आधिकारिक छात्र सहायक। मैं आपको प्रवेश, परीक्षा, परिणाम, सूचनाएँ और पात्रता के बारे में मदद कर सकता हूँ। आप किसमें सहायता चाहते हैं?"
           : "राम राम, मैं सारथी हूँ। मैं छात्रों की सहायता के लिए यहाँ हूँ। आप क्या जानना चाहेंगे?"
         return { text: greetingText }
+      }
 
-      case 'how_are_you':
+      case 'how_are_you': {
         setLastIntent(null)
         setContextType(null)
         const howAreYouText = lang === 'english'
@@ -435,8 +436,9 @@ const Chatbot = () => {
           ? "मैं ठीक हूँ, धन्यवाद। मैं छात्रों की सहायता के लिए यहाँ हूँ।"
           : "म्हैं ठीक हूं। आज म्हैं थारी कैसे मदद कर सकूं हूं?"
         return { text: howAreYouText }
+      }
 
-      case 'goodbye':
+      case 'goodbye': {
         setLastIntent(null)
         setContextType(null)
         const goodbyeText = lang === 'english'
@@ -445,8 +447,9 @@ const Chatbot = () => {
           ? "DTE राजस्थान सेवाओं का उपयोग करने के लिए धन्यवाद। आपका दिन शुभ हो!"
           : "DTE राजस्थान सेवाओं का उपयोग करने के लिए धन्यवाद। थारो दिन शुभ हो!"
         return { text: goodbyeText }
+      }
 
-      case 'admission':
+      case 'admission': {
         setLastIntent('awaiting_admission_type')
         setContextType('admission')
         const admissionPrompt = lang === 'english'
@@ -455,8 +458,9 @@ const Chatbot = () => {
           ? "डिप्लोमा प्रथम वर्ष प्रवेश 2025-26: आवेदन तिथियां: 11-14 अगस्त 2025। www.dap2025.in के माध्यम से आवेदन करें। केंद्रीयकृत ऑनलाइन प्रक्रिया के माध्यम से काउंसलिंग। दस्तावेज़ सत्यापन ऑनलाइन + संस्थान रिपोर्टिंग पर।"
           : "डिप्लोमा प्रथम वर्ष प्रवेश 2025-26: आवेदन तिथियां: 11-14 अगस्त 2025। www.dap2025.in के माध्यम से आवेदन करें। केंद्रीयकृत ऑनलाइन प्रक्रिया के माध्यम से काउंसलिंग।"
         return { text: admissionPrompt }
+      }
 
-      case 'admission_timing':
+      case 'admission_timing': {
         setLastIntent(null)
         setContextType(null)
         const admissionTimingText = lang === 'english'
@@ -465,8 +469,9 @@ const Chatbot = () => {
           ? "डिप्लोमा प्रथम वर्ष प्रवेश: 11 अगस्त 2025, सुबह 11:00 बजे से।"
           : "डिप्लोमा प्रथम वर्ष प्रवेश: 11 अगस्त 2025, सुबह 11:00 बजे से।"
         return { text: admissionTimingText }
+      }
 
-      case 'eligibility':
+      case 'eligibility': {
         setLastIntent(null)
         setContextType(null)
         const eligibilityText = lang === 'english'
@@ -475,18 +480,20 @@ const Chatbot = () => {
           ? "Diploma First Year: Class 10th पास होना चाहिए, विज्ञान और गणित विषय के साथ। न्यूनतम अंक: 35%।"
           : "Diploma First Year: Class 10th पास होना चाहिए, विज्ञान और गणित विषय के साथ। न्यूनतम अंक: 35%।"
         return { text: eligibilityText }
+      }
 
-      case 'result':
-        setLastIntent('awaiting_diploma_result_sem')
-        setContextType('result')
-        const resultPrompt = lang === 'english'
-          ? "Which semester result are you looking for? Please specify Diploma 1st to 6th semester."
-          : lang === 'hindi'
-          ? "आप किस सेमेस्टर का परिणाम चाहते हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
-          : "आप कौन सी सेमेस्टर का परिणाम चाहते हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
-        return { text: resultPrompt }
+      case 'result': {
+      setLastIntent('awaiting_diploma_result_sem')
+      setContextType('result')
+      const resultPrompt = lang === 'english'
+        ? "Which semester result are you looking for? Please specify Diploma 1st to 6th semester."
+        : lang === 'hindi'
+        ? "आप किस सेमेस्टर का परिणाम चाहते हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
+        : "आप कौन सी सेमेस्टर का परिणाम चाहते हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
+      return { text: resultPrompt }
+      }
 
-      case 'exam':
+      case 'exam': {
         setLastIntent('awaiting_diploma_exam_sem')
         setContextType('exam')
         const examPrompt = lang === 'english'
@@ -495,8 +502,9 @@ const Chatbot = () => {
           ? "आप किस सेमेस्टर की परीक्षा के बारे में पूछ रहे हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
           : "आप कौन सी सेमेस्टर की परीक्षा के बारे में पूछ रहे हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
         return { text: examPrompt }
+      }
 
-      case 'notice':
+      case 'notice': {
         setLastIntent(null)
         setContextType(null)
         const noticeText = lang === 'english'
@@ -505,8 +513,9 @@ const Chatbot = () => {
           ? "नवीनतम सूचना: डिप्लोमा प्रथम सेमेस्टर पंजीकरण की अंतिम तिथि 14 अगस्त 2025 तक बढ़ा दी गई है। सभी सेमेस्टर की परीक्षा तालिका जारी।"
           : "नवीनतम सूचना: डिप्लोमा प्रथम सेमेस्टर पंजीकरण की अंतिम तिथि 14 अगस्त 2025 तक बढ़ा दी गई है। सभी सेमेस्टर की परीक्षा तालिका जारी।"
         return { text: noticeText }
+      }
 
-      case 'news':
+      case 'news': {
         setLastIntent(null)
         setContextType(null)
         const newsText = lang === 'english'
@@ -515,6 +524,7 @@ const Chatbot = () => {
           ? "हां, डिप्लोमा पुनर्मूल्यांकन परिणाम 18 सितंबर 2025 को घोषित हो गए हैं।"
           : "हां, डिप्लोमा पुनर्मूल्यांकन परिणाम 18 सितंबर 2025 को घोषित हो गए हैं।"
         return { text: newsText }
+      }
 
       // Handle context-aware responses
       case 'diploma_result_1':
@@ -522,7 +532,7 @@ const Chatbot = () => {
       case 'diploma_result_3':
       case 'diploma_result_4':
       case 'diploma_result_5':
-      case 'diploma_result_6':
+      case 'diploma_result_6': {
         setLastIntent(null)
         setContextType(null)
         const semNum = intent.split('_')[2]
@@ -536,13 +546,14 @@ const Chatbot = () => {
           ? `डिप्लोमा ${semNum === '1' ? 'प्रथम' : semNum === '2' ? 'द्वितीय' : semNum === '3' ? 'तृतीय' : semNum === '4' ? 'चतुर्थ' : semNum === '5' ? 'पंचम' : 'षष्ठ'} सेमेस्टर परिणाम ${resultDates[semNum]} को घोषित हो चुका है।`
           : `डिप्लोमा ${semNum}${semNum === '1' ? 'st' : semNum === '2' ? 'nd' : semNum === '3' ? 'rd' : 'th'} सेमेस्टर परिणाम ${resultDates[semNum]} को घोषित हो चुका है।`
         return { text: resultText }
+      }
 
       case 'diploma_exam_1':
       case 'diploma_exam_2':
       case 'diploma_exam_3':
       case 'diploma_exam_4':
       case 'diploma_exam_5':
-      case 'diploma_exam_6':
+      case 'diploma_exam_6': {
         setLastIntent(null)
         setContextType(null)
         const examSemNum = intent.split('_')[2]
@@ -556,6 +567,7 @@ const Chatbot = () => {
           ? `डिप्लोमा ${examSemNum === '1' ? 'प्रथम' : examSemNum === '2' ? 'द्वितीय' : examSemNum === '3' ? 'तृतीय' : examSemNum === '4' ? 'चतुर्थ' : examSemNum === '5' ? 'पंचम' : 'षष्ठ'} सेमेस्टर परीक्षा ${examDates[examSemNum]} से शुरू हो रही है।`
           : `डिप्लोमा ${examSemNum}${examSemNum === '1' ? 'st' : examSemNum === '2' ? 'nd' : examSemNum === '3' ? 'rd' : 'th'} सेमेस्टर परीक्षा ${examDates[examSemNum]} से शुरू हो रही है।`
         return { text: examText }
+      }
 
       default:
         // Handle thank you responses
