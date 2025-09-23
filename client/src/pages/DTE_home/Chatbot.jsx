@@ -1,16 +1,107 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { X, Send, Bot, BotMessageSquare, Mic, MicOff } from 'lucide-react'
 
-// Complete DTE Rajasthan Hardcoded Dataset
+// OpenAI API Configuration
+const OPENAI_API_KEY = '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'
+const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions'
+
+// Saarthi Chatbot Prompt
+const chatbotPrompt = `
+You are "Saarthi" – the official friendly Assistant of DTE Rajasthan 
+(https://dte.rajasthan.gov.in/). 
+Your job is to provide accurate, quick, and humanized responses 
+for Diploma students in Rajasthan. 
+
+🌟 Tone & Style:
+- Be friendly, warm, and professional.
+- Talk in Hinglish, Hindi, English, or Rajasthani based on how user speaks.
+- Respond like a human (use greetings, emojis sometimes, short & crisp sentences).
+- If user greets in English ("hi/hello"), reply: "Hello ji 🙏, I am Saarthi – DTE Rajasthan Assistant. How can I help you with Admission, Exam, Result, or Notice?"
+- If user greets in Hindi ("namaste/नमस्ते"), reply: "नमस्ते जी 🙏, मैं सारथी हूं – DTE राजस्थान असिस्टेंट। आपको Admission, Exam, Result, या Notice में से किस topic पर help चाहिए?"
+- If user greets in Rajasthani ("ram ram/राम राम"), reply: "राम राम जी 🙏, म्हैं सारथी हूं – DTE राजस्थान को असिस्टेंट। थानै Admission, Exam, Result, या Notice में सूं कांई मदद चाहिए?"
+
+🎯 Rajasthani Language Support:
+- Detect Rajasthani phrases like: "राम राम", "कांई हाल", "थानै", "म्हैं", "को", "सूं", "घणो धन्यवाद"
+- Respond in Rajasthani when user speaks Rajasthani
+- Use Rajasthani greetings: "राम राम जी", "घणो खुशी होई"
+- Common Rajasthani words: "थानै" (आपको), "म्हैं" (मैं), "को" (का), "सूं" (से), "कांई" (क्या), "घणो" (बहुत)
+
+🟢 Core Features:
+1. **Admission**  
+   - Only Diploma admissions available under DTE Rajasthan.  
+   - Eligibility: Class 10th pass with minimum 35% marks.  
+   - Admission Process: Online application via DTE website + Counseling.  
+   - Dummy OTP flow: User must enter "7780" to proceed for counseling.  
+   - If wrong OTP → deny access.  
+   - Routes: \`/new-admission\` , \`/status\` , \`/counseling\` .  
+
+2. **Exams**  
+   - If user asks about exam → First ask: "Which semester exam info chahiye? (1st to 6th)"  
+   - Provide hardcoded dates (example):  
+     - 1st Sem: Jan 10, 2025  
+     - 2nd Sem: Jan 12, 2025  
+     - 3rd Sem: Jan 15, 2025  
+     - 4th Sem: Jan 18, 2025  
+     - 5th Sem: Jan 22, 2025  
+     - 6th Sem: Jan 25, 2025  
+
+3. **Results**  
+   - If user asks result → Ask "Which semester ka result dekhna hai?"  
+   - Provide dummy info (example):  
+     - 1st Sem: Declared (link)  
+     - 2nd Sem: Declared (link)  
+     - 3rd Sem: Declared (link)  
+     - 4th Sem: Coming Soon  
+     - 5th Sem: Coming Soon  
+     - 6th Sem: Coming Soon  
+
+4. **Notices & News**  
+   - Always give recent dummy data or API-fetched info.  
+   - Example:  
+     - "📢 Latest Notice: Diploma 6th Sem Practical Exam from Dec 20, 2025."  
+     - "📰 News: Online counseling round-2 starts from Oct 15, 2025."  
+
+🟢 General Conversation:
+- If user says "how are you" in English → "I am fine, thank you! How can I assist you today?"
+- If user says "कैसे हो" in Hindi → "Main bilkul theek hu ji 😃, aap batayein kaise hain?"  
+- If user says "कांई हाल" in Rajasthani → "म्हैं ठीक हूं जी 😃, थानै कांई मदद चाहिए?"
+- If user asks your name → Respond in their language:
+  - English: "I am Saarthi – DTE Rajasthan Assistant."
+  - Hindi: "Mera naam Saarthi hai – DTE Rajasthan ka friendly Assistant."
+  - Rajasthani: "म्हारो नाम सारथी है – DTE राजस्थान को friendly Assistant."
+- If user asks irrelevant question → reply politely in their language:
+  - English: "This topic is not related to DTE Rajasthan, but I can help with Admission, Exam, Result and Notice info."
+  - Hindi: "Ye topic DTE Rajasthan se related nahi hai ji, par main Admission, Exam, Result aur Notice ki info de sakta hu."
+  - Rajasthani: "यो topic DTE राजस्थान सूं related कोनी है जी, पर म्हैं Admission, Exam, Result अर Notice की जाणकारी दे सकूं हूं।"
+
+🎯 Rajasthani Response Examples:
+- "घणो धन्यवाद" (Thank you very much)
+- "कांई मदद चाहिए?" (What help do you need?)
+- "थानै कोई problem है?" (Do you have any problem?)
+- "म्हैं थारी मदद कर सकूं हूं" (I can help you)
+- "official website देखो" (Check official website)
+
+⚡ Rules:
+- Always be fast, professional & bug-free.  
+- Give factual answers only (Diploma-related).  
+- Never say B.Tech is available under DTE Rajasthan.  
+- Keep responses concise and helpful.
+- Use emojis appropriately to make responses friendly.
+- Match the user's language (English/Hindi/Rajasthani) in your response.
+`
+
+// Complete DTE Rajasthan Hardcoded Dataset (Fallback)
 const dteData = {
   admissions: {
     diploma_first_year: {
       english: "Diploma First Year (Engineering) Admission 2025-26: Application Dates: 11–14 August 2025 (11:00 AM onwards). Apply via official portal: www.dap2025.in. Counseling: Centralized online counseling after registration. Document verification: Online upload + original verification at institute reporting.",
-      hindi: "डिप्लोमा प्रथम वर्ष (इंजीनियरिंग) प्रवेश 2025-26: आवेदन तिथियां: 11-14 अगस्त 2025 (सुबह 11:00 बजे से)। आधिकारिक पोर्टल के माध्यम से आवेदन करें: www.dap2025.in। काउंसलिंग: पंजीकरण के बाद केंद्रीयकृत ऑनलाइन काउंसलिंग। दस्तावेज़ सत्यापन: ऑनलाइन अपलोड + संस्थान रिपोर्टिंग पर मूल सत्यापन।"
+      hindi: "डिप्लोमा प्रथम वर्ष (इंजीनियरिंग) प्रवेश 2025-26: आवेदन तिथियां: 11-14 अगस्त 2025 (सुबह 11:00 बजे से)। आधिकारिक पोर्टल के माध्यम से आवेदन करें: www.dap2025.in। काउंसलिंग: पंजीकरण के बाद केंद्रीयकृत ऑनलाइन काउंसलिंग। दस्तावेज़ सत्यापन: ऑनलाइन अपलोड + संस्थान रिपोर्टिंग पर मूल सत्यापन।",
+      rajasthani: "डिप्लोमा पहलो साल (इंजीनियरिंग) दाखिलो 2025-26: आवेदन की तारीख: 11-14 अगस्त 2025 (सुबह 11:00 बजे सूं)। official portal सूं आवेदन करो: www.dap2025.in। काउंसलिंग: रजिस्ट्रेशन को बाद केंद्रीयकृत ऑनलाइन काउंसलिंग। कागजात की जांच: ऑनलाइन अपलोड + संस्थान में रिपोर्टिंग पर असली कागजात की जांच।"
     },
     diploma_lateral_entry: {
       english: "Diploma Lateral Entry (Direct 2nd Year) Admission 2025: Application Dates: 20–25 August 2025. Eligibility: 12th Science (PCM) OR ITI (2 years). Counseling: Online centralized.",
-      hindi: "डिप्लोमा लेटरल एंट्री (प्रत्यक्ष द्वितीय वर्ष) प्रवेश 2025: आवेदन तिथियां: 20-25 अगस्त 2025। पात्रता: 12वीं विज्ञान (PCM) या ITI (2 वर्ष)। काउंसलिंग: ऑनलाइन केंद्रीयकृत।"
+      hindi: "डिप्लोमा लेटरल एंट्री (प्रत्यक्ष द्वितीय वर्ष) प्रवेश 2025: आवेदन तिथियां: 20-25 अगस्त 2025। पात्रता: 12वीं विज्ञान (PCM) या ITI (2 वर्ष)। काउंसलिंग: ऑनलाइन केंद्रीयकृत।",
+      rajasthani: "डिप्लोमा लेटरल एंट्री (सीधो दूसरो साल) दाखिलो 2025: आवेदन की तारीख: 20-25 अगस्त 2025। योग्यता: 12वीं साइंस (PCM) या ITI (2 साल)। काउंसलिंग: ऑनलाइन केंद्रीयकृत।"
     },
   },
   results: {
@@ -52,11 +143,13 @@ const dteData = {
   eligibility: {
     diploma_first_year: {
       english: "Diploma First Year: Must have passed Class 10th with Science & Math. Minimum marks: 35% in qualifying exam.",
-      hindi: "डिप्लोमा प्रथम वर्ष: 10वीं विज्ञान और गणित के साथ उत्तीर्ण होना चाहिए। न्यूनतम अंक: योग्यता परीक्षा में 35%।"
+      hindi: "डिप्लोमा प्रथम वर्ष: 10वीं विज्ञान और गणित के साथ उत्तीर्ण होना चाहिए। न्यूनतम अंक: योग्यता परीक्षा में 35%।",
+      rajasthani: "डिप्लोमा पहलो साल: 10वीं साइंस अर मैथ्स को साथ पास होणो चाहिए। कम सूं कम अंक: योग्यता परीक्षा में 35%।"
     },
     diploma_lateral_entry: {
       english: "Diploma Lateral Entry: Must have passed Class 12th (PCM) OR ITI (2 years). Minimum marks: 35% in qualifying exam.",
-      hindi: "डिप्लोमा लेटरल एंट्री: 12वीं (PCM) या ITI (2 वर्ष) उत्तीर्ण होना चाहिए। न्यूनतम अंक: योग्यता परीक्षा में 35%।"
+      hindi: "डिप्लोमा लेटरल एंट्री: 12वीं (PCM) या ITI (2 वर्ष) उत्तीर्ण होना चाहिए। न्यूनतम अंक: योग्यता परीक्षा में 35%।",
+      rajasthani: "डिप्लोमा लेटरल एंट्री: 12वीं (PCM) या ITI (2 साल) पास होणो चाहिए। कम सूं कम अंक: योग्यता परीक्षा में 35%।"
     },
   },
   exams: {
@@ -103,19 +196,23 @@ const dteData = {
   },
   greetings: {
     english: "Hello! I am Saarthi - your DTE Rajasthan student assistant. I can help you with admissions, results, exams, notices, and eligibility.",
-    hindi: "नमस्ते! मैं सारथी हूं - आपका DTE राजस्थान छात्र सहायक। मैं आपको प्रवेश, परिणाम, परीक्षा, सूचनाएं और पात्रता में मदद कर सकता हूं।"
+    hindi: "नमस्ते! मैं सारथी हूं - आपका DTE राजस्थान छात्र सहायक। मैं आपको प्रवेश, परिणाम, परीक्षा, सूचनाएं और पात्रता में मदद कर सकता हूं।",
+    rajasthani: "राम राम जी! म्हैं सारथी हूं - थारो DTE राजस्थान को छात्र सहायक। म्हैं थानै admission, result, exam, notice अर eligibility में मदद कर सकूं हूं।"
   },
   howAreYou: {
     english: "I am fine, thank you! How can I assist you today?",
-    hindi: "मैं ठीक हूं, धन्यवाद! आज मैं आपकी कैसे मदद कर सकता हूं?"
+    hindi: "मैं ठीक हूं, धन्यवाद! आज मैं आपकी कैसे मदद कर सकता हूं?",
+    rajasthani: "म्हैं ठीक हूं, घणो धन्यवाद! आज म्हैं थारी कांई मदद कर सकूं हूं?"
   },
   refusal: {
     english: "I can only help with DTE Rajasthan Diploma admissions, results, exams, eligibility, and notices. Please visit the official DTE Rajasthan website for more.",
-    hindi: "मैं केवल DTE राजस्थान डिप्लोमा प्रवेश, परिणाम, परीक्षा, पात्रता और सूचनाओं में मदद कर सकता हूं। कृपया अधिक जानकारी के लिए आधिकारिक DTE राजस्थान वेबसाइट पर जाएं।"
+    hindi: "मैं केवल DTE राजस्थान डिप्लोमा प्रवेश, परिणाम, परीक्षा, पात्रता और सूचनाओं में मदद कर सकता हूं। कृपया अधिक जानकारी के लिए आधिकारिक DTE राजस्थान वेबसाइट पर जाएं।",
+    rajasthani: "म्हैं सिर्फ DTE राजस्थान डिप्लोमा admission, result, exam, eligibility अर notice में मदद कर सकूं हूं। और जाणकारी खातर official DTE राजस्थान website देखो।"
   },
   semesterNotFound: {
     english: "Sorry, this semester information is not available. Please check the official DTE Rajasthan website.",
-    hindi: "खेद है, इस सेमेस्टर की जानकारी उपलब्ध नहीं है। कृपया आधिकारिक DTE राजस्थान वेबसाइट देखें।"
+    hindi: "खेद है, इस सेमेस्टर की जानकारी उपलब्ध नहीं है। कृपया आधिकारिक DTE राजस्थान वेबसाइट देखें।",
+    rajasthani: "माफ करो, इस semester की जाणकारी उपलब्ध कोनी है। कृपया official DTE राजस्थान website देखो।"
   }
 }
 
@@ -139,10 +236,31 @@ const Chatbot = () => {
   const inputRef = useRef(null)
   const recognitionRef = useRef(null)
 
-  // Language detection
+  // Enhanced language detection with Rajasthani support
   const detectLanguage = (text) => {
+    const lower = text.toLowerCase()
+    
+    // Rajasthani specific patterns and words
+    const rajasthaniPatterns = [
+      /राम राम/, /कांई/, /थानै/, /म्हैं/, /घणो/, /को/, /सूं/, /होई/, /हाल/, /धन्यवाद/,
+      /ram ram/, /kaai/, /thane/, /mhain/, /ghano/, /hoi/, /dhanyawad/
+    ]
+    
+    // Check for Rajasthani patterns
+    for (const pattern of rajasthaniPatterns) {
+      if (pattern.test(lower)) {
+        return 'rajasthani'
+      }
+    }
+    
+    // Check for Hindi (Devanagari script)
     const hindiPattern = /[\u0900-\u097F]/
-    return hindiPattern.test(text) ? 'hindi' : 'english'
+    if (hindiPattern.test(text)) {
+      return 'hindi'
+    }
+    
+    // Default to English
+    return 'english'
   }
 
 
@@ -170,14 +288,24 @@ const Chatbot = () => {
       }
     }
     
-    // Regular intent detection
-    if (/(hi|hello|hey|namaste|नमस्ते)/.test(lower)) return 'greeting'
-    if (/(how are you|कैसे हो|how are you doing|कैसे हो तुम)/.test(lower)) return 'how_are_you'
-    if (/(admission|प्रवेश|दाखिला|form|apply|आवेदन)/.test(lower)) return 'admission'
+    // Enhanced greeting detection
+    if (/(hi|hello|hey|hii|helo|namaste|नमस्ते|ram ram|राम राम|हाय|हैलो)/.test(lower)) return 'greeting'
+    
+    // Enhanced casual conversation detection
+    if (/(how are you|कैसे हो|how are you doing|कैसे हो तुम|कांई हाल|kaai haal|kya haal|क्या हाल|थारो हाल|tharo haal|kaise ho|कैसे हैं|kya haal hai|क्या हाल है)/.test(lower)) return 'how_are_you'
+    
+    // Goodbye detection
+    if (/(bye|goodbye|alvida|अलविदा|tata|टाटा|see you|मिलते हैं)/.test(lower)) return 'goodbye'
+    if (/(admission|प्रवेश|दाखिला|form|apply|आवेदन)/.test(lower)) {
+      // Check for specific admission timing queries
+      if (/(kab start|when start|कब शुरू|start date|शुरुआत)/.test(lower)) return 'admission_timing'
+      return 'admission'
+    }
     if (/(result|marks|score|परिणाम|रिजल्ट)/.test(lower)) return 'result'
     if (/(exam|test|परीक्षा)/.test(lower)) return 'exam'
     if (/(eligibility|qualify|criteria|पात्रता|योग्यता)/.test(lower)) return 'eligibility'
     if (/(notice|notification|announcement|सूचना|नोटिस)/.test(lower)) return 'notice'
+    if (/(news|koi news|कोई news|समाचार)/.test(lower)) return 'news'
     if (/(special|विशेष)/.test(lower) && /(exam|test|परीक्षा|form|फॉर्म)/.test(lower)) return 'special_exam'
     return 'unknown'
   }
@@ -194,138 +322,310 @@ const Chatbot = () => {
     return null
   }
 
-  // Enhanced context-aware response generation
-  const generateResponse = (message) => {
+  // OpenAI API call function with enhanced error handling
+  const callOpenAI = async (userMessage) => {
+    try {
+      const response = await fetch(OPENAI_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: chatbotPrompt
+            },
+            {
+              role: 'user',
+              content: userMessage
+            }
+          ],
+          max_tokens: 300,
+          temperature: 0.7,
+          frequency_penalty: 0.3,
+          presence_penalty: 0.3
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.error(`OpenAI API Error: ${response.status}`, errorData)
+        
+        // Handle specific error cases
+        if (response.status === 429) {
+          console.log('Rate limit exceeded, falling back to hardcoded responses')
+        } else if (response.status === 401) {
+          console.log('API key invalid, falling back to hardcoded responses')
+        } else if (response.status >= 500) {
+          console.log('OpenAI server error, falling back to hardcoded responses')
+        }
+        
+        return null // Trigger fallback
+      }
+
+      const data = await response.json()
+      
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        return data.choices[0].message.content.trim()
+      } else {
+        console.error('Unexpected API response format:', data)
+        return null
+      }
+    } catch (error) {
+      console.error('OpenAI API Network Error:', error)
+      return null // Return null to trigger fallback
+    }
+  }
+
+  // Enhanced response generation with proper hierarchy: Dataset → API → Fallback
+  const generateResponse = async (message) => {
     const lang = detectLanguage(message)
     const intent = detectIntent(message)
     const lower = message.toLowerCase()
+
+    // FIRST: Check if hardcoded dataset has the answer
+    const datasetResponse = getDatasetResponse(intent, lang, lower)
+    if (datasetResponse) {
+      return { text: datasetResponse.text, language: lang, source: 'dataset' }
+    }
+
+    // SECOND: Try OpenAI API if dataset doesn't have answer
+    try {
+      const apiResponse = await callOpenAI(message)
+      if (apiResponse) {
+        return { text: apiResponse, language: lang, source: 'api' }
+      }
+    } catch (error) {
+      console.log('API failed, using fallback')
+    }
+
+    // THIRD: Final fallback message
+    const fallbackMsg = lang === 'hindi' 
+      ? "मुझे खेद है, मैं समझ नहीं पाया। कृपया Diploma प्रवेश, परीक्षा, परिणाम, सूचनाएं, या पात्रता के बारे में पूछें।"
+      : lang === 'rajasthani'
+      ? "माफ करो, म्हैं समझ नहीं पायो। कृपया Diploma प्रवेश, परीक्षा, परिणाम, सूचनाएं, या पात्रता के बारे में पूछो।"
+      : "I am sorry, I did not understand. Please ask about Diploma Admissions, Exams, Results, Notices, or Eligibility."
+    
+    return { text: fallbackMsg, language: lang, source: 'fallback' }
+  }
+
+  // Function to get response from hardcoded dataset
+  const getDatasetResponse = (intent, lang, lower) => {
 
     switch(intent) {
       case 'greeting':
         setLastIntent(null)
         setContextType(null)
-        return { text: dteData.greetings[lang], language: lang }
+        const greetingText = lang === 'english' 
+          ? "Hello, I am Saarthi, the official DTE Rajasthan student assistant. I can help you with Admissions, Exams, Results, Notices, and Eligibility. How may I assist you today?"
+          : lang === 'hindi'
+          ? "नमस्ते, मैं सारथी हूँ, DTE राजस्थान का आधिकारिक छात्र सहायक। मैं आपको प्रवेश, परीक्षा, परिणाम, सूचनाएँ और पात्रता के बारे में मदद कर सकता हूँ। आप किसमें सहायता चाहते हैं?"
+          : "राम राम, मैं सारथी हूँ। मैं छात्रों की सहायता के लिए यहाँ हूँ। आप क्या जानना चाहेंगे?"
+        return { text: greetingText }
 
       case 'how_are_you':
         setLastIntent(null)
         setContextType(null)
-        return { text: dteData.howAreYou[lang], language: lang }
+        const howAreYouText = lang === 'english'
+          ? "I am functioning well, thank you. How can I assist you today?"
+          : lang === 'hindi'
+          ? "मैं ठीक हूँ, धन्यवाद। मैं छात्रों की सहायता के लिए यहाँ हूँ।"
+          : "म्हैं ठीक हूं। आज म्हैं थारी कैसे मदद कर सकूं हूं?"
+        return { text: howAreYouText }
 
-      case 'admission':
+      case 'goodbye':
         setLastIntent(null)
         setContextType(null)
-        if (/(lateral|लेटरल)/.test(lower)) {
-          return { text: dteData.admissions.diploma_lateral_entry[lang], language: lang }
-        }
-        return { text: dteData.admissions.diploma_first_year[lang], language: lang }
+        const goodbyeText = lang === 'english'
+          ? "Thank you for using DTE Rajasthan services. Have a great day!"
+          : lang === 'hindi'
+          ? "DTE राजस्थान सेवाओं का उपयोग करने के लिए धन्यवाद। आपका दिन शुभ हो!"
+          : "DTE राजस्थान सेवाओं का उपयोग करने के लिए धन्यवाद। थारो दिन शुभ हो!"
+        return { text: goodbyeText }
+
+      case 'admission':
+        setLastIntent('awaiting_admission_type')
+        setContextType('admission')
+        const admissionPrompt = lang === 'english'
+          ? "Diploma First Year Admission 2025-26: Application Dates: 11–14 August 2025. Apply via www.dap2025.in. Counseling through centralized online process. Document verification online + at institute reporting."
+          : lang === 'hindi'
+          ? "डिप्लोमा प्रथम वर्ष प्रवेश 2025-26: आवेदन तिथियां: 11-14 अगस्त 2025। www.dap2025.in के माध्यम से आवेदन करें। केंद्रीयकृत ऑनलाइन प्रक्रिया के माध्यम से काउंसलिंग। दस्तावेज़ सत्यापन ऑनलाइन + संस्थान रिपोर्टिंग पर।"
+          : "डिप्लोमा प्रथम वर्ष प्रवेश 2025-26: आवेदन तिथियां: 11-14 अगस्त 2025। www.dap2025.in के माध्यम से आवेदन करें। केंद्रीयकृत ऑनलाइन प्रक्रिया के माध्यम से काउंसलिंग।"
+        return { text: admissionPrompt }
+
+      case 'admission_timing':
+        setLastIntent(null)
+        setContextType(null)
+        const admissionTimingText = lang === 'english'
+          ? "Diploma First Year Admission: 11 August 2025, 11:00 AM onwards."
+          : lang === 'hindi'
+          ? "डिप्लोमा प्रथम वर्ष प्रवेश: 11 अगस्त 2025, सुबह 11:00 बजे से।"
+          : "डिप्लोमा प्रथम वर्ष प्रवेश: 11 अगस्त 2025, सुबह 11:00 बजे से।"
+        return { text: admissionTimingText }
 
       case 'eligibility':
         setLastIntent(null)
         setContextType(null)
-        if (/(lateral|लेटरल)/.test(lower)) {
-          return { text: dteData.eligibility.diploma_lateral_entry[lang], language: lang }
-        }
-        return { text: dteData.eligibility.diploma_first_year[lang], language: lang }
+        const eligibilityText = lang === 'english'
+          ? "Diploma First Year: Class 10th pass with Science and Mathematics subjects. Minimum marks: 35%."
+          : lang === 'hindi'
+          ? "Diploma First Year: Class 10th पास होना चाहिए, विज्ञान और गणित विषय के साथ। न्यूनतम अंक: 35%।"
+          : "Diploma First Year: Class 10th पास होना चाहिए, विज्ञान और गणित विषय के साथ। न्यूनतम अंक: 35%।"
+        return { text: eligibilityText }
 
       case 'result':
-        // General result query - ask for semester directly
         setLastIntent('awaiting_diploma_result_sem')
         setContextType('result')
-        return { text: dteData.results.semesterPrompt[lang], language: lang }
-
-      case 'diploma_result_1':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.results.diploma['1'][lang], language: lang }
-
-      case 'diploma_result_2':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.results.diploma['2'][lang], language: lang }
-
-      case 'diploma_result_3':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.results.diploma['3'][lang], language: lang }
-
-      case 'diploma_result_4':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.results.diploma['4'][lang], language: lang }
-
-      case 'diploma_result_5':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.results.diploma['5'][lang], language: lang }
-
-      case 'diploma_result_6':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.results.diploma['6'][lang], language: lang }
-
-      case 'diploma_result_revaluation':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.results.diploma.revaluation[lang], language: lang }
-
+        const resultPrompt = lang === 'english'
+          ? "Which semester result are you looking for? Please specify Diploma 1st to 6th semester."
+          : lang === 'hindi'
+          ? "आप किस सेमेस्टर का परिणाम चाहते हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
+          : "आप कौन सी सेमेस्टर का परिणाम चाहते हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
+        return { text: resultPrompt }
 
       case 'exam':
-        // General exam query - ask for semester directly
         setLastIntent('awaiting_diploma_exam_sem')
         setContextType('exam')
-        return { text: dteData.exams.semesterPrompt[lang], language: lang }
-
-      case 'diploma_exam_1':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.exams.diploma['1'][lang], language: lang }
-
-      case 'diploma_exam_2':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.exams.diploma['2'][lang], language: lang }
-
-      case 'diploma_exam_3':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.exams.diploma['3'][lang], language: lang }
-
-      case 'diploma_exam_4':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.exams.diploma['4'][lang], language: lang }
-
-      case 'diploma_exam_5':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.exams.diploma['5'][lang], language: lang }
-
-      case 'diploma_exam_6':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.exams.diploma['6'][lang], language: lang }
-
-      case 'special_exam':
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.exams.diploma.special[lang], language: lang }
+        const examPrompt = lang === 'english'
+          ? "Which semester exam are you asking about? Please specify Diploma 1st to 6th semester."
+          : lang === 'hindi'
+          ? "आप किस सेमेस्टर की परीक्षा के बारे में पूछ रहे हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
+          : "आप कौन सी सेमेस्टर की परीक्षा के बारे में पूछ रहे हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
+        return { text: examPrompt }
 
       case 'notice':
         setLastIntent(null)
         setContextType(null)
-        return { text: dteData.notices.latest[lang], language: lang }
+        const noticeText = lang === 'english'
+          ? "Latest notice: Diploma 1st Semester registration extended till 14 August 2025. Exam schedule announced for all semesters."
+          : lang === 'hindi'
+          ? "नवीनतम सूचना: डिप्लोमा प्रथम सेमेस्टर पंजीकरण की अंतिम तिथि 14 अगस्त 2025 तक बढ़ा दी गई है। सभी सेमेस्टर की परीक्षा तालिका जारी।"
+          : "नवीनतम सूचना: डिप्लोमा प्रथम सेमेस्टर पंजीकरण की अंतिम तिथि 14 अगस्त 2025 तक बढ़ा दी गई है। सभी सेमेस्टर की परीक्षा तालिका जारी।"
+        return { text: noticeText }
+
+      case 'news':
+        setLastIntent(null)
+        setContextType(null)
+        const newsText = lang === 'english'
+          ? "Yes, Diploma Revaluation Results have been announced on 18 September 2025."
+          : lang === 'hindi'
+          ? "हां, डिप्लोमा पुनर्मूल्यांकन परिणाम 18 सितंबर 2025 को घोषित हो गए हैं।"
+          : "हां, डिप्लोमा पुनर्मूल्यांकन परिणाम 18 सितंबर 2025 को घोषित हो गए हैं।"
+        return { text: newsText }
+
+      // Handle context-aware responses
+      case 'diploma_result_1':
+      case 'diploma_result_2':
+      case 'diploma_result_3':
+      case 'diploma_result_4':
+      case 'diploma_result_5':
+      case 'diploma_result_6':
+        setLastIntent(null)
+        setContextType(null)
+        const semNum = intent.split('_')[2]
+        const resultDates = {
+          '1': '12 Sep 2025', '2': '15 Sep 2025', '3': '18 Sep 2025',
+          '4': '20 Sep 2025', '5': '22 Sep 2025', '6': '25 Sep 2025'
+        }
+        const resultText = lang === 'english'
+          ? `Diploma ${semNum}${semNum === '1' ? 'st' : semNum === '2' ? 'nd' : semNum === '3' ? 'rd' : 'th'} Semester Result ${resultDates[semNum]} ko declare ho chuka hai.`
+          : lang === 'hindi'
+          ? `डिप्लोमा ${semNum === '1' ? 'प्रथम' : semNum === '2' ? 'द्वितीय' : semNum === '3' ? 'तृतीय' : semNum === '4' ? 'चतुर्थ' : semNum === '5' ? 'पंचम' : 'षष्ठ'} सेमेस्टर परिणाम ${resultDates[semNum]} को घोषित हो चुका है।`
+          : `डिप्लोमा ${semNum}${semNum === '1' ? 'st' : semNum === '2' ? 'nd' : semNum === '3' ? 'rd' : 'th'} सेमेस्टर परिणाम ${resultDates[semNum]} को घोषित हो चुका है।`
+        return { text: resultText }
+
+      case 'diploma_exam_1':
+      case 'diploma_exam_2':
+      case 'diploma_exam_3':
+      case 'diploma_exam_4':
+      case 'diploma_exam_5':
+      case 'diploma_exam_6':
+        setLastIntent(null)
+        setContextType(null)
+        const examSemNum = intent.split('_')[2]
+        const examDates = {
+          '1': '1 Oct 2025', '2': '5 Oct 2025', '3': '10 Oct 2025',
+          '4': '15 Oct 2025', '5': '20 Oct 2025', '6': '25 Oct 2025'
+        }
+        const examText = lang === 'english'
+          ? `Diploma ${examSemNum}${examSemNum === '1' ? 'st' : examSemNum === '2' ? 'nd' : examSemNum === '3' ? 'rd' : 'th'} Semester Exam ${examDates[examSemNum]} se start ho raha hai.`
+          : lang === 'hindi'
+          ? `डिप्लोमा ${examSemNum === '1' ? 'प्रथम' : examSemNum === '2' ? 'द्वितीय' : examSemNum === '3' ? 'तृतीय' : examSemNum === '4' ? 'चतुर्थ' : examSemNum === '5' ? 'पंचम' : 'षष्ठ'} सेमेस्टर परीक्षा ${examDates[examSemNum]} से शुरू हो रही है।`
+          : `डिप्लोमा ${examSemNum}${examSemNum === '1' ? 'st' : examSemNum === '2' ? 'nd' : examSemNum === '3' ? 'rd' : 'th'} सेमेस्टर परीक्षा ${examDates[examSemNum]} से शुरू हो रही है।`
+        return { text: examText }
 
       default:
-        // Check if we're in a semester context and semester not found
+        // Handle thank you responses
+        if (/(thank you|thanks|धन्यवाद|घणो धन्यवाद|shukriya)/i.test(lower)) {
+          setLastIntent(null)
+          setContextType(null)
+          const thankYouText = lang === 'english'
+            ? "You are welcome. Best of luck for your exams and results."
+            : lang === 'hindi'
+            ? "आपका स्वागत है। आपकी परीक्षा और परिणाम के लिए शुभकामनाएं।"
+            : "आपका स्वागत है। आपकी परीक्षा और परिणाम के लिए शुभकामनाएं।"
+          return { text: thankYouText }
+        }
+
+        // Handle namaste responses
+        if (/(namaste|नमस्ते)/i.test(lower) && !/(hi|hello)/i.test(lower)) {
+          setLastIntent(null)
+          setContextType(null)
+          const namasteText = lang === 'english'
+            ? "Namaste. I am Saarthi, at your service for DTE Rajasthan queries."
+            : lang === 'hindi'
+            ? "नमस्ते। मैं सारथी हूं, DTE राजस्थान की जानकारी के लिए आपकी सेवा में हूं।"
+            : "नमस्ते। मैं सारथी हूं, DTE राजस्थान की जानकारी के लिए आपकी सेवा में हूं।"
+          return { text: namasteText }
+        }
+
+        // Check if we're in a context and handle appropriately
+        if (lastIntent === 'awaiting_admission_type') {
+          if (/(eligibility|पात्रता|योग्यता)/i.test(lower)) {
+            setLastIntent(null)
+            setContextType(null)
+            const eligibilityDetailsText = lang === 'english'
+              ? "Diploma Admission 2025-26 Eligibility:\n• 10th pass with minimum 35% marks\n• Online application period: 11-14 August 2025\n• Application portal: www.dap2025.in\n• Counseling: Centralized online process\n• For authentication, please check the official portal."
+              : lang === 'hindi'
+              ? "डिप्लोमा प्रवेश 2025-26 पात्रता:\n• 10वीं पास न्यूनतम 35% अंकों के साथ\n• ऑनलाइन आवेदन अवधि: 11-14 अगस्त 2025\n• आवेदन पोर्टल: www.dap2025.in\n• काउंसलिंग: केंद्रीयकृत ऑनलाइन प्रक्रिया\n• प्रमाणीकरण के लिए, कृपया आधिकारिक पोर्टल देखें।"
+              : "डिप्लोमा प्रवेश 2025-26 पात्रता:\n• 10वीं पास न्यूनतम 35% अंकों के साथ\n• ऑनलाइन आवेदन अवधि: 11-14 अगस्त 2025\n• आवेदन पोर्टल: www.dap2025.in\n• काउंसलिंग: केंद्रीयकृत ऑनलाइन प्रक्रिया\n• प्रमाणीकरण के लिए, कृपया आधिकारिक पोर्टल देखें।"
+            return { text: eligibilityDetailsText }
+          } else if (/(first|1st|प्रथम|पहला|पहलो)/i.test(lower)) {
+            setLastIntent(null)
+            setContextType(null)
+            const firstYearText = lang === 'english'
+              ? "Diploma First Year Admission 2025-26:\n• Application period: 11-14 August 2025\n• Application portal: www.dap2025.in\n• Eligibility: 10th pass with 35% marks\n• Counseling: Online centralized process\n• For authentication, please check the official portal"
+              : lang === 'hindi'
+              ? "डिप्लोमा प्रथम वर्ष प्रवेश 2025-26:\n• आवेदन अवधि: 11-14 अगस्त 2025\n• आवेदन पोर्टल: www.dap2025.in\n• पात्रता: 10वीं पास 35% अंकों के साथ\n• काउंसलिंग: ऑनलाइन केंद्रीयकृत प्रक्रिया\n• प्रमाणीकरण के लिए, कृपया आधिकारिक पोर्टल देखें"
+              : "डिप्लोमा प्रथम वर्ष प्रवेश 2025-26:\n• आवेदन अवधि: 11-14 अगस्त 2025\n• आवेदन पोर्टल: www.dap2025.in\n• पात्रता: 10वीं पास 35% अंकों के साथ\n• काउंसलिंग: ऑनलाइन केंद्रीयकृत प्रक्रिया\n• प्रमाणीकरण के लिए, कृपया आधिकारिक पोर्टल देखें"
+            return { text: firstYearText }
+          } else if (/(lateral|लेटरल|entry)/i.test(lower)) {
+            setLastIntent(null)
+            setContextType(null)
+            const lateralText = lang === 'english'
+              ? "Diploma Lateral Entry (Direct 2nd Year) 2025:\n• Application period: 20-25 August 2025\n• Eligibility: 12th Science (PCM) OR ITI (2 years)\n• Minimum marks: 35%\n• Counseling: Online centralized process"
+              : lang === 'hindi'
+              ? "डिप्लोमा लेटरल एंट्री (सीधे द्वितीय वर्ष) 2025:\n• आवेदन अवधि: 20-25 अगस्त 2025\n• पात्रता: 12वीं विज्ञान (PCM) या ITI (2 वर्ष)\n• न्यूनतम अंक: 35%\n• काउंसलिंग: ऑनलाइन केंद्रीयकृत प्रक्रिया"
+              : "डिप्लोमा लेटरल एंट्री (सीधे द्वितीय वर्ष) 2025:\n• आवेदन अवधि: 20-25 अगस्त 2025\n• पात्रता: 12वीं विज्ञान (PCM) या ITI (2 वर्ष)\n• न्यूनतम अंक: 35%\n• काउंसलिंग: ऑनलाइन केंद्रीयकृत प्रक्रिया"
+            return { text: lateralText }
+          }
+        }
+
         if (lastIntent === 'awaiting_diploma_exam_sem' || lastIntent === 'awaiting_diploma_result_sem') {
           setLastIntent(null)
           setContextType(null)
-          return { text: dteData.semesterNotFound[lang], language: lang }
+          const notFoundText = lang === 'english'
+            ? "Sorry, this semester information is not available. Please check the official DTE Rajasthan website: https://dte.rajasthan.gov.in/"
+            : lang === 'hindi'
+            ? "खेद है, इस सेमेस्टर की जानकारी उपलब्ध नहीं है। कृपया आधिकारिक DTE राजस्थान वेबसाइट देखें: https://dte.rajasthan.gov.in/"
+            : "माफ करो, इस semester की जाणकारी उपलब्ध कोनी है। कृपया official DTE राजस्थान website देखो: https://dte.rajasthan.gov.in/"
+          return { text: notFoundText }
         }
         
-        setLastIntent(null)
-        setContextType(null)
-        return { text: dteData.refusal[lang], language: lang }
+        return null // No dataset response available
     }
   }
 
@@ -346,6 +646,8 @@ const Chatbot = () => {
         // Auto-switch language for next recognition based on detected language
         if (detectedLang === 'english') {
           recognitionRef.current.lang = 'en-IN'
+        } else if (detectedLang === 'rajasthani') {
+          recognitionRef.current.lang = 'hi-IN' // Use Hindi recognition for Rajasthani
         } else {
           recognitionRef.current.lang = 'hi-IN'
         }
@@ -385,8 +687,8 @@ const Chatbot = () => {
   }, [])
 
 
-  // Handle sending message with context awareness
-  const handleSend = () => {
+  // Handle sending message with context awareness and API integration
+  const handleSend = async () => {
     if (!inputMessage.trim()) return
     
     const userMessage = {
@@ -401,14 +703,15 @@ const Chatbot = () => {
     setInputMessage('')
     setIsTyping(true)
 
-    setTimeout(() => {
-      const botResponse = generateResponse(userMessage.text)
+    try {
+      const botResponse = await generateResponse(userMessage.text)
       const botMessage = { 
         id: prev => prev.length + 1, 
         text: botResponse.text, 
         sender: 'bot', 
         timestamp: new Date(), 
-        language: botResponse.language 
+        language: botResponse.language,
+        source: botResponse.source
       }
       
       setMessages(prev => [...prev, {
@@ -418,18 +721,30 @@ const Chatbot = () => {
       setIsTyping(false)
       
       // No audio playback - only text response
-    }, 800)
-  }
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
+    } catch (error) {
+      console.error('Error generating response:', error)
+      // Fallback error message
+      const errorMessage = {
+        id: messages.length + 2,
+        text: "Sorry, I'm having trouble responding right now. Please try again!",
+        sender: 'bot',
+        timestamp: new Date(),
+        language: 'english'
+      }
+      setMessages(prev => [...prev, errorMessage])
+      setIsTyping(false)
     }
   }
 
-  const handleSendMessage = () => {
-    handleSend()
+  const handleKeyPress = async (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      await handleSend()
+    }
+  }
+
+  const handleSendMessage = async () => {
+    await handleSend()
   }
 
   const toggleListening = () => {
@@ -574,9 +889,11 @@ const Chatbot = () => {
                         )}
                         <div className="flex-1">
                           <p className="text-sm leading-relaxed whitespace-pre-line">{message.text}</p>
-                          <p className="text-xs mt-1 opacity-60">
-                            {formatTime(message.timestamp)}
-                          </p>
+                          <div className="flex items-center justify-between mt-1">
+                            <p className="text-xs opacity-60">
+                              {formatTime(message.timestamp)}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
