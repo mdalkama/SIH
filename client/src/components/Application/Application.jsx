@@ -21,11 +21,11 @@ async function transliterateToHindi(latinText) {
 
     const suggestion =
       Array.isArray(data) &&
-      data[0] === 'SUCCESS' &&
-      data[1] &&
-      data[1][0] &&
-      data[1][0][1] &&
-      data[1][0][1][0]
+        data[0] === 'SUCCESS' &&
+        data[1] &&
+        data[1][0] &&
+        data[1][0][1] &&
+        data[1][0][1][0]
         ? data[1][0][1][0]
         : '';
 
@@ -58,11 +58,9 @@ const InputField = ({ label, placeholder, type = "text", required = false, value
       placeholder={placeholder}
       required={required}
       disabled={disabled}
-      className={`w-full border rounded-lg px-4 py-3 bg-[#f8fafc] text-sm transition-all duration-200 placeholder-[#94a3b8] focus:outline-none focus:border-[#3b82f6] focus:shadow-md ${
-        error ? "border-[#ef4444]" : "border-[#e2e8f0]"
-      } ${
-        disabled ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""
-      }`}
+      className={`w-full border rounded-lg px-4 py-3 bg-[#f8fafc] text-sm transition-all duration-200 placeholder-[#94a3b8] focus:outline-none focus:border-[#3b82f6] focus:shadow-md ${error ? "border-[#ef4444]" : "border-[#e2e8f0]"
+        } ${disabled ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""
+        }`}
     />
     {error && <span className="text-xs text-[#ef4444]">{error}</span>}
   </div>
@@ -77,11 +75,9 @@ const SelectField = ({ label, options = [], required = false, value, onChange, n
     </label>
     <div className="relative">
       <select name={name} value={value} onChange={onChange} required={required} disabled={disabled}
-        className={`w-full border rounded-lg px-4 py-3 bg-[#f8fafc] text-sm appearance-none cursor-pointer transition-all duration-200 focus:outline-none focus:border-[#3b82f6] focus:shadow-md ${
-          error ? "border-[#ef4444]" : "border-[#e2e8f0]"
-        } ${
-          disabled ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""
-        }`}
+        className={`w-full border rounded-lg px-4 py-3 bg-[#f8fafc] text-sm appearance-none cursor-pointer transition-all duration-200 focus:outline-none focus:border-[#3b82f6] focus:shadow-md ${error ? "border-[#ef4444]" : "border-[#e2e8f0]"
+          } ${disabled ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""
+          }`}
       >
         <option value="" className="text-[#94a3b8]">{placeholder}</option>
         {options.map((opt, idx) => (
@@ -96,7 +92,7 @@ const SelectField = ({ label, options = [], required = false, value, onChange, n
 
 const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl = "https://svumshow.com/assets/images/department-logo/pngwing.png", admissionType = "diploma", sessionYear = "2025", sessionTimer = null, applicationId, courseId }) => {
   const navigate = useNavigate();
-  
+
   // Get empty form data structure
   const getEmptyFormData = () => {
     return {
@@ -122,18 +118,27 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
 
   // Initialize form data from localStorage if available
   const getInitialFormData = () => {
+
+    const initialData = {
+      ...getEmptyFormData(), // Khaali form ka structure
+      applicationId: applicationId,
+      courseId: courseId,
+      sessionId: sessionYear,
+      studentDetails: applicationId
+    };
+
     if (applicationId) {
       const savedFormData = localStorage.getItem(`formData_${applicationId}`);
       if (savedFormData) {
         try {
-          return JSON.parse(savedFormData);
+          return { ...initialData, ...JSON.parse(savedFormData) };
         } catch (error) {
           console.error('Error parsing saved form data:', error);
         }
       }
     }
-    
-    return getEmptyFormData();
+
+    return initialData;
   };
 
   // Initialize app state from localStorage if available
@@ -189,13 +194,13 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
       // Clear localStorage data
       localStorage.removeItem(`formData_${applicationId}`);
       localStorage.removeItem(`appState_${applicationId}`);
-      
+
       // Clear all file info
       Object.keys(uploadedFiles).forEach(key => {
         localStorage.removeItem(`fileInfo_${applicationId}_${key}`);
       });
     }
-    
+
     // Reset all state to empty values
     setFormData(getEmptyFormData());
     setActiveTab(0);
@@ -203,7 +208,7 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
     setCompletedTabs([]);
     setUploadedFiles({});
     setIsPaymentCompleted(false);
-    
+
     console.log('Form reset completed - all data cleared');
   };
 
@@ -241,16 +246,16 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
   const handleInputChange = async (e) => {
     if (isPaymentCompleted) return; // Prevent changes after payment
     const { name, value } = e.target;
-    
+
     console.log(`🔄 Form field changed: ${name} = ${value}`);
-    
+
     // Update the current field
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
       console.log('Updated formData:', newData);
       return newData;
     });
-    
+
     // Auto-transliterate English fields to corresponding Hindi fields
     if (name === 'applicantName' && value.trim()) {
       try {
@@ -274,7 +279,7 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
         console.log('Transliteration failed for motherName:', error);
       }
     }
-    
+
     // Clear errors for the field being edited
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -285,19 +290,19 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
     if (isPaymentCompleted) return; // Prevent changes after payment
     const { name, files } = e.target;
     const file = files[0];
-    
+
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
         setErrors((prev) => ({ ...prev, [name]: "File size must be less than 2MB" }));
         return;
       }
-      
+
       const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
       if (!allowedTypes.includes(file.type)) {
         setErrors((prev) => ({ ...prev, [name]: "Only PDF, JPG, JPEG, and PNG files are allowed" }));
         return;
       }
-      
+
       setUploadedFiles((prev) => ({ ...prev, [name]: file }));
       if (errors[name]) {
         setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -357,7 +362,7 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
       console.log('Uploaded Files:', uploadedFiles);
       console.log('Final Data:', finalData);
       console.log('=== END SUBMISSION DATA ===');
-      
+
       await new Promise(resolve => setTimeout(resolve, 2000));
       alert('आवेदन पत्र सफलतापूर्वक जमा हो गया! भुगतान के लिए आगे बढ़ें।');
     } catch (error) {
@@ -407,11 +412,11 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
             {/* Logo and Title Section - Official Bilingual Format */}
             <div className="flex items-center space-x-3 sm:space-x-4">
               <div className="flex-shrink-0">
-                <img 
-                  src={logoUrl} 
-                  alt="Government of Rajasthan Logo" 
-                  className="h-12 w-12 sm:h-16 sm:w-16 object-contain cursor-pointer hover:opacity-80 transition-opacity" 
-                  onError={(e) => (e.target.style.display = "none")} 
+                <img
+                  src={logoUrl}
+                  alt="Government of Rajasthan Logo"
+                  className="h-12 w-12 sm:h-16 sm:w-16 object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                  onError={(e) => (e.target.style.display = "none")}
                   onClick={() => navigate('/')}
                 />
               </div>
@@ -434,7 +439,7 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
                 </h3>
               </div>
             </div>
-            
+
             {/* Right Side Portal Info - Professional Styling */}
             <div className="hidden lg:block ml-auto">
               <div className="text-right border border-gray-200 rounded-lg px-4 py-3">
@@ -450,7 +455,7 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
                 </div>
               </div>
             </div>
-            
+
 
           </div>
         </div>
@@ -470,16 +475,13 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
                   key={index}
                   onClick={() => canAccess && !isPaymentCompleted && setActiveTab(index)}
                   disabled={!canAccess || isPaymentCompleted}
-                  className={`flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2 px-1.5 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 text-xs font-medium transition-all duration-500 ease-out border-b-2 sm:border-b-3 whitespace-nowrap flex-1 min-w-[60px] sm:min-w-0 transform ${
-                    canAccess && !isPaymentCompleted ? 'cursor-pointer' : 'cursor-not-allowed'
-                  } ${
-                    isActive ? "bg-[#1e40af] text-white border-[#1e40af] font-bold shadow-md sm:shadow-lg scale-[1.02] sm:scale-105" :
-                    isCompleted ? "bg-[#10b981] text-white border-[#10b981] hover:bg-[#059669] hover:shadow-sm sm:hover:shadow-md hover:scale-[1.01] sm:hover:scale-102" :
-                    canAccess && !isPaymentCompleted ? "bg-[#f8fafc] text-[#64748b] border-transparent hover:bg-[#e2e8f0] hover:text-[#1e40af] hover:shadow-sm hover:scale-[1.01] sm:hover:scale-102" :
-                    "bg-[#f1f5f9] text-[#94a3b8] border-transparent cursor-not-allowed opacity-60"
-                  } ${
-                    isPaymentCompleted && index !== 6 ? 'opacity-50 pointer-events-none' : ''
-                  }`}
+                  className={`flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2 px-1.5 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 text-xs font-medium transition-all duration-500 ease-out border-b-2 sm:border-b-3 whitespace-nowrap flex-1 min-w-[60px] sm:min-w-0 transform ${canAccess && !isPaymentCompleted ? 'cursor-pointer' : 'cursor-not-allowed'
+                    } ${isActive ? "bg-[#1e40af] text-white border-[#1e40af] font-bold shadow-md sm:shadow-lg scale-[1.02] sm:scale-105" :
+                      isCompleted ? "bg-[#10b981] text-white border-[#10b981] hover:bg-[#059669] hover:shadow-sm sm:hover:shadow-md hover:scale-[1.01] sm:hover:scale-102" :
+                        canAccess && !isPaymentCompleted ? "bg-[#f8fafc] text-[#64748b] border-transparent hover:bg-[#e2e8f0] hover:text-[#1e40af] hover:shadow-sm hover:scale-[1.01] sm:hover:scale-102" :
+                          "bg-[#f1f5f9] text-[#94a3b8] border-transparent cursor-not-allowed opacity-60"
+                    } ${isPaymentCompleted && index !== 6 ? 'opacity-50 pointer-events-none' : ''
+                    }`}
                 >
                   {/* Icon Section - Responsive */}
                   <div className="flex items-center justify-center transition-all duration-300">
@@ -499,7 +501,7 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Text Section - Highly Responsive */}
                   <span className="text-[10px] sm:text-xs md:text-sm leading-tight text-center px-0.5 sm:px-0 font-medium sm:font-normal">
                     <span className="block sm:hidden">
@@ -529,13 +531,13 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
               {activeTab === 5 && "दस्तावेज़ / Documents"}
               {activeTab === 6 && "पूर्वावलोकन / Preview"}
             </h2>
-          
+
           </div>
 
           {activeTab === 0 && (
             <form onSubmit={(e) => e.preventDefault()}>
 
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InputField label="आवेदक का नाम (Applicant's Name)" name="applicantName" value={formData.applicantName} onChange={handleInputChange} placeholder="Enter Applicant's Name" required error={errors.applicantName} disabled={isPaymentCompleted} />
                 <InputField label="आवेदक का नाम हिंदी में (Applicant's Name in Hindi) " name="applicantNameHindi" value={formData.applicantNameHindi} onChange={handleInputChange} placeholder="आवेदक का नाम हिंदी में" required error={errors.applicantNameHindi} disabled={isPaymentCompleted} />
@@ -617,12 +619,12 @@ const AdmissionForm = ({ formName = "Polytechnic Admission Form 2025", logoUrl =
 
           {activeTab === 6 && (
             <>
-              <Preview 
-                formData={formData} 
-                uploadedFiles={uploadedFiles} 
-                handleSubmit={handleFinalSubmit} 
-                isSubmitting={isSubmitting} 
-                setActiveTab={setActiveTab} 
+              <Preview
+                formData={formData}
+                uploadedFiles={uploadedFiles}
+                handleSubmit={handleFinalSubmit}
+                isSubmitting={isSubmitting}
+                setActiveTab={setActiveTab}
                 admissionType={admissionType}
                 onPaymentComplete={handlePaymentComplete}
                 isFormDisabled={isPaymentCompleted}

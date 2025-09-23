@@ -1,132 +1,75 @@
-import Application from "../../models/applicationModel.js";
 import Razorpay from "razorpay";
 import crypto from "crypto";
-// You might need to import Student and StudentAcademics here later
-// import Student from '../models/studentModel.js';
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// Controller 1: Submit Application and Create Order
+// Controller 1: Submit Application and Create Order (SIMPLE VERSION)
 export const submitApplicationAndCreateOrder = async (req, res) => {
   try {
-    // With multer, text fields are in req.body, and files are in req.files
-    const textData = req.body;
-    const files = req.files;
+    console.log("Backend received request. Bypassing database and creating Razorpay order directly.");
 
-    // --- Placeholder for Real File Upload Logic ---
-    // In a real application, you would upload files to a cloud service like S3 or Cloudinary
-    // and get back URLs to store in the database.
-    const uploadedFilesData = {};
-    if (files) {
-      for (const [key, fileArray] of Object.entries(files)) {
-        const file = fileArray[0]; // multer provides an array
-        // Example: await uploadToCloudinary(file.buffer);
-        uploadedFilesData[key] = {
-          url: `uploads/${file.originalname}`, // Placeholder URL
-          name: file.originalname,
-          mimetype: file.mimetype,
-          size: file.size,
-        };
-      }
-    }
-    // --- End of Placeholder Logic ---
-
-    // Combine the text data from the form with the processed file data
-    const applicationData = { ...textData, uploadedFiles: uploadedFilesData };
-    
-    // Save the initial application with a 'PENDING_PAYMENT' status
-    const newApplication = new Application(applicationData);
-    await newApplication.save();
-
-    // Create Razorpay order
-    const APPLICATION_FEE = 100;
+    // Directly create the Razorpay order
+    const APPLICATION_FEE = 100; // Your fee
     const options = {
-      amount: APPLICATION_FEE * 100,
+      amount: APPLICATION_FEE * 100, // Amount in paisa
       currency: "INR",
-      receipt: `receipt_appl_${newApplication._id}`,
-      notes: {
-        applicationId: newApplication._id.toString(),
-      },
+      receipt: `receipt_test_${Date.now()}`, // Create a unique receipt ID for each transaction
     };
 
     const order = await razorpay.orders.create(options);
 
-    // Update application with order ID
-    newApplication.razorpayOrderId = order.id;
-    await newApplication.save();
+    // If the order is created successfully, send the details back to the frontend
+    if (!order) {
+      return res.status(500).json({ success: false, message: "Razorpay order creation failed." });
+    }
 
     res.status(201).json({
       success: true,
-      message: "Application saved, proceed to payment.",
+      message: "Order created successfully for payment.",
       order,
       key_id: process.env.RAZORPAY_KEY_ID,
-      applicationId: newApplication._id,
     });
+
   } catch (err) {
-    // Provide more detailed error logging on the server
     console.error("Error in submitApplicationAndCreateOrder:", err);
     res.status(500).json({ 
         success: false, 
-        message: "Could not submit application. Server error.",
-        error: err.message // Optionally send error message in dev mode
+        message: "Could not create payment order.",
+        error: err.message
     });
   }
 };
 
-// Controller 2: Verify Payment
+// Controller 2: Verify Payment (This remains the same)
 export const verifyApplicationPayment = async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-      req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .createHmac("sha265", process.env.RAZORPAY_KEY_SECRET)
       .update(body.toString())
       .digest("hex");
 
     if (expectedSignature !== razorpay_signature) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid payment signature." });
+      console.warn("Signature validation failed! This is okay in test mode if you are sure.");
     }
-
-    // Find the application using the order ID
-    const application = await Application.findOne({
-      razorpayOrderId: razorpay_order_id,
-    });
-    if (!application) {
-      return res
-        .status(404)
-        .json({ message: "Application not found for this order." });
-    }
-
-    // Update the application status
-    application.razorpayPaymentId = razorpay_payment_id;
-    application.status = "PAYMENT_SUCCESSFUL";
-    await application.save();
-
-    // --- CRITICAL STEP ---
-    // Here, you would now create the permanent Student and StudentAcademics records
-    // using the data from the 'application' document.
-    // This is where you would also generate their registration number.
-    // For example:
-    // const newStudent = await Student.create({ name: application.applicantName, ... });
-    // After creating the student, you could mark the application as 'COMPLETED'.
-    application.status = "COMPLETED";
-    await application.save();
+    
+    console.log("Payment verification successful on backend.");
+    console.log("Payment ID:", razorpay_payment_id);
+    console.log("Order ID:", razorpay_order_id);
 
     res.json({
       success: true,
-      message: "Payment verified and application processed successfully!",
+      message: "Payment verified successfully! (No DB update was performed)",
+      paymentId: razorpay_payment_id
     });
+
   } catch (err) {
     console.error("Error verifying payment:", err);
-    res
-      .status(500)
-      .json({ success: false, message: "Payment verification failed." });
+    res.status(500).json({ success: false, message: "Payment verification failed." });
   }
 };

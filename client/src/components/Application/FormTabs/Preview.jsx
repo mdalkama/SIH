@@ -145,6 +145,7 @@ const Preview = ({
       }
 
       const { order, key_id } = submitData;
+      console.log(order, key_id);
 
       if (!order || !key_id) {
         throw new Error("Server response is missing 'order' or 'key_id'. Cannot proceed with payment.");
