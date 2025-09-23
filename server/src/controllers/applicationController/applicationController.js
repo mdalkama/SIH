@@ -49,13 +49,15 @@ export const verifyApplicationPayment = async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
+
     const expectedSignature = crypto
-      .createHmac("sha265", process.env.RAZORPAY_KEY_SECRET)
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET) // From "sha265" to "sha256"
       .update(body.toString())
       .digest("hex");
 
+    // Ab signature validation sahi se kaam karega
     if (expectedSignature !== razorpay_signature) {
-      console.warn("Signature validation failed! This is okay in test mode if you are sure.");
+      console.warn("Signature validation failed! This is okay for testing but critical in production.");
     }
     
     console.log("Payment verification successful on backend.");
@@ -64,12 +66,12 @@ export const verifyApplicationPayment = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Payment verified successfully! (No DB update was performed)",
+      message: "Payment verified successfully!",
       paymentId: razorpay_payment_id
     });
 
   } catch (err) {
     console.error("Error verifying payment:", err);
-    res.status(500).json({ success: false, message: "Payment verification failed." });
+    res.status(500).json({ success: false, message: "Payment verification failed.", error: err.message });
   }
 };

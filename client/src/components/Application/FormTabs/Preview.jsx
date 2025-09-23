@@ -130,8 +130,6 @@ const Preview = ({
       // 4. Send the request using FormData
       const submitResponse = await fetch(`${APPLICATION_API_URL}/submit`, {
         method: 'POST',
-        // DO NOT set the 'Content-Type' header. 
-        // The browser will automatically set it to 'multipart/form-data' with the correct boundary.
         body: formDataToSend,
       });
 
