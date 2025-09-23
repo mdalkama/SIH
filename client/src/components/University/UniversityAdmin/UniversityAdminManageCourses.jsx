@@ -80,8 +80,34 @@ const UniversityAdminManageCourses = () => {
     const hideAlert = () => setAlert({ show: false, type: 'info', message: '' });
     const handleEdit = (item) => { setEditingItem(item); setShowEditModal(true); };
     const handleDeleteClick = (id, itemName) => { setDeleteModal({ show: true, itemId: id, itemName: itemName, itemType: activeTab === 'courses' ? 'course' : 'subject' }); };
-    const handleDeleteConfirm = async () => { /* ... (user's existing logic) ... */ };
-    const stats = useMemo(() => {
+    const handleDeleteConfirm = async () => {
+        setLoading(true);
+        try {
+            const { itemId, itemName, itemType } = deleteModal;
+            const endpoint = itemType === 'course' ? 'course' : 'subject';
+
+            const response = await fetch(`https://sih-4ptm.onrender.com/api/v1/${endpoint}/${itemId}`, {
+                method: 'DELETE', credentials: 'include',
+            });
+
+            if (response.ok) {
+                if (itemType === 'course') {
+                    setCourses(prev => prev.filter(c => c._id !== itemId));
+                } else {
+                    setSubjects(prev => prev.filter(s => s._id !== itemId));
+                }
+                showAlert('success', `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} "${itemName}" deleted successfully!`);
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Failed to delete ${itemType}`);
+            }
+        } catch (error) {
+            showAlert('error', `Failed to delete ${deleteModal.itemType}. ${error.message}`);
+        } finally {
+            setLoading(false);
+            setDeleteModal({ show: false, itemId: null, itemName: '', itemType: 'item' });
+        }
+    };    const stats = useMemo(() => {
         if (activeTab === 'courses') {
             const filteredCourses = activeCourseTab === 'all' ? courses : activeCourseTab === 'diploma-engg' ? courses.filter(c => c.degree === 'Diploma Engineering') : courses.filter(c => c.degree === 'Diploma Non-Engineering');
             return { total: filteredCourses.length, Diploma_Engg: courses.filter(c => c.degree === 'Diploma Engineering').length, Diploma_Non_Engg: courses.filter(c => c.degree === 'Diploma Non-Engineering').length, };
