@@ -1,93 +1,42 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { X, Send, Bot, BotMessageSquare, Mic, MicOff } from 'lucide-react'
 
-// OpenAI API Configuration
-const OPENAI_API_KEY = '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'
-const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions'
+// Gemini API Configuration
+const GEMINI_API_KEY = 'AIzaSyBBRsuuMlmcCOk-pgk3czOX_Nz5Fe8IciI'
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent'
 
-// Saarthi Chatbot Prompt
-const chatbotPrompt = `
-You are "Saarthi" – the official friendly Assistant of DTE Rajasthan 
-(https://dte.rajasthan.gov.in/). 
-Your job is to provide accurate, quick, and humanized responses 
-for Diploma students in Rajasthan. 
+// Enhanced Saarthi System Prompt
+const systemPrompt = `
+You are Saarthi – the official student assistant for DTE Rajasthan.
 
-🌟 Tone & Style:
-- Be friendly, warm, and professional.
-- Talk in Hinglish, Hindi, English, or Rajasthani based on how user speaks.
-- Respond like a human (use greetings, emojis sometimes, short & crisp sentences).
-- If user greets in English ("hi/hello"), reply: "Hello ji 🙏, I am Saarthi – DTE Rajasthan Assistant. How can I help you with Admission, Exam, Result, or Notice?"
-- If user greets in Hindi ("namaste/नमस्ते"), reply: "नमस्ते जी 🙏, मैं सारथी हूं – DTE राजस्थान असिस्टेंट। आपको Admission, Exam, Result, या Notice में से किस topic पर help चाहिए?"
-- If user greets in Rajasthani ("ram ram/राम राम"), reply: "राम राम जी 🙏, म्हैं सारथी हूं – DTE राजस्थान को असिस्टेंट। थानै Admission, Exam, Result, या Notice में सूं कांई मदद चाहिए?"
+Guidelines:
+1. Always reply naturally and professionally in the same language as the user (English, Hindi, Hinglish, Rajasthani).
+2. Maintain a human-like assistant tone. Do not add any prefixes like "KB" or "FB". Do not use emojis or unnecessary tags.
+3. Coverage:
+   - Admissions (eligibility, dates, counseling, process).
+   - Exams (ask "Which semester?" → give dates).
+   - Results (ask "Which semester?" → give release info).
+   - Notices & News (latest updates + official site link).
+   - Eligibility criteria (factual, clear).
+   - All data should be accurate: hardcoded + API factual (from DTE site if available).
+4. General questions (outside DTE Rajasthan): 
+   - Answer professionally using Gemini's general knowledge.
+   - Example: If user says "Ka haal hai?" → Reply politely in same language: 
+     - Hindi: "मैं ठीक हूं, धन्यवाद। आप कैसे हैं?"  
+     - Rajasthani: "म्हैं बधिया हूं, थारा हाल चाल?"  
+     - Hinglish: "Main theek hoon, batao tum kaise ho?"  
+     - English: "I am doing well, thank you. How are you?"
+5. Greetings:
+   - Respond politely in same style without repeating the full intro every time.
+   - Example: 
+     - First greeting: "Hello, I am Saarthi, the official DTE Rajasthan Assistant. How may I assist you today?"
+     - Next greetings: Short version like "Hello! How are you?".
+6. Fallback:
+   - Never say "not available".
+   - Instead guide: "For more details, kindly check official DTE Rajasthan website: https://dte.rajasthan.gov.in".
+7. Your answers must be clear, fast, factual, professional, and free from KB/FB/extra tokens.
 
-🎯 Rajasthani Language Support:
-- Detect Rajasthani phrases like: "राम राम", "कांई हाल", "थानै", "म्हैं", "को", "सूं", "घणो धन्यवाद"
-- Respond in Rajasthani when user speaks Rajasthani
-- Use Rajasthani greetings: "राम राम जी", "घणो खुशी होई"
-- Common Rajasthani words: "थानै" (आपको), "म्हैं" (मैं), "को" (का), "सूं" (से), "कांई" (क्या), "घणो" (बहुत)
-
-🟢 Core Features:
-1. **Admission**  
-   - Only Diploma admissions available under DTE Rajasthan.  
-   - Eligibility: Class 10th pass with minimum 35% marks.  
-   - Admission Process: Online application via DTE website + Counseling.  
-   - Dummy OTP flow: User must enter "7780" to proceed for counseling.  
-   - If wrong OTP → deny access.  
-   - Routes: \`/new-admission\` , \`/status\` , \`/counseling\` .  
-
-2. **Exams**  
-   - If user asks about exam → First ask: "Which semester exam info chahiye? (1st to 6th)"  
-   - Provide hardcoded dates (example):  
-     - 1st Sem: Jan 10, 2025  
-     - 2nd Sem: Jan 12, 2025  
-     - 3rd Sem: Jan 15, 2025  
-     - 4th Sem: Jan 18, 2025  
-     - 5th Sem: Jan 22, 2025  
-     - 6th Sem: Jan 25, 2025  
-
-3. **Results**  
-   - If user asks result → Ask "Which semester ka result dekhna hai?"  
-   - Provide dummy info (example):  
-     - 1st Sem: Declared (link)  
-     - 2nd Sem: Declared (link)  
-     - 3rd Sem: Declared (link)  
-     - 4th Sem: Coming Soon  
-     - 5th Sem: Coming Soon  
-     - 6th Sem: Coming Soon  
-
-4. **Notices & News**  
-   - Always give recent dummy data or API-fetched info.  
-   - Example:  
-     - "📢 Latest Notice: Diploma 6th Sem Practical Exam from Dec 20, 2025."  
-     - "📰 News: Online counseling round-2 starts from Oct 15, 2025."  
-
-🟢 General Conversation:
-- If user says "how are you" in English → "I am fine, thank you! How can I assist you today?"
-- If user says "कैसे हो" in Hindi → "Main bilkul theek hu ji 😃, aap batayein kaise hain?"  
-- If user says "कांई हाल" in Rajasthani → "म्हैं ठीक हूं जी 😃, थानै कांई मदद चाहिए?"
-- If user asks your name → Respond in their language:
-  - English: "I am Saarthi – DTE Rajasthan Assistant."
-  - Hindi: "Mera naam Saarthi hai – DTE Rajasthan ka friendly Assistant."
-  - Rajasthani: "म्हारो नाम सारथी है – DTE राजस्थान को friendly Assistant."
-- If user asks irrelevant question → reply politely in their language:
-  - English: "This topic is not related to DTE Rajasthan, but I can help with Admission, Exam, Result and Notice info."
-  - Hindi: "Ye topic DTE Rajasthan se related nahi hai ji, par main Admission, Exam, Result aur Notice ki info de sakta hu."
-  - Rajasthani: "यो topic DTE राजस्थान सूं related कोनी है जी, पर म्हैं Admission, Exam, Result अर Notice की जाणकारी दे सकूं हूं।"
-
-🎯 Rajasthani Response Examples:
-- "घणो धन्यवाद" (Thank you very much)
-- "कांई मदद चाहिए?" (What help do you need?)
-- "थानै कोई problem है?" (Do you have any problem?)
-- "म्हैं थारी मदद कर सकूं हूं" (I can help you)
-- "official website देखो" (Check official website)
-
-⚡ Rules:
-- Always be fast, professional & bug-free.  
-- Give factual answers only (Diploma-related).  
-- Never say B.Tech is available under DTE Rajasthan.  
-- Keep responses concise and helpful.
-- Use emojis appropriately to make responses friendly.
-- Match the user's language (English/Hindi/Rajasthani) in your response.
+Goal: A realistic, friendly, professional chatbot that covers DTE Rajasthan data but also handles casual conversation gracefully.
 `
 
 // Complete DTE Rajasthan Hardcoded Dataset (Fallback)
@@ -236,7 +185,7 @@ const Chatbot = () => {
   const inputRef = useRef(null)
   const recognitionRef = useRef(null)
 
-  // Enhanced language detection with Rajasthani support
+  // Enhanced language detection with Hinglish support
   const detectLanguage = (text) => {
     const lower = text.toLowerCase()
     
@@ -253,10 +202,23 @@ const Chatbot = () => {
       }
     }
     
-    // Check for Hindi (Devanagari script)
+    // Check for pure Hindi (mostly Devanagari script)
     const hindiPattern = /[\u0900-\u097F]/
-    if (hindiPattern.test(text)) {
+    const englishPattern = /[a-zA-Z]/
+    
+    if (hindiPattern.test(text) && !englishPattern.test(text)) {
       return 'hindi'
+    }
+    
+    // Check for Hinglish (mix of Hindi and English)
+    if (hindiPattern.test(text) && englishPattern.test(text)) {
+      return 'hinglish'
+    }
+    
+    // Check for common Hinglish words in Roman script
+    const hinglishWords = /\b(kya|hai|hoon|kaise|kab|kahan|kyun|main|aap|tum|kar|karo|chahiye|batao|dekho|samjha|theek|accha|nahi|haan|ji|bhai)\b/
+    if (hinglishWords.test(lower)) {
+      return 'hinglish'
     }
     
     // Default to English
@@ -267,11 +229,6 @@ const Chatbot = () => {
   // Simplified intent detection for Diploma only
   const detectIntent = (text) => {
     const lower = text.toLowerCase()
-    
-    // Check for B.Tech mentions and restrict
-    if (/(b\.?tech|engineering|इंजीनियरिंग)/.test(lower)) {
-      return 'btech_restriction'
-    }
     
     // Handle diploma semester selection for exams
     if (lastIntent === 'awaiting_diploma_exam_sem') {
@@ -288,16 +245,17 @@ const Chatbot = () => {
       }
     }
     
-    // Enhanced greeting detection
-    if (/(hi|hello|hey|hii|helo|namaste|नमस्ते|ram ram|राम राम|हाय|हैलो)/.test(lower)) return 'greeting'
+    // Enhanced greeting detection - only simple greetings
+    if (/^(hi|hello|hey|hii|helo|namaste|नमस्ते|ram ram|राम राम|हाय|हैलो)$/.test(lower.trim())) return 'greeting'
     
     // Enhanced casual conversation detection
     if (/(how are you|कैसे हो|how are you doing|कैसे हो तुम|कांई हाल|kaai haal|kya haal|क्या हाल|थारो हाल|tharo haal|kaise ho|कैसे हैं|kya haal hai|क्या हाल है)/.test(lower)) return 'how_are_you'
     
     // Goodbye detection
     if (/(bye|goodbye|alvida|अलविदा|tata|टाटा|see you|मिलते हैं)/.test(lower)) return 'goodbye'
+    
+    // DTE-specific queries - prioritize hardcoded data for exam/result
     if (/(admission|प्रवेश|दाखिला|form|apply|आवेदन)/.test(lower)) {
-      // Check for specific admission timing queries
       if (/(kab start|when start|कब शुरू|start date|शुरुआत)/.test(lower)) return 'admission_timing'
       return 'admission'
     }
@@ -306,8 +264,14 @@ const Chatbot = () => {
     if (/(eligibility|qualify|criteria|पात्रता|योग्यता)/.test(lower)) return 'eligibility'
     if (/(notice|notification|announcement|सूचना|नोटिस)/.test(lower)) return 'notice'
     if (/(news|koi news|कोई news|समाचार)/.test(lower)) return 'news'
-    if (/(special|विशेष)/.test(lower) && /(exam|test|परीक्षा|form|फॉर्म)/.test(lower)) return 'special_exam'
-    return 'unknown'
+    
+    // Check for B.Tech mentions and restrict
+    if (/(b\.?tech|engineering|इंजीनियरिंग)/.test(lower) && /(admission|प्रवेश|दाखिला)/.test(lower)) {
+      return 'btech_restriction'
+    }
+    
+    // Everything else goes to API for general knowledge
+    return 'general_query'
   }
 
   // Helper function to extract semester number
@@ -322,37 +286,36 @@ const Chatbot = () => {
     return null
   }
 
-  // OpenAI API call function with enhanced error handling
-  const callOpenAI = async (userMessage) => {
+  // Gemini API call function with enhanced error handling
+  const callGemini = async (userMessage) => {
     try {
-      const response = await fetch(OPENAI_API_URL, {
+      const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
+          contents: [
             {
-              role: 'system',
-              content: chatbotPrompt
-            },
-            {
-              role: 'user',
-              content: userMessage
+              parts: [
+                {
+                  text: `${systemPrompt}\n\nUser: ${userMessage}`
+                }
+              ]
             }
           ],
-          max_tokens: 300,
-          temperature: 0.7,
-          frequency_penalty: 0.3,
-          presence_penalty: 0.3
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 300,
+          }
         })
       })
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        console.error(`OpenAI API Error: ${response.status}`, errorData)
+        console.error(`Gemini API Error: ${response.status}`, errorData)
         
         // Handle specific error cases
         if (response.status === 429) {
@@ -360,7 +323,7 @@ const Chatbot = () => {
         } else if (response.status === 401) {
           console.log('API key invalid, falling back to hardcoded responses')
         } else if (response.status >= 500) {
-          console.log('OpenAI server error, falling back to hardcoded responses')
+          console.log('Gemini server error, falling back to hardcoded responses')
         }
         
         return null // Trigger fallback
@@ -368,38 +331,51 @@ const Chatbot = () => {
 
       const data = await response.json()
       
-      if (data.choices && data.choices[0] && data.choices[0].message) {
-        return data.choices[0].message.content.trim()
+      if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+        return data.candidates[0].content.parts[0].text.trim()
       } else {
         console.error('Unexpected API response format:', data)
         return null
       }
     } catch (error) {
-      console.error('OpenAI API Network Error:', error)
+      console.error('Gemini API Network Error:', error)
       return null // Return null to trigger fallback
     }
   }
 
-  // Enhanced response generation with proper hierarchy: Dataset → API → Fallback
+  // Enhanced response generation with smart routing: DTE queries → Dataset, General queries → API
   const generateResponse = async (message) => {
     const lang = detectLanguage(message)
     const intent = detectIntent(message)
     const lower = message.toLowerCase()
 
-    // FIRST: Check if hardcoded dataset has the answer
-    const datasetResponse = getDatasetResponse(intent, lang, lower)
-    if (datasetResponse) {
-      return { text: datasetResponse.text, language: lang, source: 'dataset' }
+    // Check if this is a DTE-related query - ALWAYS use hardcoded data for exam/result
+    const isDTERelated = [
+      'greeting', 'how_are_you', 'goodbye', 'admission', 'admission_timing', 
+      'eligibility', 'result', 'exam', 'notice', 'news',
+      'diploma_result_1', 'diploma_result_2', 'diploma_result_3', 'diploma_result_4', 'diploma_result_5', 'diploma_result_6',
+      'diploma_exam_1', 'diploma_exam_2', 'diploma_exam_3', 'diploma_exam_4', 'diploma_exam_5', 'diploma_exam_6',
+      'diploma_result_revaluation', 'btech_restriction'
+    ].includes(intent)
+
+    // FIRST: For DTE-related queries, ALWAYS use hardcoded dataset (especially exam/result)
+    if (isDTERelated) {
+      const datasetResponse = getDatasetResponse(intent, lang, lower)
+      if (datasetResponse) {
+        return { text: datasetResponse.text, language: lang, source: 'dataset' }
+      }
     }
 
-    // SECOND: Try OpenAI API if dataset doesn't have answer
-    try {
-      const apiResponse = await callOpenAI(message)
-      if (apiResponse) {
-        return { text: apiResponse, language: lang, source: 'api' }
+    // SECOND: For general queries, use Gemini API
+    if (intent === 'general_query') {
+      try {
+        const apiResponse = await callGemini(message)
+        if (apiResponse) {
+          return { text: apiResponse, language: lang, source: 'api' }
+        }
+      } catch (error) {
+        console.log('API failed, using fallback')
       }
-    } catch (error) {
-      console.log('API failed, using fallback')
     }
 
     // THIRD: Final fallback message
@@ -423,6 +399,8 @@ const Chatbot = () => {
           ? "Hello, I am Saarthi, the official DTE Rajasthan student assistant. I can help you with Admissions, Exams, Results, Notices, and Eligibility. How may I assist you today?"
           : lang === 'hindi'
           ? "नमस्ते, मैं सारथी हूँ, DTE राजस्थान का आधिकारिक छात्र सहायक। मैं आपको प्रवेश, परीक्षा, परिणाम, सूचनाएँ और पात्रता के बारे में मदद कर सकता हूँ। आप किसमें सहायता चाहते हैं?"
+          : lang === 'hinglish'
+          ? "Hello! Main Saarthi hoon, DTE Rajasthan ka official student assistant. Main aapko Admissions, Exams, Results, Notices aur Eligibility mein help kar sakta hoon. Aap kya jaanna chahte hain?"
           : "राम राम, मैं सारथी हूँ। मैं छात्रों की सहायता के लिए यहाँ हूँ। आप क्या जानना चाहेंगे?"
         return { text: greetingText }
       }
@@ -434,6 +412,8 @@ const Chatbot = () => {
           ? "I am functioning well, thank you. How can I assist you today?"
           : lang === 'hindi'
           ? "मैं ठीक हूँ, धन्यवाद। मैं छात्रों की सहायता के लिए यहाँ हूँ।"
+          : lang === 'hinglish'
+          ? "Main theek hoon, thank you! Aap batao main aapki kaise help kar sakta hoon?"
           : "म्हैं ठीक हूं। आज म्हैं थारी कैसे मदद कर सकूं हूं?"
         return { text: howAreYouText }
       }
@@ -489,6 +469,8 @@ const Chatbot = () => {
         ? "Which semester result are you looking for? Please specify Diploma 1st to 6th semester."
         : lang === 'hindi'
         ? "आप किस सेमेस्टर का परिणाम चाहते हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
+        : lang === 'hinglish'
+        ? "Aap kis semester ka result dekhna chahte hain? Please batao Diploma 1st se 6th semester tak."
         : "आप कौन सी सेमेस्टर का परिणाम चाहते हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
       return { text: resultPrompt }
       }
@@ -500,6 +482,8 @@ const Chatbot = () => {
           ? "Which semester exam are you asking about? Please specify Diploma 1st to 6th semester."
           : lang === 'hindi'
           ? "आप किस सेमेस्टर की परीक्षा के बारे में पूछ रहे हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
+          : lang === 'hinglish'
+          ? "Aap kis semester ki exam ke baare mein puch rahe hain? Please batao Diploma 1st se 6th semester tak."
           : "आप कौन सी सेमेस्टर की परीक्षा के बारे में पूछ रहे हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
         return { text: examPrompt }
       }
@@ -727,7 +711,7 @@ const Chatbot = () => {
       // Add realistic typing delay
       setTimeout(() => {
         const botMessage = { 
-          id: prev => prev.length + 1, 
+          id: messages.length + 2, 
           text: botResponse.text, 
           sender: 'bot', 
           timestamp: new Date(), 
@@ -735,10 +719,7 @@ const Chatbot = () => {
           source: botResponse.source
         }
         
-        setMessages(prev => [...prev, {
-          ...botMessage,
-          id: prev.length + 1
-        }])
+        setMessages(prev => [...prev, botMessage])
         setIsTyping(false)
       }, calculatedDelay)
       
@@ -914,9 +895,11 @@ const Chatbot = () => {
                         <div className="flex-1">
                           <p className="text-sm leading-relaxed whitespace-pre-line">{message.text}</p>
                           <div className="flex items-center justify-between mt-1">
-                            <p className="text-xs opacity-60">
-                              {formatTime(message.timestamp)}
-                            </p>
+                            <div className="flex items-center space-x-2">
+                              <p className="text-xs opacity-60">
+                                {formatTime(message.timestamp)}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
