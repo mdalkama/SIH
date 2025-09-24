@@ -8,9 +8,6 @@ import {
 } from 'lucide-react';
 import { useUser } from '../../../context/UserContext';
 
-// ==========================================================
-//          NEW: CUSTOM NOTIFICATION COMPONENT
-// ==========================================================
 const Notification = ({ message, type, onClose }) => {
   if (!message) return null;
 
@@ -58,8 +55,42 @@ const Notification = ({ message, type, onClose }) => {
   );
 };
 
+
+
 // Helper to get today's date in YYYY-MM-DD format
 const getTodayDate = () => new Date().toISOString().split('T')[0];
+
+const initialFormData = {
+  admissionDate: getTodayDate(),
+  name: '',
+  fatherName: '',
+  motherName: '',
+  gender: '',
+  dob: '',
+  email: '',
+  password: '',
+  phone: '',
+  address: '',
+  aadharNumber: '',
+  maritalStatus: '',
+  religion: '',
+  rajasthanDomicile: 'No',
+  category: 'General',
+  familyIncome: '',
+  kashmiriMigrant: 'No',
+  specialCategory: 'None',
+  identityProof: '',
+  identityProofNumber: '',
+  tenthBoard: '',
+  tenthYear: '',
+  tenthPercentage: '',
+  twelfthBoard: '',
+  twelfthYear: '',
+  twelfthPercentage: '',
+  course: '',
+  batch: '',
+};
+
 
 // Main Component
 export default function AdmissionForm() {
