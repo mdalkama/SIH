@@ -136,10 +136,6 @@ const UniversityDashboard = () => {
     return (
         <div className="min-h-screen">
             <div className="max-w-7xl mx-auto">
-                <header className="mb-8">
-                    <h1 className="text-3xl font-bold text-slate-900">University Dashboard</h1>
-                    <p className="mt-1 text-slate-600">Welcome, {user?.name || 'Admin'}! Here's a high-level overview of the university.</p>
-                </header>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <StatCard icon={<Building />} title="Affiliated Colleges" value={dashboardData.stats.totalColleges} color="blue" />
