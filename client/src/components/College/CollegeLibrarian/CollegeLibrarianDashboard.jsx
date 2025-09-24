@@ -24,7 +24,6 @@ const ui = {
 const KpiCard = ({ icon: Icon, title, value, description, colorClass = "text-blue-600" }) => (
     <div className={`${ui.card} p-5 flex items-start gap-4`}>
         <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center bg-slate-100 ${colorClass}`}>
-            {/* --- FIX IS HERE: Render it as a component <Icon /> --- */}
             <Icon size={20} />
         </div>
         <div>
