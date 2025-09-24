@@ -45,6 +45,8 @@ const studentSchema = new Schema({
     collegeCode: { type: String, default: "", required: true },
     batch: { type: Number, required: true },
 
+    passwordResetToken: { type: String },
+    passwordResetExpires: { type: Date },
 
     // documents
     resumeLink: { type: String, default: "" },

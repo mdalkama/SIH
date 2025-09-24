@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+// Step 1: `useSearchParams` aur `Link` ko import karein
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, KeyRound } from 'lucide-react';
 
-const ResetPasswordPage = ({userType}) => {
-	const { token } = useParams();
+// Prop (userType) ki ab zaroorat nahi hai
+const ResetPasswordPage = () => {
+    // Step 2: `useSearchParams` ka istemaal karein
+	const [searchParams] = useSearchParams();
 	const navigate = useNavigate();
+
+    // URL se 'token' aur 'role' nikalein
+    const token = searchParams.get('token');
+    const userType = searchParams.get('role');
 
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
@@ -12,6 +19,22 @@ const ResetPasswordPage = ({userType}) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState('');
+
+    // Invalid link ke liye error handling
+    if (!token || !userType || (userType !== 'student' && userType !== 'staff')) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center text-center p-4">
+                <div>
+                    <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                    <h1 className="text-2xl font-bold text-gray-800">Invalid Link</h1>
+                    <p className="text-gray-600 mt-2">The password reset link is incorrect or missing information. Please request a new one.</p>
+                    <Link to="/login" className="mt-6 inline-block bg-[#0D2841] text-white px-6 py-2 rounded-md hover:bg-[#083056]">
+                        Go to Login Page
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -44,7 +67,7 @@ const ResetPasswordPage = ({userType}) => {
 
 			setSuccess('Your password has been reset successfully! Redirecting to login...');
 			setTimeout(() => {
-				navigate('/login');
+				navigate(`/login?role=${userType}`);
 			}, 3000);
 
 		} catch (err) {
@@ -55,15 +78,16 @@ const ResetPasswordPage = ({userType}) => {
 	};
 
 	return (
+        // Aapka original design yahan se shuru hota hai
 		<div className="min-h-screen bg-gray-50 flex items-center justify-center">
 			<div className="flex items-center justify-center py-12 px-4">
-				<div className="w-full max-w-md">
+				<div className="w-full sm:w-[448px]">
 					<div className="bg-white border border-gray-300 shadow-lg p-8">
 						<div className="text-center mb-8">
 							<div className="w-16 h-16 bg-[#186fc060] border-2 border-[#0D2841] rounded-full flex items-center justify-center mx-auto mb-4">
 								<KeyRound className="w-8 h-8 text-[#0D2841]" />
 							</div>
-							<h2 className="text-2xl font-bold text-gray-900 mb-2">Set New Password</h2>
+							<h2 className="text-2xl font-bold text-gray-900 mb-2 capitalize">{userType} - Set New Password</h2>
 							<p className="text-gray-600 text-sm">
 								Create a new, strong password for your account.
 							</p>
@@ -131,7 +155,7 @@ const ResetPasswordPage = ({userType}) => {
 									{isLoading ? (
 										<>
 											<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-											Resetting Password...
+											<span>Resetting Password...</span>
 										</>
 									) : "Reset Password"}
 								</button>
