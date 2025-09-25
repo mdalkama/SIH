@@ -65,7 +65,8 @@ const CollegeAdminManageEmployees = () => {
         { value: 'CollegeFinanceBody', label: 'Finance Officer', endpoint: '/add-finance-body' },
         { value: 'CollegeAdmissionDepartment', label: 'Admission Officer', endpoint: '/add-admission-department' },
         { value: 'CollegeHOD', label: 'Head of Department', endpoint: '/add-hod' },
-        { value: 'CollegeFaculty', label: 'Faculty Member', endpoint: '/add-faculty' }
+        { value: 'CollegeFaculty', label: 'Faculty Member', endpoint: '/add-faculty' },
+        { value: 'CollegePlacementOfficer', label: 'Placement Officer', endpoint: '/add-placement-officer' }
     ];
 
     useEffect(() => {
