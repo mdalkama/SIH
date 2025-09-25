@@ -101,7 +101,8 @@ export const getStaff = async (req, res) => {
                     "CollegeLibrarian",
                     "CollegeAdmissionDepartment",
                     "CollegeFinanceBody",
-                    "CollegeExaminationBody"
+                    "CollegeExaminationBody",
+                    "CollegePlacementOfficer"
                 ]
             };
         }

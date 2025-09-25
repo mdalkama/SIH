@@ -52,6 +52,7 @@ const CollegeAdminManageEmployees = () => {
 
     const [employees, setEmployees] = useState([]);
     const [selectedRole, setSelectedRole] = useState('');
+    console.log(employees)
 
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
