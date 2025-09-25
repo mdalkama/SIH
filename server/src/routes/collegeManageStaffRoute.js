@@ -41,6 +41,11 @@ router.post("/add-admission-department", role(["CollegeAdmin"]), (req, res, next
     next();
 }, addStaffByRole);
 
+router.post("/add-placement-officer", role(["CollegeAdmin"]), (req, res, next) => {
+    req.role = "CollegePlacementOfficer";
+    next();
+}, addStaffByRole);
+
 // Add HOD (only CollegeDirector can add)
 router.post("/add-hod", role(["CollegeAdmin", "CollegeDirector"]), (req, res, next) => {
     req.role = "CollegeHOD";

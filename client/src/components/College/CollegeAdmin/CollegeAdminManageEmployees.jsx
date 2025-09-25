@@ -65,7 +65,8 @@ const CollegeAdminManageEmployees = () => {
         { value: 'CollegeFinanceBody', label: 'Finance Officer', endpoint: '/add-finance-body' },
         { value: 'CollegeAdmissionDepartment', label: 'Admission Officer', endpoint: '/add-admission-department' },
         { value: 'CollegeHOD', label: 'Head of Department', endpoint: '/add-hod' },
-        { value: 'CollegeFaculty', label: 'Faculty Member', endpoint: '/add-faculty' }
+        { value: 'CollegeFaculty', label: 'Faculty Member', endpoint: '/add-faculty' },
+        { value: 'CollegePlacementOfficer', label: 'Placement Officer', endpoint: '/add-placement-officer' }
     ];
 
     useEffect(() => {
@@ -142,6 +143,7 @@ const CollegeAdminManageEmployees = () => {
             case 'CollegeAdmissionDepartment': return 'bg-pink-100 text-pink-800';
             case 'CollegeHOD': return 'bg-red-100 text-red-800';
             case 'CollegeFaculty': return 'bg-cyan-100 text-cyan-800';
+            case 'CollegePlacementOfficer': return 'bg-teal-100 text-teal-800';
             default: return 'bg-gray-100 text-gray-800';
         }
     };
@@ -157,6 +159,7 @@ const CollegeAdminManageEmployees = () => {
             case 'CollegeAdmissionDepartment': return 'Admission Officer';
             case 'CollegeHOD': return 'HOD';
             case 'CollegeFaculty': return 'Faculty';
+            case 'CollegePlacementOfficer': return 'Placement Officer';
             default: return role;
         }
     };
@@ -318,7 +321,8 @@ const CollegeAdminManageEmployees = () => {
                                         { key: 'CollegeExaminationBody', label: 'Exam Controller' }, { key: 'CollegeLibrarian', label: 'Librarian' },
                                         { key: 'CollegeHostelWarden', label: 'Warden' }, { key: 'CollegeFinanceBody', label: 'Finance' },
                                         { key: 'CollegeAdmissionDepartment', label: 'Admission' }, { key: 'CollegeHOD', label: 'HOD' },
-                                        { key: 'CollegeFaculty', label: 'Faculty' }
+                                        { key: 'CollegeFaculty', label: 'Faculty' },
+                                        { key: 'CollegePlacementOfficer', label: 'Placement Officer' }
                                     ].map(tab => (
                                         <button key={tab.key} onClick={() => handleTabChange(tab.key)}
                                             className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === tab.key ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`}>

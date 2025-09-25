@@ -2,55 +2,118 @@ import React, { useState, useEffect } from 'react';
 import {
   User, Users, Mail, Phone, Calendar, MapPin, BookUser, GraduationCap,
   Building2, Hash, University, Banknote, ShieldCheck, HeartHandshake, ScrollText, KeySquare, KeyRound, Eye, EyeOff,
-  BadgeCheck
+  BadgeCheck,
+  // ICONS FOR NEW FEATURES
+  CheckCircle, AlertCircle, X, Loader2
 } from 'lucide-react';
 import { useUser } from '../../../context/UserContext';
+
+const Notification = ({ message, type, onClose }) => {
+  if (!message) return null;
+
+  const isSuccess = type === 'success';
+  const bgColor = isSuccess ? 'bg-green-50' : 'bg-red-50';
+  const borderColor = isSuccess ? 'border-green-400' : 'border-red-400';
+  const textColor = isSuccess ? 'text-green-800' : 'text-red-800';
+  const Icon = isSuccess ? CheckCircle : AlertCircle;
+
+  // Simple fade-in and slide-down animation
+  const animationStyles = {
+    animation: 'fade-in-down 0.5s ease-out forwards'
+  };
+
+  return (
+    <div className="fixed top-5 right-5 z-50">
+      <style>
+        {`
+          @keyframes fade-in-down {
+            0% {
+              opacity: 0;
+              transform: translateY(-20px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}
+      </style>
+      <div style={animationStyles} className={`flex items-start gap-4 p-4 rounded-lg border ${bgColor} ${borderColor} shadow-lg w-full max-w-sm`}>
+        <div className="flex-shrink-0 pt-0.5">
+          <Icon className={`h-6 w-6 ${textColor}`} />
+        </div>
+        <div className="flex-1">
+          <p className={`text-sm font-medium ${textColor}`}>{message}</p>
+        </div>
+        <div className="flex-shrink-0">
+          <button onClick={onClose} className={`-mx-1.5 -my-1.5 p-1.5 rounded-lg inline-flex items-center justify-center ${textColor} hover:bg-opacity-20 hover:bg-current`}>
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 
 // Helper to get today's date in YYYY-MM-DD format
 const getTodayDate = () => new Date().toISOString().split('T')[0];
 
-// Main Component to be used in a router outlet
+const initialFormData = {
+  admissionDate: getTodayDate(),
+  name: '',
+  fatherName: '',
+  motherName: '',
+  gender: '',
+  dob: '',
+  email: '',
+  password: '',
+  phone: '',
+  address: '',
+  aadharNumber: '',
+  maritalStatus: '',
+  religion: '',
+  rajasthanDomicile: 'No',
+  category: 'General',
+  familyIncome: '',
+  kashmiriMigrant: 'No',
+  specialCategory: 'None',
+  identityProof: '',
+  identityProofNumber: '',
+  tenthBoard: '',
+  tenthYear: '',
+  tenthPercentage: '',
+  twelfthBoard: '',
+  twelfthYear: '',
+  twelfthPercentage: '',
+  course: '',
+  batch: '',
+};
+
+
+// Main Component
 export default function AdmissionForm() {
   const { user } = useUser();
-  const [courses, setCourses] = useState([]); // NEW: State to store fetched courses
+  const [courses, setCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(true); 
-  console.log(courses)
+  
+  // NEW: State for submission loading and notifications
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notification, setNotification] = useState({ message: '', type: '' });
   
   const [formData, setFormData] = useState({
     admissionDate: getTodayDate(),
-    name: '',
-    fatherName: '',
-    motherName: '',
-    gender: '',
-    dob: '',
-    email: '',
-    password: '',
-    phone: '',
-    address: '',
-    aadharNumber: '',
-    maritalStatus: '',
-    religion: '',
-    rajasthanDomicile: 'No',
-    category: 'General',
-    familyIncome: '',
-    kashmiriMigrant: 'No',
-    specialCategory: 'None',
-    identityProof: '',
-    identityProofNumber: '',
-    tenthBoard: '',
-    tenthYear: '',
-    tenthPercentage: '',
-    twelfthBoard: '',
-    twelfthYear: '',
-    twelfthPercentage: '',
-    course: '', // UPDATED: Will now store the course's MongoDB _id
-    batch: '',
+    name: '', fatherName: '', motherName: '', gender: '', dob: '', email: '', password: '', phone: '',
+    address: '', aadharNumber: '', maritalStatus: '', religion: '', rajasthanDomicile: 'No',
+    category: 'General', familyIncome: '', kashmiriMigrant: 'No', specialCategory: 'None',
+    identityProof: '', identityProofNumber: '', tenthBoard: '', tenthYear: '', tenthPercentage: '',
+    twelfthBoard: '', twelfthYear: '', twelfthPercentage: '', course: '', batch: '',
   });
 
-  // State to manage password visibility
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
-  // NEW: Fetch courses when the component mounts
+  // Your original useEffect for fetching courses
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -62,10 +125,10 @@ export default function AdmissionForm() {
           throw new Error('Failed to fetch the list of available courses.');
         }
         const data = await response.json();
-        setCourses(data?.college?.courses || []); // Handle cases where API might return null
+        setCourses(data?.college?.courses || []);
       } catch (error) {
         console.error("Course fetch error:", error);
-        // alert(`Error fetching courses: ${error.message}`);
+        setNotification({ message: `Error fetching courses: ${error.message}`, type: 'error' });
       } finally {
         setLoadingCourses(false);
       }
@@ -73,32 +136,43 @@ export default function AdmissionForm() {
     fetchCourses();
   }, []);
 
-  // Handler for input changes
+  // NEW: useEffect to auto-hide notification
+  useEffect(() => {
+    if (notification.message) {
+      const timer = setTimeout(() => {
+        setNotification({ message: '', type: '' });
+      }, 5000); // Notification will disappear after 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({ ...prevState, [name]: value }));
   };
 
-  // Handles the final form submission
-  const handleSubmit = async (e) => {
+  // Your original handleSubmit function with only UI changes
+const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setNotification({ message: '', type: '' });
 
     try {
       if (!formData.course || !formData.batch) {
-        alert('Course and Batch are required');
+        setNotification({ message: 'Course and Batch are required', type: 'error' });
+        setIsSubmitting(false); 
         return;
       }
 
+      // Your original API logic starts here (unchanged)
       const year = String(formData.batch).slice(2, 4);
       const collegeCode = user?.collegeCode;
       
-      // Find the full course object from the fetched list based on the selected _id
       const selectedCourse = courses.find(c => c.courseId === formData.course);
       if (!selectedCourse) {
         throw new Error("The selected course is invalid. Please refresh and try again.");
       }
       
-      // Use the human-readable courseId (e.g., "105") from the selected course object
       const courseIdentifier = selectedCourse.courseId;
 
       const serialRes = await fetch(
@@ -120,11 +194,10 @@ export default function AdmissionForm() {
 
       const registrationNo = `${year}${collegeCode}${courseIdentifier}${formattedSerial}`;
 
-      // Prepare the final payload, ensuring `courseId` is the string identifier and `course` is the ObjectId
       const finalData = {
         ...formData,
-        courseId: courseIdentifier, // The human-readable ID your backend might need
-        course: formData.course, // The MongoDB ObjectId reference for the Student model
+        courseId: courseIdentifier,
+        course: formData.course,
         registrationNumber: registrationNo,
       };
 
@@ -137,25 +210,40 @@ export default function AdmissionForm() {
           body: JSON.stringify(finalData),
         }
       );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to submit student data');
-      }
-
+      
       const result = await response.json();
-      alert(`Student admitted successfully!\nRegistration No: ${result.student?.registrationNumber || registrationNo}`);
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to submit student data');
+      }
+      // Your original API logic ends here
+
+      setNotification({ 
+        message: `Student admitted successfully! Registration No: ${result.student?.registrationNumber || registrationNo}`,
+        type: 'success'
+      });
+      
+      // STEP 3: Reset the form to its initial state on success
+      setFormData(initialFormData);
 
     } catch (error) {
       console.error('Error submitting student admission:', error);
-      alert(`Error: ${error.message}`);
+      setNotification({ message: `Error: ${error.message}`, type: 'error' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen font-sans flex items-center justify-center">
-      <div className="bg-white rounded-lg w-full max-w-6xl mx-auto">
-        <form onSubmit={handleSubmit} className="space-y-8 ">
+    <div className="min-h-screen font-sans flex items-center justify-center ">
+      {/* The Notification component will render here when a message is set */}
+      <Notification 
+        message={notification.message}
+        type={notification.type}
+        onClose={() => setNotification({ message: '', type: '' })}
+      />
+      <div className=" rounded-lg w-full max-w-6xl mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          
           <section>
             <h2 className="text-lg font-bold text-slate-800 border-b-2 border-slate-200 pb-2 mb-6 flex items-center gap-3"><BookUser className="h-6 w-6 text-blue-700" />1. Personal Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -198,13 +286,13 @@ export default function AdmissionForm() {
           <section>
             <h2 className="text-lg font-bold text-slate-800 border-b-2 border-slate-200 pb-2 mb-6 flex items-center gap-3"><GraduationCap className="h-6 w-6 text-blue-700" />4. Academic Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-              <div className="space-y-4 p-4 border rounded-md bg-slate-50/50">
+              <div className="space-y-4 p-4 border border-slate-200 rounded-md bg-slate-50/50">
                 <h3 className="font-semibold text-slate-700">Class 10th Details</h3>
                 <div className="relative"><label htmlFor="tenthBoard" className="block text-sm font-medium text-slate-700 mb-1">Board</label><div className="relative"><span className="absolute inset-y-0 left-0 flex items-center pl-3 z-10"><Building2 className="h-5 w-5 text-slate-400" /></span><input id="tenthBoard" name="tenthBoard" value={formData.tenthBoard} onChange={handleChange} type="text" placeholder="e.g., RBSE / CBSE" required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300" /></div></div>
                 <div className="relative"><label htmlFor="tenthYear" className="block text-sm font-medium text-slate-700 mb-1">Passing Year</label><div className="relative"><span className="absolute inset-y-0 left-0 flex items-center pl-3 z-10"><Calendar className="h-5 w-5 text-slate-400" /></span><input id="tenthYear" name="tenthYear" value={formData.tenthYear} onChange={handleChange} type="text" pattern="[0-9]{4}" placeholder="e.g., 2021" required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300" /></div></div>
                 <div className="relative"><label htmlFor="tenthPercentage" className="block text-sm font-medium text-slate-700 mb-1">Percentage (%)</label><div className="relative"><span className="absolute inset-y-0 left-0 flex items-center pl-3 z-10"><Hash className="h-5 w-5 text-slate-400" /></span><input id="tenthPercentage" name="tenthPercentage" value={formData.tenthPercentage} onChange={handleChange} type="text" placeholder="e.g., 88.5" required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300" /></div></div>
               </div>
-              <div className="space-y-4 p-4 border rounded-md bg-slate-50/50">
+              <div className="space-y-4 p-4 border border-slate-200 rounded-md bg-slate-50/50">
                 <h3 className="font-semibold text-slate-700">Class 12th Details</h3>
                 <div className="relative"><label htmlFor="twelfthBoard" className="block text-sm font-medium text-slate-700 mb-1">Board</label><div className="relative"><span className="absolute inset-y-0 left-0 flex items-center pl-3 z-10"><Building2 className="h-5 w-5 text-slate-400" /></span><input id="twelfthBoard" name="twelfthBoard" value={formData.twelfthBoard} onChange={handleChange} type="text" placeholder="e.g., RBSE / CBSE" className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300" /></div></div>
                 <div className="relative"><label htmlFor="twelfthYear" className="block text-sm font-medium text-slate-700 mb-1">Passing Year</label><div className="relative"><span className="absolute inset-y-0 left-0 flex items-center pl-3 z-10"><Calendar className="h-5 w-5 text-slate-400" /></span><input id="twelfthYear" name="twelfthYear" value={formData.twelfthYear} onChange={handleChange} type="text" pattern="[0-9]{4}" placeholder="e.g., 2023" className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300" /></div></div>
@@ -218,14 +306,14 @@ export default function AdmissionForm() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="relative">
                 <label htmlFor="batch" className="block text-sm font-medium text-slate-700 mb-1">Select Batch</label>
-                <div className="relative"><span className="absolute inset-y-0 left-0 flex items-center pl-3 z-10"><Calendar className="h-5 w-5 text-slate-400" /></span><select id="batch" name="batch" value={formData.batch} onChange={handleChange} required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300"><option value="">-- Select Batch --</option>{Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + i - 1).map(year => (<option key={year} value={year}>{year}</option>))}</select></div>
+                <div className="relative"><span className="absolute inset-y-0 left-0 flex items-center pl-3 z-10"><Calendar className="h-5 w-5 text-slate-400" /></span><select id="batch" name="batch" value={formData.batch} onChange={handleChange} required className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300"><option value="">-- Select Batch --</option>{Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + 1 - i).map(year => (<option key={year} value={year}>{year}</option>))}</select></div>
               </div>
               <div className="relative">
                 <label htmlFor="course" className="block text-sm font-medium text-slate-700 mb-1">Course Applied For</label>
                 <div className="relative"><span className="absolute inset-y-0 left-0 flex items-center pl-3 z-10"><GraduationCap className="h-5 w-5 text-slate-400" /></span>
                     <select id="course" name="course" value={formData.course} onChange={handleChange} required disabled={loadingCourses} className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all duration-300 disabled:bg-slate-100">
                         <option value="">{loadingCourses ? 'Loading Courses...' : '-- Select Course --'}</option>
-                        {courses.map(course => (<option key={course.courseId} value={course.courseId}>{course.courseId}{course.branch} ({course.degree})</option>))}
+                        {courses.map(course => (<option key={course.courseId} value={course.courseId}>{course.courseId} - {course.branch} ({course.degree})</option>))}
                     </select>
                 </div>
               </div>
@@ -236,8 +324,21 @@ export default function AdmissionForm() {
             </div>
           </section>
 
-          <div className="flex justify-end pt-6 border-t mt-10">
-            <button type="submit" className="inline-flex items-center justify-center px-8 py-3 font-bold text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300">Save Student Data</button>
+          <div className="flex justify-end pt-6 border-t border-slate-400 mt-10">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="inline-flex items-center justify-center px-8 py-3 font-bold text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 disabled:bg-blue-400 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Student Data'
+              )}
+            </button>
           </div>
         </form>
       </div>
