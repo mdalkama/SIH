@@ -2,235 +2,128 @@ import React, { useState, useRef, useEffect } from 'react'
 import { X, Send, Bot, BotMessageSquare, Mic, MicOff } from 'lucide-react'
 
 // Gemini API Configuration
-const GEMINI_API_KEY = 'AIzaSyD78-OYYQV2sDpA4XGwCw0vr2poByHvM8E'
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent'
-
+const GEMINI_API_KEY = 'AIzaSyBCDl_BlXofr5Y3cErkLwm8-COU-O52Mpo'
+const GEMINI_MODEL = 'gemini-2.0-flash-exp'
 // Enhanced Saarthi System Prompt
 const systemPrompt = `
-You are Saarthi – the official student assistant for DTE Rajasthan.
+You are "Saarthi", the official DTE Rajasthan Assistant.
 
-Guidelines:
-1. Always reply naturally and professionally in the same language as the user (English, Hindi, Hinglish, Rajasthani).
-2. Maintain a human-like assistant tone. Do not add any prefixes like "KB" or "FB". Do not use emojis or unnecessary tags.
-3. Coverage:
-   - Admissions (eligibility, dates, counseling, process).
-   - Exams (ask "Which semester?" → give dates).
-   - Results (ask "Which semester?" → give release info).
-   - Notices & News (latest updates + official site link).
-   - Eligibility criteria (factual, clear).
-   - All data should be accurate: hardcoded + API factual (from DTE site if available).
-4. General questions (outside DTE Rajasthan): 
-   - Answer professionally using Gemini's general knowledge.
-   - Example: If user says "Ka haal hai?" → Reply politely in same language: 
-     - Hindi: "मैं ठीक हूं, धन्यवाद। आप कैसे हैं?"  
-     - Rajasthani: "म्हैं बधिया हूं, थारा हाल चाल?"  
-     - Hinglish: "Main theek hoon, batao tum kaise ho?"  
-     - English: "I am doing well, thank you. How are you?"
-5. Greetings:
-   - Respond politely in same style without repeating the full intro every time.
-   - Example: 
-     - First greeting: "Hello, I am Saarthi, the official DTE Rajasthan Assistant. How may I assist you today?"
-     - Next greetings: Short version like "Hello! How are you?".
-6. Fallback:
-   - Never say "not available".
-   - Instead guide: "For more details, kindly check official DTE Rajasthan website: https://dte.rajasthan.gov.in".
-7. Your answers must be clear, fast, factual, professional, and free from KB/FB/extra tokens.
+Rules:
+1. Always answer politely and directly using the official data provided.
+2. Detect the language of the user's last message and reply in the same language.
+3. If the user explicitly says "hindi me baat karo", "rajasthani me baat karo", or "english me baat karo", then switch to that language and continue until told otherwise.
+4. Do not use emojis.
+5. If the required data is not available, say: "Iske baare mein abhi jankari uplabdh nahi hai." (in the same language). Do not apologize or give fallback messages.
 
-Goal: A realistic, friendly, professional chatbot that covers DTE Rajasthan data but also handles casual conversation gracefully.
-`
-
-// Complete DTE Rajasthan Hardcoded Dataset (Fallback)
-const dteData = {
-  admissions: {
-    diploma_first_year: {
-      english: "Diploma First Year (Engineering) Admission 2025-26: Application Dates: 11–14 August 2025 (11:00 AM onwards). Apply via official portal: www.dap2025.in. Counseling: Centralized online counseling after registration. Document verification: Online upload + original verification at institute reporting.",
-      hindi: "डिप्लोमा प्रथम वर्ष (इंजीनियरिंग) प्रवेश 2025-26: आवेदन तिथियां: 11-14 अगस्त 2025 (सुबह 11:00 बजे से)। आधिकारिक पोर्टल के माध्यम से आवेदन करें: www.dap2025.in। काउंसलिंग: पंजीकरण के बाद केंद्रीयकृत ऑनलाइन काउंसलिंग। दस्तावेज़ सत्यापन: ऑनलाइन अपलोड + संस्थान रिपोर्टिंग पर मूल सत्यापन।",
-      rajasthani: "डिप्लोमा पहलो साल (इंजीनियरिंग) दाखिलो 2025-26: आवेदन की तारीख: 11-14 अगस्त 2025 (सुबह 11:00 बजे सूं)। official portal सूं आवेदन करो: www.dap2025.in। काउंसलिंग: रजिस्ट्रेशन को बाद केंद्रीयकृत ऑनलाइन काउंसलिंग। कागजात की जांच: ऑनलाइन अपलोड + संस्थान में रिपोर्टिंग पर असली कागजात की जांच।"
+Data:
+{
+  "Admissions": {
+    "Diploma": {
+      "eligibility": "10th pass",
+      "process": "Online application, merit or entrance based, followed by counseling",
+      "start_date": "1st July 2025",
+      "end_date": "31st July 2025"
     },
-    diploma_lateral_entry: {
-      english: "Diploma Lateral Entry (Direct 2nd Year) Admission 2025: Application Dates: 20–25 August 2025. Eligibility: 12th Science (PCM) OR ITI (2 years). Counseling: Online centralized.",
-      hindi: "डिप्लोमा लेटरल एंट्री (प्रत्यक्ष द्वितीय वर्ष) प्रवेश 2025: आवेदन तिथियां: 20-25 अगस्त 2025। पात्रता: 12वीं विज्ञान (PCM) या ITI (2 वर्ष)। काउंसलिंग: ऑनलाइन केंद्रीयकृत।",
-      rajasthani: "डिप्लोमा लेटरल एंट्री (सीधो दूसरो साल) दाखिलो 2025: आवेदन की तारीख: 20-25 अगस्त 2025। योग्यता: 12वीं साइंस (PCM) या ITI (2 साल)। काउंसलिंग: ऑनलाइन केंद्रीयकृत।"
+    "BTech": {
+      "eligibility": "12th pass with PCM",
+      "process": "Online application, merit or entrance based, followed by counseling",
+      "start_date": "1st June 2025",
+      "end_date": "30th June 2025"
     },
-  },
-  results: {
-    diploma: {
-      "1": {
-        english: "Diploma 1st Semester Result: Released 12 September 2025.",
-        hindi: "डिप्लोमा प्रथम सेमेस्टर परिणाम: 12 सितंबर 2025 को जारी किया गया।"
-      },
-      "2": {
-        english: "Diploma 2nd Semester Result: Released 15 September 2025.",
-        hindi: "डिप्लोमा द्वितीय सेमेस्टर परिणाम: 15 सितंबर 2025 को जारी किया गया।"
-      },
-      "3": {
-        english: "Diploma 3rd Semester Result: Released 18 September 2025.",
-        hindi: "डिप्लोमा तृतीय सेमेस्टर परिणाम: 18 सितंबर 2025 को जारी किया गया।"
-      },
-      "4": {
-        english: "Diploma 4th Semester Result: Released 22 September 2025.",
-        hindi: "डिप्लोमा चतुर्थ सेमेस्टर परिणाम: 22 सितंबर 2025 को जारी किया गया।"
-      },
-      "5": {
-        english: "Diploma 5th Semester Result: Released 25 September 2025.",
-        hindi: "डिप्लोमा पंचम सेमेस्टर परिणाम: 25 सितंबर 2025 को जारी किया गया।"
-      },
-      "6": {
-        english: "Diploma 6th Semester Result: Released 28 September 2025.",
-        hindi: "डिप्लोमा षष्ठ सेमेस्टर परिणाम: 28 सितंबर 2025 को जारी किया गया।"
-      },
-      revaluation: {
-        english: "Diploma Revaluation Result: Announced 30 September 2025.",
-        hindi: "डिप्लोमा पुनर्मूल्यांकन परिणाम: 30 सितंबर 2025 को घोषित किया गया।"
-      }
-    },
-    semesterPrompt: {
-      english: "Which semester result are you asking about?",
-      hindi: "आप किस सेमेस्टर के परिणाम के बारे में पूछ रहे हैं?"
+    "LateralEntry": {
+      "eligibility": "Diploma or ITI pass",
+      "process": "Direct 2nd-year admission after counseling",
+      "start_date": "5th July 2025",
+      "end_date": "20th July 2025"
     }
   },
-  eligibility: {
-    diploma_first_year: {
-      english: "Diploma First Year: Must have passed Class 10th with Science & Math. Minimum marks: 35% in qualifying exam.",
-      hindi: "डिप्लोमा प्रथम वर्ष: 10वीं विज्ञान और गणित के साथ उत्तीर्ण होना चाहिए। न्यूनतम अंक: योग्यता परीक्षा में 35%।",
-      rajasthani: "डिप्लोमा पहलो साल: 10वीं साइंस अर मैथ्स को साथ पास होणो चाहिए। कम सूं कम अंक: योग्यता परीक्षा में 35%।"
-    },
-    diploma_lateral_entry: {
-      english: "Diploma Lateral Entry: Must have passed Class 12th (PCM) OR ITI (2 years). Minimum marks: 35% in qualifying exam.",
-      hindi: "डिप्लोमा लेटरल एंट्री: 12वीं (PCM) या ITI (2 वर्ष) उत्तीर्ण होना चाहिए। न्यूनतम अंक: योग्यता परीक्षा में 35%।",
-      rajasthani: "डिप्लोमा लेटरल एंट्री: 12वीं (PCM) या ITI (2 साल) पास होणो चाहिए। कम सूं कम अंक: योग्यता परीक्षा में 35%।"
-    },
-  },
-  exams: {
-    diploma: {
-      "1": {
-        english: "Diploma 1st Semester Exam: Starts 1 October 2025.",
-        hindi: "डिप्लोमा प्रथम सेमेस्टर परीक्षा: 1 अक्टूबर 2025 को शुरू होती है।"
-      },
-      "2": {
-        english: "Diploma 2nd Semester Exam: Starts 5 October 2025.",
-        hindi: "डिप्लोमा द्वितीय सेमेस्टर परीक्षा: 5 अक्टूबर 2025 को शुरू होती है।"
-      },
-      "3": {
-        english: "Diploma 3rd Semester Exam: Starts 10 October 2025.",
-        hindi: "डिप्लोमा तृतीय सेमेस्टर परीक्षा: 10 अक्टूबर 2025 को शुरू होती है।"
-      },
-      "4": {
-        english: "Diploma 4th Semester Exam: Starts 15 October 2025.",
-        hindi: "डिप्लोमा चतुर्थ सेमेस्टर परीक्षा: 15 अक्टूबर 2025 को शुरू होती है।"
-      },
-      "5": {
-        english: "Diploma 5th Semester Exam: Starts 20 October 2025.",
-        hindi: "डिप्लोमा पंचम सेमेस्टर परीक्षा: 20 अक्टूबर 2025 को शुरू होती है।"
-      },
-      "6": {
-        english: "Diploma 6th Semester Exam: Starts 25 October 2025.",
-        hindi: "डिप्लोमा षष्ठ सेमेस्टर परीक्षा: 25 अक्टूबर 2025 को शुरू होती है।"
-      },
-      special: {
-        english: "Special Exam Form Filling: Last date 5 October 2025.",
-        hindi: "विशेष परीक्षा फॉर्म भरना: अंतिम तिथि 5 अक्टूबर 2025।"
-      }
-    },
-    semesterPrompt: {
-      english: "Which semester exam are you asking about?",
-      hindi: "आप किस सेमेस्टर की परीक्षा के बारे में पूछ रहे हैं?"
+  "Exams": {
+    "Diploma": {
+      "1stSem": "10th March 2025",
+      "2ndSem": "5th April 2025",
+      "3rdSem": "15th March 2025",
+      "4thSem": "25th April 2025"
     }
   },
-  notices: {
-    latest: {
-      english: "Latest Notice (10 Sept 2025): Diploma 1st & 2nd semester results released. Latest Notice (15 Sept 2025): Diploma revaluation forms open till 22 Sept 2025. Latest Notice (20 Sept 2025): Exam timetable for all Diploma semesters published. Latest Notice (25 Sept 2025): Counseling round 2 starts on 27 Sept 2025.",
-      hindi: "नवीनतम सूचना (10 सितंबर 2025): डिप्लोमा प्रथम और द्वितीय सेमेस्टर परिणाम जारी किए गए। नवीनतम सूचना (15 सितंबर 2025): डिप्लोमा पुनर्मूल्यांकन फॉर्म 22 सितंबर 2025 तक खुले हैं। नवीनतम सूचना (20 सितंबर 2025): सभी डिप्लोमा सेमेस्टरों के लिए परीक्षा समय सारणी प्रकाशित। नवीनतम सूचना (25 सितंबर 2025): काउंसलिंग दौर 2, 27 सितंबर 2025 को शुरू होगी।"
+  "Results": {
+    "Diploma": {
+      "1stSem": "10th December 2025",
+      "2ndSem": "20th December 2025",
+      "3rdSem": "5th January 2026",
+      "4thSem": "15th January 2026"
     }
   },
-  greetings: {
-    english: "Hello! I am Saarthi - your DTE Rajasthan student assistant. I can help you with admissions, results, exams, notices, and eligibility.",
-    hindi: "नमस्ते! मैं सारथी हूं - आपका DTE राजस्थान छात्र सहायक। मैं आपको प्रवेश, परिणाम, परीक्षा, सूचनाएं और पात्रता में मदद कर सकता हूं।",
-    rajasthani: "राम राम जी! म्हैं सारथी हूं - थारो DTE राजस्थान को छात्र सहायक। म्हैं थानै admission, result, exam, notice अर eligibility में मदद कर सकूं हूं।"
+  "Notices": {
+    "Latest": "Diploma 2nd semester exams will start from 5th April 2025."
   },
-  howAreYou: {
-    english: "I am fine, thank you! How can I assist you today?",
-    hindi: "मैं ठीक हूं, धन्यवाद! आज मैं आपकी कैसे मदद कर सकता हूं?",
-    rajasthani: "म्हैं ठीक हूं, घणो धन्यवाद! आज म्हैं थारी कांई मदद कर सकूं हूं?"
-  },
-  refusal: {
-    english: "I can only help with DTE Rajasthan Diploma admissions, results, exams, eligibility, and notices. Please visit the official DTE Rajasthan website for more.",
-    hindi: "मैं केवल DTE राजस्थान डिप्लोमा प्रवेश, परिणाम, परीक्षा, पात्रता और सूचनाओं में मदद कर सकता हूं। कृपया अधिक जानकारी के लिए आधिकारिक DTE राजस्थान वेबसाइट पर जाएं।",
-    rajasthani: "म्हैं सिर्फ DTE राजस्थान डिप्लोमा admission, result, exam, eligibility अर notice में मदद कर सकूं हूं। और जाणकारी खातर official DTE राजस्थान website देखो।"
-  },
-  semesterNotFound: {
-    english: "Sorry, this semester information is not available. Please check the official DTE Rajasthan website.",
-    hindi: "खेद है, इस सेमेस्टर की जानकारी उपलब्ध नहीं है। कृपया आधिकारिक DTE राजस्थान वेबसाइट देखें।",
-    rajasthani: "माफ करो, इस semester की जाणकारी उपलब्ध कोनी है। कृपया official DTE राजस्थान website देखो।"
+  "Officials": {
+    "PM": "Narendra Modi",
+    "ViceChancellor": "Prof. Rajeev Jain"
   }
 }
+
+Examples:
+
+User: bhai diploma admission ka process batao
+Bot: Diploma ke liye 10वीं पास होना ज़रूरी है. Admission ka process hai: Online application, merit ya entrance ke basis par, aur counseling ke baad confirm hota hai. Forms 1st July 2025 se 31st July 2025 tak bhare ja sakte hain.
+
+User: mera 3rd semester ka exam kab hai
+Bot: Diploma 3rd semester ka exam 15th March 2025 se hoga.
+
+User: rajasthani me baat karo
+Bot: Theek hai, ab main Rajasthani mein jawab dunga.
+
+User: mharo 2nd semester ro result kab aavego
+Bot: Diploma 2nd semester ro result 20th December 2025 ne aavego.
+
+⚠️ IMPORTANT GUIDELINES:
+- NEVER attempt to execute code or fetch live data
+- NEVER use tool_code or any programming functions
+- Use the provided data to answer queries directly
+- Be helpful and professional while maintaining accuracy
+- Answer in the user's preferred language
+- Do not use emojis in responses
+`
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "Hello! I'm Saarthi, your DTE Rajasthan assistant. How can I help you today?",
+      text: "Hello! Hope you are doing well 😊 I am Saarthi, the official DTE Rajasthan Assistant. I can communicate with you in Hindi, English, Rajasthani, Hinglish, Punjabi, Gujarati, and many other Indian languages. How may I assist you today?",
       sender: 'bot',
       timestamp: new Date()
     }
   ])
   const [inputMessage, setInputMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
-  const [lastIntent, setLastIntent] = useState(null) // Context state for follow-ups
-  const [contextType, setContextType] = useState(null) // Track if follow-up is for admission or eligibility
-  const [persistentLanguage, setPersistentLanguage] = useState(null) // Persistent language preference
   const [isListening, setIsListening] = useState(false)
   const [speechSupported, setSpeechSupported] = useState(false)
+  const [conversationLanguage, setConversationLanguage] = useState(null) // Track conversation language
+  const [conversationHistory, setConversationHistory] = useState([]) // Store conversation context
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const recognitionRef = useRef(null)
 
-  // Check for explicit language switching requests
-  const checkLanguageSwitch = (text) => {
-    const lower = text.toLowerCase()
-    
-    // English language requests
-    if (/(reply in english|english me|english mein|speak in english|talk in english|english me bolo|english me reply|english me jawab)/.test(lower)) {
-      return 'english'
-    }
-    
-    // Hindi language requests
-    if (/(reply in hindi|hindi me|hindi mein|speak in hindi|talk in hindi|hindi me bolo|hindi me reply|hindi me jawab|हिंदी में|हिन्दी में)/.test(lower)) {
-      return 'hindi'
-    }
-    
-    // Rajasthani language requests
-    if (/(reply in rajasthani|rajasthani me|rajasthani mein|speak in rajasthani|talk in rajasthani|rajasthani me bolo|rajasthani me reply|rajasthani me jawab|राजस्थानी में)/.test(lower)) {
-      return 'rajasthani'
-    }
-    
-    // Hinglish language requests
-    if (/(reply in hinglish|hinglish me|hinglish mein|speak in hinglish|talk in hinglish|hinglish me bolo|hinglish me reply|hinglish me jawab)/.test(lower)) {
-      return 'hinglish'
-    }
-    
-    return null
-  }
-
-  // Enhanced language detection with persistent language support
+  // Enhanced language detection with comprehensive Indian languages
   const detectLanguage = (text) => {
-    // First check if user wants to switch language
-    const languageSwitch = checkLanguageSwitch(text)
-    if (languageSwitch) {
-      setPersistentLanguage(languageSwitch)
-      return languageSwitch
-    }
-    
-    // If persistent language is set, use it
-    if (persistentLanguage) {
-      return persistentLanguage
-    }
-    
-    // Otherwise, auto-detect language
     const lower = text.toLowerCase()
     
-    // Rajasthani specific patterns and words
+    // Language switch commands
+    if (/(hindi mein|hindi me|हिंदी में|talk in hindi)/i.test(lower)) return 'hindi'
+    if (/(english mein|english me|अंग्रेजी में|talk in english)/i.test(lower)) return 'english'
+    if (/(rajasthani mein|rajasthani me|राजस्थानी में|talk in rajasthani)/i.test(lower)) return 'rajasthani'
+    if (/(hinglish mein|hinglish me|हिंग्लिश में|talk in hinglish)/i.test(lower)) return 'hinglish'
+    if (/(punjabi mein|punjabi me|पंजाबी में|talk in punjabi)/i.test(lower)) return 'punjabi'
+    if (/(gujarati mein|gujarati me|गुजराती में|talk in gujarati)/i.test(lower)) return 'gujarati'
+    if (/(bengali mein|bengali me|बंगाली में|talk in bengali)/i.test(lower)) return 'bengali'
+    if (/(tamil mein|tamil me|तमिल में|talk in tamil)/i.test(lower)) return 'tamil'
+    if (/(telugu mein|telugu me|तेलुगु में|talk in telugu)/i.test(lower)) return 'telugu'
+    if (/(marathi mein|marathi me|मराठी में|talk in marathi)/i.test(lower)) return 'marathi'
+    if (/(kannada mein|kannada me|कन्नड़ में|talk in kannada)/i.test(lower)) return 'kannada'
+    if (/(urdu mein|urdu me|उर्दू में|talk in urdu)/i.test(lower)) return 'urdu'
+    
+    // Rajasthani specific patterns
     const rajasthaniPatterns = [
       /राम राम/, /कांई/, /थानै/, /म्हैं/, /घणो/, /को/, /सूं/, /होई/, /हाल/, /धन्यवाद/,
       /ram ram/, /kaai/, /thane/, /mhain/, /ghano/, /hoi/, /dhanyawad/
@@ -241,6 +134,54 @@ const Chatbot = () => {
       if (pattern.test(lower)) {
         return 'rajasthani'
       }
+    }
+    
+    // Punjabi patterns
+    const punjabiPatterns = [/ਸਤ ਸ੍ਰੀ ਅਕਾਲ/, /ਕਿਵੇਂ/, /ਹਾਲ/, /sat sri akal/, /kiven/, /tussi/, /ki haal/, /changa/]
+    for (const pattern of punjabiPatterns) {
+      if (pattern.test(lower)) return 'punjabi'
+    }
+    
+    // Gujarati patterns
+    const gujaratiPatterns = [/નમસ્તે/, /કેમ છો/, /kem cho/, /maja ma/, /su che/]
+    for (const pattern of gujaratiPatterns) {
+      if (pattern.test(lower)) return 'gujarati'
+    }
+    
+    // Bengali patterns
+    const bengaliPatterns = [/নমস্কার/, /কেমন আছেন/, /namaskar/, /kemon acho/, /bhalo/]
+    for (const pattern of bengaliPatterns) {
+      if (pattern.test(lower)) return 'bengali'
+    }
+    
+    // Tamil patterns
+    const tamilPatterns = [/வணக்கம்/, /எப்படி இருக்கீங்க/, /vanakkam/, /eppadi irukinga/, /nalla/]
+    for (const pattern of tamilPatterns) {
+      if (pattern.test(lower)) return 'tamil'
+    }
+    
+    // Telugu patterns
+    const teluguPatterns = [/నమస్కారం/, /ఎలా ఉన్నారు/, /namaskaram/, /ela unnaru/, /bagundi/]
+    for (const pattern of teluguPatterns) {
+      if (pattern.test(lower)) return 'telugu'
+    }
+    
+    // Marathi patterns
+    const marathiPatterns = [/नमस्कार/, /कसे आहात/, /namaskar/, /kase ahat/, /bara/]
+    for (const pattern of marathiPatterns) {
+      if (pattern.test(lower)) return 'marathi'
+    }
+    
+    // Kannada patterns
+    const kannadaPatterns = [/ನಮಸ್ಕಾರ/, /ಹೇಗಿದ್ದೀರಿ/, /namaskara/, /hegiddiri/, /chennagirutte/]
+    for (const pattern of kannadaPatterns) {
+      if (pattern.test(lower)) return 'kannada'
+    }
+    
+    // Urdu patterns
+    const urduPatterns = [/السلام علیکم/, /آپ کیسے ہیں/, /assalam alaikum/, /aap kaise hain/, /theek/]
+    for (const pattern of urduPatterns) {
+      if (pattern.test(lower)) return 'urdu'
     }
     
     // Check for pure Hindi (mostly Devanagari script)
@@ -257,7 +198,7 @@ const Chatbot = () => {
     }
     
     // Check for common Hinglish words in Roman script
-    const hinglishWords = /\b(kya|hai|hoon|kaise|kab|kahan|kyun|main|aap|tum|kar|karo|chahiye|batao|dekho|samjha|theek|accha|nahi|haan|ji|bhai)\b/
+    const hinglishWords = /\b(kya|hai|hoon|kaise|kab|kahan|kyun|main|aap|tum|kar|karo|chahiye|batao|dekho|samjha|theek|accha|nahi|haan|ji|bhai|yaar|dost|bro|arre|acha|sahi|bilkul)\b/
     if (hinglishWords.test(lower)) {
       return 'hinglish'
     }
@@ -266,481 +207,153 @@ const Chatbot = () => {
     return 'english'
   }
 
-
-  // Simplified intent detection for Diploma only
-  const detectIntent = (text) => {
-    const lower = text.toLowerCase()
-    
-    // Check for language switching requests first
-    const languageSwitch = checkLanguageSwitch(text)
-    if (languageSwitch) {
-      return 'language_switch'
-    }
-    
-    // Handle diploma semester selection for exams
-    if (lastIntent === 'awaiting_diploma_exam_sem') {
-      const semMatch = lower.match(/(1st|first|प्रथम|पहला|1|2nd|second|द्वितीय|दूसरा|2|3rd|third|तृतीय|तीसरा|3|4th|fourth|चतुर्थ|चौथा|4|5th|fifth|पंचम|पांचवा|5|6th|sixth|षष्ठ|छठा|6)/)
-      if (semMatch) return `diploma_exam_${extractSemesterNumber(semMatch[0])}`
-    }
-    
-    // Handle diploma semester selection for results
-    if (lastIntent === 'awaiting_diploma_result_sem') {
-      const semMatch = lower.match(/(1st|first|प्रथम|पहला|1|2nd|second|द्वितीय|दूसरा|2|3rd|third|तृतीय|तीसरा|3|4th|fourth|चतुर्थ|चौथा|4|5th|fifth|पंचम|पांचवा|5|6th|sixth|षष्ठ|छठा|6|revaluation|पुनर्मूल्यांकन)/)
-      if (semMatch) {
-        if (/(revaluation|पुनर्मूल्यांकन)/.test(semMatch[0])) return 'diploma_result_revaluation'
-        return `diploma_result_${extractSemesterNumber(semMatch[0])}`
-      }
-    }
-    
-    // Enhanced greeting detection - only simple greetings
-    if (/^(hi|hello|hey|hii|helo|namaste|नमस्ते|ram ram|राम राम|हाय|हैलो)$/.test(lower.trim())) return 'greeting'
-    
-    // Enhanced casual conversation detection
-    if (/(how are you|कैसे हो|how are you doing|कैसे हो तुम|कांई हाल|kaai haal|kya haal|क्या हाल|थारो हाल|tharo haal|kaise ho|कैसे हैं|kya haal hai|क्या हाल है)/.test(lower)) return 'how_are_you'
-    
-    // Goodbye detection
-    if (/(bye|goodbye|alvida|अलविदा|tata|टाटा|see you|मिलते हैं)/.test(lower)) return 'goodbye'
-    
-    // DTE-specific queries - prioritize hardcoded data for exam/result
-    if (/(admission|प्रवेश|दाखिला|form|apply|आवेदन)/.test(lower)) {
-      if (/(kab start|when start|कब शुरू|start date|शुरुआत)/.test(lower)) return 'admission_timing'
-      return 'admission'
-    }
-    if (/(result|marks|score|परिणाम|रिजल्ट)/.test(lower)) return 'result'
-    if (/(exam|test|परीक्षा)/.test(lower)) return 'exam'
-    if (/(eligibility|qualify|criteria|पात्रता|योग्यता)/.test(lower)) return 'eligibility'
-    if (/(notice|notification|announcement|सूचना|नोटिस)/.test(lower)) return 'notice'
-    if (/(news|koi news|कोई news|समाचार)/.test(lower)) return 'news'
-    
-    // Check for B.Tech mentions and restrict
-    if (/(b\.?tech|engineering|इंजीनियरिंग)/.test(lower) && /(admission|प्रवेश|दाखिला)/.test(lower)) {
-      return 'btech_restriction'
-    }
-    
-    // Everything else goes to API for general knowledge
-    return 'general_query'
-  }
-
-  // Helper function to extract semester number
-  const extractSemesterNumber = (text) => {
-    const lower = text.toLowerCase()
-    if (/(1st|first|प्रथम|पहला|1)/.test(lower)) return '1'
-    if (/(2nd|second|द्वितीय|दूसरा|2)/.test(lower)) return '2'
-    if (/(3rd|third|तृतीय|तीसरा|3)/.test(lower)) return '3'
-    if (/(4th|fourth|चतुर्थ|चौथा|4)/.test(lower)) return '4'
-    if (/(5th|fifth|पंचम|पांचवा|5)/.test(lower)) return '5'
-    if (/(6th|sixth|षष्ठ|छठा|6)/.test(lower)) return '6'
-    return null
-  }
-
-  // Gemini API call function with enhanced error handling
-  const callGemini = async (userMessage) => {
+  // Gemini API call function with conversation context and retry logic
+  const callGemini = async (userMessage, retryCount = 0) => {
     try {
-      const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: `${systemPrompt}\n\nUser: ${userMessage}`
-                }
-              ]
+      // Build conversation context
+      const recentHistory = conversationHistory.slice(-6) // Last 6 messages for context
+      const contextString = recentHistory.length > 0 
+        ? `\n\nPrevious conversation context:\n${recentHistory.map(msg => `${msg.sender}: ${msg.text}`).join('\n')}\n\n`
+        : '\n\n'
+      
+      // Add language persistence instruction
+      const languageInstruction = conversationLanguage 
+        ? `\n\nIMPORTANT: Continue this conversation in ${conversationLanguage} language only. The user has chosen ${conversationLanguage} as their preferred language.\n\n`
+        : '\n\n'
+
+      // Build the complete prompt
+      const fullPrompt = `${systemPrompt}${languageInstruction}${contextString}Current User Message: ${userMessage}`
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ 
+              parts: [{ text: fullPrompt }]
+            }],
+            generationConfig: {
+              temperature: 0.8,
+              topK: 40,
+              topP: 0.95,
+              maxOutputTokens: 600
             }
-          ],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 300,
-          }
-        })
-      })
+          }),
+        }
+      )
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        console.error(`Gemini API Error: ${response.status}`, errorData)
+        const error = await response.json().catch(() => ({}))
+        console.error("Gemini API Error:", error)
         
-        // Handle specific error cases
-        if (response.status === 429) {
-          console.log('Rate limit exceeded, falling back to hardcoded responses')
-        } else if (response.status === 401) {
-          console.log('API key invalid, falling back to hardcoded responses')
-        } else if (response.status >= 500) {
-          console.log('Gemini server error, falling back to hardcoded responses')
+        // Handle rate limiting (429) with retry
+        if (response.status === 429 && retryCount < 2) {
+          console.log(`Rate limited, retrying in ${(retryCount + 1) * 2} seconds...`)
+          await new Promise(resolve => setTimeout(resolve, (retryCount + 1) * 2000))
+          return callGemini(userMessage, retryCount + 1)
         }
         
-        return null // Trigger fallback
+        // Handle different error types
+        if (response.status === 429) {
+          throw new Error("Rate limit exceeded. Please try again in a few moments.")
+        } else if (response.status === 401) {
+          throw new Error("API key is invalid or expired.")
+        } else if (response.status === 403) {
+          throw new Error("Access forbidden. Please check your API permissions.")
+        } else if (response.status === 404) {
+          throw new Error("Model not found. Please check the model name.")
+        } else {
+          throw new Error(`API Error: ${response.status}`)
+        }
       }
 
       const data = await response.json()
-      
-      if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
-        return data.candidates[0].content.parts[0].text.trim()
-      } else {
-        console.error('Unexpected API response format:', data)
-        return null
-      }
-    } catch (error) {
-      console.error('Gemini API Network Error:', error)
-      return null // Return null to trigger fallback
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response"
+    } catch (err) {
+      console.error("Gemini API failed:", err)
+      throw err
     }
   }
 
-  // Enhanced response generation with smart routing: DTE queries → Dataset, General queries → API
+  // Generate response using Gemini API with language persistence
   const generateResponse = async (message) => {
-    const lang = detectLanguage(message)
-    const intent = detectIntent(message)
-    const lower = message.toLowerCase()
-
-    // Check if this is a DTE-related query - ALWAYS use hardcoded data for exam/result
-    const isDTERelated = [
-      'greeting', 'how_are_you', 'goodbye', 'admission', 'admission_timing', 
-      'eligibility', 'result', 'exam', 'notice', 'news', 'language_switch',
-      'diploma_result_1', 'diploma_result_2', 'diploma_result_3', 'diploma_result_4', 'diploma_result_5', 'diploma_result_6',
-      'diploma_exam_1', 'diploma_exam_2', 'diploma_exam_3', 'diploma_exam_4', 'diploma_exam_5', 'diploma_exam_6',
-      'diploma_result_revaluation', 'btech_restriction'
-    ].includes(intent)
-
-    // FIRST: For DTE-related queries, ALWAYS use hardcoded dataset (especially exam/result)
-    if (isDTERelated) {
-      const datasetResponse = getDatasetResponse(intent, lang, lower)
-      if (datasetResponse) {
-        return { text: datasetResponse.text, language: lang, source: 'dataset' }
-      }
-    }
-
-    // SECOND: For general queries, use Gemini API
-    if (intent === 'general_query') {
-      try {
-        const apiResponse = await callGemini(message)
-        if (apiResponse) {
-          return { text: apiResponse, language: lang, source: 'api' }
-        }
-      } catch (error) {
-        console.log('API failed, using fallback')
-      }
-    }
-
-    // THIRD: Final fallback message
-    const fallbackMsg = lang === 'hindi' 
-      ? "मुझे खेद है, मैं समझ नहीं पाया। कृपया Diploma प्रवेश, परीक्षा, परिणाम, सूचनाएं, या पात्रता के बारे में पूछें।"
-      : lang === 'rajasthani'
-      ? "माफ करो, म्हैं समझ नहीं पायो। कृपया Diploma प्रवेश, परीक्षा, परिणाम, सूचनाएं, या पात्रता के बारे में पूछो।"
-      : "I am sorry, I did not understand. Please ask about Diploma Admissions, Exams, Results, Notices, or Eligibility."
+    const detectedLang = detectLanguage(message)
     
-    return { text: fallbackMsg, language: lang, source: 'fallback' }
-  }
-
-  // Function to get response from hardcoded dataset
-  const getDatasetResponse = (intent, lang, lower) => {
-
-    switch(intent) {
-      case 'language_switch': {
-        setLastIntent(null)
-        setContextType(null)
-        const switchText = lang === 'english'
-          ? "Great! I'll continue in English. How can I help you with DTE Rajasthan information?"
-          : lang === 'hindi'
-          ? "बहुत अच्छा! अब मैं हिंदी में बात करूंगा। DTE राजस्थान की जानकारी में मैं आपकी कैसे मदद कर सकता हूं?"
-          : lang === 'hinglish'
-          ? "Thik hai! Ab main Hinglish me baat karunga. DTE Rajasthan ke Admission, Exams, Results ya Notices – kis topic pe help chahiye?"
-          : "राम राम! अब म्हैं राजस्थानी में बात करूंगा। DTE राजस्थान रो आधिकारिक सहायक हूं। थारी मदद खातर हाजिर हूं।"
-        return { text: switchText }
-      }
-      case 'greeting': {
-        setLastIntent(null)
-        setContextType(null)
-        const greetingText = lang === 'english' 
-          ? "Hello! I am Saarthi, the official DTE Rajasthan student assistant. I can help you with Admissions, Exams, Results, Notices, and Eligibility. How may I assist you today?"
-          : lang === 'hindi'
-          ? "नमस्ते! मैं सारथी हूँ, DTE राजस्थान का आधिकारिक छात्र सहायक। मैं आपको प्रवेश, परीक्षा, परिणाम, सूचनाएँ और पात्रता के बारे में मदद कर सकता हूँ। आप किसमें सहायता चाहते हैं?"
-          : lang === 'hinglish'
-          ? "Hello! Main Saarthi hoon, DTE Rajasthan ka official student assistant. Main aapko Admissions, Exams, Results, Notices aur Eligibility mein help kar sakta hoon. Aap kya jaanna chahte hain?"
-          : "राम राम! म्हैं सारथी हूं, DTE राजस्थान रो आधिकारिक सहायक। थारी मदद खातर हाजिर हूं। थानै कांई जाणकारी चाहिए?"
-        return { text: greetingText }
-      }
-
-      case 'how_are_you': {
-        setLastIntent(null)
-        setContextType(null)
-        const howAreYouText = lang === 'english'
-          ? "I am functioning well, thank you. How can I assist you today?"
-          : lang === 'hindi'
-          ? "मैं ठीक हूँ, धन्यवाद। आज मैं आपकी कैसे मदद कर सकता हूं?"
-          : lang === 'hinglish'
-          ? "Main theek hoon, thank you! Aap batao main aapki kaise help kar sakta hoon?"
-          : "म्हैं ठीक हूं, घणो धन्यवाद। आज म्हैं थारी कैसे मदद कर सकूं हूं?"
-        return { text: howAreYouText }
-      }
-
-      case 'goodbye': {
-        setLastIntent(null)
-        setContextType(null)
-        const goodbyeText = lang === 'english'
-          ? "Thank you for using DTE Rajasthan services. Have a great day!"
-          : lang === 'hindi'
-          ? "DTE राजस्थान सेवाओं का उपयोग करने के लिए धन्यवाद। आपका दिन शुभ हो!"
-          : "DTE राजस्थान सेवाओं का उपयोग करने के लिए धन्यवाद। थारो दिन शुभ हो!"
-        return { text: goodbyeText }
-      }
-
-      case 'admission': {
-        setLastIntent('awaiting_admission_type')
-        setContextType('admission')
-        const admissionPrompt = lang === 'english'
-          ? "Diploma First Year Admission 2025-26: Application Dates: 11–14 August 2025. Apply via www.dap2025.in. Counseling through centralized online process. Document verification online + at institute reporting."
-          : lang === 'hindi'
-          ? "डिप्लोमा प्रथम वर्ष प्रवेश 2025-26: आवेदन तिथियां: 11-14 अगस्त 2025। www.dap2025.in के माध्यम से आवेदन करें। केंद्रीयकृत ऑनलाइन प्रक्रिया के माध्यम से काउंसलिंग। दस्तावेज़ सत्यापन ऑनलाइन + संस्थान रिपोर्टिंग पर।"
-          : lang === 'hinglish'
-          ? "Diploma First Year Admission 2025-26: Application dates 11-14 August 2025. www.dap2025.in se apply karo. Centralized online counseling hogi."
-          : "डिप्लोमा प्रथम वर्ष प्रवेश 2025-26: आवेदन तिथियां 11-14 अगस्त 2025। dap2025.in रा मार्फत आवेदन करो। केंद्रीयकृत ऑनलाइन प्रक्रिया सूं काउंसलिंग होगी।"
-        return { text: admissionPrompt }
-      }
-
-      case 'admission_timing': {
-        setLastIntent(null)
-        setContextType(null)
-        const admissionTimingText = lang === 'english'
-          ? "Diploma First Year Admission: 11 August 2025, 11:00 AM onwards."
-          : lang === 'hindi'
-          ? "डिप्लोमा प्रथम वर्ष प्रवेश: 11 अगस्त 2025, सुबह 11:00 बजे से।"
-          : "डिप्लोमा प्रथम वर्ष प्रवेश: 11 अगस्त 2025, सुबह 11:00 बजे से।"
-        return { text: admissionTimingText }
-      }
-
-      case 'eligibility': {
-        setLastIntent(null)
-        setContextType(null)
-        const eligibilityText = lang === 'english'
-          ? "Diploma First Year: Class 10th pass with Science and Mathematics subjects. Minimum marks: 35%."
-          : lang === 'hindi'
-          ? "Diploma First Year: Class 10th पास होना चाहिए, विज्ञान और गणित विषय के साथ। न्यूनतम अंक: 35%।"
-          : "Diploma First Year: Class 10th पास होना चाहिए, विज्ञान और गणित विषय के साथ। न्यूनतम अंक: 35%।"
-        return { text: eligibilityText }
-      }
-
-      case 'result': {
-      setLastIntent('awaiting_diploma_result_sem')
-      setContextType('result')
-      const resultPrompt = lang === 'english'
-        ? "Which semester result are you looking for? Please specify Diploma 1st to 6th semester."
-        : lang === 'hindi'
-        ? "आप किस सेमेस्टर का परिणाम चाहते हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
-        : lang === 'hinglish'
-        ? "Aap kis semester ka result dekhna chahte hain? Please batao Diploma 1st se 6th semester tak."
-        : "आप कौन सी सेमेस्टर का परिणाम चाहते हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
-      return { text: resultPrompt }
-      }
-
-      case 'exam': {
-        setLastIntent('awaiting_diploma_exam_sem')
-        setContextType('exam')
-        const examPrompt = lang === 'english'
-          ? "Which semester exam are you asking about? Please specify Diploma 1st to 6th semester."
-          : lang === 'hindi'
-          ? "आप किस सेमेस्टर की परीक्षा के बारे में पूछ रहे हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
-          : lang === 'hinglish'
-          ? "Aap kis semester ki exam ke baare mein puch rahe hain? Please batao Diploma 1st se 6th semester tak."
-          : "आप कौन सी सेमेस्टर की परीक्षा के बारे में पूछ रहे हैं? कृपया डिप्लोमा 1st से 6th सेमेस्टर बताएं।"
-        return { text: examPrompt }
-      }
-
-      case 'notice': {
-        setLastIntent(null)
-        setContextType(null)
-        const noticeText = lang === 'english'
-          ? "📢 Latest Official Notices (DTE Rajasthan):\n\n🔹 27 Sept 2025: Diploma 2nd Round Counseling starts from 30 September 2025\n🔹 25 Sept 2025: Document verification for selected candidates - Last date 28 Sept 2025\n🔹 22 Sept 2025: Fee payment deadline extended till 29 September 2025\n🔹 20 Sept 2025: Diploma 3rd-6th semester exam timetable released\n🔹 18 Sept 2025: Revaluation results announced for all semesters\n\nFor complete details visit: https://dte.rajasthan.gov.in"
-          : lang === 'hindi'
-          ? "📢 नवीनतम आधिकारिक सूचनाएं (DTE राजस्थान):\n\n🔹 27 सितंबर 2025: डिप्लोमा द्वितीय राउंड काउंसलिंग 30 सितंबर 2025 से शुरू\n🔹 25 सितंबर 2025: चयनित अभ्यर्थियों का दस्तावेज़ सत्यापन - अंतिम तिथि 28 सितंबर 2025\n🔹 22 सितंबर 2025: फीस भुगतान की अंतिम तिथि 29 सितंबर 2025 तक बढ़ाई गई\n🔹 20 सितंबर 2025: डिप्लोमा तृतीय-षष्ठ सेमेस्टर परीक्षा समय सारणी जारी\n🔹 18 सितंबर 2025: सभी सेमेस्टर के पुनर्मूल्यांकन परिणाम घोषित\n\nपूरी जानकारी के लिए देखें: https://dte.rajasthan.gov.in"
-          : lang === 'hinglish'
-          ? "Diploma Revaluation Result ka notice 18 September 2025 ko release hua hai. Detailed update ke liye official site dekho: https://dte.rajasthan.gov.in"
-          : "📢 नवीनतम आधिकारिक सूचनाएं (DTE राजस्थान):\n\n🔹 27 सितंबर 2025: डिप्लोमा दूसरो राउंड काउंसलिंग 30 सितंबर सूं शुरू\n🔹 25 सितंबर 2025: चुने गए अभ्यर्थियों को कागजात जांच - आखिरी तारीख 28 सितंबर 2025\n🔹 22 सितंबर 2025: फीस भरण की आखिरी तारीख 29 सितंबर 2025 तक बढ़ाई\n🔹 20 सितंबर 2025: डिप्लोमा तीसरो-छठो सेमेस्टर परीक्षा समय सारणी जारी\n🔹 18 सितंबर 2025: सगळे सेमेस्टर के पुनर्मूल्यांकन परिणाम घोषित\n\nपूरी जाणकारी खातर देखो: https://dte.rajasthan.gov.in"
-        return { text: noticeText }
-      }
-
-      case 'news': {
-        setLastIntent(null)
-        setContextType(null)
-        const newsText = lang === 'english'
-          ? "🗞️ Latest DTE Rajasthan News & Updates:\n\n✅ BREAKING: Diploma 2nd Round Counseling announced - Starting 30 September 2025\n✅ NEW: Online fee payment facility extended with multiple payment options\n✅ UPDATE: Document verification process now includes Aadhaar-based verification\n✅ ALERT: Last 2 days remaining for fee payment - Deadline 29 September 2025\n✅ RESULT: All semester revaluation results are now live on official portal\n\n📱 Stay updated: Follow DTE Rajasthan official website\n🌐 Portal: https://dte.rajasthan.gov.in"
-          : lang === 'hindi'
-          ? "🗞️ नवीनतम DTE राजस्थान समाचार और अपडेट:\n\n✅ ब्रेकिंग: डिप्लोमा द्वितीय राउंड काउंसलिंग की घोषणा - 30 सितंबर 2025 से शुरू\n✅ नया: ऑनलाइन फीस भुगतान सुविधा कई भुगतान विकल्पों के साथ बढ़ाई गई\n✅ अपडेट: दस्तावेज़ सत्यापन प्रक्रिया में अब आधार-आधारित सत्यापन शामिल\n✅ अलर्ट: फीस भुगतान के लिए केवल 2 दिन बचे - अंतिम तिथि 29 सितंबर 2025\n✅ परिणाम: सभी सेमेस्टर पुनर्मूल्यांकन परिणाम अब आधिकारिक पोर्टल पर उपलब्ध\n\n📱 अपडेट रहें: DTE राजस्थान आधिकारिक वेबसाइट फॉलो करें\n🌐 पोर्टल: https://dte.rajasthan.gov.in"
-          : lang === 'hinglish'
-          ? "🗞️ Latest DTE Rajasthan News & Updates:\n\n✅ BREAKING: Diploma 2nd Round Counseling announce ho gayi - 30 September se start\n✅ NEW: Online fee payment facility extend ho gayi multiple payment options ke saath\n✅ UPDATE: Document verification process mein ab Aadhaar-based verification include\n✅ ALERT: Fee payment ke liye sirf 2 din bache - Deadline 29 September 2025\n✅ RESULT: Sabhi semester revaluation results ab official portal par live\n\n📱 Stay updated: DTE Rajasthan official website follow karein\n🌐 Portal: https://dte.rajasthan.gov.in"
-          : "🗞️ नवीनतम DTE राजस्थान समाचार और अपडेट:\n\n✅ ब्रेकिंग: डिप्लोमा दूसरो राउंड काउंसलिंग की घोषणा - 30 सितंबर सूं शुरू\n✅ नयो: ऑनलाइन फीस भरण की सुविधा घणे भुगतान विकल्पों को साथ बढ़ाई\n✅ अपडेट: कागजात जांच प्रक्रिया में अब आधार-आधारित जांच शामिल\n✅ अलर्ट: फीस भरण खातर सिर्फ 2 दिन बचे - आखिरी तारीख 29 सितंबर 2025\n✅ परिणाम: सगळे सेमेस्टर पुनर्मूल्यांकन परिणाम अब official portal पर उपलब्ध\n\n📱 अपडेट रहो: DTE राजस्थान official website follow करो\n🌐 पोर्टल: https://dte.rajasthan.gov.in"
-        return { text: newsText }
-      }
-
-      // Handle context-aware responses
-      case 'diploma_result_1':
-      case 'diploma_result_2':
-      case 'diploma_result_3':
-      case 'diploma_result_4':
-      case 'diploma_result_5':
-      case 'diploma_result_6': {
-        setLastIntent(null)
-        setContextType(null)
-        const semNum = intent.split('_')[2]
-        const resultDates = {
-          '1': '12 Sep 2025', '2': '15 Sep 2025', '3': '18 Sep 2025',
-          '4': '20 Sep 2025', '5': '22 Sep 2025', '6': '25 Sep 2025'
-        }
-        const resultText = lang === 'english'
-          ? `Diploma ${semNum}${semNum === '1' ? 'st' : semNum === '2' ? 'nd' : semNum === '3' ? 'rd' : 'th'} semester result has been declared on ${resultDates[semNum]}.`
-          : lang === 'hindi'
-          ? `डिप्लोमा ${semNum === '1' ? 'प्रथम' : semNum === '2' ? 'द्वितीय' : semNum === '3' ? 'तृतीय' : semNum === '4' ? 'चतुर्थ' : semNum === '5' ? 'पंचम' : 'षष्ठ'} सेमेस्टर परिणाम ${resultDates[semNum]} को घोषित हो चुका है।`
-          : lang === 'hinglish'
-          ? `Diploma ${semNum}${semNum === '1' ? 'st' : semNum === '2' ? 'nd' : semNum === '3' ? 'rd' : 'th'} semester result ${resultDates[semNum]} ko declare ho gaya hai.`
-          : `डिप्लोमा ${semNum}${semNum === '1' ? 'st' : semNum === '2' ? 'nd' : semNum === '3' ? 'rd' : 'th'} सेमेस्टर परिणाम ${resultDates[semNum]} को घोषित हो चुका है।`
-        return { text: resultText }
-      }
-
-      case 'diploma_exam_1':
-      case 'diploma_exam_2':
-      case 'diploma_exam_3':
-      case 'diploma_exam_4':
-      case 'diploma_exam_5':
-      case 'diploma_exam_6': {
-        setLastIntent(null)
-        setContextType(null)
-        const examSemNum = intent.split('_')[2]
-        const examDates = {
-          '1': '1 Oct 2025', '2': '5 Oct 2025', '3': '10 Oct 2025',
-          '4': '15 Oct 2025', '5': '20 Oct 2025', '6': '25 Oct 2025'
-        }
-        const examText = lang === 'english'
-          ? `Diploma ${examSemNum}${examSemNum === '1' ? 'st' : examSemNum === '2' ? 'nd' : examSemNum === '3' ? 'rd' : 'th'} semester exam starts from ${examDates[examSemNum]}.`
-          : lang === 'hindi'
-          ? `डिप्लोमा ${examSemNum === '1' ? 'प्रथम' : examSemNum === '2' ? 'द्वितीय' : examSemNum === '3' ? 'तृतीय' : examSemNum === '4' ? 'चतुर्थ' : examSemNum === '5' ? 'पंचम' : 'षष्ठ'} सेमेस्टर परीक्षा ${examDates[examSemNum]} से शुरू हो रही है।`
-          : lang === 'hinglish'
-          ? `Diploma ${examSemNum}${examSemNum === '1' ? 'st' : examSemNum === '2' ? 'nd' : examSemNum === '3' ? 'rd' : 'th'} semester exam ${examDates[examSemNum]} se start ho raha hai.`
-          : `डिप्लोमा ${examSemNum}${examSemNum === '1' ? 'st' : examSemNum === '2' ? 'nd' : examSemNum === '3' ? 'rd' : 'th'} सेमेस्टर परीक्षा ${examDates[examSemNum]} से शुरू हो रही है।`
-        return { text: examText }
-      }
-
-      default:
-        // Handle thank you responses
-        if (/(thank you|thanks|धन्यवाद|घणो धन्यवाद|shukriya)/i.test(lower)) {
-          setLastIntent(null)
-          setContextType(null)
-          const thankYouText = lang === 'english'
-            ? "You are welcome. Best of luck for your exams and results."
-            : lang === 'hindi'
-            ? "आपका स्वागत है। आपकी परीक्षा और परिणाम के लिए शुभकामनाएं।"
-            : "आपका स्वागत है। आपकी परीक्षा और परिणाम के लिए शुभकामनाएं।"
-          return { text: thankYouText }
-        }
-
-        // Handle namaste responses
-        if (/(namaste|नमस्ते)/i.test(lower) && !/(hi|hello)/i.test(lower)) {
-          setLastIntent(null)
-          setContextType(null)
-          const namasteText = lang === 'english'
-            ? "Namaste. I am Saarthi, at your service for DTE Rajasthan queries."
-            : lang === 'hindi'
-            ? "नमस्ते। मैं सारथी हूं, DTE राजस्थान की जानकारी के लिए आपकी सेवा में हूं।"
-            : "नमस्ते। मैं सारथी हूं, DTE राजस्थान की जानकारी के लिए आपकी सेवा में हूं।"
-          return { text: namasteText }
-        }
-
-        // Check if we're in a context and handle appropriately
-        if (lastIntent === 'awaiting_admission_type') {
-          if (/(eligibility|पात्रता|योग्यता)/i.test(lower)) {
-            setLastIntent(null)
-            setContextType(null)
-            const eligibilityDetailsText = lang === 'english'
-              ? "Diploma Admission 2025-26 Eligibility:\n• 10th pass with minimum 35% marks\n• Online application period: 11-14 August 2025\n• Application portal: www.dap2025.in\n• Counseling: Centralized online process\n• For authentication, please check the official portal."
-              : lang === 'hindi'
-              ? "डिप्लोमा प्रवेश 2025-26 पात्रता:\n• 10वीं पास न्यूनतम 35% अंकों के साथ\n• ऑनलाइन आवेदन अवधि: 11-14 अगस्त 2025\n• आवेदन पोर्टल: www.dap2025.in\n• काउंसलिंग: केंद्रीयकृत ऑनलाइन प्रक्रिया\n• प्रमाणीकरण के लिए, कृपया आधिकारिक पोर्टल देखें।"
-              : "डिप्लोमा प्रवेश 2025-26 पात्रता:\n• 10वीं पास न्यूनतम 35% अंकों के साथ\n• ऑनलाइन आवेदन अवधि: 11-14 अगस्त 2025\n• आवेदन पोर्टल: www.dap2025.in\n• काउंसलिंग: केंद्रीयकृत ऑनलाइन प्रक्रिया\n• प्रमाणीकरण के लिए, कृपया आधिकारिक पोर्टल देखें।"
-            return { text: eligibilityDetailsText }
-          } else if (/(first|1st|प्रथम|पहला|पहलो)/i.test(lower)) {
-            setLastIntent(null)
-            setContextType(null)
-            const firstYearText = lang === 'english'
-              ? "Diploma First Year Admission 2025-26:\n• Application period: 11-14 August 2025\n• Application portal: www.dap2025.in\n• Eligibility: 10th pass with 35% marks\n• Counseling: Online centralized process\n• For authentication, please check the official portal"
-              : lang === 'hindi'
-              ? "डिप्लोमा प्रथम वर्ष प्रवेश 2025-26:\n• आवेदन अवधि: 11-14 अगस्त 2025\n• आवेदन पोर्टल: www.dap2025.in\n• पात्रता: 10वीं पास 35% अंकों के साथ\n• काउंसलिंग: ऑनलाइन केंद्रीयकृत प्रक्रिया\n• प्रमाणीकरण के लिए, कृपया आधिकारिक पोर्टल देखें"
-              : "डिप्लोमा प्रथम वर्ष प्रवेश 2025-26:\n• आवेदन अवधि: 11-14 अगस्त 2025\n• आवेदन पोर्टल: www.dap2025.in\n• पात्रता: 10वीं पास 35% अंकों के साथ\n• काउंसलिंग: ऑनलाइन केंद्रीयकृत प्रक्रिया\n• प्रमाणीकरण के लिए, कृपया आधिकारिक पोर्टल देखें"
-            return { text: firstYearText }
-          } else if (/(lateral|लेटरल|entry)/i.test(lower)) {
-            setLastIntent(null)
-            setContextType(null)
-            const lateralText = lang === 'english'
-              ? "Diploma Lateral Entry (Direct 2nd Year) 2025:\n• Application period: 20-25 August 2025\n• Eligibility: 12th Science (PCM) OR ITI (2 years)\n• Minimum marks: 35%\n• Counseling: Online centralized process"
-              : lang === 'hindi'
-              ? "डिप्लोमा लेटरल एंट्री (सीधे द्वितीय वर्ष) 2025:\n• आवेदन अवधि: 20-25 अगस्त 2025\n• पात्रता: 12वीं विज्ञान (PCM) या ITI (2 वर्ष)\n• न्यूनतम अंक: 35%\n• काउंसलिंग: ऑनलाइन केंद्रीयकृत प्रक्रिया"
-              : "डिप्लोमा लेटरल एंट्री (सीधे द्वितीय वर्ष) 2025:\n• आवेदन अवधि: 20-25 अगस्त 2025\n• पात्रता: 12वीं विज्ञान (PCM) या ITI (2 वर्ष)\n• न्यूनतम अंक: 35%\n• काउंसलिंग: ऑनलाइन केंद्रीयकृत प्रक्रिया"
-            return { text: lateralText }
-          }
-        }
-
-        if (lastIntent === 'awaiting_diploma_exam_sem' || lastIntent === 'awaiting_diploma_result_sem') {
-          setLastIntent(null)
-          setContextType(null)
-          const notFoundText = lang === 'english'
-            ? "Sorry, this semester information is not available. Please check the official DTE Rajasthan website: https://dte.rajasthan.gov.in/"
-            : lang === 'hindi'
-            ? "खेद है, इस सेमेस्टर की जानकारी उपलब्ध नहीं है। कृपया आधिकारिक DTE राजस्थान वेबसाइट देखें: https://dte.rajasthan.gov.in/"
-            : "माफ करो, इस semester की जाणकारी उपलब्ध कोनी है। कृपया official DTE राजस्थान website देखो: https://dte.rajasthan.gov.in/"
-          return { text: notFoundText }
-        }
-        
-        return null // No dataset response available
+    // Set conversation language if not set or if user explicitly requests language change
+    if (!conversationLanguage || /(hindi mein|english mein|rajasthani mein|hinglish mein|talk in)/i.test(message.toLowerCase())) {
+      setConversationLanguage(detectedLang)
     }
+    
+    const apiResponse = await callGemini(message)
+    return { text: apiResponse, language: conversationLanguage || detectedLang, source: 'api' }
   }
 
-  // Initialize Speech Recognition and Synthesis with multi-language support
+  // Initialize Speech Recognition
   useEffect(() => {
-    // Check Speech Recognition support
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       setSpeechSupported(true)
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
       recognitionRef.current = new SpeechRecognition()
       recognitionRef.current.continuous = false
       recognitionRef.current.interimResults = false
-      recognitionRef.current.lang = 'en-IN' // Start with English, will auto-detect
+      recognitionRef.current.lang = 'en-IN'
+      
       recognitionRef.current.onresult = (event) => {
         const transcript = event.results[0][0].transcript
         const detectedLang = detectLanguage(transcript)
         
-        // Auto-switch language for next recognition based on detected language
-        if (detectedLang === 'english') {
-          recognitionRef.current.lang = 'en-IN'
-        } else if (detectedLang === 'rajasthani') {
-          recognitionRef.current.lang = 'hi-IN' // Use Hindi recognition for Rajasthani
-        } else {
-          recognitionRef.current.lang = 'hi-IN'
+        // Set conversation language if not set
+        if (!conversationLanguage) {
+          setConversationLanguage(detectedLang)
         }
         
-        // Only set text, no audio playback of user's voice
+        // Auto-switch language for next recognition based on conversation language
+        const currentLang = conversationLanguage || detectedLang
+        if (currentLang === 'english') {
+          recognitionRef.current.lang = 'en-IN'
+        } else if (currentLang === 'hindi' || currentLang === 'hinglish' || currentLang === 'rajasthani' || currentLang === 'urdu') {
+          recognitionRef.current.lang = 'hi-IN'
+        } else if (currentLang === 'punjabi') {
+          recognitionRef.current.lang = 'hi-IN' // Use Hindi recognition for Punjabi
+        } else if (currentLang === 'gujarati') {
+          recognitionRef.current.lang = 'gu-IN' // Gujarati recognition
+        } else if (currentLang === 'bengali') {
+          recognitionRef.current.lang = 'bn-IN' // Bengali recognition
+        } else if (currentLang === 'tamil') {
+          recognitionRef.current.lang = 'ta-IN' // Tamil recognition
+        } else if (currentLang === 'telugu') {
+          recognitionRef.current.lang = 'te-IN' // Telugu recognition
+        } else if (currentLang === 'marathi') {
+          recognitionRef.current.lang = 'mr-IN' // Marathi recognition
+        } else if (currentLang === 'kannada') {
+          recognitionRef.current.lang = 'kn-IN' // Kannada recognition
+        } else {
+          recognitionRef.current.lang = 'en-IN'
+        }
+        
         setInputMessage(prev => prev + transcript)
         setIsListening(false)
         
-        // Focus input field after speech recognition completes
         setTimeout(() => {
           if (inputRef.current) {
             inputRef.current.focus()
           }
         }, 100)
       }
+      
       recognitionRef.current.onerror = (event) => {
         console.log('Speech recognition error:', event.error)
         setIsListening(false)
-        // Focus input field on error
         setTimeout(() => {
           if (inputRef.current) {
             inputRef.current.focus()
           }
         }, 100)
       }
+      
       recognitionRef.current.onend = () => {
         setIsListening(false)
-        // Focus input field when recognition ends
         setTimeout(() => {
           if (inputRef.current) {
             inputRef.current.focus()
@@ -748,11 +361,9 @@ const Chatbot = () => {
         }, 100)
       }
     }
-
   }, [])
 
-
-  // Handle sending message with context awareness and API integration
+  // Handle sending message with conversation history
   const handleSend = async () => {
     if (!inputMessage.trim()) return
     
@@ -764,6 +375,9 @@ const Chatbot = () => {
       language: detectLanguage(inputMessage)
     }
     
+    // Update conversation history
+    setConversationHistory(prev => [...prev, { sender: 'user', text: inputMessage }])
+    
     setMessages([...messages, userMessage])
     setInputMessage('')
     setIsTyping(true)
@@ -771,13 +385,12 @@ const Chatbot = () => {
     try {
       const botResponse = await generateResponse(userMessage.text)
       
-      // Calculate realistic typing delay based on response length
+      // Calculate realistic typing delay (more human-like)
       const responseLength = botResponse.text.length
-      const baseDelay = 1000 // Minimum 1 second delay
-      const typingSpeed = 50 // Characters per second (realistic typing speed)
-      const calculatedDelay = Math.min(baseDelay + (responseLength / typingSpeed) * 1000, 4000) // Max 4 seconds
+      const baseDelay = 1200 // Slightly longer base delay
+      const typingSpeed = 40 // Slower typing for more natural feel
+      const calculatedDelay = Math.min(baseDelay + (responseLength / typingSpeed) * 1000, 5000) // Max 5 seconds
       
-      // Add realistic typing delay
       setTimeout(() => {
         const botMessage = { 
           id: messages.length + 2, 
@@ -788,6 +401,9 @@ const Chatbot = () => {
           source: botResponse.source
         }
         
+        // Update conversation history with bot response
+        setConversationHistory(prev => [...prev, { sender: 'bot', text: botResponse.text }])
+        
         setMessages(prev => [...prev, botMessage])
         setIsTyping(false)
       }, calculatedDelay)
@@ -795,18 +411,49 @@ const Chatbot = () => {
     } catch (error) {
       console.error('Error generating response:', error)
       
-      // Add delay even for error messages to maintain consistency
       setTimeout(() => {
+        const currentLang = conversationLanguage || 'english'
+        
+        // Get user-friendly error message
+        let errorText = error.message
+        
+        // Handle specific error types with multilingual messages
+        if (error.message.includes("Rate limit exceeded")) {
+          errorText = currentLang === 'hindi' 
+            ? "API की दर सीमा पार हो गई है। कृपया कुछ देर बाद पुनः प्रयास करें।"
+            : currentLang === 'hinglish'
+            ? "Rate limit exceed ho gaya hai. Thoda wait karke try karo."
+            : currentLang === 'rajasthani'
+            ? "API की limit पूरी हो गई है। थोड़ी देर बाद try करो।"
+            : "Rate limit exceeded. Please try again in a few moments."
+        } else if (error.message.includes("API key is invalid")) {
+          errorText = currentLang === 'hindi' 
+            ? "API key अमान्य है। कृपया व्यवस्थापक से संपर्क करें।"
+            : currentLang === 'hinglish'
+            ? "API key invalid hai. Admin se contact karo."
+            : currentLang === 'rajasthani'
+            ? "API key गलत है। Admin सूं संपर्क करो।"
+            : "API key is invalid. Please contact administrator."
+        } else {
+          errorText = currentLang === 'hindi' 
+            ? "मुझे खेद है, कुछ तकनीकी समस्या आ गई है। कृपया पुनः प्रयास करें।"
+            : currentLang === 'hinglish'
+            ? "Sorry, kuch technical issue aa gaya hai. Please try again."
+            : currentLang === 'rajasthani'
+            ? "माफ करजो, कुछ technical problem आ गई है। कृपया फिर से try करो।"
+            : "I apologize for the inconvenience. Please try again."
+        }
+          
         const errorMessage = {
           id: messages.length + 2,
-          text: "Sorry, I'm having trouble responding right now. Please try again!",
+          text: errorText,
           sender: 'bot',
           timestamp: new Date(),
-          language: 'english'
+          language: currentLang
         }
         setMessages(prev => [...prev, errorMessage])
         setIsTyping(false)
-      }, 1500) // 1.5 second delay for error messages
+      }, 1800) // Slightly longer delay for error messages
     }
   }
 
@@ -826,24 +473,20 @@ const Chatbot = () => {
     
     try {
       if (isListening) {
-        // Stop speech recognition - no audio playback of user voice
         recognitionRef.current.stop()
         setIsListening(false)
-        // Focus input field after stopping mic so user can type and press Enter
         setTimeout(() => {
           if (inputRef.current) {
             inputRef.current.focus()
           }
         }, 100)
       } else {
-        // Start speech recognition - convert speech to text only
         recognitionRef.current.start()
         setIsListening(true)
       }
     } catch (error) {
       console.log('Speech recognition toggle error:', error)
       setIsListening(false)
-      // Focus input field on error too
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus()
@@ -863,12 +506,11 @@ const Chatbot = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isTyping])
 
-  // Focus input field when chatbot opens
   useEffect(() => {
     if (isOpen && inputRef.current) {
       setTimeout(() => {
         inputRef.current.focus()
-      }, 300) // Wait for animation to complete
+      }, 300)
     }
   }, [isOpen])
 
@@ -1057,7 +699,7 @@ const Chatbot = () => {
       )}
 
       {/* Custom Styles */}
-      <style jsx>{`
+      <style>{`
         .custom-scrollbar {
           scrollbar-width: thin;
           scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
