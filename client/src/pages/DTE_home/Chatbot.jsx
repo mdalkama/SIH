@@ -90,7 +90,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "Hello! Hope you are doing well 😊 I am Saarthi, the official DTE Rajasthan Assistant. I can communicate with you in Hindi, English, Rajasthani, Hinglish, Punjabi, Gujarati, and many other Indian languages. How may I assist you today?",
+      text: "Hey! Hope you are doing well  I am Saarthi, the official DTE Rajasthan Assistant. I can communicate with you in Hindi, English, Rajasthani,and other regional languages.How may i assist you?",
       sender: 'bot',
       timestamp: new Date()
     }
