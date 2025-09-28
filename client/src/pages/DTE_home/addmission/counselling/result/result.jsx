@@ -172,11 +172,6 @@ const Result = () => {
 
   return (
     <div className="w-full max-w-screen-2xl mx-auto py-1 px-1 sm:px-2">
-      {/* Header */}
-      <div className="mb-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Result & Status</h1>
-        <p className="text-sm sm:text-base text-gray-600 mt-1">View your exam results and college preference rankings</p>
-      </div>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

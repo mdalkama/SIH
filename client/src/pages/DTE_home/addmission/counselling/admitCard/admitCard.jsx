@@ -173,11 +173,6 @@ const AdmitCard = () => {
   return (
     <div className="w-full">
       <div className="max-w-screen-2xl mx-auto py-1 px-0 sm:px-1">
-        {/* Header */}
-        <div className="mb-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Admit Card</h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">Download and print your admit card</p>
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
           

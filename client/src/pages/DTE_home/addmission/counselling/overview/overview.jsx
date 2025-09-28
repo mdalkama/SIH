@@ -134,11 +134,6 @@ const Overview = () => {
   return (
     <div className="w-full">
       <div className="max-w-screen-2xl mx-auto py-1 px-1 sm:px-2">
-        {/* Header */}
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold text-gray-800">Welcome back, {personalInfo.name}</h1>
-          <p className="text-gray-600">Here's your admission status at a glance</p>
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Left Column - Candidate Info */}

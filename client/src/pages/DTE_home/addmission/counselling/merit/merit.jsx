@@ -155,11 +155,6 @@ const MeritSection = () => {
 
   return (
     <div className="w-full max-w-screen-2xl mx-auto py-1 px-1 sm:px-2 ">
-      {/* Header */}
-      <div className="mb-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Merit & Rank Details</h1>
-        <p className="text-sm sm:text-base text-gray-600 mt-1">View and manage your merit position and rank details</p>
-      </div>
 
       {/* Tabs */}
       <div className="border-b border-gray-200 mb-6">
