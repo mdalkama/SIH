@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { X, Send, Bot, BotMessageSquare, Mic, MicOff } from 'lucide-react'
 
 // Gemini API Configuration
-const GEMINI_API_KEY = 'AIzaSyBCDl_BlXofr5Y3cErkLwm8-COU-O52Mpo'
+const GEMINI_API_KEY = 'AIzaSyD25OFjDWqGqRX-hvBEuX5aN5i58SEVG-s'
 const GEMINI_MODEL = 'gemini-2.0-flash-exp'
 // Enhanced Saarthi System Prompt
 const systemPrompt = `
@@ -90,7 +90,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "Hello! Hope you are doing well 😊 I am Saarthi, the official DTE Rajasthan Assistant. I can communicate with you in Hindi, English, Rajasthani, Hinglish, Punjabi, Gujarati, and many other Indian languages. How may I assist you today?",
+      text: "Hey! Hope you are doing well  I am Saarthi, the official DTE Rajasthan Assistant. I can communicate with you in Hindi, English, Rajasthani,and other regional languages.How may i assist you?",
       sender: 'bot',
       timestamp: new Date()
     }
