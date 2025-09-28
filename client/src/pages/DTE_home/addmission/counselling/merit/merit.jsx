@@ -355,7 +355,7 @@ const MeritSection = () => {
                 Export CSV
               </button>
               <span className="inline-flex items-center px-2 sm:px-3 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                Updated: 21 Mar 2025
+                Updated: 21 sept 2025
               </span>
             </div>
           </div>
