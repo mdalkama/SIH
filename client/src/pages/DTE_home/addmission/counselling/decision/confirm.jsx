@@ -306,10 +306,10 @@ const ConfirmDecision = ({ decision = 'freeze', onGoBack }) => {
               Deadline
             </h3>
             <div className="text-center mb-4">
-              <div className="bg-red-50 rounded-lg p-3 border border-red-200">
+              {/* <div className="bg-red-50 rounded-lg p-3 border border-red-200">
                 <p className="text-lg font-bold text-red-600 mb-1">02d : 11h : 20m</p>
                 <p className="text-xs text-gray-600">Decision window closes</p>
-              </div>
+              </div> */}
             </div>
             <p className="text-xs text-gray-500 text-center">
               You can change your decision until the window closes.
