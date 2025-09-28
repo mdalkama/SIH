@@ -1,481 +1,247 @@
 {
-    "students": {
-      "APP821015851112": {
-        "personalInfo": {
-          "name": "Priya Sharma",
-          "applicationId": "APP821015851112",
-          "registrationNo": "REG2025-08210",
-          "email": "priya.sharma@gmail.com",
-          "phone": "+91-9876543210",
-          "category": "General (UR)",
-          "gender": "Male",
-          "dateOfBirth": "2005-03-15",
-          "profileComplete": true,
-          "photo": "https://th.bing.com/th/id/OIP.DPmLJbfVwB3d3kFfXTTftgAAAA?w=215&h=194&c=7&r=0&o=5&dpr=1.5&pid=1.7"
+  "students": {
+    "APP1758620790967905": {
+      "personalInfo": {
+        "name": "sameer rajput",
+        "applicationId": "APP1758620790967905",
+        "registrationNo": "REG2025-08210",
+        "email": "sameerrajpoot22@gmail.com",
+        "phone": "+91-9876543210",
+        "category": "General (UR)",
+        "gender": "Male",
+        "dateOfBirth": "2002-01-24",
+        "profileComplete": true,
+        "photo": "https://t3.ftcdn.net/jpg/05/79/55/26/360_F_579552668_sZD51Sjmi89GhGqyF27pZcrqyi7cEYBH.jpg"
+      },
+      "examResults": {
+        "totalScore": 195,
+        "maxScore": 240,
+        "percentile": 99.2,
+        "allIndiaRank": 85,
+        "categoryRank": 22,
+        "status": "Qualified",
+        "examDate": "2025-01-15",
+        "resultDate": "2025-02-28",
+        "subjects": {
+          "physics": { "score": 68, "maxScore": 80, "percentile": 98.5 },
+          "chemistry": { "score": 72, "maxScore": 80, "percentile": 99.1 },
+          "mathematics": { "score": 55, "maxScore": 80, "percentile": 97.8 }
+        }
+      },
+      "counsellingStatus": {
+        "currentRound": 1,
+        "totalRounds": 3,
+        "allotmentStatus": "Allotted",
+        "allottedCollege": "Government Polytechnic College Bagidora Banswara",
+        "allottedBranch": "Mechanical Engineering",
+        "allottedCategory": "General",
+        "seatType": "State Quota",
+        "allotmentRound": 1,
+        "allotmentDate": "2025-10-15",
+        "reportingDate": "2025-10-25",
+        "feePaymentDeadline": "2025-10-22",
+        "documentVerificationDate": "2025-10-20",
+        "hasReported": true,
+        "feesPaid": true,
+        "documentsVerified": true
+      },
+      "collegePreferences": [
+        {
+          "priority": 1,
+          "college": "Government Polytechnic College Bagidora Banswara",
+          "branch": "Mechanical Engineering",
+          "category": "Government",
+          "totalSeats": 60,
+          "totalApplicants": 1200,
+          "myRank": 65,
+          "cutoffRank": 80,
+          "status": "Allotted",
+          "statusColor": "text-green-600 bg-green-100",
+          "allotmentRound": 1
         },
-        "examResults": {
-          "totalScore": 195,
-          "maxScore": 240,
-          "percentile": 99.2,
-          "allIndiaRank": 154,
-          "categoryRank": 45,
+        {
+          "priority": 2,
+          "college": "Government Polytechnic College, Ajmer",
+          "branch": "Computer Science Engineering",
+          "category": "Government",
+          "totalSeats": 80,
+          "totalApplicants": 1500,
+          "myRank": 85,
+          "cutoffRank": 120,
           "status": "Qualified",
-          "examDate": "2025-01-15",
-          "resultDate": "2025-02-28",
-          "subjects": {
-            "physics": { "score": 68, "maxScore": 80, "percentile": 98.5 },
-            "chemistry": { "score": 72, "maxScore": 80, "percentile": 99.1 },
-            "mathematics": { "score": 55, "maxScore": 80, "percentile": 97.8 }
-          }
+          "statusColor": "text-blue-600 bg-blue-100",
+          "allotmentRound": null
         },
-        "counsellingStatus": {
-          "currentRound": 1,
-          "totalRounds": 3,
-          "allotmentStatus": "Allotted",
-          "allottedCollege": "Government Polytechnic College, Jaipur",
-          "allottedBranch": "Computer Science Engineering",
-          "allottedCategory": "General",
-          "seatType": "State Quota",
-          "allotmentRound": 1,
-          "allotmentDate": "2025-03-15",
-          "reportingDate": "2025-03-25",
-          "feePaymentDeadline": "2025-03-22",
-          "documentVerificationDate": "2025-03-20",
-          "hasReported": true,
-          "feesPaid": true,
-          "documentsVerified": true
-        },
-        "collegePreferences": [
-          {
-            "priority": 1,
-            "college": "Government Polytechnic College, Jaipur",
-            "branch": "Computer Science Engineering",
-            "category": "Government",
-            "totalSeats": 60,
-            "totalApplicants": 1200,
-            "myRank": 154,
-            "cutoffRank": 280,
-            "status": "Allotted",
-            "statusColor": "text-green-600 bg-green-100",
-            "allotmentRound": 1
-          },
-          {
-            "priority": 2,
-            "college": "Rajasthan Technical University, Kota",
-            "branch": "Information Technology",
-            "category": "Government",
-            "totalSeats": 80,
-            "totalApplicants": 1500,
-            "myRank": 154,
-            "cutoffRank": 200,
-            "status": "Qualified",
-            "statusColor": "text-blue-600 bg-blue-100",
-            "allotmentRound": null
-          },
-          {
-            "priority": 3,
-            "college": "Jodhpur Institute of Engineering & Technology",
-            "branch": "Electronics & Communication",
-            "category": "Private",
-            "totalSeats": 120,
-            "totalApplicants": 2200,
-            "myRank": 154,
-            "cutoffRank": 350,
-            "status": "Qualified",
-            "statusColor": "text-blue-600 bg-blue-100",
-            "allotmentRound": null
-          },
-          {
-            "priority": 4,
-            "college": "Poornima College of Engineering, Jaipur",
-            "branch": "Mechanical Engineering",
-            "category": "Private",
-            "totalSeats": 100,
-            "totalApplicants": 1800,
-            "myRank": 154,
-            "cutoffRank": 400,
-            "status": "Qualified",
-            "statusColor": "text-blue-600 bg-blue-100",
-            "allotmentRound": null
-          },
-          {
-            "priority": 5,
-            "college": "Arya College of Engineering, Jaipur",
-            "branch": "Civil Engineering",
-            "category": "Private",
-            "totalSeats": 90,
-            "totalApplicants": 1600,
-            "myRank": 154,
-            "cutoffRank": 500,
-            "status": "Qualified",
-            "statusColor": "text-blue-600 bg-blue-100",
-            "allotmentRound": null
-          }
-        ],
-        "notifications": [
-          {
-            "id": 1,
-            "message": "🎉 Congratulations! You have been allotted a seat in Government Polytechnic College, Jaipur for Computer Science Engineering.",
-            "time": "10:24",
-            "date": "2025-03-15",
-            "read": false,
-            "type": "success",
-            "priority": "high"
-          },
-          {
-            "id": 2,
-            "message": "📋 Please complete document verification by 20th March 2025.",
-            "time": "09:10",
-            "date": "2025-03-16",
-            "read": false,
-            "type": "warning",
-            "priority": "high"
-          },
-          {
-            "id": 3,
-            "message": "💰 Fee payment deadline: 22nd March 2025. Amount: ₹45,000",
-            "time": "08:55",
-            "date": "2025-03-17",
-            "read": false,
-            "type": "info",
-            "priority": "medium"
-          },
-          {
-            "id": 4,
-            "message": "📄 Admit card for Round 1 counselling is now available for download.",
-            "time": "14:30",
-            "date": "2025-03-18",
-            "read": true,
-            "type": "info",
-            "priority": "low"
-          }
-        ],
-        "documents": {
-          "admitCard": {
-            "available": true,
-            "downloadUrl": "/documents/admit-card-APP8210158511121.pdf",
-            "generatedDate": "2025-03-10"
-          },
-          "allotmentLetter": {
-            "available": true,
-            "downloadUrl": "/documents/allotment-letter-APP8210158511121.pdf",
-            "generatedDate": "2025-03-15"
-          },
-          "scoreCard": {
-            "available": true,
-            "downloadUrl": "/documents/scorecard-APP8210158511121.pdf",
-            "generatedDate": "2025-02-28"
-          }
-        },
-        "timeline": {
-          "applicationSubmitted": "2025-01-05",
-          "examCompleted": "2025-01-15",
-          "resultDeclared": "2025-02-28",
-          "counsellingStarted": "2025-03-10",
-          "round1Allotment": "2025-03-15",
-          "documentVerification": "2025-03-20",
-          "feePayment": "2025-03-21",
-          "admissionConfirmed": "2025-03-22"
-        },
-        "stats": [
-          {
-            "title": "Merit Rank",
-            "value": "154",
-            "icon": "Award",
-            "status": "confirmed"
-          },
-          {
-            "title": "Allotment Status",
-            "value": "Allotted",
-            "icon": "CheckCircle",
-            "status": "completed"
-          },
-          {
-            "title": "Admit Card",
-            "value": "Available",
-            "icon": "FileText",
-            "status": "available"
-          },
-          {
-            "title": "Fee Payment",
-            "value": "Completed",
-            "icon": "CreditCard",
-            "status": "completed"
-          },
-          {
-            "title": "Next Step",
-            "value": "College Reporting",
-            "icon": "MapPin",
-            "status": "action-required"
-          }
-        ]
-      },
-      "APP1758044693481962": {
-        "personalInfo": {
-          "name": "Priya Sharma",
-          "applicationId": "APP1758044693481962",
-          "registrationNo": "REG2025-17580",
-          "email": "priya.sharma@gmail.com",
-          "phone": "+91-9876543211",
-          "category": "OBC",
-          "gender": "Female",
-          "dateOfBirth": "2005-07-22",
-          "profileComplete": true,
-          "photo": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face"
-        },
-        "examResults": {
-          "totalScore": 142,
-          "maxScore": 240,
-          "percentile": 85.6,
-          "allIndiaRank": 2847,
-          "categoryRank": 856,
+        {
+          "priority": 3,
+          "college": "Government Polytechnic College Neemrana (Kotputli Behror), Rajasthan",
+          "branch": "Computer Science Engineering",
+          "category": "Government",
+          "totalSeats": 120,
+          "totalApplicants": 2200,
+          "myRank": 142,
+          "cutoffRank": 180,
           "status": "Qualified",
-          "examDate": "2025-01-15",
-          "resultDate": "2025-02-28",
-          "subjects": {
-            "physics": { "score": 48, "maxScore": 80, "percentile": 82.3 },
-            "chemistry": { "score": 52, "maxScore": 80, "percentile": 87.1 },
-            "mathematics": { "score": 42, "maxScore": 80, "percentile": 78.9 }
-          }
+          "statusColor": "text-blue-600 bg-blue-100",
+          "allotmentRound": null
         },
-        "counsellingStatus": {
-          "currentRound": 1,
-          "totalRounds": 3,
-          "allotmentStatus": "Not Allotted",
-          "allottedCollege": null,
-          "allottedBranch": null,
-          "allottedCategory": null,
-          "seatType": null,
-          "allotmentRound": null,
-          "allotmentDate": null,
-          "reportingDate": null,
-          "feePaymentDeadline": null,
-          "documentVerificationDate": null,
-          "hasReported": false,
-          "feesPaid": false,
-          "documentsVerified": false,
-          "waitingForRound": 3,
-          "expectedAllotmentChance": "Medium"
+        {
+          "priority": 4,
+          "college": "Government Polytechnic College, Kelwara",
+          "branch": "Electrical Engineering",
+          "category": "Government",
+          "totalSeats": 100,
+          "totalApplicants": 1800,
+          "myRank": 210,
+          "cutoffRank": 250,
+          "status": "Qualified",
+          "statusColor": "text-blue-600 bg-blue-100",
+          "allotmentRound": null
         },
-        "collegePreferences": [
-          {
-            "priority": 1,
-            "college": "Government Polytechnic College, Jaipur",
-            "branch": "Computer Science Engineering",
-            "category": "Government",
-            "totalSeats": 60,
-            "totalApplicants": 1200,
-            "myRank": 2847,
-            "cutoffRank": 280,
-            "status": "Not Qualified",
-            "statusColor": "text-red-600 bg-red-100",
-            "allotmentRound": null
-          },
-          {
-            "priority": 2,
-            "college": "Rajasthan Technical University, Kota",
-            "branch": "Information Technology",
-            "category": "Government",
-            "totalSeats": 80,
-            "totalApplicants": 1500,
-            "myRank": 2847,
-            "cutoffRank": 200,
-            "status": "Not Qualified",
-            "statusColor": "text-red-600 bg-red-100",
-            "allotmentRound": null
-          },
-          {
-            "priority": 3,
-            "college": "Jodhpur Institute of Engineering & Technology",
-            "branch": "Electronics & Communication",
-            "category": "Private",
-            "totalSeats": 120,
-            "totalApplicants": 2200,
-            "myRank": 2847,
-            "cutoffRank": 3500,
-            "status": "Qualified",
-            "statusColor": "text-blue-600 bg-blue-100",
-            "allotmentRound": null
-          },
-          {
-            "priority": 4,
-            "college": "Poornima College of Engineering, Jaipur",
-            "branch": "Mechanical Engineering",
-            "category": "Private",
-            "totalSeats": 100,
-            "totalApplicants": 1800,
-            "myRank": 2847,
-            "cutoffRank": 4000,
-            "status": "Qualified",
-            "statusColor": "text-blue-600 bg-blue-100",
-            "allotmentRound": null
-          },
-          {
-            "priority": 5,
-            "college": "Arya College of Engineering, Jaipur",
-            "branch": "Civil Engineering",
-            "category": "Private",
-            "totalSeats": 90,
-            "totalApplicants": 1600,
-            "myRank": 2847,
-            "cutoffRank": 3800,
-            "status": "Qualified",
-            "statusColor": "text-blue-600 bg-blue-100",
-            "allotmentRound": null
-          },
-          {
-            "priority": 6,
-            "college": "Jaipur Engineering College & Research Centre",
-            "branch": "Computer Science Engineering",
-            "category": "Private",
-            "totalSeats": 120,
-            "totalApplicants": 2800,
-            "myRank": 2847,
-            "cutoffRank": 3200,
-            "status": "Qualified",
-            "statusColor": "text-blue-600 bg-blue-100",
-            "allotmentRound": null
-          }
-        ],
-        "notifications": [
-          {
-            "id": 1,
-            "message": "⏳ Round 1 allotment results will be declared on 25th March 2025.",
-            "time": "11:30",
-            "date": "2025-03-20",
-            "read": false,
-            "type": "info",
-            "priority": "high"
-          },
-          {
-            "id": 2,
-            "message": "📊 You were not allotted in Round 1. You are eligible for Round 1 counselling.",
-            "time": "10:15",
-            "date": "2025-03-15",
-            "read": false,
-            "type": "warning",
-            "priority": "high"
-          },
-          {
-            "id": 3,
-            "message": "🔄 Update your college preferences for better chances in upcoming rounds.",
-            "time": "09:45",
-            "date": "2025-03-16",
-            "read": false,
-            "type": "info",
-            "priority": "medium"
-          },
-          {
-            "id": 4,
-            "message": "📄 Admit card for Round 1 counselling is now available for download.",
-            "time": "14:30",
-            "date": "2025-03-18",
-            "read": true,
-            "type": "info",
-            "priority": "low"
-          },
-          {
-            "id": 5,
-            "message": "💡 Consider adding more private colleges to increase your allotment chances.",
-            "time": "16:20",
-            "date": "2025-03-19",
-            "read": true,
-            "type": "tip",
-            "priority": "low"
-          }
-        ],
-        "documents": {
-          "admitCard": {
-            "available": true,
-            "downloadUrl": "/documents/admit-card-APP1758044693481962.pdf",
-            "generatedDate": "2025-03-10"
-          },
-          "allotmentLetter": {
-            "available": false,
-            "downloadUrl": null,
-            "generatedDate": null
-          },
-          "scoreCard": {
-            "available": true,
-            "downloadUrl": "/documents/scorecard-APP1758044693481962.pdf",
-            "generatedDate": "2025-02-28"
-          }
+        {
+          "priority": 5,
+          "college": "Government Polytechnic College, Jaisalmer",
+          "branch": "Civil Engineering",
+          "category": "Government",
+          "totalSeats": 90,
+          "totalApplicants": 1600,
+          "myRank": 320,
+          "cutoffRank": 280,
+          "status": "Not Qualified",
+          "statusColor": "text-red-600 bg-red-100",
+          "allotmentRound": null
+        }
+      ],
+      "notifications": [
+        {
+          "id": 1,
+          "message": "🎉 Congratulations! You have been allotted a seat in Government Polytechnic College Bagidora Banswara for Mechanical Engineering.",
+          "time": "10:24",
+          "date": "2025-10-15",
+          "read": false,
+          "type": "success",
+          "priority": "high"
         },
-        "timeline": {
-          "applicationSubmitted": "2025-01-08",
-          "examCompleted": "2025-01-15",
-          "resultDeclared": "2025-02-28",
-          "counsellingStarted": "2025-03-10",
-          "round1Result": "2025-03-15",
-          "round2Waiting": "2025-03-20",
-          "round2Result": "2025-03-25",
-          "round3Expected": "2025-04-01"
+        {
+          "id": 2,
+          "message": "📋 Please complete document verification by 20th October 2025.",
+          "time": "09:10",
+          "date": "2025-10-16",
+          "read": false,
+          "type": "warning",
+          "priority": "high"
         },
-        "stats": [
-          {
-            "title": "Merit Rank",
-            "value": "2847",
-            "icon": "Award",
-            "status": "confirmed"
-          },
-          {
-            "title": "Allotment Status",
-            "value": "Waiting",
-            "icon": "Clock",
-            "status": "pending"
-          },
-          {
-            "title": "Admit Card",
-            "value": "Available",
-            "icon": "FileText",
-            "status": "available"
-          },
-          {
-            "title": "Current Round",
-            "value": "Round 1",
-            "icon": "RefreshCw",
-            "status": "in-progress"
-          },
-          {
-            "title": "Next Step",
-            "value": "Wait for Results",
-            "icon": "Clock",
-            "status": "pending"
-          }
-        ]
-      }
-    },
-    "counsellingRounds": {
-      "round1": {
-        "startDate": "2025-03-10",
-        "endDate": "2025-03-15",
-        "resultDate": "2025-03-15",
-        "status": "completed",
-        "totalSeatsAllotted": 15420,
-        "totalApplicants": 45680
+        {
+          "id": 3,
+          "message": "💰 Fee payment deadline: 22nd October 2025. Amount: ₹45,000",
+          "time": "08:55",
+          "date": "2025-10-17",
+          "read": false,
+          "type": "info",
+          "priority": "medium"
+        },
+        {
+          "id": 4,
+          "message": "📄 Admit card for Round 1 counselling is now available for download.",
+          "time": "14:30",
+          "date": "2025-10-18",
+          "read": true,
+          "type": "info",
+          "priority": "low"
+        }
+      ],
+      "documents": {
+        "admitCard": {
+          "available": true,
+          "downloadUrl": "/documents/admit-card-APP8210158511121.pdf",
+          "generatedDate": "2025-10-10"
+        },
+        "allotmentLetter": {
+          "available": true,
+          "downloadUrl": "/documents/allotment-letter-APP8210158511121.pdf",
+          "generatedDate": "2025-10-15"
+        },
+        "scoreCard": {
+          "available": true,
+          "downloadUrl": "/documents/scorecard-APP8210158511121.pdf",
+          "generatedDate": "2025-10-28"
+        }
       },
-      "round2": {
-        "startDate": "2025-03-20",
-        "endDate": "2025-03-25",
-        "resultDate": "2025-03-25",
-        "status": "in-progress",
-        "totalSeatsAllotted": null,
-        "totalApplicants": 28450
+      "timeline": {
+        "applicationSubmitted": "2025-09-05",
+        "examCompleted": "2025-09-15",
+        "resultDeclared": "2025-09-28",
+        "counsellingStarted": "2025-10-10",
+        "round1Allotment": "2025-10-15",
+        "documentVerification": "2025-10-20",
+        "feePayment": "2025-10-21",
+        "admissionConfirmed": "2025-10-22"
       },
-      "round3": {
-        "startDate": "2025-04-01",
-        "endDate": "2025-04-05",
-        "resultDate": "2025-04-05",
-        "status": "upcoming",
-        "totalSeatsAllotted": null,
-        "totalApplicants": null
-      }
-    },
-    "systemInfo": {
-      "lastUpdated": "2025-03-20T01:19:53+05:30",
-      "version": "2.1.0",
-      "supportEmail": "support@dterajasthan.gov.in",
-      "supportPhone": "1800-180-6127",
-      "helplineHours": "9:00 AM - 6:00 PM (Mon-Sat)"
+      "stats": [
+        {
+          "title": "Merit Rank",
+          "value": "154",
+          "icon": "Award",
+          "status": "confirmed"
+        },
+        {
+          "title": "Allotment Status",
+          "value": "Allotted",
+          "icon": "CheckCircle",
+          "status": "completed"
+        },
+        {
+          "title": "Admit Card",
+          "value": "Available",
+          "icon": "FileText",
+          "status": "available"
+        },
+        {
+          "title": "Fee Payment",
+          "value": "Completed",
+          "icon": "CreditCard",
+          "status": "completed"
+        },
+        {
+          "title": "Next Step",
+          "value": "College Reporting",
+          "icon": "MapPin",
+          "status": "action-required"
+        }
+      ]
     }
+  },
+  "counsellingRounds": {
+    "round1": {
+      "startDate": "2025-09-10",
+      "endDate": "2025-09-15",
+      "type": "Choice Filling",
+      "status": "Completed"
+    },
+    "round2": {
+      "startDate": "2025-09-20",
+      "endDate": "2025-09-25",
+      "type": "Seat Allotment",
+      "status": "Upcoming"
+    },
+    "round3": {
+      "startDate": "2025-09-30",
+      "endDate": "2025-10-05",
+      "type": "Final Allotment",
+      "status": "Upcoming"
+    }
+  },
+  "importantDates": {
+    "applicationStart": "2025-08-01",
+    "applicationEnd": "2025-08-31",
+    "examDate": "2025-09-15",
+    "resultDeclaration": "2025-09-28",
+    "counsellingStart": "2025-10-10",
+    "lastDateForAdmission": "2025-11-15"
+  },
+  "contactInfo": {
+    "helplineNumber": "1800-123-4567",
+    "email": "support@polycounselling.com",
+    "officeAddress": "Directorate of Technical Education, Rajasthan, Jaipur - 302015"
   }
+}

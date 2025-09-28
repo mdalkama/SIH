@@ -91,7 +91,7 @@ const StatusOtpPage = () => {
     
     if (!formData.otp) {
       newErrors.otp = 'OTP is required';
-    } else if (formData.otp !== '7780') {
+    } else if (formData.otp !== '7140') {
       newErrors.otp = 'Invalid OTP. Please check the OTP sent to your email.';
     }
     
