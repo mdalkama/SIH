@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { X, Send, Bot, BotMessageSquare, Mic, MicOff } from 'lucide-react'
 
 // Gemini API Configuration
-const GEMINI_API_KEY = 'AIzaSyChXdRBgbrUAIBByXPIqbAThZ5E-t0-gv4'
+const GEMINI_API_KEY = 'AIzaSyD25OFjDWqGqRX-hvBEuX5aN5i58SEVG-s'
 const GEMINI_MODEL = 'gemini-2.0-flash-exp'
 // Enhanced Saarthi System Prompt
 const systemPrompt = `
