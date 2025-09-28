@@ -1,13 +1,12 @@
 import { defineConfig } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
-
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig(() => {
   const enableHttps = process.env.VITE_HTTPS === 'true'
+
   return {
-    base: '/',        
+    base: '/',
     plugins: [
       react({ jsxRuntime: 'automatic' }),
       tailwindcss()
@@ -18,10 +17,23 @@ export default defineConfig(() => {
         '/api/v1': {
           target: 'https://sih-4ptm.onrender.com',
           changeOrigin: true,
-          secure: true,
+          secure: true
         }
       }
+    },
+    // ✅ Add this part
+    build: {
+      // Split big libraries into separate chunks
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ['react', 'react-dom'],
+            vendor: ['react-router-dom', 'axios'] // add other big deps here
+          }
+        }
+      },
+      // Optional: raise the warning limit (kB) so it doesn’t spam the console
+      chunkSizeWarningLimit: 2000
     }
   }
 })
-
