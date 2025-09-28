@@ -9,7 +9,7 @@ app.use(
     cors({
         origin: [
             "http://localhost:5173",
-            "https://sih-tr2t.vercel.app"
+            "https://samyak-erp.vercel.app"
         ],
         credentials: true,
     })
