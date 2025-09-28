@@ -190,7 +190,7 @@ const UpdateOptions = () => {
     );
   }
 
-  const filters = ['All', 'IIT', 'NIT', 'Govt', 'Private'];
+  const filters = [];
 
   const handleFilterChange = (filter) => {
     if (filter === 'All') {

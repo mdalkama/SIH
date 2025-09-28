@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import applicantData from './applicant.json';
+import localApplicantData from './applicant.json';
 
 const ApplicantDataContext = createContext();
 
@@ -13,7 +13,6 @@ export const useApplicantData = () => {
 
 export const ApplicantDataProvider = ({ children, applicationId }) => {
   const [applicantInfo, setApplicantInfo] = useState(null);
-  const [applicantData, setApplicantData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -23,16 +22,11 @@ export const ApplicantDataProvider = ({ children, applicationId }) => {
         setLoading(true);
         setError(null);
 
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Simulate small delay (optional)
+        await new Promise(resolve => setTimeout(resolve, 50));
 
-        // Load data from public/applicant.json
-        const response = await fetch('/applicant.json');
-        if (!response.ok) {
-          throw new Error('Failed to load applicant data');
-        }
-
-        const data = await response.json();
+        // Load data from local JSON import (no network fetch)
+        const data = localApplicantData;
 
         // Extract student data based on applicationId
         const studentData = data.students?.[applicationId];
@@ -48,7 +42,6 @@ export const ApplicantDataProvider = ({ children, applicationId }) => {
           };
 
           setApplicantInfo(completeData);
-          setApplicantData(completeData);
         } else {
           throw new Error(`Student data not found for application ID: ${applicationId}`);
         }
@@ -57,7 +50,6 @@ export const ApplicantDataProvider = ({ children, applicationId }) => {
         console.error('Error loading applicant data:', err);
         setError('Failed to load applicant data');
         setApplicantInfo(null);
-        setApplicantData(null);
       } finally {
         setLoading(false);
       }
@@ -79,7 +71,7 @@ export const ApplicantDataProvider = ({ children, applicationId }) => {
   const getCollegePreferences = () => applicantInfo?.collegePreferences || [];
   const getNotifications = () => applicantInfo?.notifications || [];
   const getDocuments = () => applicantInfo?.documents || [];
-  const getCounsellingRounds = () => applicantData?.counsellingRounds || {};
+  const getCounsellingRounds = () => applicantInfo?.counsellingRounds || {};
 
   // Get current round info
   const getCurrentRound = () => {
