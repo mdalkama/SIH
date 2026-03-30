@@ -30,6 +30,7 @@ import studentExamRoute from "./studentExamRoute.js";
 import placementRoutes from "./placementRoute.js";
 import universityAdminRoute from "./universityAdminRoute.js";
 import applicationRoutes from "./applicationRoutes.js";
+import postRoutes from "./postRoutes.js";
 
 
 
@@ -65,6 +66,7 @@ router.use("/manage-college", manageCollegeRoute)
 router.use("/college-course", role(["CollegeAdmin", "CollegeAdmissionDepartment"]), collegeCourseRoute)
 router.use("/admit-student-college", role(["CollegeAdmissionDepartment"]), admitStudentCollegeRoute)
 router.use('/placements', placementRoutes);
+router.use('/posts', role(['student']), postRoutes);
 router.get("/my-profile", role(['student', ...staffRoles]), (req, res) => {
     try {
         if(req.user.role === 'student'){
